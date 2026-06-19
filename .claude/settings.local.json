@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(try { \\(Get-Command pnpm -ErrorAction Stop\\).Source } catch { Write-Output \"pnpm not found\" }; try { \\(Get-Command npm -ErrorAction Stop\\).Source } catch { Write-Output \"npm not found\" }; try { \\(Get-Command node -ErrorAction Stop\\).Source } catch { Write-Output \"node not found\" }; try { \\(Get-Command npx -ErrorAction Stop\\).Source } catch { Write-Output \"npx not found\" })",
+      "PowerShell(Remove-Item \"brand Mira.zip\" -Force -Confirm:$false)",
+      "PowerShell(try { \\(Get-Command pnpm -ErrorAction Stop\\).Source } catch { \"pnpm not found\" }; try { \\(Get-Command node -ErrorAction Stop\\).Source } catch { \"node not found\" }; try { \\(Get-Command npm -ErrorAction Stop\\).Source } catch { \"npm not found\" })"
+    ]
+  }
+}

@@ -1,0 +1,139 @@
+"use client";
+
+import { useState } from "react";
+import { submitApplication } from "@/lib/actions/applications";
+import { useRouter } from "next/navigation";
+
+interface Question {
+  id: string;
+  questionText: string;
+  questionType: string;
+  required: boolean;
+  helperText: string | null;
+  options: string[];
+}
+
+const inputClass = "w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200";
+
+export function ApplicationForm({ cycleId, questions, slug }: { cycleId: string; questions: Question[]; slug: string }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  async function handleSubmit(formData: FormData) {
+    setLoading(true);
+    setError(null);
+    const res = await submitApplication(cycleId, formData);
+    if (res.error) {
+      setError(res.error);
+      setLoading(false);
+      return;
+    }
+    router.push("/student");
+  }
+
+  function renderInput(q: Question) {
+    const name = `answer_${q.id}`;
+
+    switch (q.questionType) {
+      case "short_text":
+        return <input name={name} type="text" required={q.required} className={inputClass} />;
+
+      case "long_text":
+      case "case_prompt":
+        return <textarea name={name} rows={4} required={q.required} className={`${inputClass} resize-y`} />;
+
+      case "multiple_choice":
+      case "dropdown":
+        return (
+          <select name={name} required={q.required} className={inputClass}>
+            <option value="">Seleziona</option>
+            {q.options.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+        );
+
+      case "checkboxes":
+        return (
+          <div className="space-y-2">
+            {q.options.map((opt) => (
+              <label key={opt} className="flex items-center gap-3">
+                <input name={name} type="checkbox" value={opt} className="h-4 w-4 rounded border-border text-petrol focus:ring-petrol" />
+                <span className="text-body text-ink">{opt}</span>
+              </label>
+            ))}
+          </div>
+        );
+
+      case "rating_scale":
+        return (
+          <div className="flex gap-2">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <label key={n} className="flex flex-col items-center gap-1">
+                <input name={name} type="radio" value={n} required={q.required} className="h-4 w-4 border-border text-petrol focus:ring-petrol" />
+                <span className="text-body-sm text-ink-secondary">{n}</span>
+              </label>
+            ))}
+          </div>
+        );
+
+      case "availability":
+        return <input name={name} type="text" required={q.required} placeholder="es. 10-15 ore/settimana" className={inputClass} />;
+
+      case "role_preference":
+        return <input name={name} type="text" required={q.required} placeholder="es. Analyst, Marketing" className={inputClass} />;
+
+      default:
+        return <input name={name} type="text" required={q.required} className={inputClass} />;
+    }
+  }
+
+  return (
+    <form action={handleSubmit} className="space-y-6">
+      {error && (
+        <div className="rounded-md bg-error-bg p-3 text-body-sm text-error">{error}</div>
+      )}
+
+      {questions.length === 0 ? (
+        <div className="rounded-lg border border-border bg-white p-6">
+          <p className="text-body text-ink-secondary">
+            Nessuna domanda aggiuntiva per questa candidatura.
+          </p>
+        </div>
+      ) : (
+        questions.map((q) => (
+          <div key={q.id} className="rounded-lg border border-border bg-white p-6">
+            <label className="block">
+              <span className="text-label text-navy mb-2 block">
+                {q.questionText} {q.required && <span className="text-error">*</span>}
+              </span>
+              {q.helperText && (
+                <p className="text-body-sm text-ink-tertiary mb-3">{q.helperText}</p>
+              )}
+              {renderInput(q)}
+            </label>
+          </div>
+        ))
+      )}
+
+      <div className="rounded-lg border border-border bg-white p-6">
+        <label className="flex items-start gap-3">
+          <input type="checkbox" required className="mt-1 h-4 w-4 rounded border-border text-petrol focus:ring-petrol" />
+          <span className="text-body-sm text-ink-secondary">
+            Acconsento al trattamento dei miei dati personali ai fini della valutazione della mia candidatura.
+            I miei dati saranno visibili solo ai membri autorizzati dell&apos;associazione.
+          </span>
+        </label>
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
+      >
+        {loading ? "Invio candidatura..." : "Invia candidatura"}
+      </button>
+    </form>
+  );
+}

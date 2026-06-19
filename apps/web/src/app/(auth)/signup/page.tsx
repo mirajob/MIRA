@@ -1,0 +1,115 @@
+"use client";
+
+import { useState } from "react";
+import { createBrowserClient } from "@mira/supabase/client";
+import { validateStudentEmail } from "@mira/domain";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+export default function SignupPage() {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    const emailValidation = validateStudentEmail(email);
+    if (!emailValidation.valid) {
+      setError(emailValidation.error);
+      return;
+    }
+
+    setLoading(true);
+
+    const supabase = createBrowserClient();
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    router.push("/verify-email");
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+      <div className="space-y-4 rounded-lg border border-border bg-white p-6">
+        <h2 className="font-display text-h2 text-navy">Crea il tuo account</h2>
+
+        {error && (
+          <div className="rounded-md bg-error-bg p-3 text-body-sm text-error">
+            {error}
+          </div>
+        )}
+
+        <label className="block">
+          <span className="text-label text-navy mb-2 block">Nome e cognome</span>
+          <input
+            type="text"
+            required
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
+          />
+        </label>
+
+        <label className="block">
+          <span className="text-label text-navy mb-2 block">Email universitaria</span>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
+            placeholder="nome@studbocconi.it"
+          />
+          <p className="mt-1 text-eyebrow text-ink-tertiary uppercase">
+            Disponibile per studenti Bocconi (@studbocconi.it)
+          </p>
+        </label>
+
+        <label className="block">
+          <span className="text-label text-navy mb-2 block">Password</span>
+          <input
+            type="password"
+            required
+            minLength={8}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
+          />
+          <p className="mt-1 text-body-sm text-ink-tertiary">Minimo 8 caratteri</p>
+        </label>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {loading ? "Registrazione..." : "Registrati"}
+        </button>
+      </div>
+
+      <p className="text-center text-body-sm text-ink-secondary">
+        Hai già un account?{" "}
+        <Link href="/login" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2">
+          Accedi
+        </Link>
+      </p>
+    </form>
+  );
+}
