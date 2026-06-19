@@ -3,7 +3,11 @@
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import { randomBytes } from "crypto";
+function generateToken() {
+  const array = new Uint8Array(32);
+  require("crypto").randomFillSync(array);
+  return Array.from(array, (b) => b.toString(16).padStart(2, "0")).join("");
+}
 import { INVITATION_EXPIRY_DAYS, ROLE_PERMISSION_TEMPLATES } from "@mira/domain";
 import type { AssociationPermission } from "@mira/domain";
 
@@ -68,7 +72,7 @@ export async function inviteBoardMember(associationId: string, formData: FormDat
     permissions[perm] = true;
   }
 
-  const token = randomBytes(32).toString("hex");
+  const token = generateToken();
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + INVITATION_EXPIRY_DAYS);
 

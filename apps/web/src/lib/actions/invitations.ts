@@ -4,7 +4,11 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { randomBytes } from "crypto";
+function generateToken() {
+  const array = new Uint8Array(32);
+  require("crypto").randomFillSync(array);
+  return Array.from(array, (b) => b.toString(16).padStart(2, "0")).join("");
+}
 import { INVITATION_EXPIRY_DAYS } from "@mira/domain";
 
 export async function createPresidentInvitation(formData: FormData) {
@@ -35,7 +39,7 @@ export async function createPresidentInvitation(formData: FormData) {
     return { error: "Esiste già un invito attivo per questa email" };
   }
 
-  const token = randomBytes(32).toString("hex");
+  const token = generateToken();
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + INVITATION_EXPIRY_DAYS);
 
