@@ -1,6 +1,6 @@
 "use server";
 
-import { createServiceClient, createServiceClient } from "@mira/supabase/server";
+import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
