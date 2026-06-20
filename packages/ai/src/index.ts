@@ -1,3 +1,7 @@
+export { getAIClient, AI_CONFIG } from "./provider";
+export { generateAssociationPage } from "./modules/association-page-generator";
+export { matchCandidates } from "./modules/candidate-matcher";
+
 export type {
   ApplicationEvaluatorInput,
   ApplicationEvaluationOutput,

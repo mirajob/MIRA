@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { updateAssociationProfile, publishAssociationPage } from "@/lib/actions/associations";
+import { generatePageFromWebsite } from "@/lib/actions/ai-page-generator";
 import { ASSOCIATION_CATEGORIES } from "@mira/domain";
 
 interface AssociationData {
@@ -20,7 +21,25 @@ interface AssociationData {
 export function PageEditorForm({ association }: { association: AssociationData }) {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  async function handleGenerate() {
+    if (!association.website_url) {
+      setMessage({ type: "error", text: "Inserisci prima l'URL del sito web e salva" });
+      return;
+    }
+    setGenerating(true);
+    setMessage(null);
+    const res = await generatePageFromWebsite(association.id, association.website_url);
+    if (res.error) {
+      setMessage({ type: "error", text: res.error });
+    } else {
+      setMessage({ type: "success", text: "Pagina generata da MIRA AI! Controlla e modifica prima di pubblicare." });
+      window.location.reload();
+    }
+    setGenerating(false);
+  }
 
   async function handleSave(formData: FormData) {
     setSaving(true);
@@ -77,7 +96,20 @@ export function PageEditorForm({ association }: { association: AssociationData }
 
           <label className="block">
             <span className="text-label text-navy mb-2 block">Sito web</span>
-            <input name="websiteUrl" type="url" defaultValue={association.website_url ?? ""} placeholder="https://..." className={inputClass} />
+            <div className="flex gap-2">
+              <input name="websiteUrl" type="url" defaultValue={association.website_url ?? ""} placeholder="https://..." className={inputClass} />
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={generating}
+                className="shrink-0 bg-petrol text-white px-4 py-3 rounded-md text-label hover:bg-petrol-700 transition-colors duration-100 disabled:opacity-40 whitespace-nowrap"
+              >
+                {generating ? "Generazione..." : "Genera con AI"}
+              </button>
+            </div>
+            <p className="mt-1 text-body-sm text-ink-tertiary">
+              Inserisci l&apos;URL e clicca &quot;Genera con AI&quot; per creare la pagina automaticamente
+            </p>
           </label>
 
           <label className="block">
