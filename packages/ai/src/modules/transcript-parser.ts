@@ -51,17 +51,10 @@ Rispondi SOLO in JSON valido con questa struttura:
 export async function parseTranscriptFile(base64Data: string, mimeType: string): Promise<ParsedTranscript> {
   const dataUrl = `data:${mimeType};base64,${base64Data}`;
 
-  const isImage = mimeType.startsWith("image/");
-
-  const content = isImage
-    ? [
-        { type: "text" as const, text: "Estrai tutti i dati da questo libretto universitario." },
-        { type: "image_url" as const, image_url: { url: dataUrl, detail: "high" as const } },
-      ]
-    : [
-        { type: "text" as const, text: "Estrai tutti i dati da questo libretto universitario." },
-        { type: "file" as const, file: { filename: "libretto.pdf", file_data: dataUrl } },
-      ];
+  const content = [
+    { type: "text" as const, text: "Estrai tutti i dati da questo libretto universitario. Ricorda: SOLO esami completati con data e voto." },
+    { type: "image_url" as const, image_url: { url: dataUrl, detail: "high" as const } },
+  ];
 
   const result = await chatCompletion(
     [

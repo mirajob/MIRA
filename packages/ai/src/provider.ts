@@ -6,8 +6,7 @@ export const AI_CONFIG = {
 
 type ContentPart =
   | { type: "text"; text: string }
-  | { type: "image_url"; image_url: { url: string; detail?: "low" | "high" | "auto" } }
-  | { type: "file"; file: { filename: string; file_data: string } };
+  | { type: "image_url"; image_url: { url: string; detail?: "low" | "high" | "auto" } };
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -29,7 +28,7 @@ export async function chatCompletion(
   if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
 
   const hasMedia = messages.some(
-    (m) => Array.isArray(m.content) && m.content.some((p) => p.type === "image_url" || p.type === "file")
+    (m) => Array.isArray(m.content) && m.content.some((p) => p.type === "image_url")
   );
 
   const body = {
