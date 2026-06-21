@@ -81,7 +81,8 @@ async function parseTranscriptImage(base64Data: string, mimeType: string): Promi
 async function parseTranscriptPdfText(base64Data: string): Promise<ParsedTranscript> {
   const { extractText } = await import("unpdf");
   const buffer = Buffer.from(base64Data, "base64");
-  const { text } = await extractText(buffer);
+  const uint8 = new Uint8Array(buffer);
+  const { text } = await extractText(uint8);
 
   if (!text || text.trim().length < 30) {
     throw new Error("Il PDF non contiene testo leggibile.");
