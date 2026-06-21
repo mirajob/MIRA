@@ -10,37 +10,92 @@ interface ChatMessage {
   content: string;
 }
 
-const SYSTEM_PROMPT = `Tu sei MIRA, la piattaforma AI per il talento universitario.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-CONTESTO:
-Lo studente si è appena registrato. Gli hai già mandato un messaggio di presentazione (hardcoded) che spiega cos'è MIRA e gli ha chiesto se studia triennale o magistrale. Ora stai rispondendo alle sue risposte. NON ripresentarti — sei già nel mezzo della conversazione.
+async function getStudentContext() {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+  const profileId = (ctx.profile as any).id as string;
+
+  const { data: student } = await (supabase.from("student_profiles") as any)
+    .select("degree_program, degree_level, current_year, transcript_summary, transcript_uploaded")
+    .eq("user_id", profileId)
+    .single();
+
+  const { data: associations } = await (supabase.from("association_profiles") as any)
+    .select("name, slug, category, short_description")
+    .eq("public_page_status", "published");
+
+  const { data: openCycles } = await (supabase.from("application_cycles") as any)
+    .select("title, association_id, closes_at, association_profiles(name)")
+    .eq("status", "open");
+
+  return { ctx, supabase, profileId, student, associations, openCycles };
+}
+
+function buildSystemPrompt(student: any, associations: any[], openCycles: any[]): string {
+  let studentContext = "";
+  if (student?.transcript_uploaded && student?.transcript_summary) {
+    const ts = student.transcript_summary;
+    studentContext = `
+DATI DELLO STUDENTE (dal transcript caricato):
+- Corso: ${ts.degree_program || student.degree_program || "non noto"}
+- Livello: ${ts.degree_level || student.degree_level || "non noto"}
+- Esami completati: ${ts.courses?.length ?? 0}
+- Crediti totali: ${ts.total_credits ?? 0} CFU
+- Media ponderata: ${ts.weighted_average ? `${ts.weighted_average}/30` : "non calcolata"}
+- Voti più alti: ${ts.courses?.filter((c: any) => c.grade_numeric >= 28).map((c: any) => `${c.course_name} (${c.grade})`).slice(0, 5).join(", ") || "nessuno"}
+
+Lo studente È GIÀ ISCRITTO a Bocconi. Non chiedergli se ha preparato la candidatura per Bocconi — ci è già dentro.`;
+  }
+
+  let assocContext = "";
+  if (associations?.length > 0) {
+    const list = associations.map((a: any) => `- ${a.name} (${a.category || "generale"}): ${a.short_description || ""}`).join("\n");
+    const openList = openCycles?.map((c: any) => `- ${c.association_profiles?.name}: "${c.title}"${c.closes_at ? ` (scade ${new Date(c.closes_at).toLocaleDateString("it-IT")})` : ""}`).join("\n") || "nessuna al momento";
+
+    assocContext = `
+ASSOCIAZIONI SU MIRA:
+${list}
+
+CANDIDATURE APERTE ORA:
+${openList}
+
+Quando lo studente parla di associazioni, TU SAI quali ci sono su MIRA. Se menziona un'associazione presente, digli che può candidarsi direttamente dalla piattaforma dopo aver completato il profilo.`;
+  }
+
+  return `Tu sei MIRA, la piattaforma AI per il talento universitario di Bocconi.
+
+CHI SEI: MIRA accompagna gli studenti Bocconi nel loro percorso — orientamento professionale, candidature alle associazioni, profilo basato su evidenze reali. In futuro: simulazioni di lavoro e matching con aziende.
+
+CONTESTO CONVERSAZIONE:
+Lo studente si è appena registrato e sta facendo l'onboarding. Gli hai già mandato un messaggio di presentazione e gli hai chiesto se studia triennale o magistrale. NON ripresentarti.
+${studentContext}
+${assocContext}
 
 FLUSSO:
-1. Lo studente ha risposto se studia triennale o magistrale. In base alla risposta:
-   - Triennale: chiedigli di caricare il transcript PDF da yoU@B ("Perfetto! Caricheresti il tuo libretto? Puoi scaricarlo come PDF da yoU@B — così vedo subito il tuo percorso.")
-   - Magistrale: chiedigli il transcript della magistrale e se vuole anche quello della triennale
-2. Se carica il transcript, riceverai un messaggio di sistema con i dati estratti. Commentali in modo naturale — cosa noti, cosa ti incuriosisce. NON fare un elenco. Conferma il corso e l'anno con lo studente.
-3. Poi fai domande personali (una alla volta): cosa lo appassiona, che esperienze ha, cosa cerca nel futuro, che tipo è quando lavora.
-4. Se non carica il transcript, chiedigli cosa studia e prosegui normalmente.
+1. Se non ha ancora caricato il transcript, chiedigli di farlo (PDF da yoU@B)
+2. Se ha caricato il transcript, commenta i dati in modo naturale — cosa noti, cosa ti colpisce. NON elencare i corsi.
+3. Poi fai domande personali (una alla volta): cosa lo appassiona, che esperienze ha, cosa cerca, che tipo è.
+4. Se menziona associazioni, collegati a quelle disponibili su MIRA.
 
 COME PARLARE:
-- Come un amico intelligente, diretto, genuino. Non un chatbot.
-- Usa il tu. Niente formalità.
-- Reagisci davvero — commenti, osservazioni, collegamenti.
+- Come un amico intelligente che conosce Bocconi. Diretto, genuino.
 - UNA domanda alla volta. Mai elenchi.
-- Segui il filo della conversazione.
+- Reagisci davvero — commenti concreti basati sui suoi dati reali.
+- Lo studente È GIÀ A BOCCONI. Non chiedergli se vuole entrare a Bocconi.
 
 NON FARE:
-- Non ripresentarti (l'hai già fatto)
-- Non chiedere "come stai" — sei già nel mezzo della conversazione
-- Non fare liste di domande
-- Non usare "Grazie per aver condiviso!"
-- Non ripetere le risposte dello studente
-- Non elencare i corsi del libretto — commenta
+- Non ripresentarti
+- Non chiedere "come stai"
+- Non dire "Grazie per aver condiviso!"
+- Non elencare corsi del libretto
+- Non suggerire di "preparare la candidatura per Bocconi" — ci è già dentro
+- Non essere un generico career coach — sei MIRA, sai le cose concrete
 
 CHIUDERE:
-Dopo circa 6-8 scambi, chiedi se vuole aggiungere altro. Poi fai un breve riassunto personale di chi è e concludi con ESATTAMENTE: "Il tuo profilo MIRA è pronto."
-Questa frase è OBBLIGATORIA per completare l'onboarding.`;
+Dopo circa 6-8 scambi, chiedi se vuole aggiungere altro. Poi fai un breve riassunto personale e concludi con ESATTAMENTE: "Il tuo profilo MIRA è pronto."`;
+}
 
 const MAX_EXCHANGES = 16;
 
@@ -62,8 +117,8 @@ export async function sendTranscriptMessage(
   conversationHistory: ChatMessage[],
   transcriptSummary: string
 ) {
-  const ctx = await getUserContext();
-  const supabase = await createServiceClient();
+  const { supabase, profileId, student, associations, openCycles } = await getStudentContext();
+  const systemPrompt = buildSystemPrompt(student, associations, openCycles);
 
   const updatedHistory = [
     ...conversationHistory,
@@ -71,14 +126,14 @@ export async function sendTranscriptMessage(
   ];
 
   const messages = [
-    { role: "system" as const, content: SYSTEM_PROMPT },
+    { role: "system" as const, content: systemPrompt },
     ...updatedHistory.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     })),
     {
       role: "system" as const,
-      content: `DATI ESTRATTI DAL LIBRETTO DELLO STUDENTE:\n${transcriptSummary}\n\nCommenta quello che vedi in modo naturale — cosa noti, cosa ti incuriosisce. Poi fai una domanda per approfondire.`,
+      content: `DATI APPENA ESTRATTI DAL LIBRETTO:\n${transcriptSummary}\n\nCommenta in modo naturale — cosa noti, cosa ti colpisce. Poi fai una domanda per approfondire i suoi interessi.`,
     },
   ];
 
@@ -100,7 +155,7 @@ export async function sendTranscriptMessage(
         last_updated: new Date().toISOString(),
       },
     })
-    .eq("user_id", ctx.profile.id);
+    .eq("user_id", profileId);
 
   return { message: assistantMessage };
 }
@@ -109,8 +164,8 @@ export async function sendOnboardingMessage(
   conversationHistory: ChatMessage[],
   userMessage: string
 ) {
-  const ctx = await getUserContext();
-  const supabase = await createServiceClient();
+  const { supabase, profileId, student, associations, openCycles } = await getStudentContext();
+  const systemPrompt = buildSystemPrompt(student, associations, openCycles);
 
   const updatedHistory = [
     ...conversationHistory,
@@ -121,7 +176,7 @@ export async function sendOnboardingMessage(
   const shouldWrapUp = userMessageCount >= MAX_EXCHANGES / 2;
 
   const messages = [
-    { role: "system" as const, content: SYSTEM_PROMPT },
+    { role: "system" as const, content: systemPrompt },
     ...updatedHistory.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
@@ -145,7 +200,6 @@ export async function sendOnboardingMessage(
     { role: "assistant" as const, content: assistantMessage },
   ];
 
-  // Salva conversazione nel database (persiste tra refresh)
   await supabase
     .from("student_profiles")
     .update({
@@ -154,12 +208,12 @@ export async function sendOnboardingMessage(
         last_updated: new Date().toISOString(),
       },
     })
-    .eq("user_id", ctx.profile.id);
+    .eq("user_id", profileId);
 
   const isComplete = assistantMessage.includes("Il tuo profilo MIRA è pronto");
 
   if (isComplete) {
-    await extractAndSaveProfile(ctx.profile.id, fullHistory);
+    await extractAndSaveProfile(profileId, fullHistory);
   }
 
   return { message: assistantMessage, isComplete };
@@ -172,7 +226,7 @@ export async function loadConversation(): Promise<ChatMessage[]> {
   const { data } = await supabase
     .from("student_profiles")
     .select("onboarding_answers")
-    .eq("user_id", ctx.profile.id)
+    .eq("user_id", (ctx.profile as any).id)
     .single();
 
   const answers = data?.onboarding_answers as Record<string, unknown> | null;
@@ -182,18 +236,19 @@ export async function loadConversation(): Promise<ChatMessage[]> {
 export async function forceCompleteOnboarding() {
   const ctx = await getUserContext();
   const supabase = await createServiceClient();
+  const profileId = (ctx.profile as any).id as string;
 
   const { data } = await supabase
     .from("student_profiles")
     .select("onboarding_answers")
-    .eq("user_id", ctx.profile.id)
+    .eq("user_id", profileId)
     .single();
 
   const answers = data?.onboarding_answers as Record<string, unknown> | null;
   const conversation = (answers?.conversation as ChatMessage[]) ?? [];
 
   if (conversation.length >= 4) {
-    await extractAndSaveProfile(ctx.profile.id, conversation);
+    await extractAndSaveProfile(profileId, conversation);
     return { success: true };
   }
 
@@ -237,7 +292,7 @@ Se un campo non è emerso dalla conversazione, lascialo vuoto. Non inventare.`,
     })
     .eq("user_id", profileId);
 
-  await supabase.from("ai_logs").insert({
+  await (supabase.from("ai_logs") as any).insert({
     module: "student_onboarding",
     provider: "openai",
     model: "gpt-4o-mini",
