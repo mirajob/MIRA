@@ -1,27 +1,49 @@
-import OpenAI from "openai";
-
-let _client: OpenAI | null = null;
-
-export function getAIClient(): OpenAI {
-  if (!_client) {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error("OPENAI_API_KEY is not set");
-    }
-    _client = new OpenAI({ apiKey });
-  }
-  return _client;
-}
-
 export const AI_CONFIG = {
   defaultModel: "gpt-4o-mini" as const,
-  models: {
-    fast: "gpt-4o-mini" as const,
-    smart: "gpt-4o" as const,
-  },
-  maxTokens: {
-    chat: 1024,
-    matching: 2048,
-    scraping: 2048,
-  },
+  apiUrl: "https://api.openai.com/v1/chat/completions",
 };
+
+interface ChatMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+interface ChatOptions {
+  model?: string;
+  maxTokens?: number;
+  temperature?: number;
+  jsonMode?: boolean;
+}
+
+export async function chatCompletion(
+  messages: ChatMessage[],
+  options: ChatOptions = {}
+): Promise<string> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
+
+  const body = {
+    model: options.model ?? AI_CONFIG.defaultModel,
+    messages,
+    max_tokens: options.maxTokens ?? 1024,
+    temperature: options.temperature ?? 0.7,
+    ...(options.jsonMode ? { response_format: { type: "json_object" } } : {}),
+  };
+
+  const response = await fetch(AI_CONFIG.apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`OpenAI API error ${response.status}: ${error}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content ?? "";
+}

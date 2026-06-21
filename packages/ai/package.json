@@ -6,15 +6,9 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./provider": "./src/provider.ts",
-    "./modules/association-page-generator": "./src/modules/association-page-generator.ts",
-    "./modules/candidate-matcher": "./src/modules/candidate-matcher.ts"
-  },
-  "dependencies": {
-    "openai": "^4.80.0"
+    "./provider": "./src/provider.ts"
   },
   "devDependencies": {
-    "@mira/types": "workspace:*",
     "typescript": "^5.7.0"
   }
 }

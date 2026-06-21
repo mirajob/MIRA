@@ -1,6 +1,6 @@
 "use server";
 
-import { getAIClient, AI_CONFIG } from "@mira/ai";
+import { chatCompletion } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -10,63 +10,98 @@ interface ChatMessage {
   content: string;
 }
 
-const SYSTEM_PROMPT = `Sei MIRA, l'assistente AI della piattaforma universitaria MIRA. Stai facendo l'onboarding di uno studente Bocconi.
+const SYSTEM_PROMPT = `Tu sei MIRA.
 
-Il tuo obiettivo è conoscere lo studente attraverso una conversazione naturale e guidata. NON fare domande multiple alla volta — fai UNA domanda per volta e aspetta la risposta.
+MIRA è una piattaforma AI-first per il talento universitario. Non è un job board, non è un database di CV. MIRA osserva, capisce e struttura chi sono davvero gli studenti — attraverso evidenze reali, non auto-dichiarazioni.
 
-Devi raccogliere queste informazioni (in ordine flessibile):
-1. Corso di laurea e anno
-2. Interessi accademici e professionali
-3. Esperienze passate (stage, lavoro, progetti)
-4. Perché vuole unirsi a un'associazione
-5. Settori di interesse (finance, consulting, tech, etc.)
-6. Stile di lavoro preferito
-7. Disponibilità settimanale
-8. Lingue parlate
-9. Competenze specifiche
-10. Obiettivi a lungo termine
+Gli studenti entrano su MIRA per candidarsi alle associazioni universitarie di Bocconi. Ogni cosa che raccontano a te diventa parte del loro profilo MIRA — un profilo basato su chi sono davvero, non su cosa scrivono in un CV.
 
-Regole:
-- Sii amichevole ma professionale, come un mentor
-- Usa il tu, in italiano
-- Fai domande aperte che invitano a raccontare
-- Quando hai abbastanza info su un argomento, passa al prossimo
-- NON chiedere tutto subito — una cosa alla volta
-- Quando hai raccolto tutte le info essenziali (almeno 1-7), chiedi se vuole aggiungere altro, poi concludi dicendo "Ho tutto quello che mi serve! Il tuo profilo MIRA è pronto."
-- La frase finale DEVE contenere esattamente: "Il tuo profilo MIRA è pronto."`;
+In questo momento stai parlando con uno studente Bocconi che si è appena registrato. È la prima volta che parla con te. Il tuo lavoro è conoscerlo — capire chi è, cosa gli interessa, cosa ha fatto, dove vuole andare.
+
+COME DEVI PARLARE:
+- Parla come un amico intelligente che è già passato da Bocconi. Non come un chatbot aziendale.
+- Usa il tu, sii diretto, genuino. Niente formalità inutili.
+- Reagisci davvero a quello che dice — fai commenti, osservazioni, collegamenti.
+- UNA domanda alla volta. Mai elenchi di domande.
+- Segui il filo della conversazione. Se menziona qualcosa di interessante, approfondisci.
+- Non sembrare mai un questionario.
+
+COSA DEVI CAPIRE (non in quest'ordine — segui la conversazione):
+- Cosa studia e a che punto è
+- Cosa lo appassiona davvero
+- Che esperienze ha fatto
+- Cosa cerca nel futuro
+- Che tipo di persona è quando lavora
+- Quanto tempo ha e cosa cerca adesso
+
+COSA NON DEVI FARE:
+- Non fare la lista della spesa di domande
+- Non usare frasi come "Grazie per aver condiviso!" — suonano false
+- Non ripetere le risposte dello studente
+- Non essere generico
+
+IMPORTANTE — QUANDO CHIUDERE:
+Dopo circa 6-8 scambi con lo studente, DEVI iniziare a chiudere. Non continuare a fare domande all'infinito.
+Chiedigli se c'è qualcos'altro che vuole aggiungere. Poi fai un breve riassunto personale di chi è e concludi con ESATTAMENTE queste parole: "Il tuo profilo MIRA è pronto."
+Questa frase è OBBLIGATORIA per completare l'onboarding. Senza di essa il profilo non viene salvato.`;
+
+const MAX_EXCHANGES = 16;
 
 export async function sendOnboardingMessage(
   conversationHistory: ChatMessage[],
   userMessage: string
 ) {
   const ctx = await getUserContext();
-  const client = getAIClient();
+  const supabase = await createServiceClient();
 
-  const messages = [
-    { role: "system" as const, content: SYSTEM_PROMPT },
-    ...conversationHistory.map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    })),
+  const updatedHistory = [
+    ...conversationHistory,
     { role: "user" as const, content: userMessage },
   ];
 
-  const response = await client.chat.completions.create({
-    model: AI_CONFIG.defaultModel,
-    messages,
-    max_tokens: AI_CONFIG.maxTokens.chat,
+  const userMessageCount = updatedHistory.filter(m => m.role === "user").length;
+  const shouldWrapUp = userMessageCount >= MAX_EXCHANGES / 2;
+
+  const messages = [
+    { role: "system" as const, content: SYSTEM_PROMPT },
+    ...updatedHistory.map((m) => ({
+      role: m.role as "user" | "assistant",
+      content: m.content,
+    })),
+  ];
+
+  if (shouldWrapUp) {
+    messages.push({
+      role: "system" as const,
+      content: "ATTENZIONE: Hai già fatto abbastanza domande. È ora di chiudere. Fai un breve riassunto dello studente e concludi con: \"Il tuo profilo MIRA è pronto.\"",
+    });
+  }
+
+  const assistantMessage = await chatCompletion(messages, {
     temperature: 0.7,
+    maxTokens: 512,
   });
 
-  const assistantMessage = response.choices[0]?.message?.content ?? "";
+  const fullHistory = [
+    ...updatedHistory,
+    { role: "assistant" as const, content: assistantMessage },
+  ];
+
+  // Salva conversazione nel database (persiste tra refresh)
+  await supabase
+    .from("student_profiles")
+    .update({
+      onboarding_answers: {
+        conversation: fullHistory,
+        last_updated: new Date().toISOString(),
+      },
+    })
+    .eq("user_id", ctx.profile.id);
+
   const isComplete = assistantMessage.includes("Il tuo profilo MIRA è pronto");
 
   if (isComplete) {
-    await extractAndSaveProfile(ctx.profile.id, [
-      ...conversationHistory,
-      { role: "user", content: userMessage },
-      { role: "assistant", content: assistantMessage },
-    ]);
+    await extractAndSaveProfile(ctx.profile.id, fullHistory);
   }
 
   return { message: assistantMessage, isComplete };
@@ -74,81 +109,90 @@ export async function sendOnboardingMessage(
 
 export async function startOnboardingChat() {
   const ctx = await getUserContext();
-  const client = getAIClient();
 
-  const response = await client.chat.completions.create({
-    model: AI_CONFIG.defaultModel,
-    messages: [
+  const name = ctx.profile.full_name?.split(" ")[0] ?? "ehi";
+
+  const greeting = await chatCompletion(
+    [
       { role: "system", content: SYSTEM_PROMPT },
       {
         role: "user",
-        content: `Lo studente si chiama ${ctx.profile.full_name ?? "uno studente"} e la sua email è ${ctx.profile.email}. Salutalo e inizia la conversazione chiedendogli del suo percorso accademico.`,
+        content: `Lo studente si chiama ${ctx.profile.full_name ?? "uno studente"} (chiamalo ${name}). È appena entrato su MIRA per la prima volta. Inizia la conversazione — sii naturale, non formale. Una sola domanda per rompere il ghiaccio.`,
       },
     ],
-    max_tokens: AI_CONFIG.maxTokens.chat,
-    temperature: 0.7,
-  });
+    { temperature: 0.8, maxTokens: 200 }
+  );
 
-  return response.choices[0]?.message?.content ?? "Ciao! Raccontami di te.";
+  return greeting || `${name}, benvenuto su MIRA. Raccontami un po' di te — cosa studi?`;
+}
+
+export async function loadConversation(): Promise<ChatMessage[]> {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+
+  const { data } = await supabase
+    .from("student_profiles")
+    .select("onboarding_answers")
+    .eq("user_id", ctx.profile.id)
+    .single();
+
+  const answers = data?.onboarding_answers as Record<string, unknown> | null;
+  return (answers?.conversation as ChatMessage[]) ?? [];
+}
+
+export async function forceCompleteOnboarding() {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+
+  const { data } = await supabase
+    .from("student_profiles")
+    .select("onboarding_answers")
+    .eq("user_id", ctx.profile.id)
+    .single();
+
+  const answers = data?.onboarding_answers as Record<string, unknown> | null;
+  const conversation = (answers?.conversation as ChatMessage[]) ?? [];
+
+  if (conversation.length >= 4) {
+    await extractAndSaveProfile(ctx.profile.id, conversation);
+    return { success: true };
+  }
+
+  return { error: "Rispondi ad almeno un paio di domande prima di completare." };
 }
 
 async function extractAndSaveProfile(profileId: string, conversation: ChatMessage[]) {
-  const client = getAIClient();
   const supabase = await createServiceClient();
 
   const conversationText = conversation
     .map((m) => `${m.role === "user" ? "Studente" : "MIRA"}: ${m.content}`)
     .join("\n");
 
-  const extractionResponse = await client.chat.completions.create({
-    model: AI_CONFIG.defaultModel,
-    messages: [
+  const extracted = await chatCompletion(
+    [
       {
         role: "system",
-        content: `Estrai le informazioni dello studente dalla conversazione. Rispondi SOLO in JSON:
-{
-  "degree_program": "corso di laurea",
-  "degree_level": "triennale|magistrale|ciclo_unico|phd",
-  "current_year": numero,
-  "interests": ["interesse1", "interesse2"],
-  "goals": ["obiettivo1"],
-  "experiences": ["esperienza1"],
-  "profile_summary": "riassunto in 2-3 frasi di chi è lo studente",
-  "working_style": "stile di lavoro",
-  "availability": "disponibilità",
-  "languages": "lingue",
-  "skills": "competenze",
-  "association_motivation": "perché vuole entrare in associazione"
-}`,
+        content: `Estrai le informazioni dalla conversazione. Rispondi SOLO in JSON:
+{"degree_program":"","degree_level":"triennale|magistrale|ciclo_unico|phd","current_year":0,"interests":[""],"goals":[""],"experiences":[""],"profile_summary":"riassunto personale 2-3 frasi di chi è questa persona","working_style":"","availability":"","languages":"","skills":"","association_motivation":""}
+Se un campo non è emerso dalla conversazione, lascialo vuoto. Non inventare.`,
       },
       { role: "user", content: conversationText },
     ],
-    max_tokens: 1024,
-    temperature: 0.1,
-    response_format: { type: "json_object" },
-  });
+    { temperature: 0.1, maxTokens: 1024, jsonMode: true }
+  );
 
-  const extracted = JSON.parse(extractionResponse.choices[0]?.message?.content ?? "{}");
+  const data = JSON.parse(extracted);
 
   await supabase
     .from("student_profiles")
     .update({
-      degree_program: extracted.degree_program ?? null,
-      degree_level: extracted.degree_level ?? null,
-      current_year: extracted.current_year ?? null,
-      interests: extracted.interests ?? [],
-      goals: extracted.goals ?? [],
-      experiences: extracted.experiences ?? [],
-      profile_summary: extracted.profile_summary ?? null,
-      working_style: extracted.working_style ? { description: extracted.working_style } : null,
-      availability: extracted.availability ? { description: extracted.availability } : null,
-      onboarding_answers: {
-        languages: extracted.languages ?? "",
-        skills: extracted.skills ?? "",
-        association_motivation: extracted.association_motivation ?? "",
-        working_style: extracted.working_style ?? "",
-        availability: extracted.availability ?? "",
-      },
+      degree_program: data.degree_program || null,
+      degree_level: data.degree_level || null,
+      current_year: data.current_year || null,
+      interests: data.interests?.filter(Boolean) ?? [],
+      goals: data.goals?.filter(Boolean) ?? [],
+      experiences: data.experiences?.filter(Boolean) ?? [],
+      profile_summary: data.profile_summary || null,
       onboarding_completed: true,
       onboarding_completed_at: new Date().toISOString(),
     })
@@ -161,10 +205,8 @@ async function extractAndSaveProfile(profileId: string, conversation: ChatMessag
     entity_type: "student_profile",
     user_id: profileId,
     input_metadata: { message_count: conversation.length },
-    output_summary: { extracted_fields: Object.keys(extracted) },
     status: "success",
   });
 
   revalidatePath("/student");
-  revalidatePath("/student/onboarding");
 }

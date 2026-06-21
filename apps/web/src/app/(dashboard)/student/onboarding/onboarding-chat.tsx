@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { startOnboardingChat, sendOnboardingMessage } from "@/lib/actions/chat-onboarding";
+import {
+  startOnboardingChat,
+  sendOnboardingMessage,
+  loadConversation,
+  forceCompleteOnboarding,
+} from "@/lib/actions/chat-onboarding";
 import { useRouter } from "next/navigation";
 
 interface Message {
@@ -20,9 +25,16 @@ export function OnboardingChat({ userName }: { userName: string }) {
 
   useEffect(() => {
     async function init() {
-      const greeting = await startOnboardingChat();
-      setMessages([{ role: "assistant", content: greeting }]);
-      setLoading(false);
+      // Carica conversazione salvata
+      const saved = await loadConversation();
+      if (saved.length > 0) {
+        setMessages(saved);
+        setLoading(false);
+      } else {
+        const greeting = await startOnboardingChat();
+        setMessages([{ role: "assistant", content: greeting }]);
+        setLoading(false);
+      }
     }
     init();
   }, []);
@@ -58,15 +70,40 @@ export function OnboardingChat({ userName }: { userName: string }) {
     }
   }
 
+  async function handleForceComplete() {
+    setLoading(true);
+    const result = await forceCompleteOnboarding();
+    if (result.success) {
+      setComplete(true);
+      setTimeout(() => {
+        router.push("/student");
+        router.refresh();
+      }, 2000);
+    } else {
+      setLoading(false);
+    }
+  }
+
+  const userMessageCount = messages.filter((m) => m.role === "user").length;
+
   return (
     <div className="flex flex-col h-[calc(100vh-200px)]">
-      {/* Header */}
-      <div className="mb-4">
-        <p className="text-eyebrow text-navy/60 uppercase mb-1">Onboarding</p>
-        <h1 className="font-display text-h1 text-navy">Parliamo di te</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <p className="text-eyebrow text-navy/60 uppercase mb-1">Onboarding</p>
+          <h1 className="font-display text-h1 text-navy">Parliamo di te</h1>
+        </div>
+        {userMessageCount >= 3 && !complete && (
+          <button
+            onClick={handleForceComplete}
+            disabled={loading}
+            className="text-body-sm text-ink-secondary hover:text-navy border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors duration-100 disabled:opacity-40"
+          >
+            Completa profilo
+          </button>
+        )}
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-4 pb-4">
         {messages.map((msg, i) => (
           <div
@@ -104,7 +141,6 @@ export function OnboardingChat({ userName }: { userName: string }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       {!complete ? (
         <div className="border-t border-border pt-4">
           <div className="flex gap-3">
@@ -131,7 +167,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
         <div className="border-t border-border pt-4">
           <div className="rounded-md bg-success-bg p-4 text-center">
             <p className="text-body font-medium text-success">
-              Profilo completato! Reindirizzamento alla dashboard...
+              Profilo completato! Reindirizzamento...
             </p>
           </div>
         </div>

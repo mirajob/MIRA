@@ -1,4 +1,4 @@
-import { getAIClient, AI_CONFIG } from "../provider";
+import { chatCompletion } from "../provider";
 
 interface GeneratedPage {
   short_description: string;
@@ -15,36 +15,31 @@ export async function generateAssociationPage(input: {
   websiteText?: string;
   manualNotes?: string;
 }): Promise<GeneratedPage> {
-  const client = getAIClient();
+  const content = await chatCompletion(
+    [
+      {
+        role: "user",
+        content: `Genera una pagina pubblica per l'associazione "${input.associationName}".
 
-  const prompt = `Sei MIRA, una piattaforma universitaria. Genera una pagina pubblica per l'associazione "${input.associationName}".
+${input.websiteText ? `Testo dal sito:\n${input.websiteText.slice(0, 6000)}` : ""}
+${input.manualNotes ? `Note:\n${input.manualNotes}` : ""}
 
-${input.websiteText ? `Testo estratto dal sito web:\n${input.websiteText.slice(0, 6000)}` : ""}
-${input.manualNotes ? `Note aggiuntive:\n${input.manualNotes}` : ""}
-
-Rispondi SOLO in JSON valido con questa struttura:
+Rispondi SOLO in JSON:
 {
-  "short_description": "descrizione breve (max 200 caratteri)",
-  "long_description": "descrizione completa dell'associazione",
-  "suggested_category": "una tra: finance, consulting, entrepreneurship, tech, marketing, social_impact, politics, culture, sports, other",
-  "suggested_sectors": ["settore1", "settore2"],
-  "suggested_team_structure": [{"team_name": "nome", "description": "descrizione"}],
-  "detected_links": [{"label": "etichetta", "url": "url"}],
+  "short_description": "max 200 caratteri",
+  "long_description": "descrizione completa",
+  "suggested_category": "finance|consulting|entrepreneurship|tech|marketing|social_impact|politics|culture|sports|other",
+  "suggested_sectors": ["settore1"],
+  "suggested_team_structure": [{"team_name": "nome", "description": "desc"}],
+  "detected_links": [{"label": "label", "url": "url"}],
   "uncertainties": ["cosa non sei sicuro"]
 }
 
-Non inventare informazioni non presenti nel testo. Segna le incertezze.`;
-
-  const response = await client.chat.completions.create({
-    model: AI_CONFIG.defaultModel,
-    messages: [{ role: "user", content: prompt }],
-    max_tokens: AI_CONFIG.maxTokens.scraping,
-    temperature: 0.3,
-    response_format: { type: "json_object" },
-  });
-
-  const content = response.choices[0]?.message?.content;
-  if (!content) throw new Error("Empty AI response");
+Non inventare. Segna le incertezze.`,
+      },
+    ],
+    { temperature: 0.3, maxTokens: 2048, jsonMode: true }
+  );
 
   return JSON.parse(content) as GeneratedPage;
 }
@@ -58,8 +53,7 @@ export async function scrapeWebsiteText(url: string): Promise<string> {
   if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`);
 
   const html = await response.text();
-
-  const text = html
+  return html
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
     .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "")
@@ -67,10 +61,7 @@ export async function scrapeWebsiteText(url: string): Promise<string> {
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
     .replace(/\s+/g, " ")
-    .trim();
-
-  return text.slice(0, 8000);
+    .trim()
+    .slice(0, 8000);
 }
