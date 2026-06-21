@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@mira/supabase/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const origin = request.nextUrl.origin;
   const supabase = await createServerClient();
 
   const {
@@ -9,7 +10,7 @@ export async function GET() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.redirect(new URL("/login", process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"));
+    return NextResponse.redirect(new URL("/login", origin));
   }
 
   const { data: profile } = await supabase
@@ -19,7 +20,7 @@ export async function GET() {
     .single();
 
   if (!profile) {
-    return NextResponse.redirect(new URL("/login", process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"));
+    return NextResponse.redirect(new URL("/login", origin));
   }
 
   const profileId = (profile as Record<string, unknown>).id as string;
@@ -31,16 +32,13 @@ export async function GET() {
 
   const roleList = (roles ?? []).map((r) => (r as Record<string, unknown>).role as string);
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-
   if (roleList.includes("mira_admin")) {
-    return NextResponse.redirect(new URL("/admin", base));
+    return NextResponse.redirect(new URL("/admin", origin));
   }
 
   if (roleList.includes("student")) {
-    return NextResponse.redirect(new URL("/student", base));
+    return NextResponse.redirect(new URL("/student", origin));
   }
 
-  // Fallback: no role assigned yet
-  return NextResponse.redirect(new URL("/student", base));
+  return NextResponse.redirect(new URL("/student", origin));
 }
