@@ -159,11 +159,11 @@ export function OnboardingChat({ userName }: { userName: string }) {
   const isWorking = loading || uploading;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-200px)]">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="flex flex-col h-full">
+      <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
         <div>
-          <p className="text-eyebrow text-navy/60 uppercase mb-1">Onboarding</p>
-          <h1 className="font-display text-h1 text-navy">Parliamo di te</h1>
+          <p className="text-eyebrow text-navy/60 uppercase mb-0.5">Onboarding</p>
+          <h1 className="font-display text-h2 text-navy">Parliamo di te</h1>
         </div>
         {userMessageCount >= 3 && !complete && (
           <button
@@ -176,7 +176,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-4 pb-4">
+      <div className="flex-1 overflow-y-auto space-y-4 px-6 py-4">
         {messages.map((msg, i) => {
           if (msg.role === "system") {
             return (
@@ -243,7 +243,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
       </div>
 
       {!complete ? (
-        <div className="border-t border-border pt-4">
+        <div className="border-t border-border px-6 py-3 shrink-0">
           <div className="flex gap-3">
             {!transcriptUploaded && (
               <>
@@ -288,7 +288,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
           </div>
         </div>
       ) : (
-        <div className="border-t border-border pt-4">
+        <div className="border-t border-border px-6 py-3 shrink-0">
           <div className="rounded-md bg-success-bg p-4 text-center">
             <p className="text-body font-medium text-success">
               Profilo completato! Reindirizzamento...

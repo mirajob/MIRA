@@ -19,7 +19,7 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <div className="mx-auto max-w-reading">
+    <div className="-mx-8 -my-8 h-[calc(100vh-1px)]">
       <OnboardingChat userName={ctx.profile.full_name ?? "Studente"} />
     </div>
   );
