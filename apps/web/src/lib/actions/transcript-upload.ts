@@ -1,6 +1,6 @@
 "use server";
 
-import { parseTranscriptImage, parseTranscriptPdf, formatTranscriptForChat, type ParsedCourse } from "@mira/ai";
+import { parseTranscriptFile, formatTranscriptForChat, type ParsedCourse } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 
@@ -71,17 +71,8 @@ export async function uploadTranscript(formData: FormData) {
     .single() as { data: AnyRow | null };
 
   try {
-    let parsed;
-    if (file.type === "application/pdf") {
-      try {
-        parsed = await parseTranscriptPdf(buffer);
-      } catch (pdfErr) {
-        console.error("PDF parse failed, trying as image:", pdfErr);
-        return { error: "Non riesco a leggere il PDF. Prova a fare uno screenshot del libretto da yoU@B e caricalo come immagine (PNG/JPG)." };
-      }
-    } else {
-      parsed = await parseTranscriptImage(buffer.toString("base64"), file.type);
-    }
+    const base64 = buffer.toString("base64");
+    const parsed = await parseTranscriptFile(base64, file.type);
 
     await (supabase.from("student_transcripts") as any)
       .update({

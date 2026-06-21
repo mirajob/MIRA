@@ -23,7 +23,7 @@ export interface ParsedTranscript {
 
 const EXTRACTION_PROMPT = `Sei un parser di libretti universitari italiani, specializzato in Bocconi.
 
-Analizza il contenuto del libretto e estrai TUTTI i corsi.
+Analizza il documento del libretto e estrai TUTTI i corsi.
 
 Per ogni corso determina:
 - course_name: nome esatto del corso
@@ -44,39 +44,25 @@ Calcola:
 Rispondi SOLO in JSON valido con questa struttura:
 {"degree_program":"","degree_level":"triennale|magistrale|ciclo_unico|phd","courses":[...],"weighted_average":null,"total_credits":0,"graded_credits":0,"pass_fail_credits":0}`;
 
-export async function parseTranscriptImage(base64Image: string, mimeType: string): Promise<ParsedTranscript> {
-  const dataUrl = `data:${mimeType};base64,${base64Image}`;
+export async function parseTranscriptFile(base64Data: string, mimeType: string): Promise<ParsedTranscript> {
+  const dataUrl = `data:${mimeType};base64,${base64Data}`;
+
+  const isImage = mimeType.startsWith("image/");
+
+  const content = isImage
+    ? [
+        { type: "text" as const, text: "Estrai tutti i dati da questo libretto universitario." },
+        { type: "image_url" as const, image_url: { url: dataUrl, detail: "high" as const } },
+      ]
+    : [
+        { type: "text" as const, text: "Estrai tutti i dati da questo libretto universitario." },
+        { type: "file" as const, file: { filename: "libretto.pdf", file_data: dataUrl } },
+      ];
 
   const result = await chatCompletion(
     [
       { role: "system", content: EXTRACTION_PROMPT },
-      {
-        role: "user",
-        content: [
-          { type: "text", text: "Estrai tutti i dati da questo libretto universitario." },
-          { type: "image_url", image_url: { url: dataUrl, detail: "high" } },
-        ],
-      },
-    ],
-    { temperature: 0.1, maxTokens: 4096, jsonMode: true, model: "gpt-4o" }
-  );
-
-  return JSON.parse(result) as ParsedTranscript;
-}
-
-export async function parseTranscriptPdf(pdfBuffer: Buffer): Promise<ParsedTranscript> {
-  const pdfParse = (await import("pdf-parse")).default;
-  const pdf = await pdfParse(pdfBuffer);
-  const text = pdf.text;
-
-  if (!text || text.trim().length < 50) {
-    throw new Error("Il PDF non contiene testo leggibile. Prova a caricare uno screenshot.");
-  }
-
-  const result = await chatCompletion(
-    [
-      { role: "system", content: EXTRACTION_PROMPT },
-      { role: "user", content: `Ecco il testo estratto dal libretto:\n\n${text.slice(0, 15000)}` },
+      { role: "user", content },
     ],
     { temperature: 0.1, maxTokens: 4096, jsonMode: true, model: "gpt-4o" }
   );

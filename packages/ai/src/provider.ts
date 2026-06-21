@@ -6,7 +6,8 @@ export const AI_CONFIG = {
 
 type ContentPart =
   | { type: "text"; text: string }
-  | { type: "image_url"; image_url: { url: string; detail?: "low" | "high" | "auto" } };
+  | { type: "image_url"; image_url: { url: string; detail?: "low" | "high" | "auto" } }
+  | { type: "file"; file: { filename: string; file_data: string } };
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -27,12 +28,12 @@ export async function chatCompletion(
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
 
-  const hasVision = messages.some(
-    (m) => Array.isArray(m.content) && m.content.some((p) => p.type === "image_url")
+  const hasMedia = messages.some(
+    (m) => Array.isArray(m.content) && m.content.some((p) => p.type === "image_url" || p.type === "file")
   );
 
   const body = {
-    model: options.model ?? (hasVision ? AI_CONFIG.visionModel : AI_CONFIG.defaultModel),
+    model: options.model ?? (hasMedia ? AI_CONFIG.visionModel : AI_CONFIG.defaultModel),
     messages,
     max_tokens: options.maxTokens ?? 1024,
     temperature: options.temperature ?? 0.7,
