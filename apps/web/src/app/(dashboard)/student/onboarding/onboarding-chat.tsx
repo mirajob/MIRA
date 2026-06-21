@@ -250,7 +250,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/png,image/jpeg,image/webp"
+                  accept="application/pdf,image/png,image/jpeg,image/webp"
                   onChange={handleFileUpload}
                   className="hidden"
                 />

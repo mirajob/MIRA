@@ -42,7 +42,7 @@ export default function SignupPage() {
       return;
     }
 
-    router.push("/verify-email");
+    router.push("/api/auth/redirect");
   }
 
   return (
@@ -68,7 +68,7 @@ export default function SignupPage() {
         </label>
 
         <label className="block">
-          <span className="text-label text-navy mb-2 block">Email universitaria</span>
+          <span className="text-label text-navy mb-2 block">Email</span>
           <input
             type="email"
             required
@@ -77,9 +77,6 @@ export default function SignupPage() {
             className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
             placeholder="nome@studbocconi.it"
           />
-          <p className="mt-1 text-eyebrow text-ink-tertiary uppercase">
-            Disponibile per studenti Bocconi (@studbocconi.it)
-          </p>
         </label>
 
         <label className="block">

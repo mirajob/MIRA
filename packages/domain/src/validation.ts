@@ -1,4 +1,4 @@
-export const ALLOWED_STUDENT_DOMAINS = ["studbocconi.it"] as const;
+export const ALLOWED_STUDENT_DOMAINS = ["studbocconi.it", "gmail.com"] as const;
 
 export function validateStudentEmail(email: string): {
   valid: boolean;

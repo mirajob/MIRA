@@ -1,11 +1,11 @@
 "use server";
 
-import { parseTranscriptImage, formatTranscriptForChat, type ParsedCourse } from "@mira/ai";
+import { parseTranscriptImage, parseTranscriptPdf, formatTranscriptForChat, type ParsedCourse } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"];
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type AnyRow = Record<string, any>;
@@ -18,7 +18,7 @@ export async function uploadTranscript(formData: FormData) {
   const file = formData.get("file") as File | null;
   if (!file) return { error: "Nessun file selezionato." };
   if (!ALLOWED_TYPES.includes(file.type)) {
-    return { error: "Formato non supportato. Usa PNG, JPG o WebP (screenshot del libretto)." };
+    return { error: "Formato non supportato. Carica un PDF o uno screenshot (PNG, JPG, WebP)." };
   }
   if (file.size > MAX_FILE_SIZE) {
     return { error: "File troppo grande (max 10MB)." };
@@ -68,10 +68,12 @@ export async function uploadTranscript(formData: FormData) {
     .single() as { data: AnyRow | null };
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const base64 = buffer.toString("base64");
 
   try {
-    const parsed = await parseTranscriptImage(base64, file.type);
+    const isPdf = file.type === "application/pdf";
+    const parsed = isPdf
+      ? await parseTranscriptPdf(buffer)
+      : await parseTranscriptImage(buffer.toString("base64"), file.type);
 
     await (supabase.from("student_transcripts") as any)
       .update({
