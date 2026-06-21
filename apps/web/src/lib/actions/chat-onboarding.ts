@@ -44,6 +44,20 @@ Questa frase è OBBLIGATORIA per completare l'onboarding.`;
 
 const MAX_EXCHANGES = 16;
 
+export async function saveConversation(messages: ChatMessage[]) {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+  await supabase
+    .from("student_profiles")
+    .update({
+      onboarding_answers: {
+        conversation: messages,
+        last_updated: new Date().toISOString(),
+      },
+    })
+    .eq("user_id", ctx.profile.id);
+}
+
 export async function sendTranscriptMessage(
   conversationHistory: ChatMessage[],
   transcriptSummary: string

@@ -136,6 +136,8 @@ export async function uploadTranscript(formData: FormData) {
       })
       .eq("id", transcript!.id);
 
-    return { error: "Non sono riuscito a leggere il libretto. Prova con uno screenshot più chiaro." };
+    const errorMsg = err instanceof Error ? err.message : "Errore sconosciuto";
+    console.error("Transcript parse error:", errorMsg);
+    return { error: `Errore parsing libretto: ${errorMsg}` };
   }
 }

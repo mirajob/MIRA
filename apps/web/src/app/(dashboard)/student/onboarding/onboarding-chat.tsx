@@ -5,9 +5,11 @@ import {
   sendOnboardingMessage,
   sendTranscriptMessage,
   loadConversation,
+  saveConversation,
   forceCompleteOnboarding,
 } from "@/lib/actions/chat-onboarding";
 import { uploadTranscript } from "@/lib/actions/transcript-upload";
+import { signOut } from "@/lib/actions/auth";
 import { useRouter } from "next/navigation";
 
 interface Message {
@@ -54,7 +56,9 @@ Prima di tutto: studi **triennale** o **magistrale**?`;
         if (hasTranscript) setTranscriptUploaded(true);
         setLoading(false);
       } else {
-        setMessages([{ role: "assistant", content: MIRA_INTRO }]);
+        const intro = [{ role: "assistant" as const, content: MIRA_INTRO }];
+        setMessages(intro);
+        saveConversation(intro);
         setLoading(false);
       }
     }
@@ -174,17 +178,25 @@ Prima di tutto: studi **triennale** o **magistrale**?`;
 
   return (
     <div className="flex flex-col h-full max-w-3xl mx-auto">
-      <div className="px-6 py-4 flex items-center justify-between shrink-0">
-        <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-6" />
-        {userMessageCount >= 3 && !complete && (
-          <button
-            onClick={handleForceComplete}
-            disabled={isWorking}
-            className="text-body-sm text-ink-secondary hover:text-navy border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors duration-100 disabled:opacity-40"
-          >
-            Completa profilo
-          </button>
-        )}
+      <div className="px-6 py-3 flex items-center justify-between shrink-0 border-b border-border">
+        <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
+        <div className="flex items-center gap-4">
+          {userMessageCount >= 3 && !complete && (
+            <button
+              onClick={handleForceComplete}
+              disabled={isWorking}
+              className="text-body-sm text-ink-secondary hover:text-navy border border-border rounded-md px-3 py-1.5 hover:border-border-strong transition-colors duration-100 disabled:opacity-40"
+            >
+              Completa profilo
+            </button>
+          )}
+          <span className="text-body-sm text-ink-secondary">{userName}</span>
+          <form action={signOut}>
+            <button type="submit" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors duration-100">
+              Esci
+            </button>
+          </form>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-4 px-6 py-4">
