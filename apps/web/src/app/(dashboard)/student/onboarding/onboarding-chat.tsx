@@ -159,12 +159,9 @@ export function OnboardingChat({ userName }: { userName: string }) {
   const isWorking = loading || uploading;
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
-        <div>
-          <p className="text-eyebrow text-navy/60 uppercase mb-0.5">Onboarding</p>
-          <h1 className="font-display text-h2 text-navy">Parliamo di te</h1>
-        </div>
+    <div className="flex flex-col h-full max-w-3xl mx-auto">
+      <div className="px-6 py-4 flex items-center justify-between shrink-0">
+        <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-6" />
         {userMessageCount >= 3 && !complete && (
           <button
             onClick={handleForceComplete}
