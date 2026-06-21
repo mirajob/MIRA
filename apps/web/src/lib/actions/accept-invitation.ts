@@ -1,13 +1,15 @@
 "use server";
 
-import { createServiceClient } from "@mira/supabase/server";
+import { createServerClient, createServiceClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import { ROLE_PERMISSION_TEMPLATES } from "@mira/domain";
 
 export async function acceptInvitation(token: string) {
+  // Use cookie-based client for auth, service client for DB writes
+  const authClient = await createServerClient();
   const supabase = await createServiceClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await authClient.auth.getUser();
   if (!user) {
     redirect(`/login?redirect=/invite/${token}`);
   }
