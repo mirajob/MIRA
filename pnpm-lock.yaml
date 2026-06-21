@@ -66,6 +66,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@mira/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@mira/domain':
         specifier: workspace:*
         version: link:../../packages/domain
@@ -115,6 +118,9 @@ importers:
 
   packages/ai:
     devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.21
       typescript:
         specifier: ^5.7.0
         version: 5.9.3

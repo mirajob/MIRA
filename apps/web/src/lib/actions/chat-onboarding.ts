@@ -26,8 +26,15 @@ COME DEVI PARLARE:
 - Segui il filo della conversazione. Se menziona qualcosa di interessante, approfondisci.
 - Non sembrare mai un questionario.
 
+FLUSSO DELLA CONVERSAZIONE:
+1. Saluta e rompi il ghiaccio con una domanda leggera.
+2. Dopo la prima risposta, chiedigli di caricare il libretto. Digli qualcosa tipo: "Prima di tutto — mi caricheresti il tuo libretto? Puoi fare uno screenshot da yoU@B. Così vedo subito il tuo percorso e parliamo di cose concrete."
+3. Se il libretto viene caricato, ti arriverà un messaggio di sistema con i dati estratti. Commentali in modo naturale: cosa noti, cosa ti incuriosisce, quali esami hanno voti interessanti. NON fare un riassunto freddo — reagisci come farebbe un amico che guarda il tuo libretto.
+4. Poi continua con le domande personali: cosa lo appassiona, esperienze, obiettivi, che tipo di persona è quando lavora.
+5. Se il libretto NON viene caricato, va bene — chiedi direttamente cosa studia e prosegui normalmente.
+
 COSA DEVI CAPIRE (non in quest'ordine — segui la conversazione):
-- Cosa studia e a che punto è
+- Cosa studia e a che punto è (dal libretto o dalla conversazione)
 - Cosa lo appassiona davvero
 - Che esperienze ha fatto
 - Cosa cerca nel futuro
@@ -39,6 +46,7 @@ COSA NON DEVI FARE:
 - Non usare frasi come "Grazie per aver condiviso!" — suonano false
 - Non ripetere le risposte dello studente
 - Non essere generico
+- Non fare un elenco dei corsi del libretto — commenta, non elencare
 
 IMPORTANTE — QUANDO CHIUDERE:
 Dopo circa 6-8 scambi con lo studente, DEVI iniziare a chiudere. Non continuare a fare domande all'infinito.
@@ -46,6 +54,53 @@ Chiedigli se c'è qualcos'altro che vuole aggiungere. Poi fai un breve riassunto
 Questa frase è OBBLIGATORIA per completare l'onboarding. Senza di essa il profilo non viene salvato.`;
 
 const MAX_EXCHANGES = 16;
+
+export async function sendTranscriptMessage(
+  conversationHistory: ChatMessage[],
+  transcriptSummary: string
+) {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+
+  const updatedHistory = [
+    ...conversationHistory,
+    { role: "user" as const, content: "[Ho caricato il mio libretto]" },
+  ];
+
+  const messages = [
+    { role: "system" as const, content: SYSTEM_PROMPT },
+    ...updatedHistory.map((m) => ({
+      role: m.role as "user" | "assistant",
+      content: m.content,
+    })),
+    {
+      role: "system" as const,
+      content: `DATI ESTRATTI DAL LIBRETTO DELLO STUDENTE:\n${transcriptSummary}\n\nCommenta quello che vedi in modo naturale — cosa noti, cosa ti incuriosisce. Poi fai una domanda per approfondire.`,
+    },
+  ];
+
+  const assistantMessage = await chatCompletion(messages, {
+    temperature: 0.7,
+    maxTokens: 512,
+  });
+
+  const fullHistory = [
+    ...updatedHistory,
+    { role: "assistant" as const, content: assistantMessage },
+  ];
+
+  await supabase
+    .from("student_profiles")
+    .update({
+      onboarding_answers: {
+        conversation: fullHistory,
+        last_updated: new Date().toISOString(),
+      },
+    })
+    .eq("user_id", ctx.profile.id);
+
+  return { message: assistantMessage };
+}
 
 export async function sendOnboardingMessage(
   conversationHistory: ChatMessage[],

@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@mira/ai": "workspace:*",
     "@mira/types": "workspace:*",
     "@mira/supabase": "workspace:*",
     "@mira/domain": "workspace:*",

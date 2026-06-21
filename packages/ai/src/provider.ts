@@ -1,11 +1,16 @@
 export const AI_CONFIG = {
   defaultModel: "gpt-4o-mini" as const,
+  visionModel: "gpt-4o" as const,
   apiUrl: "https://api.openai.com/v1/chat/completions",
 };
 
-interface ChatMessage {
+type ContentPart =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string; detail?: "low" | "high" | "auto" } };
+
+export interface ChatMessage {
   role: "system" | "user" | "assistant";
-  content: string;
+  content: string | ContentPart[];
 }
 
 interface ChatOptions {
@@ -22,8 +27,12 @@ export async function chatCompletion(
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
 
+  const hasVision = messages.some(
+    (m) => Array.isArray(m.content) && m.content.some((p) => p.type === "image_url")
+  );
+
   const body = {
-    model: options.model ?? AI_CONFIG.defaultModel,
+    model: options.model ?? (hasVision ? AI_CONFIG.visionModel : AI_CONFIG.defaultModel),
     messages,
     max_tokens: options.maxTokens ?? 1024,
     temperature: options.temperature ?? 0.7,
