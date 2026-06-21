@@ -1,4 +1,4 @@
-import { chatCompletion } from "../provider";
+import { chatCompletion, AI_CONFIG } from "../provider";
 
 export interface ParsedCourse {
   course_name: string;
@@ -52,7 +52,7 @@ export async function parseTranscriptFile(base64Data: string, mimeType: string):
   const isPdf = mimeType === "application/pdf";
 
   if (isPdf) {
-    return parseTranscriptPdfText(base64Data);
+    return parseTranscriptPdf(base64Data);
   }
 
   return parseTranscriptImage(base64Data, mimeType);
@@ -78,27 +78,53 @@ async function parseTranscriptImage(base64Data: string, mimeType: string): Promi
   return JSON.parse(result) as ParsedTranscript;
 }
 
-async function parseTranscriptPdfText(base64Data: string): Promise<ParsedTranscript> {
-  const { extractText } = await import("unpdf");
-  const buffer = Buffer.from(base64Data, "base64");
-  const uint8 = new Uint8Array(buffer);
-  const { text } = await extractText(uint8, { mergePages: true });
+async function parseTranscriptPdf(base64Data: string): Promise<ParsedTranscript> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
 
-  if (!text || (text as string).trim().length < 30) {
-    throw new Error("Il PDF non contiene testo leggibile.");
+  const dataUrl = `data:application/pdf;base64,${base64Data}`;
+
+  const body = {
+    model: "gpt-4o",
+    input: [
+      { role: "system", content: EXTRACTION_PROMPT },
+      {
+        role: "user",
+        content: [
+          { type: "input_text", text: "Estrai tutti i dati da questo libretto universitario. SOLO esami completati con data e voto." },
+          { type: "input_file", filename: "libretto.pdf", file_data: dataUrl },
+        ],
+      },
+    ],
+    text: { format: { type: "json_object" } },
+    temperature: 0.1,
+    max_output_tokens: 4096,
+  };
+
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`OpenAI Responses API error ${response.status}: ${error}`);
   }
 
-  const fullText = (text as string).slice(0, 15000);
+  const data = await response.json();
 
-  const result = await chatCompletion(
-    [
-      { role: "system", content: EXTRACTION_PROMPT },
-      { role: "user", content: `Ecco il testo estratto dal libretto universitario:\n\n${fullText}` },
-    ],
-    { temperature: 0.1, maxTokens: 4096, jsonMode: true, model: "gpt-4o" }
-  );
+  const textOutput = data.output?.find((o: any) => o.type === "message")
+    ?.content?.find((c: any) => c.type === "output_text")?.text;
 
-  return JSON.parse(result) as ParsedTranscript;
+  if (!textOutput) {
+    throw new Error("Nessuna risposta dall'AI per il parsing del transcript.");
+  }
+
+  return JSON.parse(textOutput) as ParsedTranscript;
 }
 
 export function formatTranscriptForChat(transcript: ParsedTranscript): string {
