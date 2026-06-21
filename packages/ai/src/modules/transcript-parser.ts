@@ -82,16 +82,18 @@ async function parseTranscriptPdfText(base64Data: string): Promise<ParsedTranscr
   const { extractText } = await import("unpdf");
   const buffer = Buffer.from(base64Data, "base64");
   const uint8 = new Uint8Array(buffer);
-  const { text } = await extractText(uint8);
+  const { text } = await extractText(uint8, { mergePages: true });
 
-  if (!text || text.trim().length < 30) {
+  if (!text || (text as string).trim().length < 30) {
     throw new Error("Il PDF non contiene testo leggibile.");
   }
+
+  const fullText = (text as string).slice(0, 15000);
 
   const result = await chatCompletion(
     [
       { role: "system", content: EXTRACTION_PROMPT },
-      { role: "user", content: `Ecco il testo estratto dal libretto universitario:\n\n${text.slice(0, 15000)}` },
+      { role: "user", content: `Ecco il testo estratto dal libretto universitario:\n\n${fullText}` },
     ],
     { temperature: 0.1, maxTokens: 4096, jsonMode: true, model: "gpt-4o" }
   );
