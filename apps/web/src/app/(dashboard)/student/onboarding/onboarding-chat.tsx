@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import {
-  startOnboardingChat,
   sendOnboardingMessage,
   sendTranscriptMessage,
   loadConversation,
@@ -28,6 +27,22 @@ export function OnboardingChat({ userName }: { userName: string }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
+  const firstName = userName.split(" ")[0];
+
+  const MIRA_INTRO = `Ciao ${firstName}! Sono MIRA.
+
+Sono una piattaforma AI pensata per accompagnarti durante l'università. Non sono un job board e non ti chiederò di compilare form — tutto quello che fai con me costruisce il tuo profilo in modo naturale.
+
+Ecco cosa posso fare per te:
+• **Orientamento** — ti aiuto a capire quali carriere, magistrali e percorsi fanno per te, basandomi su evidenze reali del tuo percorso
+• **Candidature associazioni** — puoi candidarti alle associazioni universitarie direttamente da qui
+• **Profilo basato su evidenze** — il tuo profilo MIRA si costruisce da quello che fai davvero (esami, progetti, esperienze), non da quello che scrivi in un CV
+• In futuro: **simulazioni** di lavoro reali e **matching con aziende** che cercano persone come te
+
+Sei qui probabilmente per le associazioni — costruiamo il tuo profilo iniziale parlando un po', poi potrai candidarti alle associazioni che ti interessano.
+
+Prima di tutto: studi **triennale** o **magistrale**?`;
+
   useEffect(() => {
     async function init() {
       const saved = await loadConversation();
@@ -39,8 +54,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
         if (hasTranscript) setTranscriptUploaded(true);
         setLoading(false);
       } else {
-        const greeting = await startOnboardingChat();
-        setMessages([{ role: "assistant", content: greeting }]);
+        setMessages([{ role: "assistant", content: MIRA_INTRO }]);
         setLoading(false);
       }
     }

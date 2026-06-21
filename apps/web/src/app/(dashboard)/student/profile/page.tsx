@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default async function StudentProfilePage() {
   const ctx = await getUserContext();
-  if (!ctx.isStudent) redirect("/login");
+  if (!ctx.isStudent) redirect("/api/auth/redirect");
 
   const supabase = await createServerClient();
   const { data: studentProfile } = await supabase

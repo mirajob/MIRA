@@ -15,7 +15,6 @@ const getAssociationNav = (slug: string) => [
   { label: "Candidati", href: `/association/${slug}/candidates` },
   { label: "Colloqui", href: `/association/${slug}/interviews` },
   { label: "Board", href: `/association/${slug}/board` },
-  { label: "Impostazioni", href: `/association/${slug}/settings` },
 ];
 
 export default async function AssociationWorkspaceLayout({ params, children }: Props) {

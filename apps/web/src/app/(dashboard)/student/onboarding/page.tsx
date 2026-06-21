@@ -5,7 +5,7 @@ import { OnboardingChat } from "./onboarding-chat";
 
 export default async function OnboardingPage() {
   const ctx = await getUserContext();
-  if (!ctx.isStudent) redirect("/login");
+  if (!ctx.isStudent) redirect("/api/auth/redirect");
 
   const supabase = await createServerClient();
   const { data: student } = await supabase

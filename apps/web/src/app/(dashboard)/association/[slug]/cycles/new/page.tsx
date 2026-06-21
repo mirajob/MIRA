@@ -20,6 +20,7 @@ export default function NewCyclePage() {
   }
 
   async function handleSubmit(formData: FormData) {
+    if (loading) return;
     setLoading(true);
     setError(null);
     const id = await loadAssociationId();

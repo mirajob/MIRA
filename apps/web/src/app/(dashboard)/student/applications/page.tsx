@@ -17,7 +17,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default async function StudentApplicationsPage() {
   const ctx = await getUserContext();
-  if (!ctx.isStudent) redirect("/login");
+  if (!ctx.isStudent) redirect("/api/auth/redirect");
 
   const supabase = await createServerClient();
 
