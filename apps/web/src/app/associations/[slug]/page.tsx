@@ -1,6 +1,7 @@
 import { createServerClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { PublicHeader } from "@/components/public-header";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -28,19 +29,7 @@ export default async function AssociationPublicPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-paper">
-      <header className="h-20 px-6 lg:px-12 flex items-center justify-between border-b border-border bg-white">
-        <Link href="/">
-          <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-7" />
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link href="/associations" className="text-body text-ink-secondary hover:text-navy transition-colors duration-100">
-            Associazioni
-          </Link>
-          <Link href="/login" className="text-body text-navy hover:text-petrol transition-colors duration-100">
-            Accedi
-          </Link>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main className="mx-auto max-w-reading px-6 py-12">
         {/* Header */}

@@ -51,6 +51,7 @@ export async function createApplicationCycle(associationId: string, formData: Fo
       association_id: associationId,
       title,
       description: description || null,
+      status: "open",
       opens_at: opensAt || null,
       closes_at: closesAt || null,
       available_roles: roles.map(r => ({ name: r })),

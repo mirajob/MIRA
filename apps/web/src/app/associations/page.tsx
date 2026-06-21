@@ -1,5 +1,6 @@
 import { createServerClient } from "@mira/supabase/server";
 import Link from "next/link";
+import { PublicHeader } from "@/components/public-header";
 
 export default async function AssociationsPage() {
   const supabase = await createServerClient();
@@ -12,19 +13,7 @@ export default async function AssociationsPage() {
 
   return (
     <div className="min-h-screen bg-paper">
-      <header className="h-20 px-6 lg:px-12 flex items-center justify-between border-b border-border bg-white">
-        <Link href="/">
-          <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-7" />
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link href="/login" className="text-body text-navy hover:text-petrol transition-colors duration-100">
-            Accedi
-          </Link>
-          <Link href="/signup" className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100">
-            Registrati
-          </Link>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main className="mx-auto max-w-app px-6 lg:px-12 py-12">
         <div className="mb-10">

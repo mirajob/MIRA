@@ -32,13 +32,16 @@ export async function uploadTranscript(formData: FormData) {
 
   if (!studentProfile) return { error: "Profilo studente non trovato." };
 
+  const buffer = Buffer.from(await file.arrayBuffer());
+
   const filePath = `${profileId}/${Date.now()}_${file.name}`;
   const { error: uploadError } = await supabase.storage
     .from("transcripts")
-    .upload(filePath, file, { contentType: file.type, upsert: false });
+    .upload(filePath, buffer, { contentType: file.type, upsert: false });
 
   if (uploadError) {
-    return { error: "Errore nel caricamento del file. Riprova." };
+    console.error("Storage upload error:", uploadError);
+    return { error: `Errore nel caricamento: ${uploadError.message}` };
   }
 
   const { data: uploadedFile } = await (supabase
@@ -66,8 +69,6 @@ export async function uploadTranscript(formData: FormData) {
     })
     .select("id")
     .single() as { data: AnyRow | null };
-
-  const buffer = Buffer.from(await file.arrayBuffer());
 
   try {
     const isPdf = file.type === "application/pdf";
