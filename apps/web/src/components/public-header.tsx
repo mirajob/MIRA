@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createServerClient } from "@mira/supabase/server";
+import { LogoutButton } from "./logout-button";
 
 export async function PublicHeader() {
   const supabase = await createServerClient();
@@ -15,19 +16,22 @@ export async function PublicHeader() {
           Associazioni
         </Link>
         {user ? (
-          <Link
-            href="/api/auth/redirect"
-            className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
-          >
-            Dashboard
-          </Link>
+          <>
+            <Link
+              href="/api/auth/redirect"
+              className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
+            >
+              Dashboard
+            </Link>
+            <LogoutButton />
+          </>
         ) : (
           <>
             <Link href="/login" className="text-body text-navy hover:text-petrol transition-colors duration-100">
               Accedi
             </Link>
             <Link href="/signup" className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100">
-              Registrati
+              Inizia
             </Link>
           </>
         )}
