@@ -15,7 +15,7 @@ interface Question {
 
 const inputClass = "w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200";
 
-export function ApplicationForm({ cycleId, questions, slug }: { cycleId: string; questions: Question[]; slug: string }) {
+export function ApplicationForm({ cycleId, positions, questions, slug }: { cycleId: string; positions?: string[]; questions: Question[]; slug: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -93,6 +93,23 @@ export function ApplicationForm({ cycleId, questions, slug }: { cycleId: string;
     <form action={handleSubmit} className="space-y-6">
       {error && (
         <div className="rounded-md bg-error-bg p-3 text-body-sm text-error">{error}</div>
+      )}
+
+      {positions && positions.length > 0 && (
+        <div className="rounded-lg border border-border bg-white p-6">
+          <label className="block">
+            <span className="text-label text-navy mb-2 block">
+              Per quale posizione ti candidi? <span className="text-error">*</span>
+            </span>
+            <select name="selected_position" required className={inputClass}>
+              <option value="">Seleziona una posizione</option>
+              {positions.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+              <option value="generica">Candidatura generica</option>
+            </select>
+          </label>
+        </div>
       )}
 
       {questions.length === 0 ? (

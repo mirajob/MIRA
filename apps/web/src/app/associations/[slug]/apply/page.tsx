@@ -1,4 +1,4 @@
-import { createServerClient } from "@mira/supabase/server";
+import { createServerClient, createServiceClient } from "@mira/supabase/server";
 import { notFound, redirect } from "next/navigation";
 import { getUser } from "@/lib/auth";
 import { ApplicationForm } from "./application-form";
@@ -81,11 +81,13 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     );
   }
 
-  const { data: questions } = await supabase
-    .from("application_questions")
+  const svc = await createServiceClient();
+  const { data: questions } = await (svc.from("application_questions") as any)
     .select("*")
     .eq("application_cycle_id", cycle.id)
     .order("order_index");
+
+  const positions = ((cycle as any).available_roles ?? []) as Array<{ name: string; description?: string }>;
 
   const { data: existingApp } = await supabase
     .from("applications")
@@ -123,16 +125,34 @@ export default async function ApplyPage({ params, searchParams }: Props) {
         <p className="text-eyebrow text-navy/60 uppercase mb-2">Candidatura</p>
         <h1 className="font-display text-display-md text-navy">{association.name}</h1>
         <p className="mt-1 text-body text-ink-secondary">{cycle.title}</p>
+        {(cycle as any).description && (
+          <p className="mt-3 text-body text-ink whitespace-pre-wrap">{(cycle as any).description}</p>
+        )}
         {cycle.closes_at && (
-          <p className="mt-1 text-body-sm text-ink-tertiary">
+          <p className="mt-2 text-body-sm text-ink-tertiary">
             Scadenza: {new Date(cycle.closes_at).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}
           </p>
+        )}
+
+        {positions.length > 0 && (
+          <div className="mt-6">
+            <h2 className="text-label text-navy mb-3">Posizioni aperte</h2>
+            <div className="space-y-2">
+              {positions.map((p, i) => (
+                <div key={i} className="rounded-md border border-border bg-white px-4 py-3">
+                  <p className="text-body font-medium text-navy">{p.name}</p>
+                  {p.description && <p className="text-body-sm text-ink-secondary mt-1">{p.description}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         <div className="mt-8">
           <ApplicationForm
             cycleId={cycle.id}
-            questions={(questions ?? []).map(q => ({
+            positions={positions.map(p => p.name)}
+            questions={(questions ?? []).map((q: any) => ({
               id: q.id,
               questionText: q.question_text,
               questionType: q.question_type,
