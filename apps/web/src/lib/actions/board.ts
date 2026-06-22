@@ -8,8 +8,10 @@ function generateToken() {
   require("crypto").randomFillSync(array);
   return Array.from(array, (b) => b.toString(16).padStart(2, "0")).join("");
 }
-import { INVITATION_EXPIRY_DAYS, ROLE_PERMISSION_TEMPLATES } from "@mira/domain";
+import { INVITATION_EXPIRY_DAYS, ROLE_PERMISSION_TEMPLATES, ASSOCIATION_PERMISSIONS } from "@mira/domain";
 import type { AssociationPermission } from "@mira/domain";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export async function inviteBoardMember(associationId: string, formData: FormData) {
   const ctx = await getUserContext();
@@ -212,5 +214,133 @@ export async function updateMemberPermissions(
   });
 
   revalidatePath(`/association/${association?.slug}/board`);
+  return { success: true };
+}
+
+export async function generateInviteCode(associationId: string) {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+
+  const { data: membership } = await (supabase.from("association_memberships") as any)
+    .select("role")
+    .eq("association_id", associationId)
+    .eq("user_id", (ctx.profile as any).id)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (!ctx.isMiraAdmin && membership?.role !== "association_president") {
+    return { error: "Solo il presidente può generare codici invito" };
+  }
+
+  const { data: assoc } = await (supabase.from("association_profiles") as any)
+    .select("slug")
+    .eq("id", associationId)
+    .single();
+
+  const slug = assoc?.slug?.toUpperCase().slice(0, 4) ?? "MIRA";
+  const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const code = `${slug}-${rand}`;
+
+  await (supabase.from("association_profiles") as any)
+    .update({ invite_code: code })
+    .eq("id", associationId);
+
+  revalidatePath(`/association/${assoc?.slug}/board`);
+  return { success: true, code };
+}
+
+export async function joinWithCode(code: string, memberType: "board" | "member", roleTitle: string) {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+  const profileId = (ctx.profile as any).id as string;
+
+  const { data: association } = await (supabase.from("association_profiles") as any)
+    .select("id, name, slug")
+    .eq("invite_code", code)
+    .maybeSingle();
+
+  if (!association) return { error: "Codice invito non valido" };
+
+  const { data: existing } = await (supabase.from("association_memberships") as any)
+    .select("id")
+    .eq("association_id", association.id)
+    .eq("user_id", profileId)
+    .maybeSingle();
+
+  if (existing) return { error: "Sei già membro di questa associazione" };
+
+  const status = memberType === "board" ? "pending_approval" : "active";
+
+  await (supabase.from("association_memberships") as any).insert({
+    association_id: association.id,
+    user_id: profileId,
+    role: "association_member",
+    title: roleTitle || null,
+    permissions: {},
+    status,
+    joined_at: status === "active" ? new Date().toISOString() : null,
+  });
+
+  return { success: true, associationName: association.name, slug: association.slug, pendingApproval: memberType === "board" };
+}
+
+export async function approveBoardMember(associationId: string, membershipId: string) {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+
+  const { data: membership } = await (supabase.from("association_memberships") as any)
+    .select("role")
+    .eq("association_id", associationId)
+    .eq("user_id", (ctx.profile as any).id)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (!ctx.isMiraAdmin && membership?.role !== "association_president") {
+    return { error: "Non hai i permessi" };
+  }
+
+  const template = ROLE_PERMISSION_TEMPLATES["association_admin"] ?? [];
+  const permissions: Record<string, boolean> = {};
+  for (const perm of template) {
+    permissions[perm] = true;
+  }
+
+  await (supabase.from("association_memberships") as any)
+    .update({
+      status: "active",
+      role: "association_admin",
+      permissions,
+      joined_at: new Date().toISOString(),
+    })
+    .eq("id", membershipId);
+
+  const { data: assocData } = await (supabase.from("association_profiles") as any)
+    .select("slug").eq("id", associationId).single();
+  revalidatePath(`/association/${assocData?.slug}/board`);
+  return { success: true };
+}
+
+export async function rejectBoardMember(associationId: string, membershipId: string) {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+
+  const { data: membership } = await (supabase.from("association_memberships") as any)
+    .select("role")
+    .eq("association_id", associationId)
+    .eq("user_id", (ctx.profile as any).id)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (!ctx.isMiraAdmin && membership?.role !== "association_president") {
+    return { error: "Non hai i permessi" };
+  }
+
+  await (supabase.from("association_memberships") as any)
+    .update({ status: "removed" })
+    .eq("id", membershipId);
+
+  const { data: assocData } = await (supabase.from("association_profiles") as any)
+    .select("slug").eq("id", associationId).single();
+  revalidatePath(`/association/${assocData?.slug}/board`);
   return { success: true };
 }

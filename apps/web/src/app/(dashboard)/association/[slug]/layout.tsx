@@ -8,6 +8,16 @@ interface Props {
   children: React.ReactNode;
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  association_president: "Presidente",
+  association_admin: "Admin",
+  association_reviewer: "Reviewer",
+  association_interviewer: "Interviewer",
+  association_member: "Membro",
+};
+
+const WORKSPACE_ROLES = ["association_president", "association_admin", "association_reviewer", "association_interviewer"];
+
 const getAssociationNav = (slug: string) => [
   { label: "Dashboard", href: `/association/${slug}` },
   { label: "Pagina pubblica", href: `/association/${slug}/public-page` },
@@ -42,6 +52,17 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
     redirect("/student");
   }
 
+  // Block simple members (no permissions) from workspace
+  if (membership && !ctx.isMiraAdmin) {
+    const hasWorkspaceRole = WORKSPACE_ROLES.includes(membership.role);
+    const perms = membership.permissions as Record<string, boolean> | null;
+    const hasAnyPermission = perms && Object.values(perms).some((v) => v === true);
+
+    if (!hasWorkspaceRole && !hasAnyPermission) {
+      redirect("/student");
+    }
+  }
+
   const nav = getAssociationNav(slug);
 
   return (
@@ -57,7 +78,7 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
         <div>
           <h1 className="font-sans text-h3 text-navy">{association.name}</h1>
           <p className="text-body-sm text-ink-tertiary">
-            {membership?.role === "association_president" ? "Presidente" : membership?.role?.replace("association_", "") ?? "Admin"}
+            {ROLE_LABELS[membership?.role ?? ""] ?? "Admin"}
           </p>
         </div>
       </div>
