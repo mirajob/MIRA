@@ -64,12 +64,18 @@ DATI ACCADEMICI (dal transcript):
 - Media ponderata: ${ts.weighted_average ? `${ts.weighted_average}/30` : "non calcolata"}
 - Crediti totali: ${ts.total_credits ?? 0} CFU
 - Esami completati: ${ts.courses?.length ?? 0}`;
-    if (courses?.length) {
-      const topCourses = courses.filter((c: any) => c.grade_numeric >= 28).slice(0, 5);
-      if (topCourses.length) {
-        transcriptData += `\n- Voti più alti: ${topCourses.map((c: any) => `${c.course_name} (${c.grade})`).join(", ")}`;
-      }
-    }
+  }
+
+  if (courses?.length) {
+    const courseList = courses.map((c: any) =>
+      `  ${c.course_name}: ${c.grade} (${c.credits} CFU)`
+    ).join("\n");
+    transcriptData += `\n\nTUTTI GLI ESAMI CON VOTI:\n${courseList}`;
+  } else if (ts?.courses?.length) {
+    const courseList = ts.courses.map((c: any) =>
+      `  ${c.course_name}: ${c.grade} (${c.credits} CFU)`
+    ).join("\n");
+    transcriptData += `\n\nTUTTI GLI ESAMI CON VOTI:\n${courseList}`;
   }
 
   let membershipData = "";
@@ -86,19 +92,25 @@ DATI ACCADEMICI (dal transcript):
     membershipData = `\nASSOCIAZIONI DELLO STUDENTE:\n${list}`;
   }
 
+  const memberAssociationNames = new Set(
+    (memberships ?? []).map((m: any) => m.association_profiles?.name).filter(Boolean)
+  );
+
   let platformData = "";
   if (associations?.length) {
-    const list = associations.map((a: any) => `- ${a.name} (${a.category || "generale"})`).join("\n");
-    const cycles = openCycles?.map((c: any) =>
-      `- ${c.association_profiles?.name}: "${c.title}"${c.closes_at ? ` (scade ${new Date(c.closes_at).toLocaleDateString("it-IT")})` : ""}`
-    ).join("\n") || "nessuna";
+    const otherAssociations = associations.filter((a: any) => !memberAssociationNames.has(a.name));
+    const relevantCycles = (openCycles ?? []).filter((c: any) =>
+      !memberAssociationNames.has(c.association_profiles?.name)
+    );
 
-    platformData = `
-ASSOCIAZIONI SU MIRA:
-${list}
-
-CANDIDATURE APERTE:
-${cycles}`;
+    if (otherAssociations.length) {
+      platformData += `\nALTRE ASSOCIAZIONI SU MIRA (lo studente NON è membro):\n${otherAssociations.map((a: any) => `- ${a.name} (${a.category || "generale"})`).join("\n")}`;
+    }
+    if (relevantCycles.length) {
+      platformData += `\n\nCANDIDATURE APERTE (per associazioni in cui NON è già membro):\n${relevantCycles.map((c: any) =>
+        `- ${c.association_profiles?.name}: "${c.title}"${c.closes_at ? ` (scade ${new Date(c.closes_at).toLocaleDateString("it-IT")})` : ""}`
+      ).join("\n")}`;
+    }
   }
 
   return `Tu sei MIRA, la piattaforma AI per il talento universitario di Bocconi.
@@ -110,11 +122,12 @@ ${membershipData}
 ${platformData}
 
 COME COMPORTARTI:
-- Conosci TUTTO dello studente: voti, associazioni, interessi, esperienze. Usa queste info.
-- Se ti chiede delle sue associazioni, SAI in quali è e con che ruolo.
-- Se ti chiede di candidature, SAI quali sono aperte su MIRA.
-- Se ti chiede del suo profilo, SAI i suoi dati accademici.
-- Puoi parlare di orientamento, carriera, magistrale, esperienze — tutto quello che lo aiuta.
+- HAI ACCESSO A TUTTI I DATI sopra. Usali direttamente nelle risposte.
+- Se ti chiede dei voti, ELENCA i voti specifici dai dati sopra. Non dire "non ho accesso".
+- Se ti chiede della media, USA il dato dalla sezione DATI ACCADEMICI.
+- Se ti chiede delle associazioni, SAI in quali è e con che ruolo.
+- NON suggerire MAI di candidarsi ad associazioni in cui è GIÀ MEMBRO o di cui è PRESIDENTE.
+- Se è presidente/admin di un'associazione, puoi aiutarlo con la gestione (candidature, board, ecc.)
 - Tutto quello che lo studente ti dice arricchisce il suo profilo MIRA automaticamente.
 
 COME PARLARE:
@@ -124,9 +137,10 @@ COME PARLARE:
 - Lo studente È GIÀ A BOCCONI. Non chiedergli se vuole entrarci.
 
 NON FARE:
+- Non dire MAI "non ho accesso ai dati" — HAI tutti i dati sopra
+- Non suggerire di candidarsi alle proprie associazioni
 - Non ripresentarti ogni volta
 - Non dire "Grazie per aver condiviso!"
-- Non elencare corsi del libretto
 - Non essere un generico career coach — sei MIRA, sai le cose concrete`;
 }
 
