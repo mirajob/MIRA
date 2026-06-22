@@ -126,18 +126,26 @@ export async function createCycleFromChat(
   if (error) return { error: error.message };
 
   // Add questions if any
-  if (cycleData.questions?.length) {
-    for (let i = 0; i < cycleData.questions.length; i++) {
-      const q = cycleData.questions[i];
-      if (!q || q === "no") continue;
-      await (supabase.from("application_questions") as any).insert({
-        application_cycle_id: cycle.id,
-        question_text: typeof q === "string" ? q : q.text,
-        question_type: "free_text",
-        required: true,
-        order_index: i,
-      });
-    }
+  const rawQuestions = cycleData.questions ?? [];
+  const questionTexts: string[] = [];
+  for (const q of rawQuestions) {
+    if (!q) continue;
+    const text = typeof q === "string" ? q : (q.text || q.question || q.question_text || "");
+    const lower = text.toLowerCase().trim();
+    if (!lower || lower === "no" || lower === "nessuna" || lower === "none") continue;
+    questionTexts.push(text);
+  }
+
+  if (questionTexts.length > 0) {
+    const questionRows = questionTexts.map((text, i) => ({
+      application_cycle_id: cycle.id,
+      question_text: text,
+      question_type: "long_text",
+      required: true,
+      order_index: i,
+      options: [],
+    }));
+    await (supabase.from("application_questions") as any).insert(questionRows);
   }
 
   const { data: association } = await (supabase.from("association_profiles") as any)

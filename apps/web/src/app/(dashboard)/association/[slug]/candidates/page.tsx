@@ -6,6 +6,7 @@ import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 
 interface Props {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ cycle?: string }>;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -18,8 +19,9 @@ const STATUS_COLORS: Record<string, string> = {
   withdrawn: "bg-navy-50 text-ink-tertiary",
 };
 
-export default async function CandidatesPage({ params }: Props) {
+export default async function CandidatesPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const { cycle: cycleFilter } = await searchParams;
   const supabase = await createServiceClient();
 
   const { data: association } = await (supabase.from("association_profiles") as any)
@@ -29,9 +31,14 @@ export default async function CandidatesPage({ params }: Props) {
 
   if (!association) notFound();
 
-  const { data: applications } = await (supabase.from("applications") as any)
+  const { data: cycles } = await (supabase.from("application_cycles") as any)
+    .select("id, title, status")
+    .eq("association_id", association.id)
+    .order("created_at", { ascending: false });
+
+  let query = (supabase.from("applications") as any)
     .select(`
-      id, status, submitted_at, last_status_change_at,
+      id, status, submitted_at, last_status_change_at, application_cycle_id,
       profiles(full_name, email),
       student_profiles(degree_program, current_year),
       application_cycles(title),
@@ -41,13 +48,42 @@ export default async function CandidatesPage({ params }: Props) {
     .neq("status", "draft")
     .order("submitted_at", { ascending: false });
 
+  if (cycleFilter) {
+    query = query.eq("application_cycle_id", cycleFilter);
+  }
+
+  const { data: applications } = await query;
+
+  const activeCycleId = cycleFilter || (cycles?.find((c: any) => c.status === "open")?.id);
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="font-display text-h2 text-navy">Candidati</h2>
-        <p className="mt-1 text-body text-ink-secondary">
-          {applications?.length ?? 0} candidature ricevute
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-h2 text-navy">Candidati</h2>
+          <p className="mt-1 text-body text-ink-secondary">
+            {applications?.length ?? 0} candidature
+          </p>
+        </div>
+        {(cycles?.length ?? 0) > 1 && (
+          <div className="flex gap-2">
+            <Link
+              href={`/association/${slug}/candidates`}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!cycleFilter ? "bg-navy text-white" : "border border-border text-ink-secondary hover:text-navy"}`}
+            >
+              Tutti
+            </Link>
+            {cycles!.map((c: any) => (
+              <Link
+                key={c.id}
+                href={`/association/${slug}/candidates?cycle=${c.id}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${cycleFilter === c.id ? "bg-navy text-white" : "border border-border text-ink-secondary hover:text-navy"}`}
+              >
+                {c.title}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {!applications?.length ? (

@@ -39,8 +39,9 @@ export default async function StudentAssociazioniPage() {
     .eq("status", "open");
 
   const { data: myApplications } = await (supabase.from("applications") as any)
-    .select("id, status, association_id, association_profiles(name, slug)")
-    .eq("student_user_id", profileId);
+    .select("id, status, association_id, application_cycle_id, application_cycles(title, status), association_profiles(name, slug)")
+    .eq("student_user_id", profileId)
+    .order("submitted_at", { ascending: false });
 
   const { data: myMemberships } = await (supabase.from("association_memberships") as any)
     .select("association_id, role, joined_at")
@@ -54,10 +55,22 @@ export default async function StudentAssociazioniPage() {
     cyclesByAssoc.set(c.association_id, list);
   }
 
+  // Only track applications to OPEN cycles (ignore old closed/rejected ones)
   const appsByAssoc = new Map<string, any>();
+  const openCycleIds = new Set((openCycles ?? []).map((c: any) => c.id));
   for (const a of myApplications ?? []) {
-    appsByAssoc.set(a.association_id, a);
+    if (openCycleIds.has(a.application_cycle_id)) {
+      if (!appsByAssoc.has(a.association_id)) {
+        appsByAssoc.set(a.association_id, a);
+      }
+    }
   }
+
+  // Active/pending applications (for the "Le tue candidature" section)
+  const activeApplications = (myApplications ?? []).filter((a: any) => {
+    const cycleStatus = a.application_cycles?.status;
+    return cycleStatus === "open" || ["submitted", "in_review", "interview", "waitlisted"].includes(a.status);
+  });
 
   const membershipByAssoc = new Map<string, any>();
   for (const m of myMemberships ?? []) {
@@ -68,19 +81,20 @@ export default async function StudentAssociazioniPage() {
     <div className="mx-auto max-w-2xl px-6 py-6 space-y-5">
       <h1 className="font-display text-h2 text-navy">Associazioni</h1>
 
-      {(myApplications?.length ?? 0) > 0 && (
+      {activeApplications.length > 0 && (
         <div className="rounded-lg border border-border bg-white p-5">
           <h2 className="font-sans text-h3 text-navy mb-3">Le tue candidature</h2>
           <div className="space-y-2">
-            {myApplications!.map((app: any) => (
-              <Link
+            {activeApplications.map((app: any) => (
+              <div
                 key={app.id}
-                href="/student/applications"
-                className="flex items-center justify-between rounded-md px-3 py-2 hover:bg-navy-50/50 transition-colors"
+                className="flex items-center justify-between rounded-md px-3 py-2"
               >
                 <span className="text-body text-ink">{app.association_profiles?.name ?? "—"}</span>
-                <span className="text-body-sm text-ink-tertiary">{STATUS_LABELS[app.status] ?? app.status}</span>
-              </Link>
+                <span className={`text-body-sm ${app.status === "accepted" ? "text-success" : app.status === "rejected" ? "text-error" : "text-ink-tertiary"}`}>
+                  {STATUS_LABELS[app.status] ?? app.status}
+                </span>
+              </div>
             ))}
           </div>
         </div>
