@@ -88,6 +88,12 @@ export default async function StudentProfilePage() {
         </div>
       </div>
 
+      <div className="rounded-md bg-paper border border-border px-4 py-3">
+        <p className="text-body-sm text-ink-secondary">
+          Hai fatto nuovi esami? Scrivi a MIRA nella chat "voglio aggiornare il libretto" e potrai caricare il PDF aggiornato.
+        </p>
+      </div>
+
       {displayCourses.length > 0 && (
         <div className="rounded-lg border border-border bg-white overflow-hidden">
           <div className="px-5 py-3 border-b border-border">

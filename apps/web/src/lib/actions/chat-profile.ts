@@ -243,7 +243,8 @@ async function updateProfileFromChat(profileId: string, conversation: ChatMessag
       {
         role: "system",
         content: `Dagli ultimi messaggi della conversazione, estrai info nuove per il profilo. Rispondi SOLO in JSON:
-{"interests":["nuovi interessi emersi"],"goals":["nuovi obiettivi emersi"],"experiences":["nuove esperienze menzionate"],"profile_update":"aggiornamento al riassunto del profilo se c'è qualcosa di nuovo e significativo, altrimenti vuoto"}
+{"interests":["nuovi interessi emersi"],"goals":["nuovi obiettivi emersi"],"experiences":["nuove esperienze menzionate"],"current_year":null,"profile_update":"aggiornamento al riassunto del profilo se c'è qualcosa di nuovo e significativo, altrimenti vuoto"}
+current_year: numero intero (1, 2, 3...) se lo studente ha detto in che anno è. null se non menzionato.
 SOLO info esplicitamente dette dallo studente. Non inventare. Array vuoti se niente di nuovo.`,
       },
       { role: "user", content: conversationText },
@@ -269,6 +270,7 @@ SOLO info esplicitamente dette dallo studente. Non inventare. Array vuoti se nie
   if (data.interests?.length) updates.interests = mergeArray(current?.interests, data.interests);
   if (data.goals?.length) updates.goals = mergeArray(current?.goals, data.goals);
   if (data.experiences?.length) updates.experiences = mergeArray(current?.experiences, data.experiences);
+  if (data.current_year) updates.current_year = data.current_year;
   if (data.profile_update) updates.profile_summary = data.profile_update;
 
   if (Object.keys(updates).length > 0) {
