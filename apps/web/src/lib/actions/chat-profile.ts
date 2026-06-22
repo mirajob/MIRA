@@ -61,9 +61,12 @@ PROFILO STUDENTE:
   if (ts) {
     transcriptData = `
 DATI ACCADEMICI (dal transcript):
-- Media ponderata: ${ts.weighted_average ? `${ts.weighted_average}/30` : "non calcolata"}
+- Media ponderata: ${ts.weighted_average ? `${ts.weighted_average}/30` : "non calcolata"} (calcolata solo su esami con voto numerico, esclusi pass/fail)
+- Crediti con voto: ${ts.graded_credits ?? 0} CFU
+- Crediti pass/fail: ${ts.pass_fail_credits ?? 0} CFU (NON contano nella media)
 - Crediti totali: ${ts.total_credits ?? 0} CFU
-- Esami completati: ${ts.courses?.length ?? 0}`;
+- Esami completati: ${ts.courses?.length ?? 0}
+NOTA: gli esami pass/fail (es. seminari da 1 CFU) NON hanno voto numerico e NON entrano nel calcolo della media ponderata.`;
   }
 
   if (courses?.length) {

@@ -74,11 +74,29 @@ export async function uploadTranscript(formData: FormData) {
     const base64 = buffer.toString("base64");
     const parsed = await parseTranscriptFile(base64, file.type);
 
+    // Recalculate weighted average in code (AI math is unreliable)
+    let weightedSum = 0;
+    let gradedCredits = 0;
+    let passfailCredits = 0;
+    for (const c of parsed.courses) {
+      if (c.grade_numeric != null && !c.is_pass_fail) {
+        weightedSum += c.grade_numeric * c.credits;
+        gradedCredits += c.credits;
+      } else {
+        passfailCredits += c.credits;
+      }
+    }
+    const correctAverage = gradedCredits > 0 ? Math.round((weightedSum / gradedCredits) * 100) / 100 : null;
+    parsed.weighted_average = correctAverage;
+    parsed.graded_credits = gradedCredits;
+    parsed.pass_fail_credits = passfailCredits;
+    parsed.total_credits = gradedCredits + passfailCredits;
+
     await (supabase.from("student_transcripts") as any)
       .update({
         extraction_status: "completed",
         extracted_data: parsed,
-        weighted_average: parsed.weighted_average,
+        weighted_average: correctAverage,
         total_credits: parsed.total_credits,
         extraction_confidence: "ai_vision",
       })
