@@ -6,6 +6,7 @@ import { ASSOCIATION_PERMISSIONS } from "@mira/domain";
 interface Member {
   id: string;
   role: string;
+  title: string | null;
   permissions: Record<string, boolean>;
   profile: {
     id: string;
@@ -79,6 +80,9 @@ export function BoardMemberList({
                   }`}>
                     {ROLE_LABELS[member.role] ?? member.role}
                   </span>
+                  {member.title && (
+                    <p className="text-body-sm text-ink-tertiary mt-1">{member.title}</p>
+                  )}
                 </td>
                 <td className="py-4 px-4">
                   <p className="text-body-sm text-ink-secondary">

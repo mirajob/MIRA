@@ -1,4 +1,5 @@
-import { createServerClient } from "@mira/supabase/server";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { APPLICATION_STATUS_LABELS } from "@mira/domain";
@@ -19,18 +20,16 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default async function CandidatesPage({ params }: Props) {
   const { slug } = await params;
-  const supabase = await createServerClient();
+  const supabase = await createServiceClient();
 
-  const { data: association } = await supabase
-    .from("association_profiles")
+  const { data: association } = await (supabase.from("association_profiles") as any)
     .select("id")
     .eq("slug", slug)
     .maybeSingle();
 
   if (!association) notFound();
 
-  const { data: applications } = await supabase
-    .from("applications")
+  const { data: applications } = await (supabase.from("applications") as any)
     .select(`
       id, status, submitted_at, last_status_change_at,
       profiles(full_name, email),
@@ -69,7 +68,7 @@ export default async function CandidatesPage({ params }: Props) {
               </tr>
             </thead>
             <tbody>
-              {applications.map((app) => {
+              {applications.map((app: any) => {
                 const profile = app.profiles as { full_name: string | null; email: string } | null;
                 const studentProfile = app.student_profiles as { degree_program: string | null; current_year: number | null } | null;
                 const cycle = app.application_cycles as { title: string } | null;

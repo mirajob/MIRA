@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createServerClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -11,8 +12,7 @@ export default async function AssociationPublicPage({ params }: Props) {
   const { slug } = await params;
   const supabase = await createServerClient();
 
-  const { data: association } = await supabase
-    .from("association_profiles")
+  const { data: association } = await (supabase.from("association_profiles") as any)
     .select("*")
     .eq("slug", slug)
     .eq("public_page_status", "published")
@@ -20,12 +20,29 @@ export default async function AssociationPublicPage({ params }: Props) {
 
   if (!association) notFound();
 
-  const { data: openCycles } = await supabase
-    .from("application_cycles")
+  const { data: openCycles } = await (supabase.from("application_cycles") as any)
     .select("id, title, description, status, opens_at, closes_at, available_roles")
     .eq("association_id", association.id)
     .eq("status", "open")
     .order("closes_at", { ascending: true });
+
+  const { data: allPublicMembers } = await (supabase.from("association_memberships") as any)
+    .select("role, title, profiles(full_name, avatar_url)")
+    .eq("association_id", (association as any).id)
+    .eq("status", "active")
+    .order("created_at");
+
+  const WORKSPACE_ROLES = ["association_president", "association_admin", "association_reviewer", "association_interviewer"];
+  const ROLE_LABELS: Record<string, string> = {
+    association_president: "Presidente",
+    association_admin: "Admin",
+    association_reviewer: "Reviewer",
+    association_interviewer: "Interviewer",
+    association_member: "Membro",
+  };
+
+  const publicBoard = (allPublicMembers ?? []).filter((m: any) => WORKSPACE_ROLES.includes(m.role));
+  const publicMembers = (allPublicMembers ?? []).filter((m: any) => !WORKSPACE_ROLES.includes(m.role));
 
   // Check if logged-in user is a member
   const { data: { user } } = await supabase.auth.getUser();
@@ -117,6 +134,56 @@ export default async function AssociationPublicPage({ params }: Props) {
           )}
         </div>
 
+        {/* Members */}
+        {(publicBoard.length > 0 || publicMembers.length > 0) && (
+          <div className="mb-10 space-y-6">
+            <h2 className="font-display text-h2 text-navy">I membri</h2>
+
+            {publicBoard.length > 0 && (
+              <div>
+                <h3 className="text-label text-ink-secondary mb-3">Board</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {publicBoard.map((m: any, i: number) => (
+                    <div key={i} className="rounded-lg border border-border bg-white p-4 text-center">
+                      <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-navy text-white text-label font-semibold">
+                        {(m.profiles?.full_name ?? "?").charAt(0).toUpperCase()}
+                      </div>
+                      <p className="text-body font-medium text-navy truncate">
+                        {m.profiles?.full_name ?? "—"}
+                      </p>
+                      <p className="text-body-sm text-ink-secondary">
+                        {m.title ?? ROLE_LABELS[m.role] ?? "Board"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {publicMembers.length > 0 && (
+              <div>
+                <h3 className="text-label text-ink-secondary mb-3">
+                  Membri ({publicMembers.length})
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {publicMembers.map((m: any, i: number) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-border bg-white text-body-sm text-ink"
+                    >
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ink-tertiary/20 text-ink text-eyebrow font-semibold text-[10px]">
+                        {(m.profiles?.full_name ?? "?").charAt(0).toUpperCase()}
+                      </span>
+                      {m.profiles?.full_name ?? "—"}
+                      {m.title && <span className="text-ink-tertiary">· {m.title}</span>}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Open cycles */}
         {isMember ? (
           <div className="rounded-lg border-2 border-petrol/30 bg-petrol-50 p-6 text-center">
@@ -131,7 +198,7 @@ export default async function AssociationPublicPage({ params }: Props) {
         ) : openCycles && openCycles.length > 0 ? (
           <div className="space-y-4">
             <h2 className="font-display text-h2 text-navy">Candidature aperte</h2>
-            {openCycles.map((cycle) => (
+            {openCycles.map((cycle: any) => (
               <div key={cycle.id} className="rounded-lg border border-border bg-white p-6">
                 <h3 className="font-sans text-h3 text-navy">{cycle.title}</h3>
                 {cycle.description && (
