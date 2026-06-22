@@ -23,7 +23,9 @@ export interface ParsedTranscript {
 
 const EXTRACTION_PROMPT = `Sei un parser di libretti universitari italiani, specializzato in Bocconi.
 
-REGOLA FONDAMENTALE: estrai SOLO gli esami GIÀ COMPLETATI — quelli che hanno SIA una data di superamento SIA un voto o esito (es. "TWENTY-SEVEN", "PASS", "THIRTY.="). Ignora completamente le righe senza data e senza voto: sono esami futuri pianificati, NON ancora sostenuti.
+REGOLA FONDAMENTALE: estrai TUTTI gli esami GIÀ COMPLETATI — quelli che hanno SIA una data di superamento SIA un voto o esito (es. "TWENTY-SEVEN", "PASS", "THIRTY.="). Ignora completamente le righe senza data e senza voto: sono esami futuri pianificati, NON ancora sostenuti.
+
+ATTENZIONE: Non saltare nessun esame completato. Controlla OGNI riga del documento. Se un esame ha una data e un voto/esito, DEVE essere incluso. Tipicamente un libretto Bocconi di secondo anno ha 10-15 esami completati — se ne trovi meno di 8, probabilmente ne stai saltando alcuni. Ricontrolla.
 
 Per ogni esame COMPLETATO determina:
 - course_name: nome esatto del corso

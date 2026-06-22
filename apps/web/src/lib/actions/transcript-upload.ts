@@ -103,6 +103,11 @@ export async function uploadTranscript(formData: FormData) {
       .eq("id", transcript!.id);
 
     if (parsed.courses.length > 0) {
+      // Delete old courses before inserting new ones (re-upload scenario)
+      await (supabase.from("student_courses") as any)
+        .delete()
+        .eq("student_profile_id", studentProfile.id);
+
       await (supabase.from("student_courses") as any).insert(
         parsed.courses.map((c: ParsedCourse) => ({
           student_profile_id: studentProfile.id,
