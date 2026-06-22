@@ -19,12 +19,11 @@ const ROLE_LABELS: Record<string, string> = {
 const WORKSPACE_ROLES = ["association_president", "association_admin", "association_reviewer", "association_interviewer"];
 
 const getAssociationNav = (slug: string) => [
-  { label: "Dashboard", href: `/association/${slug}` },
-  { label: "Pagina pubblica", href: `/association/${slug}/public-page` },
-  { label: "Cicli candidatura", href: `/association/${slug}/cycles` },
+  { label: "Cicli", href: `/association/${slug}/cycles` },
   { label: "Candidati", href: `/association/${slug}/candidates` },
   { label: "Colloqui", href: `/association/${slug}/interviews` },
   { label: "Membri", href: `/association/${slug}/board` },
+  { label: "Pagina pubblica", href: `/association/${slug}/public-page` },
 ];
 
 export default async function AssociationWorkspaceLayout({ params, children }: Props) {

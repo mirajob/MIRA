@@ -59,7 +59,7 @@ export default async function CandidateDetailPage({ params }: Props) {
             {student?.degree_level && <span>· {student.degree_level as string}</span>}
           </div>
         </div>
-        <CandidateActions applicationId={applicationId} currentStatus={application.status} />
+        <CandidateActions applicationId={applicationId} currentStatus={application.status} candidateEmail={profile?.email} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
