@@ -11,14 +11,18 @@ export default async function StudentProfilePage() {
   const profileId = (ctx.profile as any).id as string;
 
   const { data: student } = await (supabase.from("student_profiles") as any)
-    .select("degree_program, degree_level, current_year, transcript_summary, transcript_uploaded, profile_summary, university")
+    .select("id, degree_program, degree_level, current_year, transcript_summary, transcript_uploaded, profile_summary, university")
     .eq("user_id", profileId)
     .single();
 
-  const { data: courses } = await (supabase.from("student_courses") as any)
-    .select("course_name, course_code, credits, grade, grade_numeric, is_pass_fail, academic_year")
-    .eq("student_profile_id", profileId)
-    .order("created_at", { ascending: true });
+  const studentProfileId = student?.id as string | undefined;
+
+  const { data: courses } = studentProfileId
+    ? await (supabase.from("student_courses") as any)
+        .select("course_name, course_code, credits, grade, grade_numeric, is_pass_fail, academic_year")
+        .eq("student_profile_id", studentProfileId)
+        .order("created_at", { ascending: true })
+    : { data: [] };
 
   const ts = student?.transcript_summary as Record<string, any> | null;
   const courseList = (courses ?? []) as Array<{
@@ -36,8 +40,10 @@ export default async function StudentProfilePage() {
   const university = student?.university || "Bocconi University";
   const weightedAvg = ts?.weighted_average;
   const totalCredits = ts?.total_credits ?? courseList.reduce((sum: number, c) => sum + (c.credits || 0), 0);
-  const gradedExams = courseList.filter((c) => c.grade_numeric !== null);
-  const passFail = courseList.filter((c) => c.is_pass_fail);
+  const tsCourses = (ts?.courses ?? []) as Array<{ course_name: string; course_code?: string; credits: number; grade: string; grade_numeric: number | null; is_pass_fail: boolean; academic_year?: string }>;
+  const displayCourses = courseList.length > 0 ? courseList : tsCourses;
+  const gradedExams = displayCourses.filter((c) => c.grade_numeric !== null);
+  const passFail = displayCourses.filter((c) => c.is_pass_fail);
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-6 space-y-5">
@@ -82,13 +88,13 @@ export default async function StudentProfilePage() {
         </div>
       </div>
 
-      {courseList.length > 0 && (
+      {displayCourses.length > 0 && (
         <div className="rounded-lg border border-border bg-white overflow-hidden">
           <div className="px-5 py-3 border-b border-border">
             <h2 className="font-sans text-h3 text-navy">Esami sostenuti</h2>
           </div>
           <div className="divide-y divide-border">
-            {courseList.map((c, i) => (
+            {displayCourses.map((c, i) => (
               <div key={i} className="px-5 py-3 flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   <p className="text-body-sm text-ink font-medium">{c.course_name}</p>
@@ -112,7 +118,7 @@ export default async function StudentProfilePage() {
         </div>
       )}
 
-      {courseList.length === 0 && (
+      {displayCourses.length === 0 && (
         <div className="rounded-lg border border-border bg-white p-5 text-center">
           <p className="text-body text-ink-secondary">
             Nessun esame registrato. Carica il tuo libretto durante l&apos;onboarding per vedere i tuoi esami qui.
