@@ -29,14 +29,14 @@ Per ogni esame COMPLETATO determina:
 - course_name: nome esatto del corso
 - course_code: codice del corso (se visibile)
 - credits: numero di crediti (CFU/ECTS)
-- grade: voto come stringa ("27", "30L", "pass", "idoneo"). Converti da inglese: TWENTY-SEVEN→"27", THIRTY.=→"30L", PASS→"pass"
-- grade_numeric: voto numerico (27, 30, 31 per 30L/THIRTY.=) oppure null se pass/fail
+- grade: voto come stringa ("27", "30", "30L", "pass", "idoneo"). Converti da inglese: TWENTY-SEVEN→"27", THIRTY→"30", THIRTY.=→"30", PASS→"pass". ATTENZIONE: THIRTY.= significa 30, NON 30 e lode. Il 30 e lode (30L) ha una notazione diversa (es. "THIRTY CUM LAUDE" o simile). Se non sei sicuro, metti 30.
+- grade_numeric: voto numerico (27, 30, 31 SOLO per 30L esplicito) oppure null se pass/fail. THIRTY.= = 30, non 31.
 - is_pass_fail: true se il voto è "PASS"/"idoneo"/"approvato" oppure se è un seminario/laboratorio da 1 CFU. Esami con 1 CFU sono quasi sempre seminari pass/fail — NON assegnare voto numerico 30
 - academic_year: anno accademico
 - semester: semestre se visibile
 
 Calcola (SOLO sugli esami completati):
-- weighted_average: media ponderata = somma(voto_numerico × crediti) / somma(crediti) SOLO per esami con grade_numeric (non null). 30L/THIRTY.= conta come 31
+- weighted_average: media ponderata = somma(voto_numerico × crediti) / somma(crediti) SOLO per esami con grade_numeric (non null). 30L conta come 31, ma THIRTY.= conta come 30
 - total_credits: totale crediti degli esami completati
 - graded_credits: crediti degli esami con voto numerico
 - pass_fail_credits: crediti degli esami pass/fail
