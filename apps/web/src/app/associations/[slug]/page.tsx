@@ -26,11 +26,28 @@ export default async function AssociationPublicPage({ params }: Props) {
     .eq("status", "open")
     .order("closes_at", { ascending: true });
 
-  const { data: allPublicMembers } = await (supabase.from("association_memberships") as any)
-    .select("role, title, profiles(full_name, avatar_url)")
+  const { data: allMemberships } = await (supabase.from("association_memberships") as any)
+    .select("user_id, role, title")
     .eq("association_id", (association as any).id)
     .eq("status", "active")
     .order("created_at");
+
+  const memberUserIds = (allMemberships ?? []).map((m: any) => m.user_id).filter(Boolean);
+  const { data: memberProfiles } = memberUserIds.length > 0
+    ? await (supabase.from("profiles") as any)
+        .select("id, full_name, avatar_url")
+        .in("id", memberUserIds)
+    : { data: [] };
+
+  const profMap = new Map<string, any>();
+  for (const p of (memberProfiles ?? [])) {
+    profMap.set(p.id, p);
+  }
+
+  const allPublicMembers = (allMemberships ?? []).map((m: any) => ({
+    ...m,
+    profiles: profMap.get(m.user_id) ?? { full_name: null, avatar_url: null },
+  }));
 
   const WORKSPACE_ROLES = ["association_president", "association_admin", "association_reviewer", "association_interviewer"];
   const ROLE_LABELS: Record<string, string> = {
@@ -41,8 +58,8 @@ export default async function AssociationPublicPage({ params }: Props) {
     association_member: "Membro",
   };
 
-  const publicBoard = (allPublicMembers ?? []).filter((m: any) => WORKSPACE_ROLES.includes(m.role));
-  const publicMembers = (allPublicMembers ?? []).filter((m: any) => !WORKSPACE_ROLES.includes(m.role));
+  const publicBoard = allPublicMembers.filter((m: any) => WORKSPACE_ROLES.includes(m.role));
+  const publicMembers = allPublicMembers.filter((m: any) => !WORKSPACE_ROLES.includes(m.role));
 
   // Check if logged-in user is a member
   const { data: { user } } = await supabase.auth.getUser();

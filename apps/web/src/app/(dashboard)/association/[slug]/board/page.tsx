@@ -23,14 +23,34 @@ export default async function BoardPage({ params }: Props) {
 
   if (!association) notFound();
 
-  const { data: allMembers } = await (supabase.from("association_memberships") as any)
-    .select("*, profiles(id, full_name, email, avatar_url)")
+  // Query memberships (no join - PostgREST FK may not exist)
+  const { data: allMemberships } = await (supabase.from("association_memberships") as any)
+    .select("id, user_id, role, title, permissions, status, created_at")
     .eq("association_id", association.id)
     .in("status", ["active", "pending_approval"])
     .order("created_at");
 
-  const activeMembers = (allMembers ?? []).filter((m: any) => m.status === "active");
-  const pendingBoardRequests = (allMembers ?? []).filter((m: any) => m.status === "pending_approval");
+  // Get profile data for all member user_ids
+  const userIds = (allMemberships ?? []).map((m: any) => m.user_id).filter(Boolean);
+  const { data: profilesData } = userIds.length > 0
+    ? await (supabase.from("profiles") as any)
+        .select("id, full_name, email, avatar_url")
+        .in("id", userIds)
+    : { data: [] };
+
+  const profileMap = new Map<string, any>();
+  for (const p of (profilesData ?? [])) {
+    profileMap.set(p.id, p);
+  }
+
+  // Merge memberships with profiles
+  const allMembers = (allMemberships ?? []).map((m: any) => ({
+    ...m,
+    profiles: profileMap.get(m.user_id) ?? { id: m.user_id, full_name: null, email: "—", avatar_url: null },
+  }));
+
+  const activeMembers = allMembers.filter((m: any) => m.status === "active");
+  const pendingBoardRequests = allMembers.filter((m: any) => m.status === "pending_approval");
 
   const boardMembers = activeMembers.filter((m: any) => {
     if (WORKSPACE_ROLES.includes(m.role)) return true;
