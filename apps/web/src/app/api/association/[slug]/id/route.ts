@@ -10,7 +10,7 @@ export async function GET(
 
   const { data } = await supabase
     .from("association_profiles")
-    .select("id")
+    .select("id, name")
     .eq("slug", slug)
     .single();
 
@@ -18,5 +18,5 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ id: data.id });
+  return NextResponse.json({ id: data.id, name: data.name });
 }

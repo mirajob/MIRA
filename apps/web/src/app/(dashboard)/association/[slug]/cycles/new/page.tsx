@@ -1,145 +1,161 @@
 "use client";
 
-import { useState } from "react";
-import { createApplicationCycle } from "@/lib/actions/cycles";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { sendCycleMessage, createCycleFromChat } from "@/lib/actions/chat-cycle";
 
-interface Position {
-  name: string;
-  description: string;
+interface Message {
+  role: "user" | "assistant";
+  content: string;
 }
+
+const INITIAL_MESSAGE = `Creiamo insieme il nuovo ciclo di candidatura! Come vuoi chiamarlo? (es. "Recruiting Fall 2026")`;
 
 export default function NewCyclePage() {
   const { slug } = useParams<{ slug: string }>();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [associationId, setAssociationId] = useState<string | null>(null);
-  const [positions, setPositions] = useState<Position[]>([{ name: "", description: "" }]);
   const router = useRouter();
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "assistant", content: INITIAL_MESSAGE },
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [associationId, setAssociationId] = useState<string | null>(null);
+  const [associationName, setAssociationName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  async function loadAssociationId() {
-    if (associationId) return associationId;
-    const res = await fetch(`/api/association/${slug}/id`);
-    const data = await res.json();
-    setAssociationId(data.id);
-    return data.id;
-  }
+  useEffect(() => {
+    fetch(`/api/association/${slug}/id`)
+      .then((r) => r.json())
+      .then((d) => {
+        setAssociationId(d.id);
+        setAssociationName(d.name || slug);
+      });
+  }, [slug]);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (loading) return;
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    if (!loading) inputRef.current?.focus();
+  }, [loading]);
+
+  async function handleSend() {
+    if (!input.trim() || loading || creating) return;
+
+    const userMessage = input.trim();
+    setInput("");
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setLoading(true);
     setError(null);
 
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+    const history = messages.map((m) => ({ role: m.role, content: m.content }));
+    const result = await sendCycleMessage(history, userMessage, associationName);
 
-    const validPositions = positions.filter((p) => p.name.trim());
-    formData.set("positions", JSON.stringify(validPositions));
+    const newMessages = [
+      ...messages,
+      { role: "user" as const, content: userMessage },
+      { role: "assistant" as const, content: result.message },
+    ];
+    setMessages(newMessages);
+    setLoading(false);
 
-    const id = await loadAssociationId();
-    const res = await createApplicationCycle(id, formData);
-    if (res.error) {
-      setError(res.error);
-      setLoading(false);
-      return;
+    if (result.message.includes("CICLO_PRONTO") && associationId) {
+      setCreating(true);
+      const createResult = await createCycleFromChat(associationId, newMessages);
+      if (createResult.error) {
+        setError(createResult.error);
+        setCreating(false);
+      } else {
+        router.push(`/association/${slug}/cycles/${createResult.cycleId}`);
+      }
     }
-    router.push(`/association/${slug}/cycles/${res.cycleId}`);
   }
 
-  function addPosition() {
-    setPositions([...positions, { name: "", description: "" }]);
+  function displayContent(content: string) {
+    if (content.includes("CICLO_PRONTO")) {
+      return content.split("CICLO_PRONTO")[0].trim() || "Perfetto! Sto creando il ciclo...";
+    }
+    return content;
   }
-
-  function updatePosition(index: number, field: keyof Position, value: string) {
-    const updated = [...positions];
-    updated[index] = { ...updated[index], [field]: value };
-    setPositions(updated);
-  }
-
-  function removePosition(index: number) {
-    if (positions.length <= 1) return;
-    setPositions(positions.filter((_, i) => i !== index));
-  }
-
-  const inputClass = "w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200";
 
   return (
     <div className="mx-auto max-w-reading">
-      <h2 className="font-display text-h2 text-navy mb-6">Nuovo ciclo di candidatura</h2>
+      <h2 className="font-display text-h2 text-navy mb-4">Nuovo ciclo di candidatura</h2>
+      <p className="text-body-sm text-ink-secondary mb-6">
+        MIRA ti guida nella creazione del ciclo. Rispondi alle domande una alla volta.
+      </p>
 
       {error && (
         <div className="mb-4 rounded-md bg-error-bg p-3 text-body-sm text-error">{error}</div>
       )}
 
-      <form onSubmit={handleSubmit} className="rounded-lg border border-border bg-white p-6 space-y-5">
-        <label className="block">
-          <span className="text-label text-navy mb-2 block">Titolo *</span>
-          <input name="title" type="text" required placeholder="es. Recruiting Fall 2026" className={inputClass} />
-        </label>
-
-        <label className="block">
-          <span className="text-label text-navy mb-2 block">Descrizione generale</span>
-          <textarea name="description" rows={3} placeholder="Descrivi il ciclo di selezione..." className={`${inputClass} resize-y`} />
-        </label>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block">
-            <span className="text-label text-navy mb-2 block">Data apertura</span>
-            <input name="opensAt" type="datetime-local" className={inputClass} />
-          </label>
-          <label className="block">
-            <span className="text-label text-navy mb-2 block">Data chiusura</span>
-            <input name="closesAt" type="datetime-local" className={inputClass} />
-          </label>
-        </div>
-
-        <div>
-          <span className="text-label text-navy mb-3 block">Posizioni aperte</span>
-          <div className="space-y-3">
-            {positions.map((pos, i) => (
-              <div key={i} className="rounded-md border border-border p-4 space-y-2">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={pos.name}
-                    onChange={(e) => updatePosition(i, "name", e.target.value)}
-                    placeholder="Nome posizione (es. M&A Analyst)"
-                    className={`${inputClass} flex-1`}
-                  />
-                  {positions.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removePosition(i)}
-                      className="text-ink-tertiary hover:text-error px-2 transition-colors"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-                <textarea
-                  value={pos.description}
-                  onChange={(e) => updatePosition(i, "description", e.target.value)}
-                  placeholder="Descrizione: cosa cerchi per questa posizione? (es. Interesse per valuation e financial modeling)"
-                  rows={2}
-                  className={`${inputClass} resize-y`}
-                />
+      <div className="rounded-lg border border-border bg-white overflow-hidden">
+        <div className="max-h-[500px] overflow-y-auto space-y-3 px-5 py-4">
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`max-w-[85%] rounded-lg px-4 py-2.5 ${
+                  msg.role === "user"
+                    ? "bg-navy text-white"
+                    : "bg-paper text-ink"
+                }`}
+              >
+                {msg.role === "assistant" && (
+                  <p className="text-eyebrow text-petrol uppercase mb-0.5" style={{ fontSize: "10px" }}>MIRA</p>
+                )}
+                <p className="text-body-sm whitespace-pre-wrap">{displayContent(msg.content)}</p>
               </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={addPosition}
-            className="mt-2 text-body-sm text-petrol hover:text-petrol-700 transition-colors"
-          >
-            + Aggiungi posizione
-          </button>
+            </div>
+          ))}
+
+          {(loading || creating) && (
+            <div className="flex justify-start">
+              <div className="bg-paper rounded-lg px-4 py-2.5">
+                {creating ? (
+                  <p className="text-body-sm text-petrol">Creazione ciclo in corso...</p>
+                ) : (
+                  <div className="flex gap-1">
+                    <span className="w-1.5 h-1.5 bg-navy-200 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-1.5 h-1.5 bg-navy-200 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-1.5 h-1.5 bg-navy-200 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
         </div>
 
-        <button type="submit" disabled={loading} className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40">
-          {loading ? "Creazione..." : "Crea ciclo"}
-        </button>
-      </form>
+        <div className="border-t border-border px-4 py-3">
+          <div className="flex gap-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+              placeholder="Rispondi a MIRA..."
+              disabled={loading || creating}
+              className="flex-1 px-3 py-2 rounded-md bg-paper border border-border text-body-sm text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol transition-colors duration-200 disabled:opacity-50"
+            />
+            <button
+              onClick={handleSend}
+              disabled={loading || creating || !input.trim()}
+              className="bg-navy text-white px-4 py-2 rounded-md text-body-sm hover:bg-navy-700 transition-colors duration-100 disabled:opacity-40"
+            >
+              Invia
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
