@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createServerClient } from "@mira/supabase/server";
+import { createServerClient, createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
@@ -26,7 +26,9 @@ export default async function AssociationPublicPage({ params }: Props) {
     .eq("status", "open")
     .order("closes_at", { ascending: true });
 
-  const { data: allMemberships } = await (supabase.from("association_memberships") as any)
+  const serviceClient = await createServiceClient();
+
+  const { data: allMemberships } = await (serviceClient.from("association_memberships") as any)
     .select("user_id, role, title")
     .eq("association_id", (association as any).id)
     .eq("status", "active")
@@ -34,7 +36,7 @@ export default async function AssociationPublicPage({ params }: Props) {
 
   const memberUserIds = (allMemberships ?? []).map((m: any) => m.user_id).filter(Boolean);
   const { data: memberProfiles } = memberUserIds.length > 0
-    ? await (supabase.from("profiles") as any)
+    ? await (serviceClient.from("profiles") as any)
         .select("id, full_name, avatar_url")
         .in("id", memberUserIds)
     : { data: [] };

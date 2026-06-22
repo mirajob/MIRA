@@ -31,7 +31,7 @@ export default async function AssociationDashboardPage({ params }: Props) {
 
   const { data: members } = await supabase
     .from("association_memberships")
-    .select("id")
+    .select("id, role")
     .eq("association_id", association.id)
     .eq("status", "active");
 
@@ -51,7 +51,7 @@ export default async function AssociationDashboardPage({ params }: Props) {
           </p>
         </div>
         <div className="rounded-lg border border-border bg-white p-6">
-          <p className="text-eyebrow text-navy/60 uppercase">Membri board</p>
+          <p className="text-eyebrow text-navy/60 uppercase">Membri totali</p>
           <p className="mt-2 font-display text-display-md text-navy">
             {members?.length ?? 0}
           </p>

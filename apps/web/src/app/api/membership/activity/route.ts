@@ -4,7 +4,7 @@ import { createServiceClient } from "@mira/supabase/server";
 
 export async function POST(request: Request) {
   const ctx = await getUserContext();
-  const { membershipId, activityDescription } = await request.json();
+  const { membershipId, activityDescription, title } = await request.json();
 
   const supabase = await createServiceClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,9 +22,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
+  const updateData: Record<string, unknown> = {};
+  if (activityDescription !== undefined) updateData.activity_description = activityDescription;
+  if (title !== undefined) updateData.title = title;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase.from("association_memberships") as any)
-    .update({ activity_description: activityDescription })
+    .update(updateData)
     .eq("id", membershipId);
 
   return NextResponse.json({ success: true });
