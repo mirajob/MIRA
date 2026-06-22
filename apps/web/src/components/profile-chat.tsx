@@ -10,7 +10,7 @@ interface Message {
   content: string;
 }
 
-const INITIAL_MESSAGE = `Questa è la tua chat con MIRA. Puoi parlarmi di qualsiasi cosa — carriera, magistrale, associazioni, esperienze, dubbi. Tutto quello che mi dici arricchisce il tuo profilo. Che mi racconti?`;
+const INITIAL_MESSAGE = `Per completare il tuo profilo, ho bisogno di alcune informazioni. Da quando saresti disponibile per uno stage o un'opportunità lavorativa? E in quale città preferiresti?`;
 
 const UPLOAD_TRIGGERS = [
   "aggiorna", "carica", "upload", "libretto", "transcript", "nuovi esami", "nuovi voti",

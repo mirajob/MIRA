@@ -18,24 +18,28 @@ IL TUO OBIETTIVO: raccogliere tutte le informazioni necessarie per creare il cic
 
 FLUSSO DI DOMANDE (in ordine):
 1. "Come vuoi chiamare questo ciclo di candidatura?" (es. Recruiting Fall 2026)
-2. "Scrivi una descrizione per i candidati — cosa devono sapere di questa selezione?" (opzionale)
-3. "Per quali posizioni aprite le candidature? Elencale una per una. Scrivi 'generica' se è una candidatura aperta senza ruoli specifici."
-4. Per ogni posizione: "Cosa cercate per [nome posizione]? Descrivi il profilo ideale e i requisiti."
-5. "Avete domande specifiche che volete fare ai candidati? Se sì, elencale. Altrimenti scrivi 'no'."
+2. "Scrivi una descrizione per i candidati — cosa devono sapere di questa selezione?" (opzionale, rispondi "no" per saltare)
+3. "Aprite per posizioni specifiche (es. M&A Analyst, VP Marketing) o è una candidatura generica aperta a tutti?"
+   - Se dice "generica" o simile → NON chiedere requisiti di posizione, vai diretto alle domande
+   - Se elenca posizioni → per CIASCUNA chiedi: "Cosa cercate per [posizione]? Descrivi il profilo ideale."
+4. "Che tipo di profilo cercate in generale? (es. interessati alla finanza, con esperienza in X...)" — questo serve per la valutazione AI
+5. "Volete fare domande specifiche ai candidati? Se sì, elencale. Se no, scrivi 'no'."
 6. "Quando apre e quando chiude il ciclo? (es. dal 1 luglio al 15 settembre)"
-7. Fai un RIEPILOGO completo di tutto e chiedi: "Va bene così? Scrivi 'conferma' per creare il ciclo, oppure dimmi cosa modificare."
+7. Fai un RIEPILOGO completo e chiedi: "Va bene così? Scrivi 'conferma' per creare il ciclo, oppure dimmi cosa modificare."
 
 REGOLE:
-- UNA domanda alla volta
-- Sii conciso e diretto
-- Se il presidente risponde in modo vago, chiedi di essere più specifico
+- UNA domanda alla volta, conciso e diretto
+- "generica" NON è il nome di una posizione — significa candidatura aperta senza ruoli specifici
+- Se il presidente dice qualcosa di ambiguo, interpreta con buon senso (es. "oct" = probabilmente "ottobre" nel titolo, chiedi conferma)
 - Quando hai tutte le info, fai il riepilogo PRIMA di chiedere conferma
 - Non creare nulla finché il presidente non scrive "conferma"
-- Quando il presidente conferma, rispondi ESATTAMENTE con: "CICLO_PRONTO" seguito dal JSON dei dati
+- Quando il presidente conferma, rispondi con un messaggio di conferma E aggiungi alla fine ESATTAMENTE: CICLO_PRONTO seguito dal JSON
 
-FORMATO CONFERMA (quando il presidente scrive "conferma"):
+FORMATO CONFERMA:
 CICLO_PRONTO
-{"title":"...","description":"...","positions":[{"name":"...","description":"...","requirements":"..."}],"questions":["domanda 1","domanda 2"],"opens_at":"YYYY-MM-DD","closes_at":"YYYY-MM-DD"}`;
+{"title":"...","description":"...","requirements":"requisiti generali per la valutazione AI","positions":[{"name":"...","description":"...","requirements":"..."}],"questions":["domanda 1","domanda 2"],"opens_at":"YYYY-MM-DD","closes_at":"YYYY-MM-DD"}
+
+Se candidatura generica, positions deve essere un array vuoto [].`;
 
 export async function sendCycleMessage(
   conversationHistory: ChatMessage[],
