@@ -1,6 +1,7 @@
 import { getUserContext } from "@/lib/auth";
 import { RoleSwitcher } from "@/components/role-switcher";
 import { UserNav } from "@/components/user-nav";
+import { StudentBottomNav } from "@/components/student-bottom-nav";
 import Link from "next/link";
 
 export default async function DashboardLayout({
@@ -23,8 +24,8 @@ export default async function DashboardLayout({
   if (!showFullSidebar) {
     return (
       <div className="flex min-h-screen flex-col bg-paper">
-        <header className="flex h-14 items-center justify-between border-b border-border bg-white px-6">
-          <Link href="/">
+        <header className="flex h-14 items-center justify-between border-b border-border bg-white px-6 shrink-0">
+          <Link href="/student">
             <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
           </Link>
           <UserNav
@@ -32,7 +33,8 @@ export default async function DashboardLayout({
             email={ctx.profile.email}
           />
         </header>
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 pb-20">{children}</main>
+        <StudentBottomNav />
       </div>
     );
   }
