@@ -27,6 +27,27 @@ export default async function AssociationPublicPage({ params }: Props) {
     .eq("status", "open")
     .order("closes_at", { ascending: true });
 
+  // Check if logged-in user is a member
+  const { data: { user } } = await supabase.auth.getUser();
+  let isMember = false;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("auth_user_id", user.id)
+      .maybeSingle();
+    if (profile) {
+      const pid = (profile as Record<string, unknown>).id as string;
+      const { data: membership } = await (supabase.from("association_memberships") as any)
+        .select("id")
+        .eq("association_id", (association as Record<string, unknown>).id)
+        .eq("user_id", pid)
+        .eq("status", "active")
+        .maybeSingle();
+      isMember = !!membership;
+    }
+  }
+
   return (
     <div className="min-h-screen bg-paper">
       <PublicHeader />
@@ -97,7 +118,17 @@ export default async function AssociationPublicPage({ params }: Props) {
         </div>
 
         {/* Open cycles */}
-        {openCycles && openCycles.length > 0 ? (
+        {isMember ? (
+          <div className="rounded-lg border-2 border-petrol/30 bg-petrol-50 p-6 text-center">
+            <p className="text-body text-ink mb-3">Fai parte di questa associazione.</p>
+            <Link
+              href={`/association/${slug}`}
+              className="inline-block bg-petrol text-white px-6 py-3 rounded-md text-label hover:bg-petrol-700 transition-colors duration-100"
+            >
+              Gestisci associazione
+            </Link>
+          </div>
+        ) : openCycles && openCycles.length > 0 ? (
           <div className="space-y-4">
             <h2 className="font-display text-h2 text-navy">Candidature aperte</h2>
             {openCycles.map((cycle) => (

@@ -3,6 +3,24 @@ import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
+const ROLE_LABELS: Record<string, string> = {
+  association_president: "Presidente",
+  association_admin: "Admin",
+  association_reviewer: "Reviewer",
+  association_interviewer: "Interviewer",
+  association_member: "Membro",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Bozza",
+  submitted: "Inviata",
+  in_review: "In revisione",
+  interview: "Colloquio",
+  accepted: "Accettata",
+  rejected: "Rifiutata",
+  waitlisted: "Lista d'attesa",
+};
+
 export default async function StudentAssociazioniPage() {
   const ctx = await getUserContext();
   if (!ctx.isStudent) redirect("/api/auth/redirect");
@@ -24,6 +42,11 @@ export default async function StudentAssociazioniPage() {
     .select("id, status, association_id, association_profiles(name, slug)")
     .eq("student_user_id", profileId);
 
+  const { data: myMemberships } = await (supabase.from("association_memberships") as any)
+    .select("association_id, role, joined_at")
+    .eq("user_id", profileId)
+    .eq("status", "active");
+
   const cyclesByAssoc = new Map<string, any[]>();
   for (const c of openCycles ?? []) {
     const list = cyclesByAssoc.get(c.association_id) ?? [];
@@ -36,15 +59,10 @@ export default async function StudentAssociazioniPage() {
     appsByAssoc.set(a.association_id, a);
   }
 
-  const STATUS_LABELS: Record<string, string> = {
-    draft: "Bozza",
-    submitted: "Inviata",
-    in_review: "In revisione",
-    interview: "Colloquio",
-    accepted: "Accettata",
-    rejected: "Rifiutata",
-    waitlisted: "Lista d'attesa",
-  };
+  const membershipByAssoc = new Map<string, any>();
+  for (const m of myMemberships ?? []) {
+    membershipByAssoc.set(m.association_id, m);
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-6 space-y-5">
@@ -57,7 +75,7 @@ export default async function StudentAssociazioniPage() {
             {myApplications!.map((app: any) => (
               <Link
                 key={app.id}
-                href={`/student/applications`}
+                href="/student/applications"
                 className="flex items-center justify-between rounded-md px-3 py-2 hover:bg-navy-50/50 transition-colors"
               >
                 <span className="text-body text-ink">{app.association_profiles?.name ?? "—"}</span>
@@ -72,6 +90,7 @@ export default async function StudentAssociazioniPage() {
         {(associations ?? []).map((assoc: any) => {
           const cycles = cyclesByAssoc.get(assoc.id) ?? [];
           const myApp = appsByAssoc.get(assoc.id);
+          const membership = membershipByAssoc.get(assoc.id);
           const hasOpenCycle = cycles.length > 0;
 
           return (
@@ -85,7 +104,14 @@ export default async function StudentAssociazioniPage() {
                   </div>
                 )}
                 <div className="flex-1">
-                  <h3 className="font-sans text-h3 text-navy">{assoc.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-sans text-h3 text-navy">{assoc.name}</h3>
+                    {membership && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-petrol-50 text-petrol-700">
+                        {ROLE_LABELS[membership.role] ?? membership.role}
+                      </span>
+                    )}
+                  </div>
                   {assoc.category && (
                     <p className="text-body-sm text-ink-tertiary">
                       {assoc.category.charAt(0).toUpperCase() + assoc.category.slice(1).replace("_", " ")}
@@ -116,7 +142,14 @@ export default async function StudentAssociazioniPage() {
                   Vedi pagina
                 </Link>
 
-                {myApp ? (
+                {membership ? (
+                  <Link
+                    href={`/association/${assoc.slug}`}
+                    className="bg-petrol text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-petrol-700 transition-colors duration-100"
+                  >
+                    Gestisci
+                  </Link>
+                ) : myApp ? (
                   <span className="text-body-sm text-ink-secondary">
                     Candidatura: {STATUS_LABELS[myApp.status] ?? myApp.status}
                   </span>
