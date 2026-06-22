@@ -1,4 +1,4 @@
-import { createServerClient } from "@mira/supabase/server";
+import { createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import { QuestionBuilder } from "./question-builder";
 
@@ -8,21 +8,21 @@ interface Props {
 
 export default async function CycleDetailPage({ params }: Props) {
   const { slug, cycleId } = await params;
-  const supabase = await createServerClient();
+  const supabase = await createServiceClient();
 
-  const { data: cycle } = await supabase
-    .from("application_cycles")
+  const { data: cycle } = await (supabase.from("application_cycles") as any)
     .select("*")
     .eq("id", cycleId)
     .maybeSingle();
 
   if (!cycle) notFound();
 
-  const { data: questions } = await supabase
-    .from("application_questions")
+  const { data: questions } = await (supabase.from("application_questions") as any)
     .select("*")
     .eq("application_cycle_id", cycleId)
     .order("order_index");
+
+  const positions = (cycle.available_roles ?? []) as Array<{ name: string; description?: string; requirements?: string }>;
 
   return (
     <div className="space-y-8">
@@ -45,6 +45,28 @@ export default async function CycleDetailPage({ params }: Props) {
           {cycle.closes_at && <span>Chiude: {new Date(cycle.closes_at).toLocaleDateString("it-IT")}</span>}
         </div>
       </div>
+
+      {positions.length > 0 && (
+        <div>
+          <h3 className="font-sans text-h3 text-navy mb-4">Posizioni aperte</h3>
+          <div className="space-y-3">
+            {positions.map((pos, i) => (
+              <div key={i} className="rounded-lg border border-border bg-white p-5">
+                <p className="text-body font-medium text-navy">{pos.name}</p>
+                {pos.description && (
+                  <p className="mt-1 text-body-sm text-ink-secondary">{pos.description}</p>
+                )}
+                {pos.requirements && (
+                  <div className="mt-2">
+                    <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-1">Requisiti (privati)</p>
+                    <p className="text-body-sm text-ink-tertiary">{pos.requirements}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div>
         <h3 className="font-sans text-h3 text-navy mb-4">Domande personalizzate</h3>

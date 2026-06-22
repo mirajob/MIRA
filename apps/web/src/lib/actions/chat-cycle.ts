@@ -47,8 +47,9 @@ export async function sendCycleMessage(
     { role: "user" as const, content: userMessage },
   ];
 
+  const today = new Date().toISOString().split("T")[0];
   const messages = [
-    { role: "system" as const, content: SYSTEM_PROMPT + `\n\nASSOCIAZIONE: ${associationName}` },
+    { role: "system" as const, content: SYSTEM_PROMPT + `\n\nASSOCIAZIONE: ${associationName}\nDATA ODIERNA: ${today}. Usa l'anno corretto (2026) per le date.` },
     ...updatedHistory.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
