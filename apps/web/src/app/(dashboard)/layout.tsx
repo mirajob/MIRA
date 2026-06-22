@@ -1,5 +1,5 @@
 import { getUserContext } from "@/lib/auth";
-import { RoleSwitcher } from "@/components/role-switcher";
+import { SidebarNav } from "@/components/sidebar-nav";
 import { UserNav } from "@/components/user-nav";
 import Link from "next/link";
 
@@ -28,7 +28,7 @@ export default async function DashboardLayout({
         </div>
 
         <div className="flex-1 overflow-y-auto px-2 py-4">
-          <RoleSwitcher
+          <SidebarNav
             isStudent={ctx.isStudent}
             isMiraAdmin={ctx.isMiraAdmin}
             memberships={memberships}

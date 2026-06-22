@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { RoadmapBanner } from "@/components/roadmap-banner";
 import { ProfileChat } from "@/components/profile-chat";
-import { MembershipCard } from "@/components/membership-card";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -34,7 +33,7 @@ export default async function StudentHomePage() {
   }
 
   const { data: memberships } = await (supabase.from("association_memberships") as any)
-    .select("id, role, title, activity_description, joined_at, association_profiles(name, slug)")
+    .select("id, role, title, joined_at, association_profiles(name, slug)")
     .eq("user_id", profileId)
     .eq("status", "active");
 
@@ -79,19 +78,14 @@ export default async function StudentHomePage() {
       {(memberships?.length ?? 0) > 0 && (
         <div className="rounded-lg border border-border bg-white p-5">
           <p className="text-eyebrow text-navy/60 uppercase mb-3">Le mie associazioni</p>
-          <div className="space-y-3">
-            {memberships!.map((m: any) => (
-              <MembershipCard
-                key={m.id}
-                membership={{
-                  id: m.id,
-                  role: m.role,
-                  title: m.title,
-                  activityDescription: m.activity_description,
-                  associationName: m.association_profiles?.name ?? "—",
-                  associationSlug: m.association_profiles?.slug ?? "",
-                }}
-              />
+          <div className="space-y-2">
+            {memberships!.map((m: any, i: number) => (
+              <div key={i} className="flex items-center justify-between rounded-md px-3 py-2 hover:bg-navy-50/50 transition-colors">
+                <span className="text-body text-ink font-medium">{m.association_profiles?.name ?? "—"}</span>
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-petrol-50 text-petrol-700">
+                  {m.title ?? ROLE_LABELS[m.role] ?? m.role}
+                </span>
+              </div>
             ))}
           </div>
         </div>
