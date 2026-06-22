@@ -11,14 +11,14 @@ export default async function StudentProfilePage() {
   const profileId = (ctx.profile as any).id as string;
 
   const { data: student } = await (supabase.from("student_profiles") as any)
-    .select("degree_program, degree_level, current_year, transcript_summary, transcript_uploaded, profile_summary")
+    .select("degree_program, degree_level, current_year, transcript_summary, transcript_uploaded, profile_summary, university")
     .eq("user_id", profileId)
     .single();
 
   const { data: courses } = await (supabase.from("student_courses") as any)
     .select("course_name, course_code, credits, grade, grade_numeric, is_pass_fail, academic_year")
     .eq("student_profile_id", profileId)
-    .order("academic_year", { ascending: true });
+    .order("created_at", { ascending: true });
 
   const ts = student?.transcript_summary as Record<string, any> | null;
   const courseList = (courses ?? []) as Array<{
@@ -31,43 +31,55 @@ export default async function StudentProfilePage() {
     academic_year: string;
   }>;
 
+  const degreeName = ts?.degree_program || student?.degree_program || "—";
+  const degreeLevel = ts?.degree_level || student?.degree_level || "—";
+  const university = student?.university || "Bocconi University";
+  const weightedAvg = ts?.weighted_average;
+  const totalCredits = ts?.total_credits ?? courseList.reduce((sum: number, c) => sum + (c.credits || 0), 0);
+  const gradedExams = courseList.filter((c) => c.grade_numeric !== null);
+  const passFail = courseList.filter((c) => c.is_pass_fail);
+
   return (
     <div className="mx-auto max-w-2xl px-6 py-6 space-y-5">
       <h1 className="font-display text-h2 text-navy">Dettagli accademici</h1>
 
-      <div className="rounded-lg border border-border bg-white p-5">
-        <div className="grid gap-3 sm:grid-cols-3 text-body-sm">
+      <div className="rounded-lg border border-border bg-white p-5 space-y-4">
+        <div>
+          <p className="text-ink-tertiary text-body-sm">Università</p>
+          <p className="text-ink font-medium">{university}</p>
+        </div>
+        <div>
+          <p className="text-ink-tertiary text-body-sm">Corso di laurea</p>
+          <p className="text-ink font-medium">{degreeName}</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
           <div>
-            <span className="text-ink-tertiary">Corso</span>
-            <p className="text-ink font-medium">{student?.degree_program || "—"}</p>
+            <p className="text-ink-tertiary text-body-sm">Livello</p>
+            <p className="text-ink font-medium">{degreeLevel === "triennale" ? "Triennale (Bachelor)" : degreeLevel === "magistrale" ? "Magistrale (Master)" : degreeLevel}</p>
           </div>
           <div>
-            <span className="text-ink-tertiary">Livello</span>
-            <p className="text-ink font-medium">{student?.degree_level || "—"}</p>
+            <p className="text-ink-tertiary text-body-sm">Anno</p>
+            <p className="text-ink font-medium">{student?.current_year ? `${student.current_year}°` : "—"}</p>
           </div>
           <div>
-            <span className="text-ink-tertiary">Media ponderata</span>
-            <p className="text-ink font-medium">
-              {ts?.weighted_average ? `${(ts.weighted_average as number).toFixed(1)}/30` : "—"}
-            </p>
+            <p className="text-ink-tertiary text-body-sm">Media ponderata</p>
+            <p className="text-ink font-medium">{weightedAvg ? `${Number(weightedAvg).toFixed(1)}/30` : "—"}</p>
           </div>
         </div>
-        {ts && (
-          <div className="mt-3 grid gap-3 sm:grid-cols-3 text-body-sm">
-            <div>
-              <span className="text-ink-tertiary">Crediti totali</span>
-              <p className="text-ink font-medium">{ts.total_credits ?? 0} CFU</p>
-            </div>
-            <div>
-              <span className="text-ink-tertiary">Esami completati</span>
-              <p className="text-ink font-medium">{ts.courses?.length ?? courseList.length}</p>
-            </div>
-            <div>
-              <span className="text-ink-tertiary">Libretto</span>
-              <p className="text-ink font-medium">{student?.transcript_uploaded ? "Caricato" : "Non caricato"}</p>
-            </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div>
+            <p className="text-ink-tertiary text-body-sm">Crediti totali</p>
+            <p className="text-ink font-medium">{totalCredits} CFU</p>
           </div>
-        )}
+          <div>
+            <p className="text-ink-tertiary text-body-sm">Esami con voto</p>
+            <p className="text-ink font-medium">{gradedExams.length}</p>
+          </div>
+          <div>
+            <p className="text-ink-tertiary text-body-sm">Idoneità/Pass</p>
+            <p className="text-ink font-medium">{passFail.length}</p>
+          </div>
+        </div>
       </div>
 
       {courseList.length > 0 && (
@@ -78,16 +90,33 @@ export default async function StudentProfilePage() {
           <div className="divide-y divide-border">
             {courseList.map((c, i) => (
               <div key={i} className="px-5 py-3 flex items-center justify-between">
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="text-body-sm text-ink font-medium">{c.course_name}</p>
-                  <p className="text-xs text-ink-tertiary">{c.credits} CFU{c.academic_year ? ` • ${c.academic_year}` : ""}</p>
+                  <p className="text-xs text-ink-tertiary">
+                    {c.credits} CFU
+                    {c.course_code ? ` • ${c.course_code}` : ""}
+                    {c.academic_year ? ` • ${c.academic_year}` : ""}
+                  </p>
                 </div>
-                <span className={`text-body-sm font-medium ${c.is_pass_fail ? "text-ink-secondary" : c.grade_numeric && c.grade_numeric >= 28 ? "text-success" : "text-ink"}`}>
+                <span className={`text-body-sm font-semibold ml-3 ${
+                  c.is_pass_fail ? "text-ink-secondary" :
+                  c.grade_numeric && c.grade_numeric >= 30 ? "text-success font-bold" :
+                  c.grade_numeric && c.grade_numeric >= 28 ? "text-success" :
+                  "text-ink"
+                }`}>
                   {c.grade}
                 </span>
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {courseList.length === 0 && (
+        <div className="rounded-lg border border-border bg-white p-5 text-center">
+          <p className="text-body text-ink-secondary">
+            Nessun esame registrato. Carica il tuo libretto durante l&apos;onboarding per vedere i tuoi esami qui.
+          </p>
         </div>
       )}
     </div>

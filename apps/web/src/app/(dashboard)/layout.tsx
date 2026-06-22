@@ -1,7 +1,6 @@
 import { getUserContext } from "@/lib/auth";
 import { RoleSwitcher } from "@/components/role-switcher";
 import { UserNav } from "@/components/user-nav";
-import { StudentBottomNav } from "@/components/student-bottom-nav";
 import Link from "next/link";
 
 export default async function DashboardLayout({
@@ -33,8 +32,7 @@ export default async function DashboardLayout({
             email={ctx.profile.email}
           />
         </header>
-        <main className="flex-1 pb-20">{children}</main>
-        <StudentBottomNav />
+        <main className="flex-1">{children}</main>
       </div>
     );
   }
