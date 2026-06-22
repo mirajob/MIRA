@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createServerClient } from "@mira/supabase/server";
+import { createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import { BoardMemberList } from "./board-member-list";
 import { InviteMemberForm } from "./invite-member-form";
@@ -14,7 +14,7 @@ const WORKSPACE_ROLES = ["association_president", "association_admin", "associat
 
 export default async function BoardPage({ params }: Props) {
   const { slug } = await params;
-  const supabase = await createServerClient();
+  const supabase = await createServiceClient();
 
   const { data: association } = await (supabase.from("association_profiles") as any)
     .select("id, name, slug, invite_code")
