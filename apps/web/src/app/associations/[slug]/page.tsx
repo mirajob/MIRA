@@ -159,20 +159,22 @@ export default async function AssociationPublicPage({ params }: Props) {
             {publicBoard.length > 0 && (
               <div>
                 <h3 className="text-label text-ink-secondary mb-3">Board</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {publicBoard.map((m: any, i: number) => (
-                    <div key={i} className="rounded-lg border border-border bg-white p-4 text-center">
-                      <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-navy text-white text-label font-semibold">
-                        {(m.profiles?.full_name ?? "?").charAt(0).toUpperCase()}
+                <div className="flex flex-wrap gap-3">
+                  {publicBoard.map((m: any, i: number) => {
+                    const name = m.profiles?.full_name;
+                    if (!name) return null;
+                    return (
+                      <div key={i} className="inline-flex items-center gap-3 rounded-lg border border-border bg-white px-4 py-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy text-white text-xs font-semibold">
+                          {name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-body-sm font-medium text-navy">{name}</p>
+                          <p className="text-xs text-ink-secondary">{m.title ?? ROLE_LABELS[m.role] ?? "Board"}</p>
+                        </div>
                       </div>
-                      <p className="text-body font-medium text-navy truncate">
-                        {m.profiles?.full_name ?? "—"}
-                      </p>
-                      <p className="text-body-sm text-ink-secondary">
-                        {m.title ?? ROLE_LABELS[m.role] ?? "Board"}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -183,15 +185,15 @@ export default async function AssociationPublicPage({ params }: Props) {
                   Membri ({publicMembers.length})
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {publicMembers.map((m: any, i: number) => (
+                  {publicMembers.filter((m: any) => m.profiles?.full_name).map((m: any, i: number) => (
                     <span
                       key={i}
                       className="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-border bg-white text-body-sm text-ink"
                     >
                       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ink-tertiary/20 text-ink text-eyebrow font-semibold text-[10px]">
-                        {(m.profiles?.full_name ?? "?").charAt(0).toUpperCase()}
+                        {m.profiles.full_name.charAt(0).toUpperCase()}
                       </span>
-                      {m.profiles?.full_name ?? "—"}
+                      {m.profiles.full_name}
                       {m.title && <span className="text-ink-tertiary">· {m.title}</span>}
                     </span>
                   ))}
