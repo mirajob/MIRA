@@ -32,7 +32,7 @@ export async function chatCompletion(
   );
 
   const body = {
-    model: options.model ?? (hasMedia ? AI_CONFIG.visionModel : AI_CONFIG.defaultModel),
+    model: options.model ?? AI_CONFIG.defaultModel,
     messages,
     max_tokens: options.maxTokens ?? 1024,
     temperature: options.temperature ?? 0.7,

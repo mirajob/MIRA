@@ -72,7 +72,7 @@ async function parseTranscriptImage(base64Data: string, mimeType: string): Promi
         ],
       },
     ],
-    { temperature: 0.1, maxTokens: 4096, jsonMode: true, model: "gpt-4o" }
+    { temperature: 0.1, maxTokens: 4096, jsonMode: true }
   );
 
   return JSON.parse(result) as ParsedTranscript;
@@ -85,7 +85,7 @@ async function parseTranscriptPdf(base64Data: string): Promise<ParsedTranscript>
   const dataUrl = `data:application/pdf;base64,${base64Data}`;
 
   const body = {
-    model: "gpt-4o",
+    model: "gpt-4o-mini",
     input: [
       { role: "system", content: EXTRACTION_PROMPT },
       {

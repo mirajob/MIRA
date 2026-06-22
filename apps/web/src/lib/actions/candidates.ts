@@ -203,7 +203,7 @@ Rispondi in JSON:
         { role: "system", content: "Sei un valutatore AI per candidature universitarie. Valuta in modo oggettivo, basandoti su evidenze concrete del profilo e delle risposte. Non inventare. Rispondi SOLO in JSON." },
         { role: "user", content: prompt },
       ],
-      { temperature: 0.2, maxTokens: 1024, jsonMode: true, model: "gpt-4o" }
+      { temperature: 0.2, maxTokens: 1024, jsonMode: true }
     );
 
     const evaluation = JSON.parse(result);
