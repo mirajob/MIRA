@@ -3,6 +3,7 @@
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { evaluateCandidate } from "./candidates";
 
 export async function submitApplication(cycleId: string, formData: FormData) {
   const ctx = await getUserContext();
@@ -77,6 +78,11 @@ export async function submitApplication(cycleId: string, formData: FormData) {
     changed_by_user_id: ctx.profile.id,
     visible_to_candidate: true,
   });
+
+  // Trigger AI evaluation in background (don't await — let it run async)
+  evaluateCandidate(application.id).catch((err) =>
+    console.error("Background AI evaluation failed:", err)
+  );
 
   revalidatePath("/student");
   return { success: true, applicationId: application.id };

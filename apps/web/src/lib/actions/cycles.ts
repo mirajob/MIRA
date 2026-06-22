@@ -40,8 +40,14 @@ export async function createApplicationCycle(associationId: string, formData: Fo
   const description = formData.get("description") as string;
   const opensAt = formData.get("opensAt") as string;
   const closesAt = formData.get("closesAt") as string;
-  const rolesRaw = formData.get("availableRoles") as string;
-  const roles = rolesRaw ? rolesRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
+  const positionsRaw = formData.get("positions") as string;
+  let positions: Array<{ name: string; description?: string }> = [];
+  try {
+    positions = positionsRaw ? JSON.parse(positionsRaw) : [];
+  } catch {
+    const rolesRaw = formData.get("availableRoles") as string;
+    positions = rolesRaw ? rolesRaw.split(",").map(s => ({ name: s.trim() })).filter(p => p.name) : [];
+  }
 
   if (!title) return { error: "Il titolo è obbligatorio" };
 
@@ -54,7 +60,7 @@ export async function createApplicationCycle(associationId: string, formData: Fo
       status: "open",
       opens_at: opensAt || null,
       closes_at: closesAt || null,
-      available_roles: roles.map(r => ({ name: r })),
+      available_roles: positions,
       created_by_user_id: ctx.profile.id,
     })
     .select()
