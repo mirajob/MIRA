@@ -9,20 +9,22 @@ interface UserNavProps {
 
 export function UserNav({ fullName, email }: UserNavProps) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-navy text-white text-label">
-        {(fullName ?? email).charAt(0).toUpperCase()}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-body-sm font-medium text-navy truncate">
-          {fullName ?? "Utente"}
-        </p>
-        <p className="text-eyebrow text-ink-tertiary truncate">{email}</p>
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-navy text-white text-[10px] font-semibold">
+          {(fullName ?? email).charAt(0).toUpperCase()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-navy truncate">
+            {fullName ?? "Utente"}
+          </p>
+          <p className="text-[10px] text-ink-tertiary truncate">{email}</p>
+        </div>
       </div>
       <form action={signOut}>
         <button
           type="submit"
-          className="text-body-sm text-ink-secondary hover:text-navy transition-colors duration-100"
+          className="text-xs text-ink-secondary hover:text-error transition-colors duration-100"
         >
           Esci
         </button>
