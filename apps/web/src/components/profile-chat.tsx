@@ -8,7 +8,7 @@ interface Message {
   content: string;
 }
 
-const INITIAL_MESSAGE = `Per rendere il tuo profilo pronto per le aziende quando arriveranno, ho bisogno di sapere alcune cose. Da quando sei disponibile per uno stage o un'opportunità lavorativa? E in quale città preferiresti?`;
+const INITIAL_MESSAGE = `Questa è la tua chat con MIRA. Puoi parlarmi di qualsiasi cosa — carriera, magistrale, associazioni, esperienze, dubbi. Tutto quello che mi dici arricchisce il tuo profilo. Che mi racconti?`;
 
 export function ProfileChat({ userName }: { userName: string }) {
   const [messages, setMessages] = useState<Message[]>([]);

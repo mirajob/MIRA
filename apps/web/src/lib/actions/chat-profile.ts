@@ -11,55 +11,143 @@ interface ChatMessage {
   content: string;
 }
 
-const STRUCTURED_QUESTIONS = [
-  "Per rendere il tuo profilo visibile alle aziende quando arriveranno, ho bisogno di sapere alcune cose. Da quando sei disponibile per uno stage o un'opportunità lavorativa? E in quale città?",
-  "Che tipo di ruolo ti interessa? (es. analyst, consulting, marketing, tech...)",
-  "Quali settori ti attraggono di più?",
-  "Qual è il tuo piano a breve termine — cosa vorresti fare nei prossimi 6-12 mesi?",
-];
+async function buildFullContext(profileId: string) {
+  const supabase = await createServiceClient();
 
-const PROFILE_SYSTEM_PROMPT = `Tu sei MIRA. Lo studente ha già completato l'onboarding e ora sta arricchendo il suo profilo.
+  const { data: student } = await (supabase.from("student_profiles") as any)
+    .select("profile_summary, degree_program, degree_level, current_year, transcript_summary, transcript_uploaded, interests, goals, experiences, onboarding_answers")
+    .eq("user_id", profileId)
+    .single();
 
-SEI IN DUE FASI:
-1. Se non hai ancora raccolto le info strutturate (disponibilità, ruolo cercato, settori, piano carriera), fai domande precise UNA alla volta. Non essere generico — chiedi cose concrete.
-2. Una volta raccolte, dì: "Perfetto, il tuo profilo è pronto per le aziende! Da ora in poi questa chat è il tuo spazio — parlami di qualsiasi cosa, dubbi, interessi, esperienze. Tutto quello che mi dici migliora il tuo profilo. E se cambi disponibilità, basta dirmelo qui."
+  const { data: courses } = await (supabase.from("student_courses") as any)
+    .select("course_name, grade, grade_numeric, credits, semester")
+    .eq("student_id", profileId)
+    .order("grade_numeric", { ascending: false });
+
+  const { data: memberships } = await (supabase.from("association_memberships") as any)
+    .select("role, title, activity_description, association_profiles(name, slug, category, short_description)")
+    .eq("user_id", profileId)
+    .eq("status", "active");
+
+  const { data: associations } = await (supabase.from("association_profiles") as any)
+    .select("name, category, short_description")
+    .eq("public_page_status", "published");
+
+  const { data: openCycles } = await (supabase.from("application_cycles") as any)
+    .select("title, closes_at, association_profiles(name)")
+    .eq("status", "open");
+
+  return { student, courses, memberships, associations, openCycles };
+}
+
+function buildSystemPrompt(ctx: Awaited<ReturnType<typeof buildFullContext>>): string {
+  const { student, courses, memberships, associations, openCycles } = ctx;
+  const ts = student?.transcript_summary;
+
+  let studentData = "";
+  if (student) {
+    studentData = `
+PROFILO STUDENTE:
+- Corso: ${ts?.degree_program || student.degree_program || "non noto"}
+- Livello: ${ts?.degree_level || student.degree_level || "non noto"}
+- Anno: ${student.current_year || "non noto"}`;
+    if (student.profile_summary) studentData += `\n- Riassunto: ${student.profile_summary}`;
+    if (student.interests?.length) studentData += `\n- Interessi: ${student.interests.join(", ")}`;
+    if (student.goals?.length) studentData += `\n- Obiettivi: ${student.goals.join(", ")}`;
+    if (student.experiences?.length) studentData += `\n- Esperienze: ${student.experiences.join(", ")}`;
+  }
+
+  let transcriptData = "";
+  if (ts) {
+    transcriptData = `
+DATI ACCADEMICI (dal transcript):
+- Media ponderata: ${ts.weighted_average ? `${ts.weighted_average}/30` : "non calcolata"}
+- Crediti totali: ${ts.total_credits ?? 0} CFU
+- Esami completati: ${ts.courses?.length ?? 0}`;
+    if (courses?.length) {
+      const topCourses = courses.filter((c: any) => c.grade_numeric >= 28).slice(0, 5);
+      if (topCourses.length) {
+        transcriptData += `\n- Voti più alti: ${topCourses.map((c: any) => `${c.course_name} (${c.grade})`).join(", ")}`;
+      }
+    }
+  }
+
+  let membershipData = "";
+  if (memberships?.length) {
+    const list = memberships.map((m: any) => {
+      const name = m.association_profiles?.name ?? "?";
+      const role = m.role === "association_president" ? "Presidente"
+        : m.role === "association_admin" ? "Admin"
+        : m.title || "Membro";
+      let desc = `- ${name}: ${role}`;
+      if (m.activity_description) desc += ` — ${m.activity_description}`;
+      return desc;
+    }).join("\n");
+    membershipData = `\nASSOCIAZIONI DELLO STUDENTE:\n${list}`;
+  }
+
+  let platformData = "";
+  if (associations?.length) {
+    const list = associations.map((a: any) => `- ${a.name} (${a.category || "generale"})`).join("\n");
+    const cycles = openCycles?.map((c: any) =>
+      `- ${c.association_profiles?.name}: "${c.title}"${c.closes_at ? ` (scade ${new Date(c.closes_at).toLocaleDateString("it-IT")})` : ""}`
+    ).join("\n") || "nessuna";
+
+    platformData = `
+ASSOCIAZIONI SU MIRA:
+${list}
+
+CANDIDATURE APERTE:
+${cycles}`;
+  }
+
+  return `Tu sei MIRA, la piattaforma AI per il talento universitario di Bocconi.
+
+CHI SEI: MIRA accompagna gli studenti Bocconi nel percorso — orientamento, candidature alle associazioni, profilo basato su evidenze. In futuro: simulazioni e matching con aziende.
+${studentData}
+${transcriptData}
+${membershipData}
+${platformData}
+
+COME COMPORTARTI:
+- Conosci TUTTO dello studente: voti, associazioni, interessi, esperienze. Usa queste info.
+- Se ti chiede delle sue associazioni, SAI in quali è e con che ruolo.
+- Se ti chiede di candidature, SAI quali sono aperte su MIRA.
+- Se ti chiede del suo profilo, SAI i suoi dati accademici.
+- Puoi parlare di orientamento, carriera, magistrale, esperienze — tutto quello che lo aiuta.
+- Tutto quello che lo studente ti dice arricchisce il suo profilo MIRA automaticamente.
 
 COME PARLARE:
-- Diretto, genuino, come un amico.
-- UNA domanda alla volta.
-- Reagisci a quello che dice — non ignorare le risposte.
+- Come un amico intelligente che conosce Bocconi. Diretto, genuino.
+- UNA domanda alla volta. Mai elenchi.
+- Reagisci davvero — commenti concreti basati sui dati reali.
+- Lo studente È GIÀ A BOCCONI. Non chiedergli se vuole entrarci.
 
 NON FARE:
-- Non ripresentarti
-- Non fare liste di domande
-- Non essere un chatbot generico`;
+- Non ripresentarti ogni volta
+- Non dire "Grazie per aver condiviso!"
+- Non elencare corsi del libretto
+- Non essere un generico career coach — sei MIRA, sai le cose concrete`;
+}
 
 export async function sendProfileMessage(
   conversationHistory: ChatMessage[],
   userMessage: string
 ) {
-  const ctx = await getUserContext();
-  const profileId = (ctx.profile as any).id as string;
+  const userCtx = await getUserContext();
+  const profileId = (userCtx.profile as any).id as string;
   const supabase = await createServiceClient();
 
-  const { data: student } = await (supabase.from("student_profiles") as any)
-    .select("profile_summary, degree_program, transcript_summary, onboarding_answers")
-    .eq("user_id", profileId)
-    .single();
+  const fullCtx = await buildFullContext(profileId);
+  const systemPrompt = buildSystemPrompt(fullCtx);
 
   const updatedHistory = [
     ...conversationHistory,
     { role: "user" as const, content: userMessage },
   ];
 
-  let studentContext = "";
-  if (student?.transcript_summary) {
-    const ts = student.transcript_summary;
-    studentContext = `\nDATI STUDENTE: ${ts.degree_program || student.degree_program || ""}, media ${ts.weighted_average || "?"}/30, ${ts.courses?.length || 0} esami.`;
-  }
-
   const messages = [
-    { role: "system" as const, content: PROFILE_SYSTEM_PROMPT + studentContext },
+    { role: "system" as const, content: systemPrompt },
     ...updatedHistory.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
@@ -68,7 +156,7 @@ export async function sendProfileMessage(
 
   const assistantMessage = await chatCompletion(messages, {
     temperature: 0.7,
-    maxTokens: 400,
+    maxTokens: 500,
   });
 
   const fullHistory = [
@@ -76,7 +164,7 @@ export async function sendProfileMessage(
     { role: "assistant" as const, content: assistantMessage },
   ];
 
-  const answers = student?.onboarding_answers || {};
+  const answers = fullCtx.student?.onboarding_answers || {};
   await (supabase.from("student_profiles") as any)
     .update({
       onboarding_answers: {
@@ -87,7 +175,6 @@ export async function sendProfileMessage(
     })
     .eq("user_id", profileId);
 
-  // Update profile summary every 4 messages
   if (fullHistory.length % 4 === 0 && fullHistory.length > 2) {
     await updateProfileFromChat(profileId, fullHistory);
   }
@@ -129,7 +216,8 @@ export async function dismissRoadmap() {
 }
 
 async function updateProfileFromChat(profileId: string, conversation: ChatMessage[]) {
-  const conversationText = conversation
+  const recent = conversation.slice(-8);
+  const conversationText = recent
     .map((m) => `${m.role === "user" ? "Studente" : "MIRA"}: ${m.content}`)
     .join("\n");
 
@@ -137,9 +225,9 @@ async function updateProfileFromChat(profileId: string, conversation: ChatMessag
     [
       {
         role: "system",
-        content: `Dalla conversazione, estrai info aggiuntive per il profilo. Rispondi SOLO in JSON:
-{"availability":"disponibilità (quando, dove)","desired_role":"ruolo cercato","sectors":["settori"],"short_term_plan":"piano a breve termine","profile_update":"se c'è qualcosa di nuovo da aggiungere al riassunto del profilo, scrivilo qui. Altrimenti lascia vuoto."}
-Non inventare. Solo info esplicitamente dette dallo studente.`,
+        content: `Dagli ultimi messaggi della conversazione, estrai info nuove per il profilo. Rispondi SOLO in JSON:
+{"interests":["nuovi interessi emersi"],"goals":["nuovi obiettivi emersi"],"experiences":["nuove esperienze menzionate"],"profile_update":"aggiornamento al riassunto del profilo se c'è qualcosa di nuovo e significativo, altrimenti vuoto"}
+SOLO info esplicitamente dette dallo studente. Non inventare. Array vuoti se niente di nuovo.`,
       },
       { role: "user", content: conversationText },
     ],
@@ -149,11 +237,22 @@ Non inventare. Solo info esplicitamente dette dallo studente.`,
   const data = JSON.parse(extracted);
   const supabase = await createServiceClient();
 
+  const { data: current } = await (supabase.from("student_profiles") as any)
+    .select("interests, goals, experiences, profile_summary")
+    .eq("user_id", profileId)
+    .single();
+
   const updates: Record<string, unknown> = {};
-  if (data.availability) updates.availability = { description: data.availability };
-  if (data.desired_role || data.sectors?.length || data.short_term_plan) {
-    updates.goals = [data.desired_role, data.short_term_plan].filter(Boolean);
-  }
+
+  const mergeArray = (existing: string[], incoming: string[]) => {
+    const set = new Set([...(existing || []), ...incoming.filter(Boolean)]);
+    return [...set];
+  };
+
+  if (data.interests?.length) updates.interests = mergeArray(current?.interests, data.interests);
+  if (data.goals?.length) updates.goals = mergeArray(current?.goals, data.goals);
+  if (data.experiences?.length) updates.experiences = mergeArray(current?.experiences, data.experiences);
+  if (data.profile_update) updates.profile_summary = data.profile_update;
 
   if (Object.keys(updates).length > 0) {
     await (supabase.from("student_profiles") as any)
