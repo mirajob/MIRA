@@ -243,8 +243,9 @@ async function updateProfileFromChat(profileId: string, conversation: ChatMessag
       {
         role: "system",
         content: `Dagli ultimi messaggi della conversazione, estrai info nuove per il profilo. Rispondi SOLO in JSON:
-{"interests":["nuovi interessi emersi"],"goals":["nuovi obiettivi emersi"],"experiences":["nuove esperienze menzionate"],"current_year":null,"profile_update":"aggiornamento al riassunto del profilo se c'è qualcosa di nuovo e significativo, altrimenti vuoto"}
+{"interests":["nuovi interessi emersi"],"goals":["nuovi obiettivi emersi"],"experiences":["nuove esperienze menzionate"],"current_year":null,"association_roles":[{"association_name":"nome associazione","role_title":"ruolo specifico"}],"profile_update":"aggiornamento al riassunto del profilo se c'è qualcosa di nuovo e significativo, altrimenti vuoto"}
 current_year: numero intero (1, 2, 3...) se lo studente ha detto in che anno è. null se non menzionato.
+association_roles: se lo studente dice che ruolo ha in un'associazione (es. "in BSIC faccio l'analyst M&A"), estrai nome associazione e ruolo. Array vuoto se non menzionato.
 SOLO info esplicitamente dette dallo studente. Non inventare. Array vuoti se niente di nuovo.`,
       },
       { role: "user", content: conversationText },
@@ -277,5 +278,23 @@ SOLO info esplicitamente dette dallo studente. Non inventare. Array vuoti se nie
     await (supabase.from("student_profiles") as any)
       .update(updates)
       .eq("user_id", profileId);
+  }
+
+  // Update association membership roles if mentioned
+  if (data.association_roles?.length) {
+    for (const ar of data.association_roles) {
+      if (!ar.association_name || !ar.role_title) continue;
+      const { data: assoc } = await (supabase.from("association_profiles") as any)
+        .select("id")
+        .ilike("name", `%${ar.association_name}%`)
+        .maybeSingle();
+      if (assoc) {
+        await (supabase.from("association_memberships") as any)
+          .update({ title: ar.role_title })
+          .eq("association_id", assoc.id)
+          .eq("user_id", profileId)
+          .eq("status", "active");
+      }
+    }
   }
 }

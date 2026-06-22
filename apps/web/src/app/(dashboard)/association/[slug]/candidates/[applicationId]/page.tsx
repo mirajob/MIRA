@@ -1,4 +1,4 @@
-import { createServerClient } from "@mira/supabase/server";
+import { createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { CandidateActions } from "./candidate-actions";
@@ -9,10 +9,9 @@ interface Props {
 
 export default async function CandidateDetailPage({ params }: Props) {
   const { slug, applicationId } = await params;
-  const supabase = await createServerClient();
+  const supabase = await createServiceClient();
 
-  const { data: application } = await supabase
-    .from("applications")
+  const { data: application } = await (supabase.from("applications") as any)
     .select(`
       *,
       profiles(full_name, email),
