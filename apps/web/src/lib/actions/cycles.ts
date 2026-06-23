@@ -72,6 +72,40 @@ export async function createApplicationCycle(associationId: string, formData: Fo
   return { success: true, cycleId: cycle.id };
 }
 
+export async function updateCycleDetails(
+  cycleId: string,
+  associationId: string,
+  slug: string,
+  data: {
+    title: string;
+    description: string | null;
+    opens_at: string | null;
+    closes_at: string | null;
+    available_roles: Array<{ name: string; description?: string; requirements?: string }>;
+  }
+) {
+  if (!(await checkCyclePermission(associationId, "manage_application_cycles"))) {
+    return { error: "Non hai i permessi" };
+  }
+
+  const supabase = await createServiceClient();
+
+  await supabase
+    .from("application_cycles")
+    .update({
+      title: data.title,
+      description: data.description,
+      opens_at: data.opens_at,
+      closes_at: data.closes_at,
+      available_roles: data.available_roles,
+    })
+    .eq("id", cycleId);
+
+  revalidatePath(`/association/${slug}/cycles`);
+  revalidatePath(`/association/${slug}/cycles/${cycleId}`);
+  return { success: true };
+}
+
 export async function updateCycleStatus(associationId: string, cycleId: string, status: string) {
   const permission = status === "open" ? "publish_application_cycle" : "close_application_cycle";
   if (!(await checkCyclePermission(associationId, permission))) {
