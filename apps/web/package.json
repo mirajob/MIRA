@@ -11,12 +11,13 @@
   },
   "dependencies": {
     "@mira/ai": "workspace:*",
-    "@mira/types": "workspace:*",
-    "@mira/supabase": "workspace:*",
     "@mira/domain": "workspace:*",
+    "@mira/supabase": "workspace:*",
+    "@mira/types": "workspace:*",
     "next": "^15.1.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "resend": "^6.14.0"
   },
   "devDependencies": {
     "@mira/config": "workspace:*",

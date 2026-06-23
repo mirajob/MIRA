@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { changeCandidateStatus, addCandidateNote } from "@/lib/actions/candidates";
+import { generateInterviewMessage, sendInterviewEmail } from "@/lib/actions/interview";
 
 const PIPELINE_FLOW: Record<string, Array<{ value: string; label: string; style: string }>> = {
   submitted: [
@@ -29,24 +30,37 @@ export function CandidateActions({
   applicationId,
   currentStatus,
   candidateEmail,
+  candidateName,
+  associationName,
 }: {
   applicationId: string;
   currentStatus: string;
   candidateEmail?: string;
+  candidateName?: string;
+  associationName?: string;
 }) {
   const [status, setStatus] = useState(currentStatus);
   const [showNote, setShowNote] = useState(false);
   const [showInterview, setShowInterview] = useState(false);
   const [noteText, setNoteText] = useState("");
-  const [interviewLink, setInterviewLink] = useState("");
-  const [interviewDate, setInterviewDate] = useState("");
+  const [interviewMessage, setInterviewMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [generatingMsg, setGeneratingMsg] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const nextSteps = PIPELINE_FLOW[status] ?? [];
 
   async function handleStatusChange(newStatus: string) {
     if (newStatus === "interview") {
       setShowInterview(true);
+      setGeneratingMsg(true);
+      const result = await generateInterviewMessage(
+        candidateName || "candidato/a",
+        associationName || "l'associazione",
+        "il board"
+      );
+      setInterviewMessage(result.message);
+      setGeneratingMsg(false);
       return;
     }
     setLoading(true);
@@ -55,13 +69,14 @@ export function CandidateActions({
     setLoading(false);
   }
 
-  async function handleScheduleInterview() {
+  async function handleSendInterview() {
+    if (!interviewMessage.trim()) return;
     setLoading(true);
-    const note = `Colloquio: ${interviewDate || "data da definire"}${interviewLink ? ` | Link: ${interviewLink}` : ""}`;
-    const result = await changeCandidateStatus(applicationId, "interview", note);
+    const result = await sendInterviewEmail(applicationId, interviewMessage);
     if (!result.error) {
       setStatus("interview");
       setShowInterview(false);
+      setEmailSent(true);
     }
     setLoading(false);
   }
@@ -92,34 +107,41 @@ export function CandidateActions({
         </div>
       )}
 
+      {emailSent && (
+        <div className="w-full max-w-md rounded-md bg-success-bg px-4 py-2 text-body-sm text-success">
+          Email di convocazione inviata a {candidateEmail}
+        </div>
+      )}
+
       {showInterview && (
-        <div className="w-full max-w-sm space-y-2 rounded-lg border border-petrol/30 bg-petrol-50 p-4">
-          <p className="text-label text-navy">Dettagli colloquio</p>
-          <input
-            type="datetime-local"
-            value={interviewDate}
-            onChange={(e) => setInterviewDate(e.target.value)}
-            className="w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:border-petrol"
-          />
-          <input
-            type="text"
-            value={interviewLink}
-            onChange={(e) => setInterviewLink(e.target.value)}
-            placeholder="Link Meet/Zoom (opzionale)"
-            className="w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol"
-          />
+        <div className="w-full max-w-md space-y-3 rounded-lg border border-petrol/30 bg-petrol-50 p-4">
+          <p className="text-label text-navy">Invito a colloquio</p>
+          <p className="text-xs text-ink-secondary">
+            Scrivi il messaggio per {candidateName || "il candidato"}. Puoi includere un link Calendly, Google Meet, o istruzioni per il colloquio.
+            L'email sarà inviata da MIRA a nome tuo.
+          </p>
+          {generatingMsg ? (
+            <div className="px-3 py-4 text-body-sm text-ink-tertiary text-center">MIRA sta scrivendo una bozza...</div>
+          ) : (
+            <textarea
+              value={interviewMessage}
+              onChange={(e) => setInterviewMessage(e.target.value)}
+              rows={8}
+              className="w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:border-petrol resize-y"
+            />
+          )}
           {candidateEmail && (
             <p className="text-xs text-ink-tertiary">
-              Il candidato ({candidateEmail}) riceverà la notifica via email.
+              A: {candidateEmail}
             </p>
           )}
           <div className="flex gap-2">
             <button
-              onClick={handleScheduleInterview}
-              disabled={loading}
+              onClick={handleSendInterview}
+              disabled={loading || generatingMsg || !interviewMessage.trim()}
               className="flex-1 bg-petrol text-white px-4 py-2 rounded-md text-body-sm hover:bg-petrol-700 disabled:opacity-40"
             >
-              {loading ? "Invio..." : "Convoca"}
+              {loading ? "Invio email..." : "Invia invito"}
             </button>
             <button
               onClick={() => setShowInterview(false)}

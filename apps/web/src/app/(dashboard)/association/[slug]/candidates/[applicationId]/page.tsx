@@ -11,6 +11,11 @@ export default async function CandidateDetailPage({ params }: Props) {
   const { slug, applicationId } = await params;
   const supabase = await createServiceClient();
 
+  const { data: association } = await (supabase.from("association_profiles") as any)
+    .select("name")
+    .eq("slug", slug)
+    .single();
+
   const { data: application } = await (supabase.from("applications") as any)
     .select(`
       *,
@@ -59,7 +64,7 @@ export default async function CandidateDetailPage({ params }: Props) {
             {student?.degree_level && <span>· {student.degree_level as string}</span>}
           </div>
         </div>
-        <CandidateActions applicationId={applicationId} currentStatus={application.status} candidateEmail={profile?.email} />
+        <CandidateActions applicationId={applicationId} currentStatus={application.status} candidateEmail={profile?.email} candidateName={profile?.full_name} associationName={association?.name} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
