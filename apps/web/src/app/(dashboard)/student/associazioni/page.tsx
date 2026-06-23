@@ -2,6 +2,7 @@ import { getUserContext } from "@/lib/auth";
 import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { JoinByCode } from "@/components/join-by-code";
 
 const ROLE_LABELS: Record<string, string> = {
   association_president: "Presidente",
@@ -80,6 +81,8 @@ export default async function StudentAssociazioniPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-6 space-y-5">
       <h1 className="font-display text-h2 text-navy">Associazioni</h1>
+
+      <JoinByCode />
 
       {activeApplications.length > 0 && (
         <div className="rounded-lg border border-border bg-white p-5">
