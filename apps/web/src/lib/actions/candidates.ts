@@ -4,6 +4,7 @@ import { chatCompletion } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { sendAcceptanceEmail } from "@/lib/email";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -66,10 +67,11 @@ export async function changeCandidateStatus(
     },
   });
 
-  // Auto-membership on acceptance
+  // Auto-membership + email on acceptance
   if (newStatus === "accepted") {
     const studentUserId = (application as any).student_user_id as string;
     if (studentUserId) {
+      const selectedPosition = (application as any).selected_role_preferences?.[0];
       const { data: existingMembership } = await (supabase.from("association_memberships") as any)
         .select("id")
         .eq("association_id", application.association_id)
@@ -81,9 +83,30 @@ export async function changeCandidateStatus(
           association_id: application.association_id,
           user_id: studentUserId,
           role: "association_member",
+          title: selectedPosition && selectedPosition !== "generica" ? selectedPosition : null,
           status: "active",
           joined_at: new Date().toISOString(),
         });
+      }
+
+      // Send acceptance email
+      const { data: candidateProfile } = await (supabase.from("profiles") as any)
+        .select("full_name, email")
+        .eq("id", studentUserId)
+        .single();
+
+      const assocSlug = (application.association_profiles as { slug: string })?.slug;
+      const { data: assocData } = await (supabase.from("association_profiles") as any)
+        .select("name")
+        .eq("id", application.association_id)
+        .single();
+
+      if (candidateProfile?.email) {
+        sendAcceptanceEmail({
+          candidateEmail: candidateProfile.email,
+          candidateName: candidateProfile.full_name || "candidato/a",
+          associationName: assocData?.name || "l'associazione",
+        }).catch((err) => console.error("Acceptance email error:", err));
       }
     }
   }

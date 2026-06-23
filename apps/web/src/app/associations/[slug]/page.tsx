@@ -219,25 +219,36 @@ export default async function AssociationPublicPage({ params }: Props) {
         ) : openCycles && openCycles.length > 0 ? (
           <div className="space-y-4">
             <h2 className="font-display text-h2 text-navy">Candidature aperte</h2>
-            {openCycles.map((cycle: any) => (
-              <div key={cycle.id} className="rounded-lg border border-border bg-white p-6">
-                <h3 className="font-sans text-h3 text-navy">{cycle.title}</h3>
-                {cycle.description && (
-                  <p className="mt-2 text-body text-ink-secondary">{cycle.description}</p>
-                )}
-                {cycle.closes_at && (
-                  <p className="mt-2 text-body-sm text-ink-tertiary">
-                    Scadenza: {new Date(cycle.closes_at).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}
-                  </p>
-                )}
-                <Link
-                  href={`/associations/${slug}/apply?cycle=${cycle.id}`}
-                  className="mt-4 inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100"
-                >
-                  Candidati
-                </Link>
-              </div>
-            ))}
+            {openCycles.map((cycle: any) => {
+              const notYetOpen = cycle.opens_at && new Date(cycle.opens_at) > new Date();
+              return (
+                <div key={cycle.id} className="rounded-lg border border-border bg-white p-6">
+                  <h3 className="font-sans text-h3 text-navy">{cycle.title}</h3>
+                  {cycle.description && (
+                    <p className="mt-2 text-body text-ink-secondary">{cycle.description}</p>
+                  )}
+                  {notYetOpen ? (
+                    <p className="mt-2 text-body-sm text-ink-tertiary">
+                      Apre il {new Date(cycle.opens_at).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}
+                    </p>
+                  ) : (
+                    <>
+                      {cycle.closes_at && (
+                        <p className="mt-2 text-body-sm text-ink-tertiary">
+                          Scadenza: {new Date(cycle.closes_at).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}
+                        </p>
+                      )}
+                      <Link
+                        href={`/associations/${slug}/apply?cycle=${cycle.id}`}
+                        className="mt-4 inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100"
+                      >
+                        Candidati
+                      </Link>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="rounded-lg border border-border bg-white p-8 text-center">

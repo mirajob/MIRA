@@ -72,7 +72,6 @@ export default async function InterviewsPage({ params }: Props) {
               <tr className="border-b border-border">
                 <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Candidato</th>
                 <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Ciclo</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Dettagli colloquio</th>
                 <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Convocato il</th>
               </tr>
             </thead>
@@ -96,19 +95,6 @@ export default async function InterviewsPage({ params }: Props) {
                     </td>
                     <td className="py-4 px-4 text-body-sm text-ink">
                       {app.application_cycles?.title ?? "—"}
-                    </td>
-                    <td className="py-4 px-4">
-                      {dateMatch?.[1] && (
-                        <p className="text-body-sm text-ink">{dateMatch[1]}</p>
-                      )}
-                      {linkMatch?.[1] && (
-                        <a href={linkMatch[1]} target="_blank" rel="noopener noreferrer" className="text-body-sm text-petrol underline underline-offset-2">
-                          Link colloquio
-                        </a>
-                      )}
-                      {!dateMatch && !linkMatch && (
-                        <p className="text-body-sm text-ink-tertiary">Da programmare</p>
-                      )}
                     </td>
                     <td className="py-4 px-4 text-body-sm text-ink-secondary">
                       {interviewInfo?.created_at

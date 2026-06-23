@@ -64,14 +64,20 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     cycle = data;
   }
 
-  if (!cycle) {
+  const notYetOpen = cycle && (cycle as any).opens_at && new Date((cycle as any).opens_at) > new Date();
+
+  if (!cycle || notYetOpen) {
     return (
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="max-w-md text-center space-y-4 px-4">
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
-          <h1 className="font-display text-h1 text-navy mt-8">Candidature chiuse</h1>
+          <h1 className="font-display text-h1 text-navy mt-8">
+            {notYetOpen ? "Candidature non ancora aperte" : "Candidature chiuse"}
+          </h1>
           <p className="text-body text-ink-secondary">
-            {association.name} non ha cicli di candidatura aperti al momento.
+            {notYetOpen
+              ? `Le candidature per ${association.name} apriranno il ${new Date((cycle as any).opens_at).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}.`
+              : `${association.name} non ha cicli di candidatura aperti al momento.`}
           </p>
           <Link href={`/associations/${slug}`} className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
             Torna alla pagina dell&apos;associazione
