@@ -63,7 +63,7 @@ export default async function CyclesPage({ params }: Props) {
               href={`/association/${slug}/cycles/${cycle.id}`}
               className="px-3 py-1.5 rounded-md text-body-sm text-navy border border-border hover:bg-navy-50 transition-colors"
             >
-              Modifica
+              {isOpen ? "Modifica" : "Dettagli"}
             </Link>
             {isOpen && (
               <CycleStatusButton associationId={association.id} cycleId={cycle.id} currentStatus={cycle.status} />
