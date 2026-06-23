@@ -58,6 +58,11 @@ export default async function CandidateDetailPage({ params }: Props) {
             {profile?.full_name ?? "Candidato"}
           </h2>
           <p className="text-body text-ink-secondary">{profile?.email}</p>
+          {(application as any).selected_role_preferences?.[0] && (
+            <p className="mt-1 text-body-sm font-medium text-petrol">
+              Candidatura per: {(application as any).selected_role_preferences[0]}
+            </p>
+          )}
           <div className="mt-2 flex gap-3 text-body-sm text-ink-tertiary">
             <span>{(student?.degree_program as string) ?? "—"}</span>
             {student?.current_year && <span>· {student.current_year as number}° anno</span>}
@@ -104,29 +109,78 @@ export default async function CandidateDetailPage({ params }: Props) {
           )}
 
           {/* AI Evaluation */}
-          {aiEval && (
-            <div>
-              <h3 className="font-sans text-h3 text-navy mb-4">Valutazione AI</h3>
-              <div className="rounded-lg border border-border bg-white p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium ${
-                    aiEval.overall_fit_category === "strong_fit" ? "bg-success-bg text-success"
-                    : aiEval.overall_fit_category === "good_fit" ? "bg-petrol-50 text-petrol-700"
-                    : aiEval.overall_fit_category === "uncertain_fit" ? "bg-warning-bg text-warning"
-                    : "bg-error-bg text-error"
-                  }`}>
-                    {(aiEval.overall_fit_category as string)?.replace("_", " ")}
-                  </span>
-                  <span className="text-body-sm text-ink-tertiary">
-                    Confidenza: {aiEval.confidence as string}
-                  </span>
+          {aiEval && (() => {
+            const evalJson = (aiEval.evaluation_json ?? aiEval) as Record<string, any>;
+            const fitColor = (cat: string) =>
+              cat === "strong_fit" ? "bg-success-bg text-success"
+              : cat === "good_fit" ? "bg-petrol-50 text-petrol-700"
+              : cat === "uncertain_fit" ? "bg-warning-bg text-warning"
+              : "bg-error-bg text-error";
+
+            return (
+              <div>
+                <h3 className="font-sans text-h3 text-navy mb-4">Valutazione AI</h3>
+                <div className="rounded-lg border border-border bg-white p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium ${fitColor(aiEval.overall_fit_category as string)}`}>
+                      Generale: {(aiEval.overall_fit_category as string)?.replace("_", " ")}
+                    </span>
+                    <span className="text-body-sm text-ink-tertiary">
+                      Confidenza: {aiEval.confidence as string}
+                    </span>
+                  </div>
+
+                  {(evalJson.overall_fit_summary || aiEval.fit_summary) && (
+                    <p className="text-body text-ink">{(evalJson.overall_fit_summary || aiEval.fit_summary) as string}</p>
+                  )}
+
+                  {evalJson.position_fit && Object.keys(evalJson.position_fit).length > 0 && (
+                    <div>
+                      <p className="text-label text-navy text-xs mb-2">Fit per posizione</p>
+                      <div className="space-y-2">
+                        {Object.entries(evalJson.position_fit).map(([pos, data]: [string, any]) => (
+                          <div key={pos} className="flex items-start gap-2">
+                            <span className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${fitColor(data.fit_category)}`}>
+                              {data.fit_category?.replace("_", " ")}
+                            </span>
+                            <div>
+                              <p className="text-body-sm font-medium text-navy">{pos}</p>
+                              {data.reason && <p className="text-body-sm text-ink-secondary">{data.reason}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {evalJson.alternative_positions?.length > 0 && (
+                    <div>
+                      <p className="text-label text-navy text-xs mb-2">Posizioni alternative suggerite</p>
+                      <div className="space-y-2">
+                        {evalJson.alternative_positions.map((alt: any, i: number) => (
+                          <div key={i} className="flex items-start gap-2">
+                            <span className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${fitColor(alt.fit_category)}`}>
+                              {alt.fit_category?.replace("_", " ")}
+                            </span>
+                            <div>
+                              <p className="text-body-sm font-medium text-navy">{alt.name}</p>
+                              {alt.reason && <p className="text-body-sm text-ink-secondary">{alt.reason}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {evalJson.suggested_position && (
+                    <p className="text-body-sm text-petrol font-medium">
+                      Posizione suggerita: {evalJson.suggested_position}
+                    </p>
+                  )}
                 </div>
-                {aiEval.fit_summary && (
-                  <p className="text-body text-ink">{aiEval.fit_summary as string}</p>
-                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* Sidebar */}

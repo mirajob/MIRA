@@ -36,6 +36,8 @@ export async function submitApplication(cycleId: string, formData: FormData) {
 
   if (existing) return { error: "Hai già inviato una candidatura per questo ciclo" };
 
+  const selectedPosition = formData.get("selected_position") as string | null;
+
   const { data: application, error: appError } = await supabase
     .from("applications")
     .insert({
@@ -47,6 +49,7 @@ export async function submitApplication(cycleId: string, formData: FormData) {
       submitted_at: new Date().toISOString(),
       last_status_change_at: new Date().toISOString(),
       privacy_consent: { accepted: true, timestamp: new Date().toISOString() },
+      selected_role_preferences: selectedPosition ? [selectedPosition] : [],
     })
     .select()
     .single();

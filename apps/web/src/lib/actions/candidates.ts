@@ -162,17 +162,22 @@ export async function evaluateCandidate(applicationId: string) {
     .map((a: any) => `Q: ${a.application_questions?.question_text}\nA: ${a.answer_text}`)
     .join("\n\n");
 
-  const positions = (cycle?.available_roles ?? []) as Array<{ name: string; description?: string }>;
-  const positionsText = positions.map((p) => `- ${p.name}${p.description ? `: ${p.description}` : ""}`).join("\n");
+  const positions = (cycle?.available_roles ?? []) as Array<{ name: string; description?: string; requirements?: string }>;
+  const selectedPosition = (application.selected_role_preferences ?? [])[0] || "generica";
+
+  const positionsText = positions.map((p) =>
+    `- ${p.name}${p.description ? `: ${p.description}` : ""}${p.requirements ? ` [REQUISITI: ${p.requirements}]` : ""}`
+  ).join("\n");
 
   const prompt = `Valuta questo candidato per l'associazione ${association?.name}.
 
 ASSOCIAZIONE: ${association?.name} (${association?.category})
 ${association?.short_description || ""}
-${association?.long_description || ""}
 
-POSIZIONI DISPONIBILI:
-${positionsText || "Non specificate"}
+POSIZIONE SCELTA DAL CANDIDATO: ${selectedPosition}
+
+TUTTE LE POSIZIONI DISPONIBILI (con requisiti):
+${positionsText || "Candidatura generica"}
 
 PROFILO CANDIDATO:
 ${student?.profile_summary || "Nessun profilo disponibile"}
@@ -186,16 +191,31 @@ ${student?.transcript_summary?.weighted_average ? `Media: ${student.transcript_s
 RISPOSTE CANDIDATURA:
 ${answers || "Nessuna risposta"}
 
-Rispondi in JSON:
+Rispondi in JSON con questa struttura:
 {
+  "selected_position": "${selectedPosition}",
   "overall_fit_category": "strong_fit|good_fit|uncertain_fit|weak_fit",
+  "overall_fit_summary": "2-3 frasi sulla compatibilità GENERALE con l'associazione",
+  "position_fit": {
+    "${selectedPosition}": {
+      "fit_category": "strong_fit|good_fit|uncertain_fit|weak_fit",
+      "reason": "perché è o non è adatto per QUESTA posizione specifica"
+    }
+  },
+  "alternative_positions": [
+    {"name": "altra posizione", "fit_category": "...", "reason": "perché sarebbe adatto qui"}
+  ],
   "confidence": "high|medium|low",
-  "fit_summary": "2-3 frasi sul perché questo candidato è adatto o meno",
   "strengths": ["punto di forza 1", "punto di forza 2"],
   "gaps": ["gap 1", "gap 2"],
-  "suggested_position": "nome posizione suggerita tra quelle disponibili",
-  "interview_questions": ["domanda suggerita per il colloquio 1", "domanda 2"]
-}`;
+  "suggested_position": "la posizione migliore per questo candidato",
+  "interview_questions": ["domanda 1", "domanda 2"]
+}
+
+IMPORTANTE:
+- Valuta il fit sia per la posizione SCELTA sia per l'associazione in generale
+- Se il candidato è weak per la posizione scelta ma strong per un'altra, segnalalo in alternative_positions
+- overall_fit_category è il fit GENERALE per l'associazione, non per la singola posizione`;
 
   try {
     const result = await chatCompletion(

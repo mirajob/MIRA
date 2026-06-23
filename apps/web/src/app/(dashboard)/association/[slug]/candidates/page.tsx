@@ -36,25 +36,31 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
     .eq("association_id", association.id)
     .order("created_at", { ascending: false });
 
+  const openCycleIds = (cycles ?? []).filter((c: any) => c.status === "open").map((c: any) => c.id);
+  const showAll = cycleFilter === "all";
+  const effectiveFilter = showAll ? null : (cycleFilter || (openCycleIds.length === 1 ? openCycleIds[0] : null));
+
   let query = (supabase.from("applications") as any)
     .select(`
-      id, status, submitted_at, last_status_change_at, application_cycle_id,
+      id, status, submitted_at, last_status_change_at, application_cycle_id, selected_role_preferences,
       profiles(full_name, email),
       student_profiles(degree_program, current_year),
-      application_cycles(title),
+      application_cycles(title, status),
       candidate_ai_evaluations(overall_fit_category, confidence)
     `)
     .eq("association_id", association.id)
     .neq("status", "draft")
     .order("submitted_at", { ascending: false });
 
-  if (cycleFilter) {
-    query = query.eq("application_cycle_id", cycleFilter);
+  if (effectiveFilter) {
+    query = query.eq("application_cycle_id", effectiveFilter);
   }
 
-  const { data: applications } = await query;
+  const { data: allApplications } = await query;
 
-  const activeCycleId = cycleFilter || (cycles?.find((c: any) => c.status === "open")?.id);
+  const openApps = (allApplications ?? []).filter((a: any) => a.application_cycles?.status === "open");
+  const closedApps = (allApplications ?? []).filter((a: any) => a.application_cycles?.status !== "open");
+  const applications = showAll ? (allApplications ?? []) : (effectiveFilter ? (allApplications ?? []) : openApps);
 
   return (
     <div className="space-y-6">
@@ -62,26 +68,26 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
         <div>
           <h2 className="font-display text-h2 text-navy">Candidati</h2>
           <p className="mt-1 text-body text-ink-secondary">
-            {applications?.length ?? 0} candidature
+            {applications?.length ?? 0} candidature{effectiveFilter ? "" : " (cicli aperti)"}
           </p>
         </div>
         {(cycles?.length ?? 0) > 1 && (
-          <div className="flex gap-2">
-            <Link
-              href={`/association/${slug}/candidates`}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!cycleFilter ? "bg-navy text-white" : "border border-border text-ink-secondary hover:text-navy"}`}
-            >
-              Tutti
-            </Link>
-            {cycles!.map((c: any) => (
+          <div className="flex flex-wrap gap-2">
+            {(cycles ?? []).filter((c: any) => c.status === "open").map((c: any) => (
               <Link
                 key={c.id}
                 href={`/association/${slug}/candidates?cycle=${c.id}`}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${cycleFilter === c.id ? "bg-navy text-white" : "border border-border text-ink-secondary hover:text-navy"}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${effectiveFilter === c.id ? "bg-navy text-white" : "border border-border text-ink-secondary hover:text-navy"}`}
               >
                 {c.title}
               </Link>
             ))}
+            <Link
+              href={`/association/${slug}/candidates?cycle=all`}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${cycleFilter === "all" ? "bg-navy text-white" : "border border-border text-ink-tertiary hover:text-navy"}`}
+            >
+              Tutti
+            </Link>
           </div>
         )}
       </div>
@@ -96,8 +102,7 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
             <thead>
               <tr className="border-b border-border">
                 <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Candidato</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Corso</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Ciclo</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Posizione</th>
                 <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Stato</th>
                 <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">AI Fit</th>
                 <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Data</th>
@@ -121,11 +126,7 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
                       </Link>
                     </td>
                     <td className="py-4 px-4 text-body-sm text-ink">
-                      {studentProfile?.degree_program ?? "—"}
-                      {studentProfile?.current_year && ` · ${studentProfile.current_year}° anno`}
-                    </td>
-                    <td className="py-4 px-4 text-body-sm text-ink">
-                      {cycle?.title ?? "—"}
+                      {app.selected_role_preferences?.[0] || "Generica"}
                     </td>
                     <td className="py-4 px-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium ${STATUS_COLORS[app.status] ?? "bg-navy-50 text-navy"}`}>
