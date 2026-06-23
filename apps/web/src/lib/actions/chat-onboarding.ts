@@ -65,36 +65,56 @@ Quando lo studente parla di associazioni, TU SAI quali ci sono su MIRA. Se menzi
   }
 
   return `Tu sei MIRA, la piattaforma AI per il talento universitario di Bocconi.
-
-CHI SEI: MIRA accompagna gli studenti Bocconi nel loro percorso — orientamento professionale, candidature alle associazioni, profilo basato su evidenze reali. In futuro: simulazioni di lavoro e matching con aziende.
-
-CONTESTO CONVERSAZIONE:
-Lo studente si è appena registrato e sta facendo l'onboarding. Gli hai già mandato un messaggio di presentazione e gli hai chiesto se studia triennale o magistrale. NON ripresentarti.
+Lo studente si è appena registrato e sta facendo l'onboarding. Gli hai già mandato il messaggio di presentazione e gli hai chiesto se studia triennale, magistrale o ciclo unico. NON ripresentarti.
 ${studentContext}
 ${assocContext}
 
-FLUSSO:
-1. Se non ha ancora caricato il transcript, chiedigli di farlo (PDF da yoU@B)
-2. Se ha caricato il transcript, commenta i dati in modo naturale — cosa noti, cosa ti colpisce. NON elencare i corsi.
-3. Poi fai domande personali (una alla volta): cosa lo appassiona, che esperienze ha, cosa cerca, che tipo è.
-4. Se menziona associazioni, collegati a quelle disponibili su MIRA.
+FLUSSO OBBLIGATORIO — segui questi step in ordine, UNA domanda alla volta:
 
-COME PARLARE:
+STEP 1 — PERCORSO ACCADEMICO
+Dopo che lo studente ha risposto triennale/magistrale/ciclo unico:
+
+SE TRIENNALE O CICLO UNICO:
+"Perfetto. Per costruire il tuo profilo iniziale parto dai dati più oggettivi: il tuo percorso accademico. Se ce l'hai, carica il transcript universitario o un documento con esami, voti e CFU. Da lì potrò ricavare automaticamente università, corso, esami sostenuti, voti, CFU e media ponderata. Ti chiederò solo alcune informazioni che non sono sempre nel transcript, come l'anno di corso. Puoi caricarlo qui."
+
+SE MAGISTRALE:
+"Perfetto. Se sei in magistrale, prima di leggere il transcript attuale ho bisogno di ricostruire brevemente il tuo percorso precedente. Mi dici: in quale università hai fatto la triennale? Qual era il nome del corso? Con che voto ti sei laureato? Se vuoi, su cosa hai fatto la tesi?"
+Dopo la risposta sulla triennale:
+"Grazie. Ora puoi caricare il transcript della magistrale, così aggiorno il tuo profilo con esami, voti, CFU, media e competenze collegate al percorso che stai facendo ora."
+
+DOPO IL TRANSCRIPT: Commenta i dati in modo naturale — cosa noti, cosa ti colpisce. NON elencare i corsi. Poi chiedi l'anno di corso se non è emerso.
+
+STEP 2 — ESPERIENZE, PROGETTI, ATTIVITÀ
+Adatta la domanda al livello:
+- Primo anno: "Ora passiamo a quello che hai fatto fuori dagli esami. Se sei all'inizio dell'università è normalissimo non avere ancora esperienze lavorative strutturate. Vanno benissimo anche attività scolastiche, volontariato, sport, progetti personali, piccoli lavori, esperienze in associazioni, competizioni, viaggi studio o qualsiasi cosa ti abbia fatto imparare qualcosa. Raccontami tutto quello che pensi possa rappresentarti."
+- Triennale avanzata: "Ora vorrei capire meglio cosa hai fatto fuori dal percorso accademico. Puoi raccontarmi esperienze lavorative, stage, associazioni, progetti universitari, progetti personali, volontariato, sport, competizioni, attività imprenditoriali o qualsiasi esperienza in cui hai avuto responsabilità concrete. Non serve che sia tutto 'da CV': mi interessa capire cosa hai fatto davvero e cosa hai imparato."
+- Magistrale: "Ora vorrei ricostruire le tue esperienze extra-accademiche e professionali. Raccontami stage, lavori, associazioni, progetti universitari, tesi/progetti di ricerca, esperienze imprenditoriali, volontariato, competizioni o altre attività rilevanti. Per ogni esperienza, se riesci, indicami cosa facevi concretamente, quanto è durata e cosa hai imparato."
+
+STEP 3 — INTERESSI
+"Ora vorrei capire meglio cosa ti interessa. Da un lato, dimmi quali settori, ruoli o tipi di lavoro ti incuriosiscono, anche se non sei ancora sicuro: finanza, consulenza, marketing, startup, tech, sostenibilità, diritto, ricerca, prodotto, vendite, comunicazione o qualsiasi altra area. Dall'altro, raccontami anche interessi personali, hobby o attività che senti ti rappresentino. Spesso aiutano a capire molto meglio il tipo di ambiente e di lavoro in cui potresti trovarti bene."
+
+STEP 4 — PIANI FUTURI
+Adatta al livello:
+- Primo anno: "Guardando ai prossimi anni, hai già qualche idea su cosa vorresti esplorare? Può essere una magistrale, un exchange, un settore professionale, uno stage, un'esperienza all'estero, un'associazione o anche solo un tipo di percorso che ti incuriosisce. Se non lo sai ancora, va benissimo."
+- Secondo anno: "Nei prossimi mesi potresti iniziare a fare alcune scelte importanti: exchange, stage, associazioni, magistrale o prime idee di carriera. Hai già qualche direzione in mente?"
+- Terzo anno: "Come immagini il tuo percorso dopo la triennale? Magistrale, lavoro, stage, estero? Raccontami sia ciò che hai già fatto o stai facendo, sia le opzioni che stai valutando."
+- Magistrale: "Guardando ai prossimi 6-24 mesi, che direzione vorresti prendere? Mi interessa capire se hai già target di carriera, settori, aziende, ruoli, paesi o percorsi specifici in mente."
+
+STEP 5 — ATTITUDINI
+"Ultima parte: vorrei capire meglio come sei come persona e come lavori con gli altri. Puoi descriverti liberamente, oppure pensare a queste domande: ti senti più intraprendente o preferisci avere una direzione chiara? Ti piace parlare e presentare idee, oppure preferisci analizzare e costruire in profondità? Ti trovi meglio in gruppo o da solo? Sei più metodico o creativo? Cosa ti viene naturale fare meglio degli altri? E cosa vorresti migliorare?"
+
+STEP 6 — CHIUSURA
+"Perfetto, ho abbastanza informazioni per creare il tuo profilo iniziale. Da qui puoi candidarti alle associazioni disponibili su MIRA e, man mano che aggiungerai nuove esperienze o parlerai con me, il tuo profilo diventerà più preciso. Questo sarà utile anche per le opportunità aziendali: le aziende potranno cercare profili coerenti con ciò che stanno cercando e contattarti quando ci sarà un buon match."
+Poi concludi con ESATTAMENTE: "Il tuo profilo MIRA è pronto."
+
+REGOLE:
+- UNA domanda alla volta. Mai elenchi di domande.
+- Reagisci a quello che dice prima di passare allo step successivo.
 - Come un amico intelligente che conosce Bocconi. Diretto, genuino.
-- UNA domanda alla volta. Mai elenchi.
-- Reagisci davvero — commenti concreti basati sui suoi dati reali.
-- Lo studente È GIÀ A BOCCONI. Non chiedergli se vuole entrare a Bocconi.
-
-NON FARE:
-- Non ripresentarti
-- Non chiedere "come stai"
-- Non dire "Grazie per aver condiviso!"
-- Non elencare corsi del libretto
-- Non suggerire di "preparare la candidatura per Bocconi" — ci è già dentro
-- Non essere un generico career coach — sei MIRA, sai le cose concrete
-
-CHIUDERE:
-Dopo circa 6-8 scambi, chiedi se vuole aggiungere altro. Poi fai un breve riassunto personale e concludi con ESATTAMENTE: "Il tuo profilo MIRA è pronto."`;
+- Lo studente È GIÀ A BOCCONI. Non chiedergli se vuole entrarci.
+- NON ripresentarti. NON dire "Grazie per aver condiviso!" NON elencare i corsi del libretto.
+- Se menziona associazioni, collegale a quelle su MIRA.
+- Adatta il tono e le domande al livello dello studente.`;
 }
 
 const MAX_EXCHANGES = 16;
@@ -266,30 +286,80 @@ async function extractAndSaveProfile(profileId: string, conversation: ChatMessag
     [
       {
         role: "system",
-        content: `Estrai le informazioni dalla conversazione. Rispondi SOLO in JSON:
-{"degree_program":"","degree_level":"triennale|magistrale|ciclo_unico|phd","current_year":0,"interests":[""],"goals":[""],"experiences":[""],"profile_summary":"riassunto personale 2-3 frasi di chi è questa persona","working_style":"","availability":"","languages":"","skills":"","association_motivation":""}
-Se un campo non è emerso dalla conversazione, lascialo vuoto. Non inventare.`,
+        content: `Estrai TUTTE le informazioni dalla conversazione di onboarding. Rispondi SOLO in JSON:
+{
+  "degree_program": "nome corso di laurea",
+  "degree_level": "triennale|magistrale|ciclo_unico",
+  "current_year": 0,
+  "previous_degree": {
+    "university": "università triennale (solo se magistrale)",
+    "program": "corso triennale",
+    "grade": "voto laurea",
+    "thesis_topic": "tema tesi"
+  },
+  "interests": ["settori/ruoli che interessano lo studente"],
+  "personal_interests": ["hobby, passioni, attività personali"],
+  "goals": ["obiettivi professionali e accademici"],
+  "experiences": ["esperienze: stage, lavori, associazioni, progetti, volontariato, sport"],
+  "career_targets": {
+    "roles": ["ruoli target"],
+    "sectors": ["settori target"],
+    "companies": ["aziende menzionate"],
+    "geography": ["città/paesi di interesse"]
+  },
+  "career_plan": {
+    "short_term": "prossimi 6-12 mesi",
+    "medium_term": "1-3 anni",
+    "exchange_interest": "interessato|fatto|programmato|no",
+    "masters_interest": "sì|no|incerto",
+    "clarity_level": "molto_chiaro|abbastanza_chiaro|esplorativo|incerto"
+  },
+  "work_style": {
+    "leadership": "alta|media|bassa",
+    "teamwork_preference": "gruppo|solo|entrambi",
+    "style": "analitico|creativo|metodico|flessibile",
+    "communication": "estroverso|introverso|equilibrato",
+    "strengths": ["punti di forza dichiarati"],
+    "improvements": ["aree di miglioramento"]
+  },
+  "profile_summary": "riassunto personale 2-3 frasi: chi è, cosa cerca, cosa lo caratterizza"
+}
+Se un campo non è emerso dalla conversazione, lascia stringa vuota, null o array vuoto. NON inventare.`,
       },
       { role: "user", content: conversationText },
     ],
-    { temperature: 0.1, maxTokens: 1024, jsonMode: true }
+    { temperature: 0.1, maxTokens: 2048, jsonMode: true }
   );
 
   const data = JSON.parse(extracted);
 
+  // Save all structured data
+  const profileUpdate: Record<string, unknown> = {
+    degree_program: data.degree_program || null,
+    degree_level: data.degree_level || null,
+    current_year: data.current_year || null,
+    interests: data.interests?.filter(Boolean) ?? [],
+    goals: data.goals?.filter(Boolean) ?? [],
+    experiences: data.experiences?.filter(Boolean) ?? [],
+    profile_summary: data.profile_summary || null,
+    onboarding_completed: true,
+    onboarding_completed_at: new Date().toISOString(),
+  };
+
+  // Store structured data in availability field (JSON)
+  if (data.career_targets || data.career_plan || data.work_style || data.previous_degree) {
+    profileUpdate.availability = {
+      career_targets: data.career_targets ?? {},
+      career_plan: data.career_plan ?? {},
+      work_style: data.work_style ?? {},
+      previous_degree: data.previous_degree ?? {},
+      personal_interests: data.personal_interests ?? [],
+    };
+  }
+
   await supabase
     .from("student_profiles")
-    .update({
-      degree_program: data.degree_program || null,
-      degree_level: data.degree_level || null,
-      current_year: data.current_year || null,
-      interests: data.interests?.filter(Boolean) ?? [],
-      goals: data.goals?.filter(Boolean) ?? [],
-      experiences: data.experiences?.filter(Boolean) ?? [],
-      profile_summary: data.profile_summary || null,
-      onboarding_completed: true,
-      onboarding_completed_at: new Date().toISOString(),
-    })
+    .update(profileUpdate)
     .eq("user_id", profileId);
 
   await (supabase.from("ai_logs") as any).insert({

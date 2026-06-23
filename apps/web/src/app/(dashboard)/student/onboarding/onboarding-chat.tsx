@@ -31,19 +31,17 @@ export function OnboardingChat({ userName }: { userName: string }) {
 
   const firstName = userName.split(" ")[0];
 
-  const MIRA_INTRO = `Ciao ${firstName}! Sono MIRA.
+  const MIRA_INTRO = `Ciao ${firstName}! Io sono MIRA.
 
-Sono una piattaforma AI pensata per accompagnarti durante l'università. Non sono un job board e non ti chiederò di compilare form — tutto quello che fai con me costruisce il tuo profilo in modo naturale.
+Ti aiuto a costruire un profilo che racconti meglio il tuo percorso universitario: cosa studi, cosa hai fatto, cosa ti interessa, come ragioni e quali opportunità potrebbero essere più adatte a te.
 
-Ecco cosa posso fare per te:
-• **Orientamento** — ti aiuto a capire quali carriere, magistrali e percorsi fanno per te, basandomi su evidenze reali del tuo percorso
-• **Candidature associazioni** — puoi candidarti alle associazioni universitarie direttamente da qui
-• **Profilo basato su evidenze** — il tuo profilo MIRA si costruisce da quello che fai davvero (esami, progetti, esperienze), non da quello che scrivi in un CV
-• In futuro: **simulazioni** di lavoro reali e **matching con aziende** che cercano persone come te
+Probabilmente sei arrivato qui perché vuoi candidarti a una o più associazioni universitarie. Prima di farlo, ti farò qualche domanda per creare il tuo profilo iniziale.
 
-Sei qui probabilmente per le associazioni — costruiamo il tuo profilo iniziale parlando un po', poi potrai candidarti alle associazioni che ti interessano.
+Ma MIRA non serve solo per candidarti alle associazioni. Il tuo profilo potrà diventare il modo in cui aziende e opportunità ti scoprono: tra pochissimo, le aziende potranno cercare studenti con caratteristiche specifiche e contattarti quando il tuo profilo sarà coerente con quello che stanno cercando.
 
-Prima di tutto: studi **triennale** o **magistrale**?`;
+Per questo, dopo l'onboarding, potrai continuare a parlare con me: più mi racconti cosa ti interessa, che esperienze hai fatto, cosa vuoi imparare e che direzione vuoi prendere, più il tuo profilo diventerà preciso e utile.
+
+Partiamo dalle basi: studi **triennale**, **magistrale** o **ciclo unico**?`;
 
   useEffect(() => {
     async function init() {

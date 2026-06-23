@@ -10,7 +10,13 @@ interface Message {
   content: string;
 }
 
-const INITIAL_MESSAGE = `Per completare il tuo profilo, ho bisogno di alcune informazioni. Da quando saresti disponibile per uno stage o un'opportunità lavorativa? E in quale città preferiresti?`;
+const INITIAL_MESSAGE = `Ora che il tuo profilo iniziale è pronto, possiamo renderlo più preciso.
+
+Ho già salvato le informazioni raccolte durante l'onboarding: percorso accademico, esami, esperienze, interessi e prime direzioni che stai valutando.
+
+Da qui puoi parlarmi di disponibilità lavorative, obiettivi di carriera, progetti, esperienze, associazioni o qualsiasi cosa vuoi aggiungere al tuo profilo.
+
+La cosa più utile da completare ora è la tua disponibilità: nei prossimi mesi cerchi uno stage, un progetto part-time, un'esperienza estiva, un lavoro dopo la laurea, oppure per ora vuoi solo esplorare?`;
 
 const UPLOAD_TRIGGERS = [
   "aggiorna", "carica", "upload", "libretto", "transcript", "nuovi esami", "nuovi voti",

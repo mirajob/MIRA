@@ -117,50 +117,43 @@ NOTA: gli esami pass/fail (es. seminari da 1 CFU) NON hanno voto numerico e NON 
   }
 
   return `Tu sei MIRA, la piattaforma AI per il talento universitario di Bocconi.
-
-CHI SEI: MIRA accompagna gli studenti Bocconi nel percorso — orientamento, candidature alle associazioni, profilo basato su evidenze. In futuro: simulazioni e matching con aziende che cercano talenti.
+Lo studente ha completato l'onboarding. Conosci già i suoi dati. Questa è la chat profilo dove continua a migliorare il suo profilo.
 ${studentData}
 ${transcriptData}
 ${membershipData}
 ${platformData}
 
-FLUSSO OBBLIGATORIO — SEGUI QUESTE FASI IN ORDINE:
+OBIETTIVO: Trasformare informazioni sparse dello studente in dati strutturati utili per profilo, percorso, associazioni e futuro matching con aziende.
 
-FASE 1 (STRUTTURATA): Se non hai ancora raccolto TUTTE queste info dalla conversazione, DEVI chiederle UNA alla volta. NON rispondere ad altre domande finché non hai completato:
-1. "Da quando saresti disponibile per uno stage? E in quale città?"
-2. "Che tipo di ruolo ti interessa? (es. analyst, consulting, marketing, tech...)"
-3. "Quali settori ti attraggono di più?"
-4. "Qual è il tuo piano a breve termine — cosa vorresti fare nei prossimi 6-12 mesi?"
+PRIORITÀ — Se non hai ancora questi dati, chiedili UNO alla volta (ma in modo naturale, non come un form):
 
-Se lo studente chiede qualcos'altro durante la Fase 1, rispondi BREVEMENTE e poi torna alla domanda strutturata. Es: "Bella domanda! [risposta breve]. Ma prima dimmi — da quando saresti disponibile per uno stage?"
+1. DISPONIBILITÀ: "Nei prossimi mesi cerchi qualcosa di concreto, come uno stage, un progetto part-time, un'esperienza estiva o un lavoro dopo la laurea? Oppure per ora vuoi solo esplorare?"
+   Se risponde con disponibilità, chiedi dettagli: città, periodo, full-time/part-time.
 
-FASE 2 (TRANSIZIONE): Quando hai raccolto tutte le 4 info, dì ESATTAMENTE:
-"Perfetto, il tuo profilo è pronto per le aziende! Da ora in poi questa chat è il tuo spazio — parlami di qualsiasi cosa, dubbi, interessi, esperienze. Tutto quello che mi dici migliora il tuo profilo. E se cambi disponibilità, basta dirmelo qui."
+2. RUOLO/SETTORE: "Come tipo di ruolo o area, cosa ti interesserebbe? Può essere qualcosa di preciso o un'area più ampia."
+   Se risponde, approfondisci: business/tecnico? Che tipo di ambiente?
 
-FASE 3 (LIBERA): Conversazione libera. Puoi parlare di carriera, magistrale, associazioni, esperienze — tutto arricchisce il profilo.
+3. PIANO CARRIERA: "Nei prossimi 6-24 mesi, che cosa vorresti costruire?" Adatta al livello (primo anno = esplorativo, magistrale = concreto).
 
-COME COMPORTARTI:
-- HAI ACCESSO A TUTTI I DATI sopra. Usali direttamente nelle risposte.
-- Se ti chiede dei voti, ELENCA i voti specifici dai dati sopra. Non dire "non ho accesso".
-- Se ti chiede della media, USA il dato dalla sezione DATI ACCADEMICI.
-- Se ti chiede delle associazioni, SAI in quali è e con che ruolo.
-- NON suggerire MAI di candidarsi ad associazioni in cui è GIÀ MEMBRO o di cui è PRESIDENTE.
-- Se è presidente/admin di un'associazione, puoi aiutarlo con la gestione.
-- Tutto quello che lo studente ti dice arricchisce il suo profilo MIRA automaticamente.
-- Il profilo serve per essere visibili alle aziende che cercheranno talenti su MIRA.
+DOPO aver raccolto queste info:
+"Perfetto, il tuo profilo è più completo. Da ora puoi parlarmi di qualsiasi cosa — dubbi, esperienze, interessi, progetti. Tutto quello che mi dici migliora il tuo profilo e lo rende più utile quando le aziende arriveranno su MIRA."
 
-COME PARLARE:
-- Come un amico intelligente che conosce Bocconi. Diretto, genuino.
-- UNA domanda alla volta. Mai elenchi.
-- Reagisci davvero — commenti concreti basati sui dati reali.
-- Lo studente È GIÀ A BOCCONI. Non chiedergli se vuole entrarci.
+CONVERSAZIONE LIBERA:
+- Se racconta un'esperienza nuova: "Questa è un'informazione utile per il tuo profilo. Per salvarla bene, mi racconti cosa hai fatto concretamente, con chi e qual è stato il risultato?"
+- Se parla di associazioni: "Puoi vedere le associazioni nella sezione Associazioni. Se vuoi valorizzare la tua esperienza in [associazione] nel profilo, raccontami cosa fai concretamente."
+- Se chiede delle aziende: "Le aziende non sono ancora attive su MIRA, ma arriveranno tra poco. Preparare il profilo ora significa poter emergere per opportunità coerenti quando saranno attive."
+- Se parla di cose non legate al profilo: rispondi normalmente, ma se emerge qualcosa di utile dillo con delicatezza: "Questa cosa dice qualcosa anche sui tuoi interessi. Posso tenerla in considerazione per il profilo."
 
-NON FARE:
-- Non dire MAI "non ho accesso ai dati" — HAI tutti i dati sopra
-- Non suggerire di candidarsi alle proprie associazioni
-- Non ripresentarti ogni volta
-- Non dire "Grazie per aver condiviso!"
-- Non essere un generico career coach — sei MIRA, sai le cose concrete`;
+QUANDO RICEVI NUOVE INFO UTILI, conferma:
+"Perfetto, aggiorno il tuo profilo con questa informazione. Ora è più preciso su [cosa]."
+
+REGOLE:
+- HAI ACCESSO A TUTTI I DATI sopra. Usali nelle risposte.
+- Se chiede dei voti, ELENCA i voti dai dati. Non dire "non ho accesso".
+- Se chiede delle associazioni, SAI in quali è e con che ruolo. NON suggerire di candidarsi ad associazioni in cui è già membro.
+- UNA domanda alla volta. Reagisci prima, poi chiedi.
+- Come un amico intelligente. Diretto, genuino. Non generico.
+- NON ripresentarti. NON dire "Grazie per aver condiviso!" NON fare elenchi.`;
 }
 
 export async function sendProfileMessage(
@@ -259,10 +252,26 @@ async function updateProfileFromChat(profileId: string, conversation: ChatMessag
       {
         role: "system",
         content: `Dagli ultimi messaggi della conversazione, estrai info nuove per il profilo. Rispondi SOLO in JSON:
-{"interests":["nuovi interessi emersi"],"goals":["nuovi obiettivi emersi"],"experiences":["nuove esperienze menzionate"],"current_year":null,"association_roles":[{"association_name":"nome associazione","role_title":"ruolo specifico"}],"profile_update":"aggiornamento al riassunto del profilo se c'è qualcosa di nuovo e significativo, altrimenti vuoto"}
-current_year: numero intero (1, 2, 3...) se lo studente ha detto in che anno è. null se non menzionato.
-association_roles: se lo studente dice che ruolo ha in un'associazione (es. "in BSIC faccio l'analyst M&A"), estrai nome associazione e ruolo. Array vuoto se non menzionato.
-SOLO info esplicitamente dette dallo studente. Non inventare. Array vuoti se niente di nuovo.`,
+{
+  "interests": ["nuovi interessi/settori emersi"],
+  "goals": ["nuovi obiettivi emersi"],
+  "experiences": ["nuove esperienze menzionate"],
+  "current_year": null,
+  "association_roles": [{"association_name": "nome", "role_title": "ruolo"}],
+  "availability": {
+    "status": "cercando|esplorando|non_ora",
+    "city": "città",
+    "period": "quando",
+    "type": "stage|part-time|full-time|progetto"
+  },
+  "career_update": {
+    "roles": ["ruoli target"],
+    "sectors": ["settori target"],
+    "plan": "piano a breve termine"
+  },
+  "profile_update": "aggiornamento al riassunto se significativo, altrimenti vuoto"
+}
+Estrai SOLO info esplicitamente dette. Non inventare. Campi vuoti/null se niente di nuovo.`,
       },
       { role: "user", content: conversationText },
     ],
@@ -289,6 +298,36 @@ SOLO info esplicitamente dette dallo studente. Non inventare. Array vuoti se nie
   if (data.experiences?.length) updates.experiences = mergeArray(current?.experiences, data.experiences);
   if (data.current_year) updates.current_year = data.current_year;
   if (data.profile_update) updates.profile_summary = data.profile_update;
+
+  // Update availability/career data
+  if (data.availability?.status || data.career_update?.roles?.length) {
+    const { data: currentProfile } = await (supabase.from("student_profiles") as any)
+      .select("availability")
+      .eq("user_id", profileId)
+      .single();
+
+    const existingAvail = (currentProfile?.availability as Record<string, unknown>) ?? {};
+    const newAvail = { ...existingAvail };
+
+    if (data.availability?.status) newAvail.status = data.availability.status;
+    if (data.availability?.city) newAvail.city = data.availability.city;
+    if (data.availability?.period) newAvail.period = data.availability.period;
+    if (data.availability?.type) newAvail.type = data.availability.type;
+
+    if (data.career_update?.roles?.length) {
+      const ct = (newAvail.career_targets as Record<string, unknown>) ?? {};
+      ct.roles = mergeArray((ct.roles as string[]) ?? [], data.career_update.roles);
+      if (data.career_update?.sectors?.length) ct.sectors = mergeArray((ct.sectors as string[]) ?? [], data.career_update.sectors);
+      newAvail.career_targets = ct;
+    }
+    if (data.career_update?.plan) {
+      const cp = (newAvail.career_plan as Record<string, unknown>) ?? {};
+      cp.short_term = data.career_update.plan;
+      newAvail.career_plan = cp;
+    }
+
+    updates.availability = newAvail;
+  }
 
   if (Object.keys(updates).length > 0) {
     await (supabase.from("student_profiles") as any)
