@@ -333,6 +333,9 @@ Se un campo non è emerso dalla conversazione, lascia stringa vuota, null o arra
 
   const data = JSON.parse(extracted);
 
+  console.log("[MIRA] Extracted onboarding data keys:", Object.keys(data));
+  console.log("[MIRA] Extracted data:", JSON.stringify(data).slice(0, 2000));
+
   // Save all structured data
   const profileUpdate: Record<string, unknown> = {
     degree_program: data.degree_program || null,
@@ -344,17 +347,19 @@ Se un campo non è emerso dalla conversazione, lascia stringa vuota, null o arra
     profile_summary: data.profile_summary || null,
     onboarding_completed: true,
     onboarding_completed_at: new Date().toISOString(),
-  };
-
-  // Store structured data in availability field (JSON)
-  if (data.career_targets || data.career_plan || data.work_style || data.previous_degree) {
-    profileUpdate.availability = {
+    // Always save ALL structured data in availability (JSON)
+    availability: {
       career_targets: data.career_targets ?? {},
       career_plan: data.career_plan ?? {},
       work_style: data.work_style ?? {},
       previous_degree: data.previous_degree ?? {},
       personal_interests: data.personal_interests ?? [],
-    };
+      raw_extraction: data,
+    },
+  };
+
+  // Legacy compatibility block removed — always save above
+  if (false) {
   }
 
   await supabase
