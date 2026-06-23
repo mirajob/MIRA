@@ -23,7 +23,10 @@ export async function chatCompletion(
   options: ChatOptions = {}
 ): Promise<string> {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) throw new Error("GOOGLE_AI_API_KEY is not set");
+  if (!apiKey) {
+    console.error("[MIRA AI] GOOGLE_AI_API_KEY is not set. Available env keys:", Object.keys(process.env).filter(k => k.includes("GOOGLE") || k.includes("OPENAI") || k.includes("SUPABASE")).join(", "));
+    throw new Error("GOOGLE_AI_API_KEY is not set");
+  }
 
   const model = options.model ?? AI_CONFIG.defaultModel;
 
@@ -102,10 +105,18 @@ export async function chatCompletion(
 
   if (!response.ok) {
     const error = await response.text();
+    console.error(`[MIRA AI] Gemini API error ${response.status}:`, error);
     throw new Error(`Gemini API error ${response.status}: ${error}`);
   }
 
   const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-  return text;
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text && data.candidates?.[0]?.finishReason === "SAFETY") {
+    console.error("[MIRA AI] Gemini blocked by safety filters:", JSON.stringify(data.candidates[0]));
+    return "Mi dispiace, non sono riuscito a generare una risposta. Riprova con una domanda diversa.";
+  }
+  if (!text) {
+    console.error("[MIRA AI] Unexpected Gemini response:", JSON.stringify(data).slice(0, 500));
+  }
+  return text ?? "";
 }
