@@ -51,50 +51,83 @@ Rispondi SOLO in JSON valido con questa struttura:
 {"degree_program":"","degree_level":"triennale|magistrale|ciclo_unico|phd","courses":[...],"weighted_average":null,"total_credits":0,"graded_credits":0,"pass_fail_credits":0}`;
 
 export async function parseTranscriptFile(base64Data: string, mimeType: string): Promise<ParsedTranscript> {
-  // Gemini handles both PDF and images natively via inline data
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) throw new Error("GOOGLE_AI_API_KEY is not set");
+  const isPdf = mimeType === "application/pdf";
 
-  const model = "gemini-2.0-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  if (isPdf) {
+    return parseTranscriptPdf(base64Data);
+  }
 
-  const body = {
-    systemInstruction: { parts: [{ text: EXTRACTION_PROMPT }] },
-    contents: [
+  return parseTranscriptImage(base64Data, mimeType);
+}
+
+async function parseTranscriptImage(base64Data: string, mimeType: string): Promise<ParsedTranscript> {
+  const dataUrl = `data:${mimeType};base64,${base64Data}`;
+
+  const result = await chatCompletion(
+    [
+      { role: "system", content: EXTRACTION_PROMPT },
       {
         role: "user",
-        parts: [
-          { text: "Estrai tutti i dati da questo libretto universitario. SOLO esami completati con data e voto. Rispondi in JSON." },
-          { inlineData: { mimeType, data: base64Data } },
+        content: [
+          { type: "text", text: "Estrai tutti i dati da questo libretto. SOLO esami completati con data e voto." },
+          { type: "image_url", image_url: { url: dataUrl, detail: "high" as const } },
         ],
       },
     ],
-    generationConfig: {
-      temperature: 0.1,
-      maxOutputTokens: 4096,
-      responseMimeType: "application/json",
-    },
+    { temperature: 0.1, maxTokens: 4096, jsonMode: true }
+  );
+
+  return JSON.parse(result) as ParsedTranscript;
+}
+
+async function parseTranscriptPdf(base64Data: string): Promise<ParsedTranscript> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
+
+  const dataUrl = `data:application/pdf;base64,${base64Data}`;
+
+  const body = {
+    model: "gpt-4o",
+    input: [
+      { role: "system", content: EXTRACTION_PROMPT },
+      {
+        role: "user",
+        content: [
+          { type: "input_text", text: "Estrai tutti i dati da questo libretto universitario. SOLO esami completati con data e voto." },
+          { type: "input_file", filename: "libretto.pdf", file_data: dataUrl },
+        ],
+      },
+    ],
+    text: { format: { type: "json_object" } },
+    temperature: 0.1,
+    max_output_tokens: 4096,
   };
 
-  const response = await fetch(url, {
+  const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
     body: JSON.stringify(body),
   });
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`Gemini API error ${response.status}: ${error}`);
+    console.error(`[MIRA AI] OpenAI Responses API error ${response.status}:`, error);
+    throw new Error(`OpenAI Responses API error ${response.status}: ${error}`);
   }
 
   const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const textOutput = data.output?.find((o: any) => o.type === "message")
+    ?.content?.find((c: any) => c.type === "output_text")?.text;
 
-  if (!text) {
+  if (!textOutput) {
     throw new Error("Nessuna risposta dall'AI per il parsing del transcript.");
   }
 
-  return JSON.parse(text) as ParsedTranscript;
+  return JSON.parse(textOutput) as ParsedTranscript;
 }
 
 export function formatTranscriptForChat(transcript: ParsedTranscript): string {
