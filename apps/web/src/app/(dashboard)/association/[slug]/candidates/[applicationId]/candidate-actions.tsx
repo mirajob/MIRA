@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { changeCandidateStatus, addCandidateNote } from "@/lib/actions/candidates";
-import { generateInterviewMessage, sendInterviewEmail } from "@/lib/actions/interview";
+import { generateEmailDraft, sendInterviewEmail, sendStatusEmail } from "@/lib/actions/interview";
 
 const PIPELINE_FLOW: Record<string, Array<{ value: string; label: string; style: string }>> = {
   submitted: [
@@ -18,12 +18,8 @@ const PIPELINE_FLOW: Record<string, Array<{ value: string; label: string; style:
     { value: "accepted", label: "Accetta", style: "bg-navy text-white hover:bg-navy-700" },
     { value: "rejected", label: "Rifiuta", style: "border border-error text-error hover:bg-error-bg" },
   ],
-  accepted: [
-    { value: "in_review", label: "Riporta in valutazione", style: "border border-border text-ink-secondary hover:bg-navy-50" },
-  ],
-  rejected: [
-    { value: "in_review", label: "Riconsidera", style: "border border-border text-ink-secondary hover:bg-navy-50" },
-  ],
+  accepted: [],
+  rejected: [],
 };
 
 export function CandidateActions({
@@ -41,25 +37,30 @@ export function CandidateActions({
 }) {
   const [status, setStatus] = useState(currentStatus);
   const [showNote, setShowNote] = useState(false);
-  const [showInterview, setShowInterview] = useState(false);
+  const [showComposer, setShowComposer] = useState(false);
+  const [composerAction, setComposerAction] = useState<string>("");
   const [noteText, setNoteText] = useState("");
-  const [interviewMessage, setInterviewMessage] = useState("");
+  const [emailMessage, setEmailMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [generatingMsg, setGeneratingMsg] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
+  const [emailSent, setEmailSent] = useState<string | null>(null);
 
   const nextSteps = PIPELINE_FLOW[status] ?? [];
 
+  const ACTION_LABELS: Record<string, string> = {
+    interview: "Invito a colloquio",
+    accepted: "Comunicazione accettazione",
+    rejected: "Comunicazione rifiuto",
+  };
+
   async function handleStatusChange(newStatus: string) {
-    if (newStatus === "interview") {
-      setShowInterview(true);
+    if (["interview", "accepted", "rejected"].includes(newStatus)) {
+      setComposerAction(newStatus);
+      setShowComposer(true);
       setGeneratingMsg(true);
-      const result = await generateInterviewMessage(
-        candidateName || "candidato/a",
-        associationName || "l'associazione",
-        "il board"
-      );
-      setInterviewMessage(result.message);
+      const type = newStatus as "interview" | "accepted" | "rejected";
+      const result = await generateEmailDraft(type, candidateName || "candidato/a", associationName || "l'associazione");
+      setEmailMessage(result.message);
       setGeneratingMsg(false);
       return;
     }
@@ -69,14 +70,19 @@ export function CandidateActions({
     setLoading(false);
   }
 
-  async function handleSendInterview() {
-    if (!interviewMessage.trim()) return;
+  async function handleSendEmail() {
+    if (!emailMessage.trim()) return;
     setLoading(true);
-    const result = await sendInterviewEmail(applicationId, interviewMessage);
-    if (!result.error) {
-      setStatus("interview");
-      setShowInterview(false);
-      setEmailSent(true);
+    let result;
+    if (composerAction === "interview") {
+      result = await sendInterviewEmail(applicationId, emailMessage);
+    } else {
+      result = await sendStatusEmail(applicationId, composerAction, emailMessage);
+    }
+    if (!result?.error) {
+      setStatus(composerAction);
+      setShowComposer(false);
+      setEmailSent(ACTION_LABELS[composerAction] || composerAction);
     }
     setLoading(false);
   }
@@ -109,42 +115,43 @@ export function CandidateActions({
 
       {emailSent && (
         <div className="w-full max-w-md rounded-md bg-success-bg px-4 py-2 text-body-sm text-success">
-          Email di convocazione inviata a {candidateEmail}
+          {emailSent} — email inviata a {candidateEmail}
         </div>
       )}
 
-      {showInterview && (
-        <div className="w-full max-w-md space-y-3 rounded-lg border border-petrol/30 bg-petrol-50 p-4">
-          <p className="text-label text-navy">Invito a colloquio</p>
+      {showComposer && (
+        <div className={`w-full max-w-md space-y-3 rounded-lg border p-4 ${
+          composerAction === "rejected" ? "border-error/30 bg-error-bg/30" : "border-petrol/30 bg-petrol-50"
+        }`}>
+          <p className="text-label text-navy">{ACTION_LABELS[composerAction]}</p>
           <p className="text-xs text-ink-secondary">
-            Scrivi il messaggio per {candidateName || "il candidato"}. Puoi includere un link Calendly, Google Meet, o istruzioni per il colloquio.
-            L'email sarà inviata da MIRA a nome tuo.
+            Modifica il messaggio prima di inviarlo. L'email sarà inviata da MIRA a nome tuo.
           </p>
           {generatingMsg ? (
             <div className="px-3 py-4 text-body-sm text-ink-tertiary text-center">MIRA sta scrivendo una bozza...</div>
           ) : (
             <textarea
-              value={interviewMessage}
-              onChange={(e) => setInterviewMessage(e.target.value)}
+              value={emailMessage}
+              onChange={(e) => setEmailMessage(e.target.value)}
               rows={8}
               className="w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:border-petrol resize-y"
             />
           )}
           {candidateEmail && (
-            <p className="text-xs text-ink-tertiary">
-              A: {candidateEmail}
-            </p>
+            <p className="text-xs text-ink-tertiary">A: {candidateEmail}</p>
           )}
           <div className="flex gap-2">
             <button
-              onClick={handleSendInterview}
-              disabled={loading || generatingMsg || !interviewMessage.trim()}
-              className="flex-1 bg-petrol text-white px-4 py-2 rounded-md text-body-sm hover:bg-petrol-700 disabled:opacity-40"
+              onClick={handleSendEmail}
+              disabled={loading || generatingMsg || !emailMessage.trim()}
+              className={`flex-1 px-4 py-2 rounded-md text-body-sm text-white disabled:opacity-40 ${
+                composerAction === "rejected" ? "bg-error hover:bg-error/80" : "bg-petrol hover:bg-petrol-700"
+              }`}
             >
-              {loading ? "Invio email..." : "Invia invito"}
+              {loading ? "Invio..." : "Invia email"}
             </button>
             <button
-              onClick={() => setShowInterview(false)}
+              onClick={() => setShowComposer(false)}
               className="px-3 py-2 text-body-sm text-ink-secondary hover:text-navy"
             >
               Annulla

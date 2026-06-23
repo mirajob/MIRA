@@ -5,6 +5,7 @@ import { BoardMemberList } from "./board-member-list";
 import { InviteMemberForm } from "./invite-member-form";
 import { InviteCodeSection } from "./invite-code-section";
 import { PendingBoardRequests } from "./pending-board-requests";
+import { MemberActions } from "./member-actions";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -82,7 +83,7 @@ export default async function BoardPage({ params }: Props) {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="font-display text-h2 text-navy">Board & Membri</h2>
+        <h2 className="font-display text-h2 text-navy">Board &amp; Membri</h2>
         <p className="mt-1 text-body text-ink-secondary">
           Gestisci il board, i membri e i codici invito
         </p>
@@ -152,7 +153,7 @@ export default async function BoardPage({ params }: Props) {
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Membro</th>
-                  <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Ruolo specifico</th>
+                  <th className="text-right text-eyebrow text-navy/60 uppercase py-3 px-4">Azioni</th>
                 </tr>
               </thead>
               <tbody>
@@ -171,8 +172,14 @@ export default async function BoardPage({ params }: Props) {
                           </div>
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-body-sm text-ink-secondary">
-                        {(m as any).title ?? "—"}
+                      <td className="py-4 px-4 text-right">
+                        <MemberActions
+                          membershipId={m.id}
+                          associationId={association.id}
+                          memberName={profile?.full_name ?? ""}
+                          currentTitle={m.title}
+                          isBoard={false}
+                        />
                       </td>
                     </tr>
                   );
