@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { changeCandidateStatus, addCandidateNote } from "@/lib/actions/candidates";
+import { changeCandidateStatus, addCandidateNote, evaluateCandidate } from "@/lib/actions/candidates";
 import { generateEmailDraft, sendInterviewEmail, sendStatusEmail } from "@/lib/actions/interview";
 
 const PIPELINE_FLOW: Record<string, Array<{ value: string; label: string; style: string }>> = {
@@ -34,6 +34,7 @@ export function CandidateActions({
   candidateEmail?: string;
   candidateName?: string;
   associationName?: string;
+  hasEvaluation?: boolean;
 }) {
   const [status, setStatus] = useState(currentStatus);
   const [showNote, setShowNote] = useState(false);
@@ -44,6 +45,8 @@ export function CandidateActions({
   const [loading, setLoading] = useState(false);
   const [generatingMsg, setGeneratingMsg] = useState(false);
   const [emailSent, setEmailSent] = useState<string | null>(null);
+  const [evaluating, setEvaluating] = useState(false);
+  const [evalDone, setEvalDone] = useState(hasEvaluation ?? false);
 
   const nextSteps = PIPELINE_FLOW[status] ?? [];
 
@@ -159,6 +162,22 @@ export function CandidateActions({
           </div>
         </div>
       )}
+
+      <button
+        onClick={async () => {
+          setEvaluating(true);
+          const result = await evaluateCandidate(applicationId);
+          setEvaluating(false);
+          if (!result.error) {
+            setEvalDone(true);
+            window.location.reload();
+          }
+        }}
+        disabled={evaluating}
+        className="px-4 py-2 rounded-md text-label border border-petrol text-petrol hover:bg-petrol-50 transition-colors duration-100 disabled:opacity-40"
+      >
+        {evaluating ? "MIRA sta analizzando..." : evalDone ? "Rigenera valutazione AI" : "Valuta con AI"}
+      </button>
 
       {showNote ? (
         <div className="flex gap-2 w-full max-w-sm">
