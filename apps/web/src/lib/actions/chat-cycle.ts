@@ -20,9 +20,9 @@ FLUSSO DI DOMANDE (in ordine):
 1. "Come vuoi chiamare questo ciclo di candidatura?" (es. Recruiting Fall 2026)
 2. "Scrivi una descrizione per i candidati — cosa devono sapere di questa selezione?" (opzionale, rispondi "no" per saltare)
 3. "Aprite per posizioni specifiche (es. M&A Analyst, VP Marketing) o è una candidatura generica aperta a tutti?"
-   - Se dice "generica" o simile → NON chiedere requisiti di posizione, vai diretto alle domande
-   - Se elenca posizioni → per CIASCUNA chiedi: "Cosa cercate per [posizione]? Descrivi il profilo ideale."
-4. "Che tipo di profilo cercate in generale? (es. interessati alla finanza, con esperienza in X...)" — questo serve per la valutazione AI
+   - Se dice "generica" o simile → positions vuoto, vai al punto 4
+   - Se elenca posizioni → salvale con nome e descrizione breve (se la danno). NON chiedere requisiti per singola posizione.
+4. "Che tipo di profilo cercate in generale per questa selezione? Descrivete il candidato ideale: interessi, competenze, attitudini, anno di corso, esperienze utili..." — QUESTA È LA DOMANDA PIÙ IMPORTANTE. I requisiti sono generali per l'associazione, non per singola posizione. MIRA userà questi criteri per valutare i candidati e suggerire la posizione più adatta.
 5. "Volete fare domande specifiche ai candidati? Se sì, elencale. Se no, scrivi 'no'."
 6. "Quando apre e quando chiude il ciclo? (es. dal 1 luglio al 15 settembre)"
 7. Fai un RIEPILOGO completo e chiedi: "Va bene così? Scrivi 'conferma' per creare il ciclo, oppure dimmi cosa modificare."
@@ -30,16 +30,18 @@ FLUSSO DI DOMANDE (in ordine):
 REGOLE:
 - UNA domanda alla volta, conciso e diretto
 - "generica" NON è il nome di una posizione — significa candidatura aperta senza ruoli specifici
-- Se il presidente dice qualcosa di ambiguo, interpreta con buon senso (es. "oct" = probabilmente "ottobre" nel titolo, chiedi conferma)
+- NON chiedere requisiti per singola posizione. I requisiti sono GENERALI per l'associazione. MIRA valuterà il fit del candidato con l'associazione e suggerirà la posizione migliore.
+- Se il presidente dice qualcosa di ambiguo, interpreta con buon senso
 - Quando hai tutte le info, fai il riepilogo PRIMA di chiedere conferma
 - Non creare nulla finché il presidente non scrive "conferma"
 - Quando il presidente conferma, rispondi con un messaggio di conferma E aggiungi alla fine ESATTAMENTE: CICLO_PRONTO seguito dal JSON
 
 FORMATO CONFERMA:
 CICLO_PRONTO
-{"title":"...","description":"...","requirements":"requisiti generali per la valutazione AI","positions":[{"name":"...","description":"...","requirements":"..."}],"questions":["domanda 1","domanda 2"],"opens_at":"YYYY-MM-DD","closes_at":"YYYY-MM-DD"}
+{"title":"...","description":"...","requirements":"requisiti GENERALI per la valutazione AI — profilo ideale, competenze, attitudini, anno di corso","positions":[{"name":"...","description":"..."}],"questions":["domanda 1","domanda 2"],"opens_at":"YYYY-MM-DD","closes_at":"YYYY-MM-DD"}
 
-Se candidatura generica, positions deve essere un array vuoto [].`;
+Se candidatura generica, positions deve essere un array vuoto [].
+Le positions NON devono avere il campo "requirements" — i requisiti sono solo generali.`;
 
 export async function sendCycleMessage(
   conversationHistory: ChatMessage[],

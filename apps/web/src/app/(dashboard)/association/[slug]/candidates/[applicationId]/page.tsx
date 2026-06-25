@@ -35,6 +35,7 @@ export default async function CandidateDetailPage({ params }: Props) {
   const profile = application.profiles as { full_name: string | null; email: string };
   const student = application.student_profiles as Record<string, unknown>;
   const cycle = application.application_cycles as { title: string };
+  const assocName = (association?.name as string) ?? "";
   const answers = application.application_answers as Array<{
     id: string; answer_text: string | null;
     application_questions: { question_text: string; question_type: string };
@@ -69,7 +70,7 @@ export default async function CandidateDetailPage({ params }: Props) {
             {student?.degree_level && <span>· {student.degree_level as string}</span>}
           </div>
         </div>
-        <CandidateActions applicationId={applicationId} currentStatus={application.status} candidateEmail={profile?.email} candidateName={profile?.full_name} associationName={association?.name} hasEvaluation={!!aiEval} />
+        <CandidateActions applicationId={applicationId} currentStatus={application.status} candidateEmail={profile?.email} candidateName={profile?.full_name} associationName={assocName} hasEvaluation={!!aiEval} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -126,7 +127,7 @@ export default async function CandidateDetailPage({ params }: Props) {
                 {/* Association fit */}
                 {ev.association_fit && (
                   <div>
-                    <h4 className="text-label text-navy mb-2">Fit con {association?.name}</h4>
+                    <h4 className="text-label text-navy mb-2">Fit con {assocName}</h4>
                     <div className="rounded-lg border border-border bg-white p-5 space-y-3">
                       <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.association_fit}</p>
                       {(ev.fit_strengths?.length > 0 || ev.fit_gaps?.length > 0) && (
