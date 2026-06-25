@@ -75,38 +75,239 @@ export default async function CandidateDetailPage({ params }: Props) {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Answers */}
-          <div>
-            <h3 className="font-sans text-h3 text-navy mb-4">Risposte</h3>
-            {answers.length === 0 ? (
-              <p className="text-body text-ink-secondary">Nessuna risposta</p>
-            ) : (
-              <div className="space-y-4">
+          {/* Application answers */}
+          {answers.length > 0 && (
+            <div>
+              <h3 className="font-sans text-h3 text-navy mb-4">Risposte candidatura</h3>
+              <div className="space-y-3">
                 {answers.map((a) => (
-                  <div key={a.id} className="rounded-lg border border-border bg-white p-6">
-                    <p className="text-label text-navy mb-2">
-                      {a.application_questions?.question_text}
-                    </p>
-                    <p className="text-body text-ink whitespace-pre-wrap">
-                      {a.answer_text ?? "—"}
-                    </p>
+                  <div key={a.id} className="rounded-lg border border-border bg-white p-5">
+                    <p className="text-label text-navy mb-1 text-xs">{a.application_questions?.question_text}</p>
+                    <p className="text-body-sm text-ink whitespace-pre-wrap">{a.answer_text ?? "—"}</p>
                   </div>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Student profile — full structured view for associations */}
-          <div>
-            <h3 className="font-sans text-h3 text-navy mb-4">Profilo studente</h3>
-            <div className="space-y-4">
+          {/* AI Evaluation — narrative format */}
+          {aiEval && (() => {
+            const ev = (aiEval.evaluation_json ?? aiEval) as Record<string, any>;
+            const fitColor = (cat: string) =>
+              cat === "strong_fit" ? "bg-success-bg text-success"
+              : cat === "good_fit" ? "bg-petrol-50 text-petrol-700"
+              : cat === "uncertain_fit" ? "bg-warning-bg text-warning"
+              : "bg-error-bg text-error";
+            const fitLabel = (cat: string) =>
+              cat === "strong_fit" ? "Strong fit"
+              : cat === "good_fit" ? "Good fit"
+              : cat === "uncertain_fit" ? "Da valutare"
+              : "Weak fit";
+
+            const posRec = ev.position_recommendation as { candidate_selected?: string; ai_recommended?: string; match?: boolean; explanation?: string } | null;
+
+            return (
+              <div className="space-y-5">
+                {/* Synthesis + fit badge */}
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <h3 className="font-sans text-h3 text-navy">Scheda MIRA</h3>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium ${fitColor(ev.overall_fit_category)}`}>
+                      {fitLabel(ev.overall_fit_category)}
+                    </span>
+                  </div>
+                  {ev.candidate_synthesis && (
+                    <div className="rounded-lg border border-border bg-white p-5">
+                      <p className="text-body text-ink whitespace-pre-wrap">{ev.candidate_synthesis}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Association fit */}
+                {ev.association_fit && (
+                  <div>
+                    <h4 className="text-label text-navy mb-2">Fit con {association?.name}</h4>
+                    <div className="rounded-lg border border-border bg-white p-5 space-y-3">
+                      <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.association_fit}</p>
+                      {(ev.fit_strengths?.length > 0 || ev.fit_gaps?.length > 0) && (
+                        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border">
+                          {ev.fit_strengths?.length > 0 && (
+                            <div>
+                              <p className="text-eyebrow text-success uppercase text-[10px] mb-1">Punti di forza</p>
+                              <ul className="space-y-1">
+                                {ev.fit_strengths.map((s: string, i: number) => (
+                                  <li key={i} className="text-body-sm text-ink">• {s}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {ev.fit_gaps?.length > 0 && (
+                            <div>
+                              <p className="text-eyebrow text-warning uppercase text-[10px] mb-1">Da approfondire</p>
+                              <ul className="space-y-1">
+                                {ev.fit_gaps.map((g: string, i: number) => (
+                                  <li key={i} className="text-body-sm text-ink">• {g}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Position recommendation */}
+                {posRec && (
+                  <div>
+                    <h4 className="text-label text-navy mb-2">Raccomandazione posizione</h4>
+                    <div className="rounded-lg border border-border bg-white p-5 space-y-2">
+                      <div className="flex items-center gap-3 text-body-sm">
+                        <span className="text-ink-tertiary">Scelta del candidato:</span>
+                        <span className="font-medium text-ink">{posRec.candidate_selected}</span>
+                      </div>
+                      {posRec.ai_recommended && posRec.ai_recommended !== posRec.candidate_selected && (
+                        <div className="flex items-center gap-3 text-body-sm">
+                          <span className="text-ink-tertiary">Consigliata da MIRA:</span>
+                          <span className="font-medium text-petrol">{posRec.ai_recommended}</span>
+                        </div>
+                      )}
+                      {posRec.match === true && (
+                        <div className="flex items-center gap-2 text-body-sm text-success">
+                          <span>&#10003;</span>
+                          <span>La scelta del candidato è coerente</span>
+                        </div>
+                      )}
+                      {posRec.explanation && (
+                        <p className="text-body-sm text-ink-secondary pt-1">{posRec.explanation}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Key evidence */}
+                {ev.key_evidence?.length > 0 && (
+                  <div>
+                    <h4 className="text-label text-navy mb-2">Evidenze principali</h4>
+                    <div className="space-y-2">
+                      {ev.key_evidence.map((e: { title: string; description: string }, i: number) => (
+                        <div key={i} className="rounded-lg border border-border bg-white p-5">
+                          <p className="text-label text-navy text-xs mb-1">{e.title}</p>
+                          <p className="text-body-sm text-ink">{e.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Competencies */}
+                {(ev.academic_competencies?.length > 0 || ev.practical_competencies?.length > 0) && (
+                  <div>
+                    <h4 className="text-label text-navy mb-2">Competenze</h4>
+                    <div className="rounded-lg border border-border bg-white p-5 space-y-4">
+                      {ev.academic_competencies?.length > 0 && (
+                        <div>
+                          <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Accademiche</p>
+                          <div className="space-y-2">
+                            {ev.academic_competencies.map((c: { area: string; description: string }, i: number) => (
+                              <div key={i}>
+                                <p className="text-body-sm font-medium text-ink">{c.area}</p>
+                                <p className="text-body-sm text-ink-secondary">{c.description}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {ev.practical_competencies?.length > 0 && (
+                        <div className={ev.academic_competencies?.length > 0 ? "pt-3 border-t border-border" : ""}>
+                          <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Pratiche</p>
+                          <div className="space-y-2">
+                            {ev.practical_competencies.map((c: { area: string; description: string }, i: number) => (
+                              <div key={i}>
+                                <p className="text-body-sm font-medium text-ink">{c.area}</p>
+                                <p className="text-body-sm text-ink-secondary">{c.description}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Competencies to verify */}
+                {ev.competencies_to_verify && (
+                  <div>
+                    <h4 className="text-label text-navy mb-2">Competenze da verificare</h4>
+                    <div className="rounded-lg border border-border bg-white p-5">
+                      <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.competencies_to_verify}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Attitude */}
+                {ev.attitude_description && (
+                  <div>
+                    <h4 className="text-label text-navy mb-2">Attitudine e stile di lavoro</h4>
+                    <div className="rounded-lg border border-border bg-white p-5">
+                      <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.attitude_description}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Application quality */}
+                {ev.application_quality && (
+                  <div>
+                    <h4 className="text-label text-navy mb-2">Qualità risposte candidatura</h4>
+                    <div className="rounded-lg border border-border bg-white p-5">
+                      <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.application_quality}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Interview questions */}
+                {ev.interview_questions?.length > 0 && (
+                  <div>
+                    <h4 className="text-label text-navy mb-2">Domande consigliate per il colloquio</h4>
+                    <div className="rounded-lg border border-border bg-white p-5">
+                      <ul className="space-y-2">
+                        {ev.interview_questions.map((q: string, i: number) => (
+                          <li key={i} className="text-body-sm text-ink">
+                            <span className="text-ink-tertiary mr-2">{i + 1}.</span>{q}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* Suggested roles */}
+                {ev.suggested_roles && (
+                  <div>
+                    <h4 className="text-label text-navy mb-2">Ruoli suggeriti</h4>
+                    <div className="rounded-lg border border-border bg-white p-5">
+                      <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.suggested_roles}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Student profile data — collapsible raw data section */}
+          <details className="group">
+            <summary className="cursor-pointer text-label text-navy/60 hover:text-navy py-2 flex items-center gap-2">
+              <span className="text-xs transition-transform group-open:rotate-90">&#9654;</span>
+              Dati profilo completo
+            </summary>
+            <div className="space-y-4 mt-3">
               {student?.profile_summary && (
                 <div className="rounded-lg border border-border bg-white p-5">
-                  <p className="text-body text-ink whitespace-pre-wrap">{student.profile_summary as string}</p>
+                  <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Riassunto profilo</p>
+                  <p className="text-body-sm text-ink whitespace-pre-wrap">{student.profile_summary as string}</p>
                 </div>
               )}
 
-              {/* Academic info */}
               <div className="rounded-lg border border-border bg-white p-5 space-y-3">
                 <p className="text-eyebrow text-navy/60 uppercase text-[10px]">Percorso accademico</p>
                 <div className="grid grid-cols-2 gap-3 text-body-sm">
@@ -119,7 +320,6 @@ export default async function CandidateDetailPage({ params }: Props) {
                 </div>
               </div>
 
-              {/* Experiences */}
               {(student?.experiences as string[])?.length > 0 && (
                 <div className="rounded-lg border border-border bg-white p-5">
                   <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Esperienze</p>
@@ -131,7 +331,6 @@ export default async function CandidateDetailPage({ params }: Props) {
                 </div>
               )}
 
-              {/* Interests & Goals */}
               {((student?.interests as string[])?.length > 0 || (student?.goals as string[])?.length > 0) && (
                 <div className="rounded-lg border border-border bg-white p-5 space-y-3">
                   {(student?.interests as string[])?.length > 0 && (
@@ -156,175 +355,8 @@ export default async function CandidateDetailPage({ params }: Props) {
                   )}
                 </div>
               )}
-
-              {/* Structured data from availability (career targets, work style, etc.) */}
-              {(() => {
-                const avail = (student as any)?.availability as Record<string, any> | null;
-                if (!avail) return null;
-
-                const ct = avail.career_targets;
-                const cp = avail.career_plan;
-                const ws = avail.work_style;
-                const pd = avail.previous_degree;
-                const pi = avail.personal_interests;
-
-                const hasCareerTargets = ct && (ct.roles?.length || ct.sectors?.length || ct.companies?.length || ct.geography?.length);
-                const hasCareerPlan = cp && (cp.short_term || cp.medium_term || cp.clarity_level);
-                const hasWorkStyle = ws && (ws.leadership || ws.style || ws.strengths?.length);
-                const hasPrevDegree = pd && (pd.university || pd.program);
-
-                if (!hasCareerTargets && !hasCareerPlan && !hasWorkStyle && !hasPrevDegree && !pi?.length) return null;
-
-                return (
-                  <>
-                    {hasPrevDegree && (
-                      <div className="rounded-lg border border-border bg-white p-5">
-                        <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Percorso precedente</p>
-                        <div className="text-body-sm text-ink space-y-1">
-                          {pd.university && <p><span className="text-ink-tertiary">Università:</span> {pd.university}</p>}
-                          {pd.program && <p><span className="text-ink-tertiary">Corso:</span> {pd.program}</p>}
-                          {pd.grade && <p><span className="text-ink-tertiary">Voto:</span> {pd.grade}</p>}
-                          {pd.thesis_topic && <p><span className="text-ink-tertiary">Tesi:</span> {pd.thesis_topic}</p>}
-                        </div>
-                      </div>
-                    )}
-
-                    {hasCareerTargets && (
-                      <div className="rounded-lg border border-border bg-white p-5">
-                        <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Target di carriera</p>
-                        <div className="text-body-sm space-y-2">
-                          {ct.roles?.length > 0 && (
-                            <div><span className="text-ink-tertiary">Ruoli:</span> <span className="text-ink">{ct.roles.join(", ")}</span></div>
-                          )}
-                          {ct.sectors?.length > 0 && (
-                            <div><span className="text-ink-tertiary">Settori:</span> <span className="text-ink">{ct.sectors.join(", ")}</span></div>
-                          )}
-                          {ct.companies?.length > 0 && (
-                            <div><span className="text-ink-tertiary">Aziende:</span> <span className="text-ink">{ct.companies.join(", ")}</span></div>
-                          )}
-                          {ct.geography?.length > 0 && (
-                            <div><span className="text-ink-tertiary">Geografie:</span> <span className="text-ink">{ct.geography.join(", ")}</span></div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {hasCareerPlan && (
-                      <div className="rounded-lg border border-border bg-white p-5">
-                        <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Piano carriera</p>
-                        <div className="text-body-sm text-ink space-y-1">
-                          {cp.short_term && <p><span className="text-ink-tertiary">Breve termine:</span> {cp.short_term}</p>}
-                          {cp.medium_term && <p><span className="text-ink-tertiary">Medio termine:</span> {cp.medium_term}</p>}
-                          {cp.exchange_interest && <p><span className="text-ink-tertiary">Exchange:</span> {cp.exchange_interest}</p>}
-                          {cp.masters_interest && <p><span className="text-ink-tertiary">Magistrale:</span> {cp.masters_interest}</p>}
-                          {cp.clarity_level && <p><span className="text-ink-tertiary">Chiarezza:</span> {cp.clarity_level}</p>}
-                        </div>
-                      </div>
-                    )}
-
-                    {hasWorkStyle && (
-                      <div className="rounded-lg border border-border bg-white p-5">
-                        <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Stile di lavoro</p>
-                        <div className="text-body-sm text-ink space-y-1">
-                          {ws.leadership && <p><span className="text-ink-tertiary">Leadership:</span> {ws.leadership}</p>}
-                          {ws.teamwork_preference && <p><span className="text-ink-tertiary">Teamwork:</span> {ws.teamwork_preference}</p>}
-                          {ws.style && <p><span className="text-ink-tertiary">Stile:</span> {ws.style}</p>}
-                          {ws.communication && <p><span className="text-ink-tertiary">Comunicazione:</span> {ws.communication}</p>}
-                          {ws.strengths?.length > 0 && <p><span className="text-ink-tertiary">Punti di forza:</span> {ws.strengths.join(", ")}</p>}
-                          {ws.improvements?.length > 0 && <p><span className="text-ink-tertiary">Da migliorare:</span> {ws.improvements.join(", ")}</p>}
-                        </div>
-                      </div>
-                    )}
-
-                    {pi?.length > 0 && (
-                      <div className="rounded-lg border border-border bg-white p-5">
-                        <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Interessi personali</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {pi.map((p: string, i: number) => (
-                            <span key={i} className="px-2 py-0.5 rounded-full text-xs bg-petrol-50 text-petrol-700">{p}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
             </div>
-          </div>
-
-          {/* AI Evaluation */}
-          {aiEval && (() => {
-            const evalJson = (aiEval.evaluation_json ?? aiEval) as Record<string, any>;
-            const fitColor = (cat: string) =>
-              cat === "strong_fit" ? "bg-success-bg text-success"
-              : cat === "good_fit" ? "bg-petrol-50 text-petrol-700"
-              : cat === "uncertain_fit" ? "bg-warning-bg text-warning"
-              : "bg-error-bg text-error";
-
-            return (
-              <div>
-                <h3 className="font-sans text-h3 text-navy mb-4">Valutazione AI</h3>
-                <div className="rounded-lg border border-border bg-white p-6 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium ${fitColor(aiEval.overall_fit_category as string)}`}>
-                      Generale: {(aiEval.overall_fit_category as string)?.replace("_", " ")}
-                    </span>
-                    <span className="text-body-sm text-ink-tertiary">
-                      Confidenza: {aiEval.confidence as string}
-                    </span>
-                  </div>
-
-                  {(evalJson.overall_fit_summary || aiEval.fit_summary) && (
-                    <p className="text-body text-ink">{(evalJson.overall_fit_summary || aiEval.fit_summary) as string}</p>
-                  )}
-
-                  {evalJson.position_fit && Object.keys(evalJson.position_fit).length > 0 && (
-                    <div>
-                      <p className="text-label text-navy text-xs mb-2">Fit per posizione</p>
-                      <div className="space-y-2">
-                        {Object.entries(evalJson.position_fit).map(([pos, data]: [string, any]) => (
-                          <div key={pos} className="flex items-start gap-2">
-                            <span className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${fitColor(data.fit_category)}`}>
-                              {data.fit_category?.replace("_", " ")}
-                            </span>
-                            <div>
-                              <p className="text-body-sm font-medium text-navy">{pos}</p>
-                              {data.reason && <p className="text-body-sm text-ink-secondary">{data.reason}</p>}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {evalJson.alternative_positions?.length > 0 && (
-                    <div>
-                      <p className="text-label text-navy text-xs mb-2">Posizioni alternative suggerite</p>
-                      <div className="space-y-2">
-                        {evalJson.alternative_positions.map((alt: any, i: number) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <span className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${fitColor(alt.fit_category)}`}>
-                              {alt.fit_category?.replace("_", " ")}
-                            </span>
-                            <div>
-                              <p className="text-body-sm font-medium text-navy">{alt.name}</p>
-                              {alt.reason && <p className="text-body-sm text-ink-secondary">{alt.reason}</p>}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {evalJson.suggested_position && (
-                    <p className="text-body-sm text-petrol font-medium">
-                      Posizione suggerita: {evalJson.suggested_position}
-                    </p>
-                  )}
-                </div>
-              </div>
-            );
-          })()}
+          </details>
         </div>
 
         {/* Sidebar */}

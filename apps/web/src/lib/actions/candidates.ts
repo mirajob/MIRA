@@ -166,7 +166,7 @@ export async function evaluateCandidate(applicationId: string) {
   if (!application) return { error: "Candidatura non trovata" };
 
   const { data: student } = await (supabase.from("student_profiles") as any)
-    .select("profile_summary, degree_program, degree_level, current_year, interests, goals, experiences, transcript_summary")
+    .select("profile_summary, degree_program, degree_level, current_year, interests, goals, experiences, transcript_summary, availability")
     .eq("user_id", application.student_user_id)
     .single();
 
@@ -176,7 +176,7 @@ export async function evaluateCandidate(applicationId: string) {
     .single();
 
   const { data: cycle } = await (supabase.from("application_cycles") as any)
-    .select("title, description, available_roles")
+    .select("title, description, available_roles, evaluation_criteria")
     .eq("association_id", application.association_id)
     .eq("status", "open")
     .maybeSingle();
@@ -192,61 +192,121 @@ export async function evaluateCandidate(applicationId: string) {
     `- ${p.name}${p.description ? `: ${p.description}` : ""}${p.requirements ? ` [REQUISITI: ${p.requirements}]` : ""}`
   ).join("\n");
 
-  const prompt = `Valuta questo candidato per l'associazione ${association?.name}.
+  // Build rich student context
+  const avail = student?.availability as Record<string, any> ?? {};
+  const ct = avail.career_targets ?? {};
+  const cp = avail.career_plan ?? {};
+  const ws = avail.work_style ?? {};
+  const pd = avail.previous_degree ?? {};
+  const pi = avail.personal_interests ?? [];
+  const ts = student?.transcript_summary;
+
+  let studentContext = `PROFILO COMPLETO CANDIDATO:
+Riassunto: ${student?.profile_summary || "Non disponibile"}
+Corso: ${student?.degree_program || "?"} (${student?.degree_level || "?"})
+Anno: ${student?.current_year || "?"}
+${ts?.weighted_average ? `Media ponderata: ${ts.weighted_average}/30` : ""}
+${ts?.total_credits ? `Crediti: ${ts.total_credits} CFU` : ""}
+
+INTERESSI: ${(student?.interests ?? []).join(", ") || "non specificati"}
+OBIETTIVI: ${(student?.goals ?? []).join(", ") || "non specificati"}
+ESPERIENZE: ${(student?.experiences ?? []).join("; ") || "nessuna"}
+INTERESSI PERSONALI: ${pi.join(", ") || "non specificati"}
+
+TARGET CARRIERA: ruoli=${(ct.roles ?? []).join(", ")}, settori=${(ct.sectors ?? []).join(", ")}, aziende=${(ct.companies ?? []).join(", ")}, geografie=${(ct.geography ?? []).join(", ")}
+PIANO CARRIERA: breve termine=${cp.short_term || "?"}, medio termine=${cp.medium_term || "?"}, exchange=${cp.exchange_interest || "?"}, magistrale=${cp.masters_interest || "?"}, chiarezza=${cp.clarity_level || "?"}
+STILE LAVORO: leadership=${ws.leadership || "?"}, teamwork=${ws.teamwork_preference || "?"}, stile=${ws.style || "?"}, comunicazione=${ws.communication || "?"}, punti forza=${(ws.strengths ?? []).join(", ")}, da migliorare=${(ws.improvements ?? []).join(", ")}`;
+
+  if (pd.university) {
+    studentContext += `\nPERCORSO PRECEDENTE: ${pd.university}, ${pd.program || "?"}, voto ${pd.grade || "?"}, tesi: ${pd.thesis_topic || "?"}`;
+  }
+
+  if (ts?.courses?.length) {
+    const topCourses = ts.courses.filter((c: any) => c.grade_numeric >= 28).slice(0, 5);
+    if (topCourses.length) {
+      studentContext += `\nVOTI MIGLIORI: ${topCourses.map((c: any) => `${c.course_name} (${c.grade})`).join(", ")}`;
+    }
+  }
+
+  const evalCriteria = (cycle?.evaluation_criteria as Record<string, any>)?.general_requirements || "";
+
+  const prompt = `Genera una SCHEDA CANDIDATO NARRATIVA per l'associazione ${association?.name}.
 
 ASSOCIAZIONE: ${association?.name} (${association?.category})
 ${association?.short_description || ""}
+${association?.long_description || ""}
+${evalCriteria ? `\nCRITERI DI VALUTAZIONE DELL'ASSOCIAZIONE:\n${evalCriteria}` : ""}
 
 POSIZIONE SCELTA DAL CANDIDATO: ${selectedPosition}
+POSIZIONI DISPONIBILI:
+${positionsText || "Nessuna posizione specifica — candidatura generica"}
 
-TUTTE LE POSIZIONI DISPONIBILI (con requisiti):
-${positionsText || "Candidatura generica"}
-
-PROFILO CANDIDATO:
-${student?.profile_summary || "Nessun profilo disponibile"}
-Corso: ${student?.degree_program || "?"} (${student?.degree_level || "?"})
-Anno: ${student?.current_year || "?"}
-Interessi: ${(student?.interests ?? []).join(", ") || "non specificati"}
-Obiettivi: ${(student?.goals ?? []).join(", ") || "non specificati"}
-Esperienze: ${(student?.experiences ?? []).join(", ") || "nessuna"}
-${student?.transcript_summary?.weighted_average ? `Media: ${student.transcript_summary.weighted_average}/30` : ""}
+${studentContext}
 
 RISPOSTE CANDIDATURA:
-${answers || "Nessuna risposta"}
+${answers || "Nessuna risposta specifica"}
 
 Rispondi in JSON con questa struttura:
 {
-  "selected_position": "${selectedPosition}",
   "overall_fit_category": "strong_fit|good_fit|uncertain_fit|weak_fit",
-  "overall_fit_summary": "2-3 frasi sulla compatibilità GENERALE con l'associazione",
-  "position_fit": {
-    "${selectedPosition}": {
-      "fit_category": "strong_fit|good_fit|uncertain_fit|weak_fit",
-      "reason": "perché è o non è adatto per QUESTA posizione specifica"
-    }
+
+  "candidate_synthesis": "Paragrafo narrativo di 4-5 frasi che descrive chi è questo candidato, cosa ha fatto, cosa cerca. Non usare tag o elenchi — scrivi come se stessi presentando la persona a qualcuno.",
+
+  "association_fit": "Paragrafo: perché è o non è coerente con ${association?.name}. Confronta il profilo con i CRITERI DI VALUTAZIONE dell'associazione. Spiega i motivi, non dare solo un punteggio.",
+
+  "fit_strengths": ["punto di forza specifico rispetto ai criteri di ${association?.name}"],
+  "fit_gaps": ["area da approfondire specifica per ${association?.name}"],
+
+  "position_recommendation": {
+    "candidate_selected": "${selectedPosition}",
+    "ai_recommended": "la posizione che l'AI ritiene più adatta tra quelle disponibili",
+    "match": true/false,
+    "explanation": "Se match=true: conferma perché il candidato ha scelto bene. Se match=false: spiega perché la posizione consigliata è più adatta del candidato, senza sminuire la scelta del candidato."
   },
-  "alternative_positions": [
-    {"name": "altra posizione", "fit_category": "...", "reason": "perché sarebbe adatto qui"}
+
+  "key_evidence": [
+    {"title": "nome esperienza/progetto", "description": "2-3 frasi che spiegano cosa ha fatto, perché è rilevante, cosa va approfondito. Distingui tra ciò che è certo (transcript) e ciò che è dichiarato."}
   ],
-  "confidence": "high|medium|low",
-  "strengths": ["punto di forza 1", "punto di forza 2"],
-  "gaps": ["gap 1", "gap 2"],
-  "suggested_position": "la posizione migliore per questo candidato",
-  "interview_questions": ["domanda 1", "domanda 2"]
+
+  "academic_competencies": [
+    {"area": "nome area", "description": "1-2 frasi: cosa emerge dal transcript, cosa significa concretamente, per quali ruoli è utile. NON esagerare: un esame non equivale a una competenza pratica."}
+  ],
+
+  "practical_competencies": [
+    {"area": "nome competenza", "description": "1-2 frasi: da quale esperienza emerge, cosa suggerisce, cosa va verificato."}
+  ],
+
+  "competencies_to_verify": "Paragrafo: quali competenze importanti per l'associazione non emergono ancora dal profilo. Non giudicante — una guida per il colloquio.",
+
+  "attitude_description": "Paragrafo narrativo sullo stile di lavoro, attitudini, preferenze. NON etichette secche tipo 'leadership: alta'. Scrivi come emerge dalla conversazione: autonomia, iniziativa, creatività, preferenze di team, comunicazione, motivazioni.",
+
+  "suggested_roles": "Se ci sono posizioni interne, suggerisci quali sarebbero più coerenti e perché. Altrimenti suggerisci quale tipo di attività interna sarebbe più adatta.",
+
+  "interview_questions": ["domanda specifica basata sul profilo e sui gap — non domande generiche"],
+
+  "application_quality": "Se le risposte alla candidatura sono povere o generiche, segnalalo. Se sono buone, dillo. Spiega cosa aggiungono o non aggiungono alla valutazione."
 }
 
-IMPORTANTE:
-- Valuta il fit sia per la posizione SCELTA sia per l'associazione in generale
-- Se il candidato è weak per la posizione scelta ma strong per un'altra, segnalalo in alternative_positions
-- overall_fit_category è il fit GENERALE per l'associazione, non per la singola posizione`;
+REGOLE:
+- Scrivi in italiano, tono professionale ma leggibile
+- Il FIT deve essere valutato rispetto ai CRITERI DI VALUTAZIONE dell'associazione, non in astratto
+- La RACCOMANDAZIONE POSIZIONE deve confrontare cosa ha scelto il candidato vs cosa consigli tu. Se la candidatura è generica o c'è una sola posizione, match=true e spiega il fit
+- NON mostrare confidence score, punteggi tecnici o logiche interne
+- NON trasformare ogni esame in una competenza enorme
+- Distingui tra competenze ACCADEMICHE (transcript) e PRATICHE (esperienze)
+- Se mancano prove, scrivi "da approfondire", non "manca"
+- Le esperienze dichiarate vanno presentate come "lo studente dichiara/racconta", non come fatti certi
+- L'attitudine deve essere narrativa, non una tabella di punteggi`;
+
+  const systemMsg = `Sei un sistema di valutazione candidature per associazioni universitarie. Genera schede candidato narrative, motivate e contestualizzate all'associazione specifica. Il fit va sempre valutato rispetto ai criteri di selezione indicati dall'associazione. Non inventare informazioni. Distingui tra dati certi (transcript), dichiarazioni dello studente e inferenze. Rispondi SOLO in JSON valido.`;
 
   try {
     const result = await chatCompletion(
       [
-        { role: "system", content: "Sei un valutatore AI per candidature universitarie. Valuta in modo oggettivo, basandoti su evidenze concrete del profilo e delle risposte. Non inventare. Rispondi SOLO in JSON." },
+        { role: "system", content: systemMsg },
         { role: "user", content: prompt },
       ],
-      { temperature: 0.2, maxTokens: 1024, jsonMode: true }
+      { temperature: 0.3, maxTokens: 3000, jsonMode: true }
     );
 
     const evaluation = JSON.parse(result);
@@ -257,11 +317,14 @@ IMPORTANTE:
       model_name: "gpt-4o",
       evaluation_json: evaluation,
       overall_fit_category: evaluation.overall_fit_category,
-      confidence: evaluation.confidence,
-      fit_summary: evaluation.fit_summary,
-      strengths: evaluation.strengths,
-      gaps: evaluation.gaps,
-      input_snapshot: { student_summary: student?.profile_summary, answers_count: (application.application_answers ?? []).length },
+      fit_summary: evaluation.association_fit,
+      strengths: evaluation.fit_strengths,
+      gaps: evaluation.fit_gaps,
+      input_snapshot: {
+        student_summary: student?.profile_summary,
+        answers_count: (application.application_answers ?? []).length,
+        evaluation_criteria: evalCriteria || null,
+      },
     });
 
     return { success: true };

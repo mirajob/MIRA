@@ -82,6 +82,7 @@ export async function updateCycleDetails(
     opens_at: string | null;
     closes_at: string | null;
     available_roles: Array<{ name: string; description?: string; requirements?: string }>;
+    evaluation_criteria?: { general_requirements?: string };
   }
 ) {
   if (!(await checkCyclePermission(associationId, "manage_application_cycles"))) {
@@ -90,15 +91,20 @@ export async function updateCycleDetails(
 
   const supabase = await createServiceClient();
 
+  const updatePayload: Record<string, unknown> = {
+    title: data.title,
+    description: data.description,
+    opens_at: data.opens_at,
+    closes_at: data.closes_at,
+    available_roles: data.available_roles,
+  };
+  if (data.evaluation_criteria !== undefined) {
+    updatePayload.evaluation_criteria = data.evaluation_criteria;
+  }
+
   await supabase
     .from("application_cycles")
-    .update({
-      title: data.title,
-      description: data.description,
-      opens_at: data.opens_at,
-      closes_at: data.closes_at,
-      available_roles: data.available_roles,
-    })
+    .update(updatePayload)
     .eq("id", cycleId);
 
   revalidatePath(`/association/${slug}/cycles`);

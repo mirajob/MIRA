@@ -122,6 +122,7 @@ export async function createCycleFromChat(
       opens_at: cycleData.opens_at || null,
       closes_at: cycleData.closes_at || null,
       available_roles: positions,
+      evaluation_criteria: cycleData.requirements ? { general_requirements: cycleData.requirements } : {},
       created_by_user_id: (ctx.profile as any).id,
     })
     .select("id")
