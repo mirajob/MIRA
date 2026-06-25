@@ -34,7 +34,6 @@ export function CandidateActions({
   candidateEmail?: string;
   candidateName?: string;
   associationName?: string;
-  hasEvaluation?: boolean;
 }) {
   const [status, setStatus] = useState(currentStatus);
   const [showNote, setShowNote] = useState(false);
@@ -46,7 +45,6 @@ export function CandidateActions({
   const [generatingMsg, setGeneratingMsg] = useState(false);
   const [emailSent, setEmailSent] = useState<string | null>(null);
   const [evaluating, setEvaluating] = useState(false);
-  const [evalDone, setEvalDone] = useState(hasEvaluation ?? false);
 
   const nextSteps = PIPELINE_FLOW[status] ?? [];
 
@@ -176,7 +174,7 @@ export function CandidateActions({
         disabled={evaluating}
         className="px-4 py-2 rounded-md text-label border border-petrol text-petrol hover:bg-petrol-50 transition-colors duration-100 disabled:opacity-40"
       >
-        {evaluating ? "MIRA sta analizzando..." : evalDone ? "Rigenera valutazione AI" : "Valuta con AI"}
+        {evaluating ? "MIRA sta analizzando..." : "Valuta con AI"}
       </button>
 
       {showNote ? (
