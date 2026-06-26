@@ -90,6 +90,7 @@ export default async function CycleDetailPage({ params }: Props) {
           opensAt: cycle.opens_at ? cycle.opens_at.slice(0, 16) : "",
           closesAt: cycle.closes_at ? cycle.closes_at.slice(0, 16) : "",
           positions,
+          generalRequirements: (cycle.evaluation_criteria as any)?.general_requirements || "",
         }}
         isOpen={cycle.status === "open"}
       />

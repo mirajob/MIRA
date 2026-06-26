@@ -15,6 +15,7 @@ interface CycleData {
   opensAt: string;
   closesAt: string;
   positions: Position[];
+  generalRequirements: string;
 }
 
 const inputClass = "w-full px-3 py-2 rounded-md bg-white border border-border text-body-sm text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-1 focus:ring-petrol/20 transition-colors";
@@ -66,6 +67,7 @@ export function CycleEditor({
       opens_at: data.opensAt || null,
       closes_at: data.closesAt || null,
       available_roles: data.positions.filter((p) => p.name.trim()),
+      evaluation_criteria: { general_requirements: data.generalRequirements || "" },
     });
     setSaving(false);
     setSaved(true);
@@ -106,6 +108,14 @@ export function CycleEditor({
       </div>
 
       <div className="rounded-lg border border-border bg-white p-5 space-y-4">
+        <label className="block">
+          <span className="text-label text-navy mb-1 block text-xs">Requisiti generali per la valutazione AI</span>
+          <p className="text-[11px] text-ink-tertiary mb-2">Descrivi il candidato ideale: interessi, competenze, attitudini, anno di corso, esperienze utili. MIRA userà questi criteri per valutare tutti i candidati e suggerire la posizione migliore. Non visibile ai candidati.</p>
+          <textarea value={data.generalRequirements} onChange={(e) => updateField("generalRequirements", e.target.value)} rows={4} className={`${inputClass} resize-y`} placeholder="Es. Cerchiamo studenti del secondo o terzo anno con interesse per la finanza e i mercati. Preferiamo profili con esperienze di leadership, curiosità dimostrata e disponibilità di almeno 6 ore settimanali." />
+        </label>
+      </div>
+
+      <div className="rounded-lg border border-border bg-white p-5 space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-label text-navy text-xs">Posizioni aperte</span>
           <button onClick={addPosition} className="text-body-sm text-petrol hover:text-petrol-700">+ Aggiungi</button>
@@ -122,7 +132,6 @@ export function CycleEditor({
               <button onClick={() => removePosition(i)} className="text-ink-tertiary hover:text-error px-2 text-xs">Rimuovi</button>
             </div>
             <textarea value={pos.description || ""} onChange={(e) => updatePosition(i, "description", e.target.value)} placeholder="Descrizione (visibile ai candidati)" rows={2} className={`${inputClass} resize-y`} />
-            <textarea value={pos.requirements || ""} onChange={(e) => updatePosition(i, "requirements", e.target.value)} placeholder="Requisiti per la valutazione AI (privati, non visibili ai candidati)" rows={2} className={`${inputClass} resize-y`} />
           </div>
         ))}
       </div>
