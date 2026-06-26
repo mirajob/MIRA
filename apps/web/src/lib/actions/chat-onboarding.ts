@@ -4,6 +4,7 @@ import { chatCompletion } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { generatePathwayAnalysis } from "./pathway";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -376,6 +377,11 @@ Se un campo non è emerso dalla conversazione, lascia stringa vuota, null o arra
     input_metadata: { message_count: conversation.length },
     status: "success",
   });
+
+  // Generate pathway analysis in background
+  generatePathwayAnalysis(profileId).catch((err) =>
+    console.error("Background pathway analysis failed:", err)
+  );
 
   revalidatePath("/student");
 }
