@@ -323,7 +323,7 @@ async function extractAndSaveProfile(profileId: string, conversation: ChatMessag
     "strengths": ["punti di forza dichiarati"],
     "improvements": ["aree di miglioramento"]
   },
-  "profile_summary": "riassunto personale 2-3 frasi: chi è, cosa cerca, cosa lo caratterizza"
+  "profile_summary": "Scrivi 3-4 frasi in terza persona che descrivono lo studente in modo curato. Esempio di tono: 'Mario è uno studente di triennale con un profilo orientato a finanza, startup e venture capital. Dal suo percorso emergono buone basi economico-finanziarie e una forte propensione all'iniziativa. Le esperienze imprenditoriali raccontate indicano interesse per costruzione di progetti, fintech e contesti competitivi.' NON elencare tag o liste — scrivi un paragrafo discorsivo che dia un'immagine chiara della persona."
 }
 Se un campo non è emerso dalla conversazione, lascia stringa vuota, null o array vuoto. NON inventare.`,
       },
