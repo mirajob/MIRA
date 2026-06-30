@@ -55,10 +55,7 @@ export default async function PercorsoPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-6 space-y-5">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-h2 text-navy">Il tuo percorso</h1>
-        <GeneratePathwayButton userId={(ctx.profile as any).id} isRegenerate />
-      </div>
+      <h1 className="font-display text-h2 text-navy">Il tuo percorso</h1>
 
       {/* 1. Profile overview */}
       <div className="rounded-lg border border-border bg-white p-5">

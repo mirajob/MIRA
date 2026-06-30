@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { updateAssociationProfile, publishAssociationPage } from "@/lib/actions/associations";
-import { generatePageFromWebsite } from "@/lib/actions/ai-page-generator";
 import { ASSOCIATION_CATEGORIES } from "@mira/domain";
 
 interface AssociationData {
@@ -15,31 +14,16 @@ interface AssociationData {
   website_url: string | null;
   contact_email: string | null;
   sectors: string[] | null;
+  logo_url: string | null;
   public_page_status: string;
 }
 
 export function PageEditorForm({ association }: { association: AssociationData }) {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
-  const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-
-  async function handleGenerate() {
-    if (!association.website_url) {
-      setMessage({ type: "error", text: "Inserisci prima l'URL del sito web e salva" });
-      return;
-    }
-    setGenerating(true);
-    setMessage(null);
-    const res = await generatePageFromWebsite(association.id, association.website_url);
-    if (res.error) {
-      setMessage({ type: "error", text: res.error });
-    } else {
-      setMessage({ type: "success", text: "Pagina generata da MIRA AI! Controlla e modifica prima di pubblicare." });
-      window.location.reload();
-    }
-    setGenerating(false);
-  }
+  const [logoPreview, setLogoPreview] = useState<string | null>(association.logo_url);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleSave(formData: FormData) {
     setSaving(true);
@@ -65,6 +49,15 @@ export function PageEditorForm({ association }: { association: AssociationData }
     setPublishing(false);
   }
 
+  function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  }
+
   const inputClass = "w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200";
 
   return (
@@ -75,7 +68,43 @@ export function PageEditorForm({ association }: { association: AssociationData }
         </div>
       )}
 
-      <form action={handleSave} className="rounded-lg border border-border bg-white p-6 space-y-4">
+      <form action={handleSave} className="rounded-lg border border-border bg-white p-6 space-y-5">
+
+        {/* Logo */}
+        <div>
+          <span className="text-label text-navy mb-3 block">Logo</span>
+          <div className="flex items-center gap-4">
+            <div
+              className="h-16 w-16 rounded-xl overflow-hidden border border-border bg-navy-50 flex items-center justify-center shrink-0 cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {logoPreview ? (
+                <img src={logoPreview} alt="Logo" className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-xl font-bold text-navy">{association.name.charAt(0)}</span>
+              )}
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-body-sm text-petrol hover:text-petrol-700 underline underline-offset-2 decoration-1"
+              >
+                {logoPreview ? "Cambia logo" : "Carica logo"}
+              </button>
+              <p className="text-body-sm text-ink-tertiary mt-0.5">PNG, JPG — max 2MB. Se non caricato, viene usata la lettera iniziale.</p>
+              <input
+                ref={fileInputRef}
+                name="logo"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={handleLogoChange}
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
             <span className="text-label text-navy mb-2 block">Nome associazione</span>
@@ -96,20 +125,7 @@ export function PageEditorForm({ association }: { association: AssociationData }
 
           <label className="block">
             <span className="text-label text-navy mb-2 block">Sito web</span>
-            <div className="flex gap-2">
-              <input name="websiteUrl" type="url" defaultValue={association.website_url ?? ""} placeholder="https://..." className={inputClass} />
-              <button
-                type="button"
-                onClick={handleGenerate}
-                disabled={generating}
-                className="shrink-0 bg-petrol text-white px-4 py-3 rounded-md text-label hover:bg-petrol-700 transition-colors duration-100 disabled:opacity-40 whitespace-nowrap"
-              >
-                {generating ? "Generazione..." : "Genera con AI"}
-              </button>
-            </div>
-            <p className="mt-1 text-body-sm text-ink-tertiary">
-              Inserisci l&apos;URL e clicca &quot;Genera con AI&quot; per creare la pagina automaticamente
-            </p>
+            <input name="websiteUrl" type="url" defaultValue={association.website_url ?? ""} placeholder="https://..." className={inputClass} />
           </label>
 
           <label className="block">

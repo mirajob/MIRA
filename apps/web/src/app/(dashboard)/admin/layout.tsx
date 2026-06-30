@@ -7,9 +7,7 @@ const adminNav = [
   { label: "Inviti", href: "/admin/invitations" },
   { label: "Associazioni", href: "/admin/associations" },
   { label: "Utenti", href: "/admin/users" },
-  { label: "Candidature", href: "/admin/applications" },
   { label: "Knowledge Base", href: "/admin/knowledge-base" },
-  { label: "Audit Log", href: "/admin/audit-logs" },
 ];
 
 export default async function AdminLayout({

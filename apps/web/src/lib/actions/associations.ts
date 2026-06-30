@@ -33,18 +33,37 @@ export async function updateAssociationProfile(associationId: string, formData: 
   const contactEmail = formData.get("contactEmail") as string;
   const sectorsRaw = formData.get("sectors") as string;
   const sectors = sectorsRaw ? sectorsRaw.split(",").map((s) => s.trim()).filter(Boolean) : [];
+  const logoFile = formData.get("logo") as File | null;
+
+  // Handle logo upload if a file was provided
+  let logoUrl: string | undefined;
+  if (logoFile && logoFile.size > 0) {
+    const bytes = await logoFile.arrayBuffer();
+    const ext = logoFile.name.split(".").pop() ?? "jpg";
+    const path = `${associationId}/logo.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("association-logos")
+      .upload(path, bytes, { contentType: logoFile.type, upsert: true });
+    if (!uploadError) {
+      const { data: urlData } = supabase.storage.from("association-logos").getPublicUrl(path);
+      logoUrl = urlData.publicUrl;
+    }
+  }
+
+  const updatePayload: Record<string, unknown> = {
+    name: name || undefined,
+    short_description: shortDescription || null,
+    long_description: longDescription || null,
+    category: category || null,
+    website_url: websiteUrl || null,
+    contact_email: contactEmail || null,
+    sectors: sectors.length > 0 ? sectors : null,
+  };
+  if (logoUrl) updatePayload.logo_url = logoUrl;
 
   const { data: association, error } = await supabase
     .from("association_profiles")
-    .update({
-      name: name || undefined,
-      short_description: shortDescription || null,
-      long_description: longDescription || null,
-      category: category || null,
-      website_url: websiteUrl || null,
-      contact_email: contactEmail || null,
-      sectors: sectors.length > 0 ? sectors : null,
-    })
+    .update(updatePayload)
     .eq("id", associationId)
     .select("slug")
     .single();

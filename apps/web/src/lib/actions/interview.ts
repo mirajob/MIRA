@@ -66,6 +66,7 @@ export async function sendStatusEmail(
     associationName: assocName,
     presidentName: ctx.profile.full_name || "Il board",
     message,
+    subject: emailSubject,
   });
 
   if (emailError) return { error: `Errore invio email: ${emailError}` };

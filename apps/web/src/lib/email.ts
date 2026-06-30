@@ -10,17 +10,19 @@ export async function sendInterviewInvite({
   associationName,
   presidentName,
   message,
+  subject,
 }: {
   candidateEmail: string;
   candidateName: string;
   associationName: string;
   presidentName: string;
   message: string;
+  subject?: string;
 }) {
   const { error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: candidateEmail,
-    subject: `${associationName} — Invito a colloquio`,
+    subject: subject ?? `${associationName} — Invito a colloquio`,
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
         <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 24px; margin-bottom: 32px;" />

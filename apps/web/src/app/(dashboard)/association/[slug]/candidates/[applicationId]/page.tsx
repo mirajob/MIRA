@@ -49,8 +49,17 @@ export default async function CandidateDetailPage({ params }: Props) {
   }>;
   const aiEval = (application.candidate_ai_evaluations as Array<Record<string, unknown>>)?.[0];
 
+  // Student profile data
+  const ts = (student?.transcript_summary as Record<string, any>) ?? {};
+  const avail = (student?.availability as Record<string, any>) ?? {};
+  const ws = avail.work_style ?? {};
+  const ct = avail.career_targets ?? {};
+  const cp = avail.career_plan ?? {};
+  const pd = avail.previous_degree ?? {};
+  const pi = avail.personal_interests ?? [];
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -73,26 +82,155 @@ export default async function CandidateDetailPage({ params }: Props) {
         <CandidateActions applicationId={applicationId} currentStatus={application.status} candidateEmail={profile?.email} candidateName={profile?.full_name} associationName={assocName} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Application answers */}
-          {answers.length > 0 && (
-            <div>
-              <h3 className="font-sans text-h3 text-navy mb-4">Risposte candidatura</h3>
-              <div className="space-y-3">
-                {answers.map((a) => (
-                  <div key={a.id} className="rounded-lg border border-border bg-white p-5">
-                    <p className="text-label text-navy mb-1 text-xs">{a.application_questions?.question_text}</p>
-                    <p className="text-body-sm text-ink whitespace-pre-wrap">{a.answer_text ?? "—"}</p>
+      {/* Application answers — always first */}
+      {answers.length > 0 && (
+        <div>
+          <h3 className="font-sans text-h3 text-navy mb-3">Risposte candidatura</h3>
+          <div className="space-y-3">
+            {answers.map((a) => (
+              <div key={a.id} className="rounded-lg border border-border bg-white p-5">
+                <p className="text-label text-navy mb-1 text-xs">{a.application_questions?.question_text}</p>
+                <p className="text-body-sm text-ink whitespace-pre-wrap">{a.answer_text ?? "—"}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Main 2-column layout: profile (CV) + MIRA analysis */}
+      <div className="grid gap-6 lg:grid-cols-2">
+
+        {/* LEFT — Profile as CV */}
+        <div className="space-y-4">
+          <h3 className="font-sans text-h3 text-navy">Profilo studente</h3>
+
+          {/* Academic */}
+          <div className="rounded-lg border border-border bg-white p-5 space-y-3">
+            <p className="text-eyebrow text-navy/60 uppercase text-[10px]">Percorso accademico</p>
+            <div className="grid grid-cols-2 gap-2 text-body-sm">
+              {student?.degree_program && <div><span className="text-ink-tertiary">Corso:</span> <span className="text-ink">{student.degree_program as string}</span></div>}
+              {student?.degree_level && <div><span className="text-ink-tertiary">Livello:</span> <span className="text-ink">{student.degree_level as string}</span></div>}
+              {student?.current_year && <div><span className="text-ink-tertiary">Anno:</span> <span className="text-ink">{student.current_year as number}°</span></div>}
+              {ts?.weighted_average && <div><span className="text-ink-tertiary">Media:</span> <span className="text-ink font-medium">{ts.weighted_average}/30</span></div>}
+              {ts?.total_credits && <div><span className="text-ink-tertiary">Crediti:</span> <span className="text-ink">{ts.total_credits} CFU</span></div>}
+            </div>
+            {ts?.courses?.length > 0 && (() => {
+              const graded = ts.courses.filter((c: any) => c.grade_numeric >= 28).slice(0, 5);
+              return graded.length > 0 ? (
+                <div className="pt-2 border-t border-border">
+                  <p className="text-[10px] text-ink-tertiary mb-1">Voti migliori</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {graded.map((c: any, i: number) => (
+                      <span key={i} className="text-xs px-2 py-0.5 rounded bg-success-bg text-success font-medium">
+                        {c.course_name} — {c.grade}
+                      </span>
+                    ))}
                   </div>
-                ))}
+                </div>
+              ) : null;
+            })()}
+          </div>
+
+          {/* Previous degree (magistrale) */}
+          {pd.university && (
+            <div className="rounded-lg border border-border bg-white p-5">
+              <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Triennale precedente</p>
+              <div className="space-y-1 text-body-sm text-ink">
+                <p><span className="text-ink-tertiary">Università:</span> {pd.university}</p>
+                {pd.program && <p><span className="text-ink-tertiary">Corso:</span> {pd.program}</p>}
+                {pd.grade && <p><span className="text-ink-tertiary">Voto:</span> {pd.grade}</p>}
+                {pd.thesis_topic && <p><span className="text-ink-tertiary">Tesi:</span> {pd.thesis_topic}</p>}
               </div>
             </div>
           )}
 
-          {/* AI Evaluation — narrative format */}
-          {aiEval && (() => {
+          {/* Experiences */}
+          {(student?.experiences as string[])?.length > 0 && (
+            <div className="rounded-lg border border-border bg-white p-5">
+              <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Esperienze</p>
+              <ul className="space-y-1">
+                {(student.experiences as string[]).map((exp, i) => (
+                  <li key={i} className="text-body-sm text-ink">• {exp}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Interests & goals */}
+          {((student?.interests as string[])?.length > 0 || (student?.goals as string[])?.length > 0 || pi.length > 0) && (
+            <div className="rounded-lg border border-border bg-white p-5 space-y-3">
+              {(student?.interests as string[])?.length > 0 && (
+                <div>
+                  <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-1.5">Interessi professionali</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(student.interests as string[]).map((int, i) => (
+                      <span key={i} className="px-2 py-0.5 rounded-full text-xs bg-navy-50 text-navy">{int}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {pi.length > 0 && (
+                <div>
+                  <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-1.5">Interessi personali</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {pi.map((p: string, i: number) => (
+                      <span key={i} className="px-2 py-0.5 rounded-full text-xs bg-petrol-50 text-petrol-700">{p}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {(student?.goals as string[])?.length > 0 && (
+                <div>
+                  <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-1.5">Obiettivi</p>
+                  <ul className="space-y-1">
+                    {(student.goals as string[]).map((g, i) => (
+                      <li key={i} className="text-body-sm text-ink">• {g}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Career targets */}
+          {(ct.roles?.length > 0 || ct.sectors?.length > 0) && (
+            <div className="rounded-lg border border-border bg-white p-5">
+              <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Target di carriera</p>
+              <div className="space-y-1 text-body-sm">
+                {ct.roles?.length > 0 && <p><span className="text-ink-tertiary">Ruoli:</span> <span className="text-ink">{ct.roles.join(", ")}</span></p>}
+                {ct.sectors?.length > 0 && <p><span className="text-ink-tertiary">Settori:</span> <span className="text-ink">{ct.sectors.join(", ")}</span></p>}
+                {ct.companies?.length > 0 && <p><span className="text-ink-tertiary">Aziende:</span> <span className="text-ink">{ct.companies.join(", ")}</span></p>}
+                {ct.geography?.length > 0 && <p><span className="text-ink-tertiary">Geografie:</span> <span className="text-ink">{ct.geography.join(", ")}</span></p>}
+                {cp.short_term && <p><span className="text-ink-tertiary">Breve termine:</span> <span className="text-ink">{cp.short_term}</span></p>}
+              </div>
+            </div>
+          )}
+
+          {/* Work style */}
+          {(ws.leadership || ws.style || ws.teamwork_preference || ws.strengths?.length > 0) && (
+            <div className="rounded-lg border border-border bg-white p-5">
+              <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Stile di lavoro e attitudini</p>
+              <div className="space-y-1 text-body-sm">
+                {ws.style && <p><span className="text-ink-tertiary">Stile:</span> <span className="text-ink">{ws.style}</span></p>}
+                {ws.leadership && <p><span className="text-ink-tertiary">Leadership:</span> <span className="text-ink">{ws.leadership}</span></p>}
+                {ws.teamwork_preference && <p><span className="text-ink-tertiary">Preferenza team:</span> <span className="text-ink">{ws.teamwork_preference}</span></p>}
+                {ws.communication && <p><span className="text-ink-tertiary">Comunicazione:</span> <span className="text-ink">{ws.communication}</span></p>}
+                {ws.strengths?.length > 0 && <p><span className="text-ink-tertiary">Punti di forza:</span> <span className="text-ink">{ws.strengths.join(", ")}</span></p>}
+                {ws.improvements?.length > 0 && <p><span className="text-ink-tertiary">Da migliorare:</span> <span className="text-ink">{ws.improvements.join(", ")}</span></p>}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT — MIRA Analysis */}
+        <div className="space-y-4">
+          <h3 className="font-sans text-h3 text-navy">Valutazione MIRA</h3>
+
+          {!aiEval ? (
+            <div className="rounded-lg border border-border bg-white p-5">
+              <p className="text-body-sm text-ink-secondary">La valutazione AI è in elaborazione o non ancora disponibile.</p>
+            </div>
+          ) : (() => {
             const ev = (aiEval.evaluation_json ?? aiEval) as Record<string, any>;
             const fitColor = (cat: string) =>
               cat === "strong_fit" ? "bg-success-bg text-success"
@@ -104,312 +242,177 @@ export default async function CandidateDetailPage({ params }: Props) {
               : cat === "good_fit" ? "Good fit"
               : cat === "uncertain_fit" ? "Da valutare"
               : "Weak fit";
-
             const posRec = ev.position_recommendation as { candidate_selected?: string; ai_recommended?: string; match?: boolean; explanation?: string } | null;
 
             return (
-              <div className="space-y-5">
-                {/* Synthesis + fit badge */}
-                <div>
-                  <div className="flex items-center gap-3 mb-3">
-                    <h3 className="font-sans text-h3 text-navy">Scheda MIRA</h3>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium ${fitColor(ev.overall_fit_category)}`}>
+              <div className="space-y-4">
+                {/* Synthesis */}
+                <div className="rounded-lg border border-border bg-white p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${fitColor(ev.overall_fit_category)}`}>
                       {fitLabel(ev.overall_fit_category)}
                     </span>
                   </div>
                   {ev.candidate_synthesis && (
-                    <div className="rounded-lg border border-border bg-white p-5">
-                      <p className="text-body text-ink whitespace-pre-wrap">{ev.candidate_synthesis}</p>
-                    </div>
+                    <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.candidate_synthesis}</p>
                   )}
                 </div>
 
-                {/* Association fit */}
+                {/* Fit with association */}
                 {ev.association_fit && (
-                  <div>
-                    <h4 className="text-label text-navy mb-2">Fit con {assocName}</h4>
-                    <div className="rounded-lg border border-border bg-white p-5 space-y-3">
-                      <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.association_fit}</p>
-                      {(ev.fit_strengths?.length > 0 || ev.fit_gaps?.length > 0) && (
-                        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border">
-                          {ev.fit_strengths?.length > 0 && (
-                            <div>
-                              <p className="text-eyebrow text-success uppercase text-[10px] mb-1">Punti di forza</p>
-                              <ul className="space-y-1">
-                                {ev.fit_strengths.map((s: string, i: number) => (
-                                  <li key={i} className="text-body-sm text-ink">• {s}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                          {ev.fit_gaps?.length > 0 && (
-                            <div>
-                              <p className="text-eyebrow text-warning uppercase text-[10px] mb-1">Da approfondire</p>
-                              <ul className="space-y-1">
-                                {ev.fit_gaps.map((g: string, i: number) => (
-                                  <li key={i} className="text-body-sm text-ink">• {g}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                  <div className="rounded-lg border border-border bg-white p-5">
+                    <p className="text-label text-navy text-xs mb-2">Fit con {assocName}</p>
+                    <p className="text-body-sm text-ink mb-3">{ev.association_fit}</p>
+                    {(ev.fit_strengths?.length > 0 || ev.fit_gaps?.length > 0) && (
+                      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
+                        {ev.fit_strengths?.length > 0 && (
+                          <div>
+                            <p className="text-[10px] text-success uppercase font-medium mb-1">Punti di forza</p>
+                            <ul className="space-y-1">{ev.fit_strengths.map((s: string, i: number) => <li key={i} className="text-body-sm text-ink">• {s}</li>)}</ul>
+                          </div>
+                        )}
+                        {ev.fit_gaps?.length > 0 && (
+                          <div>
+                            <p className="text-[10px] text-warning uppercase font-medium mb-1">Da approfondire</p>
+                            <ul className="space-y-1">{ev.fit_gaps.map((g: string, i: number) => <li key={i} className="text-body-sm text-ink">• {g}</li>)}</ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {/* Position recommendation */}
                 {posRec && (
-                  <div>
-                    <h4 className="text-label text-navy mb-2">Raccomandazione posizione</h4>
-                    <div className="rounded-lg border border-border bg-white p-5 space-y-2">
-                      <div className="flex items-center gap-3 text-body-sm">
-                        <span className="text-ink-tertiary">Scelta del candidato:</span>
-                        <span className="font-medium text-ink">{posRec.candidate_selected}</span>
-                      </div>
+                  <div className="rounded-lg border border-border bg-white p-5">
+                    <p className="text-label text-navy text-xs mb-2">Raccomandazione posizione</p>
+                    <div className="space-y-1.5 text-body-sm">
+                      <p><span className="text-ink-tertiary">Scelta candidato:</span> <span className="text-ink font-medium">{posRec.candidate_selected}</span></p>
                       {posRec.ai_recommended && posRec.ai_recommended !== posRec.candidate_selected && (
-                        <div className="flex items-center gap-3 text-body-sm">
-                          <span className="text-ink-tertiary">Consigliata da MIRA:</span>
-                          <span className="font-medium text-petrol">{posRec.ai_recommended}</span>
-                        </div>
+                        <p><span className="text-ink-tertiary">Consigliata MIRA:</span> <span className="text-petrol font-medium">{posRec.ai_recommended}</span></p>
                       )}
-                      {posRec.match === true && (
-                        <div className="flex items-center gap-2 text-body-sm text-success">
-                          <span>&#10003;</span>
-                          <span>La scelta del candidato è coerente</span>
-                        </div>
-                      )}
-                      {posRec.explanation && (
-                        <p className="text-body-sm text-ink-secondary pt-1">{posRec.explanation}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Key evidence */}
-                {ev.key_evidence?.length > 0 && (
-                  <div>
-                    <h4 className="text-label text-navy mb-2">Evidenze principali</h4>
-                    <div className="space-y-2">
-                      {ev.key_evidence.map((e: { title: string; description: string }, i: number) => (
-                        <div key={i} className="rounded-lg border border-border bg-white p-5">
-                          <p className="text-label text-navy text-xs mb-1">{e.title}</p>
-                          <p className="text-body-sm text-ink">{e.description}</p>
-                        </div>
-                      ))}
+                      {posRec.match === true && <p className="text-success text-xs">✓ La scelta del candidato è coerente</p>}
+                      {posRec.explanation && <p className="text-ink-secondary mt-1">{posRec.explanation}</p>}
                     </div>
                   </div>
                 )}
 
                 {/* Competencies */}
                 {(ev.academic_competencies?.length > 0 || ev.practical_competencies?.length > 0) && (
-                  <div>
-                    <h4 className="text-label text-navy mb-2">Competenze</h4>
-                    <div className="rounded-lg border border-border bg-white p-5 space-y-4">
-                      {ev.academic_competencies?.length > 0 && (
-                        <div>
-                          <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Accademiche</p>
-                          <div className="space-y-2">
-                            {ev.academic_competencies.map((c: { area: string; description: string }, i: number) => (
-                              <div key={i}>
-                                <p className="text-body-sm font-medium text-ink">{c.area}</p>
-                                <p className="text-body-sm text-ink-secondary">{c.description}</p>
-                              </div>
-                            ))}
-                          </div>
+                  <div className="rounded-lg border border-border bg-white p-5">
+                    <p className="text-label text-navy text-xs mb-3">Competenze</p>
+                    {ev.academic_competencies?.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-[10px] text-ink-tertiary uppercase mb-2">Accademiche</p>
+                        <div className="space-y-2">
+                          {ev.academic_competencies.map((c: any, i: number) => (
+                            <div key={i}><p className="text-body-sm font-medium text-ink">{c.area}</p><p className="text-body-sm text-ink-secondary">{c.description}</p></div>
+                          ))}
                         </div>
-                      )}
-                      {ev.practical_competencies?.length > 0 && (
-                        <div className={ev.academic_competencies?.length > 0 ? "pt-3 border-t border-border" : ""}>
-                          <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Pratiche</p>
-                          <div className="space-y-2">
-                            {ev.practical_competencies.map((c: { area: string; description: string }, i: number) => (
-                              <div key={i}>
-                                <p className="text-body-sm font-medium text-ink">{c.area}</p>
-                                <p className="text-body-sm text-ink-secondary">{c.description}</p>
-                              </div>
-                            ))}
-                          </div>
+                      </div>
+                    )}
+                    {ev.practical_competencies?.length > 0 && (
+                      <div className={ev.academic_competencies?.length > 0 ? "pt-3 border-t border-border" : ""}>
+                        <p className="text-[10px] text-ink-tertiary uppercase mb-2">Pratiche</p>
+                        <div className="space-y-2">
+                          {ev.practical_competencies.map((c: any, i: number) => (
+                            <div key={i}><p className="text-body-sm font-medium text-ink">{c.area}</p><p className="text-body-sm text-ink-secondary">{c.description}</p></div>
+                          ))}
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {/* Competencies to verify */}
                 {ev.competencies_to_verify && (
-                  <div>
-                    <h4 className="text-label text-navy mb-2">Competenze da verificare</h4>
-                    <div className="rounded-lg border border-border bg-white p-5">
-                      <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.competencies_to_verify}</p>
-                    </div>
+                  <div className="rounded-lg border border-border bg-white p-5">
+                    <p className="text-label text-navy text-xs mb-2">Competenze da verificare</p>
+                    <p className="text-body-sm text-ink">{ev.competencies_to_verify}</p>
                   </div>
                 )}
 
                 {/* Attitude */}
                 {ev.attitude_description && (
-                  <div>
-                    <h4 className="text-label text-navy mb-2">Attitudine e stile di lavoro</h4>
-                    <div className="rounded-lg border border-border bg-white p-5">
-                      <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.attitude_description}</p>
-                    </div>
+                  <div className="rounded-lg border border-border bg-white p-5">
+                    <p className="text-label text-navy text-xs mb-2">Attitudine e stile</p>
+                    <p className="text-body-sm text-ink">{ev.attitude_description}</p>
                   </div>
                 )}
 
                 {/* Application quality */}
                 {ev.application_quality && (
-                  <div>
-                    <h4 className="text-label text-navy mb-2">Qualità risposte candidatura</h4>
-                    <div className="rounded-lg border border-border bg-white p-5">
-                      <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.application_quality}</p>
-                    </div>
+                  <div className="rounded-lg border border-border bg-white p-5">
+                    <p className="text-label text-navy text-xs mb-2">Qualità risposte candidatura</p>
+                    <p className="text-body-sm text-ink">{ev.application_quality}</p>
                   </div>
                 )}
 
                 {/* Interview questions */}
                 {ev.interview_questions?.length > 0 && (
-                  <div>
-                    <h4 className="text-label text-navy mb-2">Domande consigliate per il colloquio</h4>
-                    <div className="rounded-lg border border-border bg-white p-5">
-                      <ul className="space-y-2">
-                        {ev.interview_questions.map((q: string, i: number) => (
-                          <li key={i} className="text-body-sm text-ink">
-                            <span className="text-ink-tertiary mr-2">{i + 1}.</span>{q}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                  <div className="rounded-lg border border-border bg-white p-5">
+                    <p className="text-label text-navy text-xs mb-2">Domande consigliate per il colloquio</p>
+                    <ol className="space-y-1.5">
+                      {ev.interview_questions.map((q: string, i: number) => (
+                        <li key={i} className="text-body-sm text-ink"><span className="text-ink-tertiary mr-1">{i + 1}.</span>{q}</li>
+                      ))}
+                    </ol>
                   </div>
                 )}
 
                 {/* Suggested roles */}
                 {ev.suggested_roles && (
-                  <div>
-                    <h4 className="text-label text-navy mb-2">Ruoli suggeriti</h4>
-                    <div className="rounded-lg border border-border bg-white p-5">
-                      <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.suggested_roles}</p>
-                    </div>
+                  <div className="rounded-lg border border-border bg-white p-5">
+                    <p className="text-label text-navy text-xs mb-2">Ruoli suggeriti</p>
+                    <p className="text-body-sm text-ink">{ev.suggested_roles}</p>
                   </div>
                 )}
               </div>
             );
           })()}
+        </div>
+      </div>
 
-          {/* Student profile data — collapsible raw data section */}
-          <details className="group">
-            <summary className="cursor-pointer text-label text-navy/60 hover:text-navy py-2 flex items-center gap-2">
-              <span className="text-xs transition-transform group-open:rotate-90">&#9654;</span>
-              Dati profilo completo
-            </summary>
-            <div className="space-y-4 mt-3">
-              {student?.profile_summary && (
-                <div className="rounded-lg border border-border bg-white p-5">
-                  <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Riassunto profilo</p>
-                  <p className="text-body-sm text-ink whitespace-pre-wrap">{student.profile_summary as string}</p>
-                </div>
-              )}
-
-              <div className="rounded-lg border border-border bg-white p-5 space-y-3">
-                <p className="text-eyebrow text-navy/60 uppercase text-[10px]">Percorso accademico</p>
-                <div className="grid grid-cols-2 gap-3 text-body-sm">
-                  {student?.degree_program && <div><span className="text-ink-tertiary">Corso:</span> <span className="text-ink">{student.degree_program as string}</span></div>}
-                  {student?.degree_level && <div><span className="text-ink-tertiary">Livello:</span> <span className="text-ink">{student.degree_level as string}</span></div>}
-                  {student?.current_year && <div><span className="text-ink-tertiary">Anno:</span> <span className="text-ink">{student.current_year as number}°</span></div>}
-                  {(student as any)?.transcript_summary?.weighted_average && (
-                    <div><span className="text-ink-tertiary">Media:</span> <span className="text-ink">{(student as any).transcript_summary.weighted_average}/30</span></div>
-                  )}
-                </div>
-              </div>
-
-              {(student?.experiences as string[])?.length > 0 && (
-                <div className="rounded-lg border border-border bg-white p-5">
-                  <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Esperienze</p>
-                  <ul className="space-y-1">
-                    {(student.experiences as string[]).map((exp, i) => (
-                      <li key={i} className="text-body-sm text-ink">• {exp}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {((student?.interests as string[])?.length > 0 || (student?.goals as string[])?.length > 0) && (
-                <div className="rounded-lg border border-border bg-white p-5 space-y-3">
-                  {(student?.interests as string[])?.length > 0 && (
-                    <div>
-                      <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-1">Interessi</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {(student.interests as string[]).map((int, i) => (
-                          <span key={i} className="px-2 py-0.5 rounded-full text-xs bg-navy-50 text-navy">{int}</span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {(student?.goals as string[])?.length > 0 && (
-                    <div>
-                      <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-1">Obiettivi</p>
-                      <ul className="space-y-1">
-                        {(student.goals as string[]).map((g, i) => (
-                          <li key={i} className="text-body-sm text-ink">• {g}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </details>
+      {/* Sidebar: status, timeline, notes */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="rounded-lg border border-border bg-white p-5">
+          <h3 className="font-sans text-h3 text-navy mb-3">Stato</h3>
+          <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium ${
+            application.status === "accepted" ? "bg-success-bg text-success"
+            : application.status === "rejected" ? "bg-error-bg text-error"
+            : "bg-petrol-50 text-petrol-700"
+          }`}>
+            {APPLICATION_STATUS_LABELS[application.status] ?? application.status}
+          </span>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Status */}
-          <div className="rounded-lg border border-border bg-white p-6">
-            <h3 className="font-sans text-h3 text-navy mb-3">Stato</h3>
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium ${
-              application.status === "accepted" ? "bg-success-bg text-success"
-              : application.status === "rejected" ? "bg-error-bg text-error"
-              : "bg-petrol-50 text-petrol-700"
-            }`}>
-              {APPLICATION_STATUS_LABELS[application.status] ?? application.status}
-            </span>
+        <div className="rounded-lg border border-border bg-white p-5">
+          <h3 className="font-sans text-h3 text-navy mb-3">Cronologia</h3>
+          <div className="space-y-3">
+            {statusEvents.map((ev) => (
+              <div key={ev.id} className="text-body-sm">
+                <p className="text-ink">{APPLICATION_STATUS_LABELS[ev.new_status] ?? ev.new_status}</p>
+                <p className="text-ink-tertiary">{ev.profiles?.full_name ?? "Sistema"} · {new Date(ev.created_at).toLocaleDateString("it-IT")}</p>
+                {ev.note && <p className="text-ink-secondary mt-1 italic">{ev.note}</p>}
+              </div>
+            ))}
           </div>
+        </div>
 
-          {/* Timeline */}
-          <div className="rounded-lg border border-border bg-white p-6">
-            <h3 className="font-sans text-h3 text-navy mb-3">Cronologia</h3>
+        <div className="rounded-lg border border-border bg-white p-5">
+          <h3 className="font-sans text-h3 text-navy mb-3">Note interne</h3>
+          {notes.length === 0 ? (
+            <p className="text-body-sm text-ink-tertiary">Nessuna nota</p>
+          ) : (
             <div className="space-y-3">
-              {statusEvents.map((ev) => (
-                <div key={ev.id} className="text-body-sm">
-                  <p className="text-ink">
-                    {APPLICATION_STATUS_LABELS[ev.new_status] ?? ev.new_status}
-                  </p>
-                  <p className="text-ink-tertiary">
-                    {ev.profiles?.full_name ?? "Sistema"} · {new Date(ev.created_at).toLocaleDateString("it-IT")}
-                  </p>
-                  {ev.note && <p className="text-ink-secondary mt-1 italic">{ev.note}</p>}
+              {notes.map((n) => (
+                <div key={n.id} className="text-body-sm">
+                  <p className="text-ink">{n.note_text}</p>
+                  <p className="text-ink-tertiary mt-1">{n.profiles?.full_name} · {new Date(n.created_at).toLocaleDateString("it-IT")}</p>
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Notes */}
-          <div className="rounded-lg border border-border bg-white p-6">
-            <h3 className="font-sans text-h3 text-navy mb-3">Note interne</h3>
-            {notes.length === 0 ? (
-              <p className="text-body-sm text-ink-tertiary">Nessuna nota</p>
-            ) : (
-              <div className="space-y-3">
-                {notes.map((n) => (
-                  <div key={n.id} className="text-body-sm">
-                    <p className="text-ink">{n.note_text}</p>
-                    <p className="text-ink-tertiary mt-1">
-                      {n.profiles?.full_name} · {new Date(n.created_at).toLocaleDateString("it-IT")}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
     </div>
