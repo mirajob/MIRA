@@ -35,7 +35,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
       application_cycles(title, description),
       application_answers(id, answer_text, application_questions(question_text)),
       application_status_events(id, previous_status, new_status, note, created_at, visible_to_candidate),
-      interview_invites(id, selected_time, location_or_link, meeting_link, status, notes)
+      interview_invites(id, selected_time, location_or_link, status, notes)
     `)
     .eq("id", id)
     .eq("student_user_id", ctx.profile.id)
@@ -60,7 +60,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
 
   const interviews = (application.interview_invites ?? []) as Array<{
     id: string; selected_time: string | null; location_or_link: string | null;
-    meeting_link: string | null; status: string; notes: string | null;
+    status: string; notes: string | null;
   }>;
   const activeInterview = interviews.find((i) => i.status !== "cancelled");
 
@@ -119,16 +119,6 @@ export default async function ApplicationDetailPage({ params }: Props) {
           )}
           {activeInterview.location_or_link && (
             <p className="text-body-sm text-ink-secondary">{activeInterview.location_or_link}</p>
-          )}
-          {activeInterview.meeting_link && (
-            <a
-              href={activeInterview.meeting_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block text-body-sm text-petrol underline underline-offset-2"
-            >
-              Entra al meeting →
-            </a>
           )}
           {activeInterview.notes && (
             <p className="text-body-sm text-ink-secondary border-t border-petrol-200 pt-2 mt-2">{activeInterview.notes}</p>
