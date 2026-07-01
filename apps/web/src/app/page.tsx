@@ -40,7 +40,7 @@ export default async function HomePage() {
             href="/signup"
             className="bg-navy text-white px-8 py-4 rounded-md text-body hover:bg-navy-700 transition-colors duration-100"
           >
-            Registrati
+            Registrati come studente
           </Link>
           <Link
             href="/associations"
@@ -49,6 +49,12 @@ export default async function HomePage() {
             Scopri le associazioni
           </Link>
         </div>
+        <p className="mt-6 text-body-sm text-ink-tertiary">
+          Sei un&apos;azienda?{" "}
+          <Link href="/aziende" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
+            Registra la tua azienda →
+          </Link>
+        </p>
       </main>
     </div>
   );
