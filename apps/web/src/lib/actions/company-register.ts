@@ -80,6 +80,8 @@ export async function setupCompanyProfile(input: {
 
   if (companyErr) {
     console.error("company_profiles insert error:", companyErr);
+    // Delete the auth user so the same email can be used again
+    await supabase.auth.admin.deleteUser(input.authUserId).catch(() => {});
     return { error: "Errore nella creazione del profilo aziendale." };
   }
 

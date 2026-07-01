@@ -66,7 +66,9 @@ export default function AziendePage() {
     const result = await setupCompanyProfile({ authUserId, legalName, sector, websiteUrl: normalizedUrl, contactName });
 
     if (result.error) {
-      setError(result.error);
+      // Sign out so the orphaned auth user doesn't block a retry
+      await supabase.auth.signOut();
+      setError(result.error + " Riprova con la stessa email.");
       setLoading(false);
       return;
     }
