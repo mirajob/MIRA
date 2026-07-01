@@ -4,11 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import {
   sendOnboardingMessage,
   sendTranscriptMessage,
+  sendCVMessage,
   loadConversation,
   saveConversation,
   forceCompleteOnboarding,
 } from "@/lib/actions/chat-onboarding";
 import { uploadTranscript } from "@/lib/actions/transcript-upload";
+import { uploadCV } from "@/lib/actions/cv-upload";
 import { signOut } from "@/lib/actions/auth";
 import { useRouter } from "next/navigation";
 
@@ -23,10 +25,12 @@ export function OnboardingChat({ userName }: { userName: string }) {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [transcriptUploaded, setTranscriptUploaded] = useState(false);
+  const [cvUploaded, setCvUploaded] = useState(false);
   const [complete, setComplete] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cvFileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const firstName = userName.split(" ")[0];
@@ -52,6 +56,10 @@ Partiamo dalle basi: studi **triennale**, **magistrale** o **ciclo unico**?`;
           (m) => m.role === "user" && m.content === "[Ho caricato il mio libretto]"
         );
         if (hasTranscript) setTranscriptUploaded(true);
+        const hasCV = saved.some(
+          (m) => m.role === "user" && m.content === "[Ho caricato il mio CV]"
+        );
+        if (hasCV) setCvUploaded(true);
         setLoading(false);
       } else {
         const intro = [{ role: "assistant" as const, content: MIRA_INTRO }];
@@ -148,6 +156,52 @@ Partiamo dalle basi: studi **triennale**, **magistrale** o **ciclo unico**?`;
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+  async function handleCVUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: "[Ho caricato il mio CV]" },
+      { role: "system", content: "Sto analizzando il tuo CV..." },
+    ]);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const result = await uploadCV(formData);
+
+    setMessages((prev) => prev.filter((m) => m.content !== "Sto analizzando il tuo CV..."));
+
+    if (result.error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `Non sono riuscito a leggere il CV — ${result.error} Puoi riprovare o andare avanti direttamente.`,
+        },
+      ]);
+      setMessages((prev) => prev.filter((m) => m.content !== "[Ho caricato il mio CV]"));
+      setUploading(false);
+      if (cvFileInputRef.current) cvFileInputRef.current.value = "";
+      return;
+    }
+
+    setCvUploaded(true);
+
+    const history = chatMessages();
+    const response = await sendCVMessage(history, result.summary!);
+
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: response.message },
+    ]);
+    setUploading(false);
+
+    if (cvFileInputRef.current) cvFileInputRef.current.value = "";
+  }
+
   async function handleForceComplete() {
     setLoading(true);
     const result = await forceCompleteOnboarding();
@@ -226,6 +280,23 @@ Partiamo dalle basi: studi **triennale**, **magistrale** o **ciclo unico**?`;
             );
           }
 
+          if (msg.role === "user" && msg.content === "[Ho caricato il mio CV]") {
+            return (
+              <div key={i} className="flex justify-end">
+                <div className="bg-navy text-white rounded-lg px-4 py-3 flex items-center gap-2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                  </svg>
+                  <span className="text-body">CV caricato</span>
+                </div>
+              </div>
+            );
+          }
+
           return (
             <div
               key={i}
@@ -286,6 +357,30 @@ Partiamo dalle basi: studi **triennale**, **magistrale** o **ciclo unico**?`;
                     <polyline points="17 8 12 3 7 8" />
                     <line x1="12" y1="3" x2="12" y2="15" />
                   </svg>
+                </button>
+              </>
+            )}
+            {transcriptUploaded && !cvUploaded && (
+              <>
+                <input
+                  ref={cvFileInputRef}
+                  type="file"
+                  accept="application/pdf,image/png,image/jpeg,image/webp"
+                  onChange={handleCVUpload}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => cvFileInputRef.current?.click()}
+                  disabled={isWorking}
+                  title="Carica CV"
+                  className="flex items-center gap-2 px-3 h-12 rounded-md border border-border text-ink-secondary hover:text-navy hover:border-border-strong transition-colors duration-100 disabled:opacity-40 shrink-0 text-body-sm"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  Carica CV
                 </button>
               </>
             )}

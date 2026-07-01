@@ -4,3 +4,5 @@ export { generateAssociationPage, scrapeWebsiteText } from "./modules/associatio
 export { matchCandidates } from "./modules/candidate-matcher";
 export { parseTranscriptFile, formatTranscriptForChat } from "./modules/transcript-parser";
 export type { ParsedTranscript, ParsedCourse } from "./modules/transcript-parser";
+export { parseCVFile, formatCVForChat } from "./modules/cv-parser";
+export type { ParsedCV, ParsedCVExperience } from "./modules/cv-parser";

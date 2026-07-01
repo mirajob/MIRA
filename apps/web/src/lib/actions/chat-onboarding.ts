@@ -19,7 +19,7 @@ async function getStudentContext() {
   const profileId = (ctx.profile as any).id as string;
 
   const { data: student } = await (supabase.from("student_profiles") as any)
-    .select("degree_program, degree_level, current_year, transcript_summary, transcript_uploaded")
+    .select("degree_program, degree_level, current_year, transcript_summary, transcript_uploaded, cv_uploaded, cv_summary")
     .eq("user_id", profileId)
     .single();
 
@@ -50,6 +50,22 @@ DATI DELLO STUDENTE (dal transcript caricato):
 Lo studente È GIÀ ISCRITTO a Bocconi. Non chiedergli se ha preparato la candidatura per Bocconi — ci è già dentro.`;
   }
 
+  let cvContext = "";
+  if (student?.cv_uploaded && student?.cv_summary) {
+    const cv = student.cv_summary;
+    const expList = cv.experiences
+      ?.map((e: any) => {
+        const period = [e.start_date, e.end_date].filter(Boolean).join(" – ");
+        return `  - ${e.title} @ ${e.organization}${period ? ` (${period})` : ""}: ${e.description}`;
+      })
+      .join("\n") ?? "";
+    cvContext = `
+CV DELLO STUDENTE (caricato dall'utente):
+${cv.raw_text_summary || ""}${expList ? `\nEsperienze:\n${expList}` : ""}${cv.skills?.length ? `\nCompetenze: ${cv.skills.join(", ")}` : ""}${cv.languages?.length ? `\nLingue: ${cv.languages.map((l: any) => `${l.language} ${l.level}`).join(", ")}` : ""}
+
+Usa queste informazioni per fare domande più mirate al punto 2 (esperienze). NON rielencare il CV — fai domande che approfondiscono ciò che ha fatto.`;
+  }
+
   let assocContext = "";
   if (associations?.length > 0) {
     const list = associations.map((a: any) => `- ${a.name} (${a.category || "generale"}): ${a.short_description || ""}`).join("\n");
@@ -68,6 +84,7 @@ Quando lo studente parla di associazioni, TU SAI quali ci sono su MIRA. Se menzi
   return `Tu sei MIRA, la piattaforma AI per il talento universitario di Bocconi.
 Lo studente si è appena registrato e sta facendo l'onboarding. Gli hai già mandato il messaggio di presentazione e gli hai chiesto se studia triennale, magistrale o ciclo unico. NON ripresentarti.
 ${studentContext}
+${cvContext}
 ${assocContext}
 
 FLUSSO OBBLIGATORIO — segui questi step in ordine, UNA domanda alla volta:
@@ -83,7 +100,7 @@ SE MAGISTRALE:
 Dopo la risposta sulla triennale:
 "Grazie. Ora puoi caricare il transcript della magistrale, così aggiorno il tuo profilo con esami, voti, CFU, media e competenze collegate al percorso che stai facendo ora."
 
-DOPO IL TRANSCRIPT: Commenta i dati in modo naturale — cosa noti, cosa ti colpisce. NON elencare i corsi. Poi chiedi l'anno di corso se non è emerso.
+DOPO IL TRANSCRIPT: Commenta i dati in modo naturale — cosa noti, cosa ti colpisce. NON elencare i corsi. Poi chiedi se ha un CV da caricare: spiegagli che lo usi per capire meglio le sue esperienze concrete prima di fare le domande, e che il pulsante è già visibile nell’interfaccia. Se non ce l’ha o non vuole caricarlo, va benissimo — puoi andare avanti con le domande. Chiedi l’anno di corso solo se non è emerso dal transcript e lo studente non carica il CV.
 
 STEP 2 — ESPERIENZE, PROGETTI, ATTIVITÀ
 Adatta la domanda al livello:
@@ -154,7 +171,54 @@ export async function sendTranscriptMessage(
     })),
     {
       role: "system" as const,
-      content: `DATI APPENA ESTRATTI DAL LIBRETTO:\n${transcriptSummary}\n\nCommenta in modo naturale — cosa noti, cosa ti colpisce. Poi fai una domanda per approfondire i suoi interessi.`,
+      content: `DATI APPENA ESTRATTI DAL LIBRETTO:\n${transcriptSummary}\n\nCommenta in modo naturale — cosa noti, cosa ti colpisce. Poi chiedi se ha già un CV da caricare, spiegando che lo usi per capire meglio le sue esperienze concrete prima di fare le domande. Aggiungi che il pulsante per caricarlo è già disponibile qui sotto, e che se non ce l'ha può andare avanti lo stesso.`,
+    },
+  ];
+
+  const assistantMessage = await chatCompletion(messages, {
+    temperature: 0.7,
+    maxTokens: 512,
+  });
+
+  const fullHistory = [
+    ...updatedHistory,
+    { role: "assistant" as const, content: assistantMessage },
+  ];
+
+  await supabase
+    .from("student_profiles")
+    .update({
+      onboarding_answers: {
+        conversation: fullHistory,
+        last_updated: new Date().toISOString(),
+      },
+    })
+    .eq("user_id", profileId);
+
+  return { message: assistantMessage };
+}
+
+export async function sendCVMessage(
+  conversationHistory: ChatMessage[],
+  cvSummary: string
+) {
+  const { supabase, profileId, student, associations, openCycles } = await getStudentContext();
+  const systemPrompt = buildSystemPrompt(student, associations, openCycles);
+
+  const updatedHistory = [
+    ...conversationHistory,
+    { role: "user" as const, content: "[Ho caricato il mio CV]" },
+  ];
+
+  const messages = [
+    { role: "system" as const, content: systemPrompt },
+    ...updatedHistory.map((m) => ({
+      role: m.role as "user" | "assistant",
+      content: m.content,
+    })),
+    {
+      role: "system" as const,
+      content: `DATI APPENA ESTRATTI DAL CV:\n${cvSummary}\n\nRingrazia brevemente e conferma che hai capito le sue esperienze. Poi inizia lo STEP 2 (esperienze) facendo una domanda mirata su una delle esperienze che hai letto nel CV, per approfondire cosa ha fatto concretamente.`,
     },
   ];
 
