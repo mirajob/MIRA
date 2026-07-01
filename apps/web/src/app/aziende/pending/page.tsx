@@ -54,10 +54,7 @@ export default async function PendingPage() {
           </div>
 
           <p className="text-body-sm text-ink-tertiary">
-            Domande? Scrivici a{" "}
-            <a href="mailto:dev@mirajob.cloud" className="text-petrol underline underline-offset-2">
-              dev@mirajob.cloud
-            </a>
+            Per domande, rispondi all&apos;email di conferma che riceverai.
           </p>
         </div>
       </div>

@@ -11,9 +11,23 @@ export default async function AdminCompaniesPage() {
 
   const supabase = await createServiceClient();
 
-  const { data: companies } = await (supabase.from("company_profiles") as any)
-    .select("*, company_memberships(user_id, role, profiles(full_name, email))")
+  const { data: companies, error: companiesErr } = await (supabase.from("company_profiles") as any)
+    .select("*")
     .order("created_at", { ascending: false });
+
+  if (companiesErr) console.error("admin companies query error:", companiesErr);
+
+  // Fetch admin memberships separately to avoid ambiguous FK (user_id vs invited_by_user_id → profiles)
+  const companyIds = (companies ?? []).map((c: any) => c.id);
+  const { data: memberships } = companyIds.length
+    ? await (supabase.from("company_memberships") as any)
+        .select("company_id, role, user_id, profiles!company_memberships_user_id_fkey(full_name, email)")
+        .in("company_id", companyIds)
+        .eq("role", "admin")
+    : { data: [] };
+
+  const membershipByCompany: Record<string, any> = {};
+  for (const m of memberships ?? []) membershipByCompany[m.company_id] = m;
 
   const pending = (companies ?? []).filter((c: any) => c.verification_status === "pending_verification");
   const active = (companies ?? []).filter((c: any) => c.verification_status === "verified");
@@ -36,8 +50,8 @@ export default async function AdminCompaniesPage() {
   };
 
   function CompanyRow({ company }: { company: any }) {
-    const admin = company.company_memberships?.find((m: any) => m.role === "admin");
-    const contact = admin?.profiles;
+    const membership = membershipByCompany[company.id];
+    const contact = membership?.profiles;
     return (
       <tr className="border-b border-border last:border-0 hover:bg-paper transition-colors">
         <td className="px-4 py-3">
