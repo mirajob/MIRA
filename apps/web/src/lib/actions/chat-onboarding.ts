@@ -301,7 +301,7 @@ async function extractAndSaveProfile(profileId: string, conversation: ChatMessag
   "interests": ["settori/ruoli che interessano lo studente"],
   "personal_interests": ["hobby, passioni, attività personali"],
   "goals": ["obiettivi professionali e accademici"],
-  "experiences": ["esperienze: stage, lavori, associazioni, progetti, volontariato, sport"],
+  "experiences": ["Descrizione narrativa di 2-3 frasi per ogni esperienza — CHI era, COSA ha fatto concretamente, DOVE/PER CHI, risultati o competenze acquisite. Es: 'Ha co-fondato Flasher Pay, una startup fintech orientata ai pagamenti P2P, partecipando al programma TEF Ignition e presentando il prodotto a Fintech District e Nexi.' NON usare solo il titolo. Se lo studente ha dato dettagli, riportali."],
   "career_targets": {
     "roles": ["ruoli target"],
     "sectors": ["settori target"],

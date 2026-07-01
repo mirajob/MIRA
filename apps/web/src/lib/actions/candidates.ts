@@ -145,7 +145,7 @@ export async function evaluateCandidate(applicationId: string) {
   if (!application) return { error: "Candidatura non trovata" };
 
   const { data: student } = await (supabase.from("student_profiles") as any)
-    .select("profile_summary, degree_program, degree_level, current_year, interests, goals, experiences, transcript_summary, availability")
+    .select("profile_summary, degree_program, degree_level, current_year, interests, goals, experiences, transcript_summary, availability, privacy_settings")
     .eq("user_id", application.student_user_id)
     .single();
 
@@ -179,17 +179,19 @@ export async function evaluateCandidate(applicationId: string) {
   const pd = avail.previous_degree ?? {};
   const pi = avail.personal_interests ?? [];
   const ts = student?.transcript_summary;
+  const privacy = (student?.privacy_settings as Record<string, boolean>) ?? {};
+  const gradesShared = privacy.show_grades_to_associations === true;
 
   let studentContext = `PROFILO COMPLETO CANDIDATO:
 Riassunto: ${student?.profile_summary || "Non disponibile"}
-Corso: ${student?.degree_program || "?"} (${student?.degree_level || "?"})
+Corso: ${student?.degree_program || ts?.degree_program || "?"} (${student?.degree_level || "?"})
 Anno: ${student?.current_year || "?"}
-${ts?.weighted_average ? `Media ponderata: ${ts.weighted_average}/30` : ""}
+${gradesShared && ts?.weighted_average ? `Media ponderata: ${ts.weighted_average}/30` : ""}
 ${ts?.total_credits ? `Crediti: ${ts.total_credits} CFU` : ""}
 
 INTERESSI: ${(student?.interests ?? []).join(", ") || "non specificati"}
 OBIETTIVI: ${(student?.goals ?? []).join(", ") || "non specificati"}
-ESPERIENZE: ${(student?.experiences ?? []).join("; ") || "nessuna"}
+ESPERIENZE: ${(student?.experiences ?? []).join("\n- ") || "nessuna"}
 INTERESSI PERSONALI: ${pi.join(", ") || "non specificati"}
 
 TARGET CARRIERA: ruoli=${(ct.roles ?? []).join(", ")}, settori=${(ct.sectors ?? []).join(", ")}, aziende=${(ct.companies ?? []).join(", ")}, geografie=${(ct.geography ?? []).join(", ")}
@@ -201,9 +203,16 @@ STILE LAVORO: leadership=${ws.leadership || "?"}, teamwork=${ws.teamwork_prefere
   }
 
   if (ts?.courses?.length) {
-    const topCourses = ts.courses.filter((c: any) => c.grade_numeric >= 28).slice(0, 5);
-    if (topCourses.length) {
-      studentContext += `\nVOTI MIGLIORI: ${topCourses.map((c: any) => `${c.course_name} (${c.grade})`).join(", ")}`;
+    // Include all course names so AI can detect language of instruction
+    const allCourseNames = ts.courses.map((c: any) => c.course_name).join(", ");
+    studentContext += `\nCORSI UNIVERSITARI (tutti): ${allCourseNames}`;
+    studentContext += `\nNOTA LINGUA: I corsi universitari a Bocconi sono tenuti principalmente in inglese. Se i nomi dei corsi sono in inglese, lo studente studia in lingua inglese.`;
+
+    if (gradesShared) {
+      const topCourses = ts.courses.filter((c: any) => c.grade_numeric >= 28).slice(0, 5);
+      if (topCourses.length) {
+        studentContext += `\nVOTI MIGLIORI: ${topCourses.map((c: any) => `${c.course_name} (${c.grade})`).join(", ")}`;
+      }
     }
   }
 
@@ -277,7 +286,7 @@ REGOLE:
 - Le esperienze dichiarate vanno presentate come "lo studente dichiara/racconta", non come fatti certi
 - L'attitudine deve essere narrativa, non una tabella di punteggi`;
 
-  const systemMsg = `Sei un sistema di valutazione candidature per associazioni universitarie. Genera schede candidato narrative, motivate e contestualizzate all'associazione specifica. Il fit va sempre valutato rispetto ai criteri di selezione indicati dall'associazione. Non inventare informazioni. Distingui tra dati certi (transcript), dichiarazioni dello studente e inferenze. Rispondi SOLO in JSON valido.`;
+  const systemMsg = `Sei un sistema di valutazione candidature per associazioni universitarie. Genera schede candidato narrative, motivate e contestualizzate all'associazione specifica. Il fit va sempre valutato rispetto ai criteri di selezione indicati dall'associazione. Non inventare informazioni. Distingui tra dati certi (transcript), dichiarazioni dello studente e inferenze. Rispondi SOLO in JSON valido. IMPORTANTE: se i nomi dei corsi universitari sono in inglese, NON suggerire di "verificare le competenze in inglese" — lo studente studia già in inglese.`;
 
   try {
     const result = await chatCompletion(

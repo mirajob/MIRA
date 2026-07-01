@@ -1,6 +1,7 @@
 import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { createServerClient } from "@mira/supabase/server";
+import { PrivacySettings } from "./privacy-settings";
 
 export default async function StudentProfilePage() {
   const ctx = await getUserContext();
@@ -11,7 +12,7 @@ export default async function StudentProfilePage() {
   const profileId = (ctx.profile as any).id as string;
 
   const { data: student } = await (supabase.from("student_profiles") as any)
-    .select("id, degree_program, degree_level, current_year, transcript_summary, transcript_uploaded, profile_summary, university")
+    .select("id, degree_program, degree_level, current_year, transcript_summary, transcript_uploaded, profile_summary, university, privacy_settings")
     .eq("user_id", profileId)
     .single();
 
@@ -44,6 +45,12 @@ export default async function StudentProfilePage() {
   const displayCourses = courseList.length > 0 ? courseList : tsCourses;
   const gradedExams = displayCourses.filter((c) => c.grade_numeric !== null);
   const passFail = displayCourses.filter((c) => c.is_pass_fail);
+
+  const rawPrivacy = student?.privacy_settings as Record<string, boolean> | null;
+  const privacySettings = {
+    show_grades_to_associations: rawPrivacy?.show_grades_to_associations ?? false,
+    show_grades_to_companies: rawPrivacy?.show_grades_to_companies ?? false,
+  };
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-6 space-y-5">
@@ -90,9 +97,11 @@ export default async function StudentProfilePage() {
 
       <div className="rounded-md bg-paper border border-border px-4 py-3">
         <p className="text-body-sm text-ink-secondary">
-          Hai fatto nuovi esami? Scrivi a MIRA nella chat "voglio aggiornare il libretto" e potrai caricare il PDF aggiornato.
+          Hai fatto nuovi esami? Scrivi a MIRA nella chat &quot;voglio aggiornare il libretto&quot; e potrai caricare il PDF aggiornato.
         </p>
       </div>
+
+      <PrivacySettings initialSettings={privacySettings} />
 
       {displayCourses.length > 0 && (
         <div className="rounded-lg border border-border bg-white overflow-hidden">

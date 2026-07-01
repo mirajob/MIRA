@@ -20,7 +20,7 @@ export default async function CandidateDetailPage({ params }: Props) {
     .select(`
       *,
       profiles(full_name, email),
-      student_profiles(degree_program, degree_level, current_year, interests, goals, experiences, profile_summary, availability, transcript_summary, onboarding_answers),
+      student_profiles(degree_program, degree_level, current_year, interests, goals, experiences, profile_summary, availability, transcript_summary, onboarding_answers, privacy_settings),
       application_cycles(title),
       application_answers(id, answer_text, answer_json, application_questions(question_text, question_type)),
       candidate_ai_evaluations(*),
@@ -52,6 +52,8 @@ export default async function CandidateDetailPage({ params }: Props) {
   // Student profile data
   const ts = (student?.transcript_summary as Record<string, any>) ?? {};
   const avail = (student?.availability as Record<string, any>) ?? {};
+  const privacy = (student?.privacy_settings as Record<string, boolean>) ?? {};
+  const showGrades = privacy.show_grades_to_associations === true;
   const ws = avail.work_style ?? {};
   const ct = avail.career_targets ?? {};
   const cp = avail.career_plan ?? {};
@@ -108,13 +110,16 @@ export default async function CandidateDetailPage({ params }: Props) {
           <div className="rounded-lg border border-border bg-white p-5 space-y-3">
             <p className="text-eyebrow text-navy/60 uppercase text-[10px]">Percorso accademico</p>
             <div className="grid grid-cols-2 gap-2 text-body-sm">
-              {student?.degree_program && <div><span className="text-ink-tertiary">Corso:</span> <span className="text-ink">{student.degree_program as string}</span></div>}
+              {(() => {
+                const prog = (student?.degree_program as string) || (ts?.degree_program as string);
+                return prog ? <div className="col-span-2"><span className="text-ink-tertiary">Corso:</span> <span className="text-ink">{prog}</span></div> : null;
+              })()}
               {student?.degree_level && <div><span className="text-ink-tertiary">Livello:</span> <span className="text-ink">{student.degree_level as string}</span></div>}
               {student?.current_year && <div><span className="text-ink-tertiary">Anno:</span> <span className="text-ink">{student.current_year as number}°</span></div>}
-              {ts?.weighted_average && <div><span className="text-ink-tertiary">Media:</span> <span className="text-ink font-medium">{ts.weighted_average}/30</span></div>}
+              {showGrades && ts?.weighted_average && <div><span className="text-ink-tertiary">Media:</span> <span className="text-ink font-medium">{ts.weighted_average}/30</span></div>}
               {ts?.total_credits && <div><span className="text-ink-tertiary">Crediti:</span> <span className="text-ink">{ts.total_credits} CFU</span></div>}
             </div>
-            {ts?.courses?.length > 0 && (() => {
+            {showGrades && ts?.courses?.length > 0 && (() => {
               const graded = ts.courses.filter((c: any) => c.grade_numeric >= 28).slice(0, 5);
               return graded.length > 0 ? (
                 <div className="pt-2 border-t border-border">
@@ -129,6 +134,11 @@ export default async function CandidateDetailPage({ params }: Props) {
                 </div>
               ) : null;
             })()}
+            {!showGrades && (
+              <p className="text-[10px] text-ink-tertiary italic pt-1 border-t border-border">
+                Media e voti non condivisi dallo studente
+              </p>
+            )}
           </div>
 
           {/* Previous degree (magistrale) */}

@@ -255,7 +255,7 @@ async function updateProfileFromChat(profileId: string, conversation: ChatMessag
 {
   "interests": ["nuovi interessi/settori emersi"],
   "goals": ["nuovi obiettivi emersi"],
-  "experiences": ["nuove esperienze menzionate"],
+  "experiences": ["Descrizione narrativa di 2-3 frasi per ogni nuova esperienza — COSA ha fatto, DOVE/PER CHI, risultati o competenze. NON solo il titolo. Es: 'Ha partecipato come analista a un progetto di consulenza interno, occupandosi di ricerca di mercato e presentazione dei risultati al team.'"],
   "current_year": null,
   "association_roles": [{"association_name": "nome", "role_title": "ruolo"}],
   "availability": {
