@@ -11,6 +11,12 @@ export default async function DashboardLayout({
 }) {
   const ctx = await getUserContext();
 
+  // Company users have their own full-page layout — skip the student sidebar entirely
+  const isCompanyUser = ctx.globalRoles.includes("company_user") && !ctx.isMiraAdmin;
+  if (isCompanyUser) {
+    return <>{children}</>;
+  }
+
   const memberships = ctx.memberships.map((m) => ({
     role: m.role,
     association_profiles: m.association_profiles as {
