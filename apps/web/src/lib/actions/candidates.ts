@@ -182,9 +182,13 @@ export async function evaluateCandidate(applicationId: string) {
   const privacy = (student?.privacy_settings as Record<string, boolean>) ?? {};
   const gradesShared = privacy.show_grades_to_associations === true;
 
+  const degreeProgram = student?.degree_program || ts?.degree_program || null;
+  const degreeLevel = student?.degree_level || null;
+
   let studentContext = `PROFILO COMPLETO CANDIDATO:
 Riassunto: ${student?.profile_summary || "Non disponibile"}
-Corso: ${student?.degree_program || ts?.degree_program || "?"} (${student?.degree_level || "?"})
+Corso di laurea: ${degreeProgram || "non specificato"} — ${degreeLevel || "livello non specificato"}
+NOTA PROGRAMMA: I programmi Bocconi come CLEAM (Economics and Management), BIEM (International Economics and Management), BIEMF (Economics and Finance), BAI (Business Analytics), BESS (Economics and Social Sciences) indicano la specializzazione dello studente. Tieni conto di questa specializzazione nella valutazione.
 Anno: ${student?.current_year || "?"}
 ${gradesShared && ts?.weighted_average ? `Media ponderata: ${ts.weighted_average}/30` : ""}
 ${ts?.total_credits ? `Crediti: ${ts.total_credits} CFU` : ""}
