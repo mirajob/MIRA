@@ -13,12 +13,14 @@ interface SidebarNavProps {
       slug: string;
     } | null;
   }>;
+  unreadNotifications?: number;
 }
 
 const STUDENT_LINKS = [
   { label: "Profilo", href: "/student" },
   { label: "Percorso", href: "/student/percorso" },
   { label: "Associazioni", href: "/student/associazioni" },
+  { label: "Candidature", href: "/student/applications" },
 ];
 
 const ROLE_LABELS: Record<string, string> = {
@@ -29,9 +31,8 @@ const ROLE_LABELS: Record<string, string> = {
   association_member: "Membro",
 };
 
-export function SidebarNav({ isStudent, isMiraAdmin, memberships }: SidebarNavProps) {
+export function SidebarNav({ isStudent, isMiraAdmin, memberships, unreadNotifications = 0 }: SidebarNavProps) {
   const pathname = usePathname();
-  const inStudentMode = pathname.startsWith("/student");
   const inAdminMode = pathname.startsWith("/admin");
 
   function isActive(href: string) {
@@ -40,7 +41,7 @@ export function SidebarNav({ isStudent, isMiraAdmin, memberships }: SidebarNavPr
   }
 
   const linkClass = (active: boolean) =>
-    `block rounded-md px-3 py-2 text-xs font-medium transition-colors duration-100 ${
+    `flex items-center justify-between rounded-md px-3 py-2 text-xs font-medium transition-colors duration-100 ${
       active ? "bg-navy-50 text-navy" : "text-ink-secondary hover:text-navy hover:bg-navy-50/50"
     }`;
 
@@ -49,11 +50,20 @@ export function SidebarNav({ isStudent, isMiraAdmin, memberships }: SidebarNavPr
       {/* Student section */}
       {isStudent && (
         <div className="space-y-1">
-          {STUDENT_LINKS.map((link) => (
-            <Link key={link.href} href={link.href} className={linkClass(isActive(link.href))}>
-              {link.label}
-            </Link>
-          ))}
+          {STUDENT_LINKS.map((link) => {
+            const active = isActive(link.href);
+            const isCandidature = link.href === "/student/applications";
+            return (
+              <Link key={link.href} href={link.href} className={linkClass(active)}>
+                <span>{link.label}</span>
+                {isCandidature && unreadNotifications > 0 && (
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-error text-white text-[9px] font-bold px-1">
+                    {unreadNotifications > 9 ? "9+" : unreadNotifications}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
         </div>
       )}
 

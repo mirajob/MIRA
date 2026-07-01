@@ -42,3 +42,25 @@ export async function getUnreadCount() {
 
   return count ?? 0;
 }
+
+export async function getStudentNotifications() {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const { data } = await (supabase.from("notifications") as any)
+    .select("id, type, title, body, data, read_at, created_at")
+    .eq("user_id", ctx.profile.id)
+    .order("created_at", { ascending: false })
+    .limit(30);
+
+  return (data ?? []) as Array<{
+    id: string;
+    type: string;
+    title: string;
+    body: string | null;
+    data: Record<string, unknown>;
+    read_at: string | null;
+    created_at: string;
+  }>;
+}

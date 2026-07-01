@@ -1,6 +1,7 @@
 import { getUserContext } from "@/lib/auth";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { UserNav } from "@/components/user-nav";
+import { getUnreadCount } from "@/lib/actions/notifications";
 import Link from "next/link";
 
 export default async function DashboardLayout({
@@ -18,6 +19,8 @@ export default async function DashboardLayout({
     } | null,
   }));
 
+  const unreadNotifications = ctx.isStudent ? await getUnreadCount() : 0;
+
   return (
     <div className="flex min-h-screen">
       <aside className="sticky top-0 flex h-screen w-48 shrink-0 flex-col border-r border-border bg-white">
@@ -32,6 +35,7 @@ export default async function DashboardLayout({
             isStudent={ctx.isStudent}
             isMiraAdmin={ctx.isMiraAdmin}
             memberships={memberships}
+            unreadNotifications={unreadNotifications}
           />
         </div>
 
