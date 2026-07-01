@@ -8,6 +8,7 @@ const adminNav = [
   { label: "Associazioni", href: "/admin/associations" },
   { label: "Utenti", href: "/admin/users" },
   { label: "Knowledge Base", href: "/admin/knowledge-base" },
+  { label: "Aziende", href: "/admin/companies" },
 ];
 
 export default async function AdminLayout({

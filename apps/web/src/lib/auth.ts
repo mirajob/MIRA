@@ -69,6 +69,48 @@ export async function getAssociationMemberships() {
   return memberships ?? [];
 }
 
+export async function getCompanyContext(slug: string) {
+  const user = await requireAuth();
+  const supabase = await createServerClient();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("auth_user_id", user.id)
+    .single();
+
+  if (!profile) redirect("/login");
+
+  const { data: roles } = await supabase
+    .from("global_role_assignments")
+    .select("role")
+    .eq("user_id", profile.id);
+
+  const roleList = (roles ?? []).map((r) => (r as Record<string, string>).role);
+  const isMiraAdmin = roleList.includes("mira_admin");
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: company } = await (supabase.from("company_profiles") as any)
+    .select("*, company_memberships(user_id, role, status)")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!company) redirect("/login");
+
+  const isMember = isMiraAdmin || (company.company_memberships ?? []).some(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (m: any) => m.user_id === profile.id && m.status === "active"
+  );
+
+  if (!isMember) redirect("/login");
+
+  if (!isMiraAdmin && company.verification_status !== "verified") {
+    redirect("/aziende/pending");
+  }
+
+  return { user, profile, company, isMiraAdmin };
+}
+
 export async function getUserContext() {
   const user = await requireAuth();
   const supabase = await createServerClient();

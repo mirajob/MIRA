@@ -37,6 +37,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/admin", origin));
   }
 
+  if (roleList.includes("company_user")) {
+    const { data: membership } = await (service.from("company_memberships") as any)
+      .select("company_id, company_profiles(slug, verification_status)")
+      .eq("user_id", profileId)
+      .eq("status", "active")
+      .maybeSingle();
+    const company = (membership as any)?.company_profiles;
+    if (company?.verification_status === "verified") {
+      return NextResponse.redirect(new URL(`/company/${company.slug}`, origin));
+    }
+    return NextResponse.redirect(new URL("/aziende/pending", origin));
+  }
+
   if (roleList.includes("student")) {
     return NextResponse.redirect(new URL("/student", origin));
   }
