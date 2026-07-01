@@ -60,7 +60,10 @@ export default function AziendePage() {
       return;
     }
 
-    const result = await setupCompanyProfile({ authUserId, legalName, sector, websiteUrl, contactName });
+    const normalizedUrl = websiteUrl
+      ? websiteUrl.startsWith("http") ? websiteUrl : `https://${websiteUrl}`
+      : "";
+    const result = await setupCompanyProfile({ authUserId, legalName, sector, websiteUrl: normalizedUrl, contactName });
 
     if (result.error) {
       setError(result.error);
@@ -127,10 +130,10 @@ export default function AziendePage() {
               <label className="block">
                 <span className="text-label text-navy mb-2 block">Sito web</span>
                 <input
-                  type="url"
+                  type="text"
                   value={websiteUrl}
                   onChange={(e) => setWebsiteUrl(e.target.value)}
-                  placeholder="https://www.azienda.com"
+                  placeholder="bain.com"
                   className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
                 />
               </label>
