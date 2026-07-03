@@ -17,7 +17,7 @@ function isAdminRoute(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
-  const { supabaseResponse, user } = await updateSession(request);
+  const { supabaseResponse, user, supabase } = await updateSession(request);
   const { pathname } = request.nextUrl;
 
   if (isPublicRoute(pathname)) {
@@ -29,6 +29,17 @@ export async function middleware(request: NextRequest) {
     url.pathname = "/login";
     url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (isAdminRoute(pathname)) {
+    const { data: profile } = await (supabase.from("profiles") as any)
+      .select("global_role")
+      .eq("auth_user_id", user.id)
+      .maybeSingle();
+    if ((profile as any)?.global_role !== "mira_admin") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
   }
 
   return supabaseResponse;

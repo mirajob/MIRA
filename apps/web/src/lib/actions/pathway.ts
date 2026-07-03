@@ -1,12 +1,25 @@
 "use server";
 
 import { chatCompletion } from "@mira/ai";
-import { createServiceClient } from "@mira/supabase/server";
+import { createServiceClient, createServerClient } from "@mira/supabase/server";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export async function generatePathwayAnalysis(userId: string) {
+  // Verify caller owns this profile
+  const serverClient = await createServerClient();
+  const { data: { user } } = await serverClient.auth.getUser();
+  if (!user) return { error: "Non autenticato." };
+
   const supabase = await createServiceClient();
+
+  const { data: callerProfile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("auth_user_id", user.id)
+    .single();
+
+  if (!callerProfile || callerProfile.id !== userId) return { error: "Non autorizzato." };
 
   const { data: student } = await (supabase.from("student_profiles") as any)
     .select("id, profile_summary, degree_program, degree_level, current_year, interests, goals, experiences, transcript_summary, availability")

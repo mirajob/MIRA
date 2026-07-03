@@ -1,6 +1,7 @@
 "use server";
 
-import { createServiceClient } from "@mira/supabase/server";
+import { createServiceClient, createServerClient } from "@mira/supabase/server";
+import { getUserContext } from "@/lib/auth";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -42,15 +43,19 @@ async function waitForProfile(supabase: any, authUserId: string): Promise<string
 }
 
 export async function setupCompanyProfile(input: {
-  authUserId: string;
   legalName: string;
   sector: string;
   websiteUrl: string;
   contactName: string;
 }) {
+  // Read auth from session — never trust client-supplied user IDs
+  const serverClient = await createServerClient();
+  const { data: { user } } = await serverClient.auth.getUser();
+  if (!user) return { error: "Sessione non valida. Riprova." };
+
   const supabase = await createServiceClient();
 
-  const profileId = await waitForProfile(supabase, input.authUserId);
+  const profileId = await waitForProfile(supabase, user.id);
   if (!profileId) return { error: "Profilo non trovato dopo la registrazione. Riprova." };
 
   // Update full_name on profile (trigger may not have it if signup happened via client)
@@ -80,8 +85,7 @@ export async function setupCompanyProfile(input: {
 
   if (companyErr) {
     console.error("company_profiles insert error:", companyErr);
-    // Delete the auth user so the same email can be used again
-    await supabase.auth.admin.deleteUser(input.authUserId).catch(() => {});
+    await supabase.auth.admin.deleteUser(user.id).catch(() => {});
     return { error: "Errore nella creazione del profilo aziendale." };
   }
 
@@ -102,6 +106,9 @@ export async function setupCompanyProfile(input: {
 }
 
 export async function approveCompany(companyId: string) {
+  const ctx = await getUserContext();
+  if (!ctx.isMiraAdmin) return { error: "Non autorizzato." };
+
   const supabase = await createServiceClient();
   const { error } = await supabase
     .from("company_profiles")
@@ -112,6 +119,9 @@ export async function approveCompany(companyId: string) {
 }
 
 export async function rejectCompany(companyId: string, reason: string) {
+  const ctx = await getUserContext();
+  if (!ctx.isMiraAdmin) return { error: "Non autorizzato." };
+
   const supabase = await createServiceClient();
   const { error } = await supabase
     .from("company_profiles")

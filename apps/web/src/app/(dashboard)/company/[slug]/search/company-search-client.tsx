@@ -21,13 +21,13 @@ interface ChatMessage {
   content: string;
 }
 
-function extractStudentIds(text: string): string[] {
-  const matches = text.match(/\[ID:([0-9a-f-]{36})\]/g) ?? [];
-  return [...new Set(matches.map((m) => m.replace("[ID:", "").replace("]", "")))];
+function extractStudentRefs(text: string): string[] {
+  const matches = text.match(/\[REF:([A-Za-z0-9_-]{20})\]/g) ?? [];
+  return [...new Set(matches.map((m) => m.replace("[REF:", "").replace("]", "")))];
 }
 
 function formatMessage(text: string): string {
-  return text.replace(/\[ID:[0-9a-f-]{36}\]/g, "");
+  return text.replace(/\[REF:[A-Za-z0-9_-]{20}\]/g, "");
 }
 
 interface Props {
@@ -44,7 +44,7 @@ export function CompanySearchClient({ slug, initialSearches }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
-  const [contactStudentId, setContactStudentId] = useState<string | null>(null);
+  const [contactRef, setContactRef] = useState<{ searchId: string; token: string } | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -216,7 +216,7 @@ export function CompanySearchClient({ slug, initialSearches }: Props) {
               )}
 
               {messages.map((msg, i) => {
-                const studentIds = msg.role === "assistant" ? extractStudentIds(msg.content) : [];
+                const studentRefs = msg.role === "assistant" ? extractStudentRefs(msg.content) : [];
                 return (
                   <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[80%] rounded-lg px-4 py-3 ${msg.role === "user" ? "bg-navy text-white" : "bg-white border border-border text-ink"}`}>
@@ -224,12 +224,12 @@ export function CompanySearchClient({ slug, initialSearches }: Props) {
                         <p className="text-eyebrow text-petrol uppercase mb-1">MIRA</p>
                       )}
                       <p className="text-body whitespace-pre-wrap">{formatMessage(msg.content)}</p>
-                      {studentIds.length > 0 && (
+                      {studentRefs.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-border/50 flex flex-wrap gap-2">
-                          {studentIds.map((id, j) => (
+                          {studentRefs.map((token, j) => (
                             <button
                               key={j}
-                              onClick={() => setContactStudentId(id)}
+                              onClick={() => activeId && setContactRef({ searchId: activeId, token })}
                               className="flex items-center gap-1.5 text-body-sm border border-navy text-navy rounded-md px-3 py-1.5 hover:bg-navy hover:text-white transition-colors duration-100"
                             >
                               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -287,11 +287,12 @@ export function CompanySearchClient({ slug, initialSearches }: Props) {
         )}
       </div>
 
-      {contactStudentId && (
+      {contactRef && (
         <ContactRequestModal
           slug={slug}
-          studentProfileId={contactStudentId}
-          onClose={() => setContactStudentId(null)}
+          searchId={contactRef.searchId}
+          refToken={contactRef.token}
+          onClose={() => setContactRef(null)}
         />
       )}
     </div>

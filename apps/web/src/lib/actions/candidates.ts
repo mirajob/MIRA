@@ -135,6 +135,7 @@ export async function addCandidateNote(applicationId: string, noteText: string) 
 }
 
 export async function evaluateCandidate(applicationId: string) {
+  const ctx = await getUserContext();
   const supabase = await createServiceClient();
 
   const { data: application } = await (supabase.from("applications") as any)
@@ -143,6 +144,17 @@ export async function evaluateCandidate(applicationId: string) {
     .single();
 
   if (!application) return { error: "Candidatura non trovata" };
+
+  if (!ctx.isMiraAdmin) {
+    const { data: membership } = await supabase
+      .from("association_memberships")
+      .select("role")
+      .eq("association_id", application.association_id)
+      .eq("user_id", ctx.profile.id)
+      .eq("status", "active")
+      .maybeSingle();
+    if (!membership) return { error: "Non hai i permessi" };
+  }
 
   const { data: student } = await (supabase.from("student_profiles") as any)
     .select("profile_summary, degree_program, degree_level, current_year, interests, goals, experiences, transcript_summary, availability, privacy_settings")

@@ -1,10 +1,20 @@
 "use server";
 
+import { createHmac } from "crypto";
 import { chatCompletion } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getCompanyContext } from "@/lib/auth";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+// Opaque token: HMAC(searchId, studentId) — reversible server-side, opaque to clients
+function makeRef(searchId: string, studentId: string): string {
+  return createHmac("sha256", searchId).update(studentId).digest("base64url").slice(0, 20);
+}
+
+export function resolveStudentRef(searchId: string, token: string, students: { id: string }[]): string | null {
+  return students.find((s) => makeRef(searchId, s.id) === token)?.id ?? null;
+}
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -85,7 +95,9 @@ export async function sendSearchMessage(
   const studentContext = (students ?? []).map((s: any, idx: number) => {
     const code = `Candidato ${String.fromCharCode(65 + idx)}`;
     const av = s.availability ?? {};
-    return `${code} [ID:${s.id}]:
+    // Use opaque token instead of raw UUID to protect student identity
+    const ref = makeRef(searchId, s.id);
+    return `${code} [REF:${ref}]:
 - Corso: ${s.degree_program ?? "n/d"} (${s.degree_level ?? "n/d"}, anno ${s.current_year ?? "n/d"})
 - Sommario: ${s.profile_summary ?? "non disponibile"}
 - Interessi: ${(s.interests ?? []).join(", ") || "n/d"}
@@ -103,7 +115,7 @@ PROFILI STUDENTI DISPONIBILI (${(students ?? []).length} studenti onboardati):
 ${studentContext || "Nessuno studente onboardato al momento."}
 ---
 
-Quando identifichi candidati adatti, includi sempre il loro ID tra parentesi quadre [ID:uuid] in modo che il sistema possa proporre l'azione di contatto.`;
+Quando identifichi candidati adatti, includi sempre il loro riferimento anonimo tra parentesi quadre [REF:token] (usa il token esatto dal profilo) in modo che il sistema possa proporre l'azione di contatto.`;
 
   const updatedHistory: ChatMessage[] = [...history, { role: "user", content: userMessage }];
 

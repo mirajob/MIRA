@@ -1,8 +1,8 @@
 "use server";
 
 import { createServiceClient } from "@mira/supabase/server";
-import { getCompanyContext } from "@/lib/auth";
-import { getUserContext } from "@/lib/auth";
+import { getCompanyContext, getUserContext } from "@/lib/auth";
+import { resolveStudentRef } from "./company-search";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -10,12 +10,21 @@ import { getUserContext } from "@/lib/auth";
 
 export async function sendContactRequest(
   slug: string,
-  studentProfileId: string,
+  searchId: string,
+  refToken: string,
   roleTitle: string,
   message: string
 ) {
   const { company, profile } = await getCompanyContext(slug);
   const supabase = await createServiceClient();
+
+  // Resolve opaque token → real student profile ID server-side
+  const { data: students } = await (supabase.from("student_profiles") as any)
+    .select("id")
+    .eq("onboarding_completed", true);
+
+  const studentProfileId = resolveStudentRef(searchId, refToken, students ?? []);
+  if (!studentProfileId) return { error: "Candidato non trovato." };
 
   const { data, error } = await (supabase.from("company_contact_requests") as any)
     .insert({
@@ -347,9 +356,18 @@ export async function respondToInterviewInvite(chatId: string, messageId: string
 
   if (!sp) return { error: "Profilo non trovato." };
 
+  // Scope update to chat_id to prevent cross-chat message tampering
+  const { data: existing } = await (supabase.from("company_chat_messages") as any)
+    .select("metadata")
+    .eq("id", messageId)
+    .eq("chat_id", chatId)
+    .single();
+  if (!existing) return { error: "Messaggio non trovato." };
+
   await (supabase.from("company_chat_messages") as any)
-    .update({ metadata: { ...(await (supabase.from("company_chat_messages") as any).select("metadata").eq("id", messageId).single())?.data?.metadata, response: accepted ? "accepted" : "rejected" } })
-    .eq("id", messageId);
+    .update({ metadata: { ...(existing.metadata ?? {}), response: accepted ? "accepted" : "rejected" } })
+    .eq("id", messageId)
+    .eq("chat_id", chatId);
 
   await (supabase.from("company_chat_messages") as any).insert({
     chat_id: chatId,

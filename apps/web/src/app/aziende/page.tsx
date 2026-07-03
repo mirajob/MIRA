@@ -63,7 +63,7 @@ export default function AziendePage() {
     const normalizedUrl = websiteUrl
       ? websiteUrl.startsWith("http") ? websiteUrl : `https://${websiteUrl}`
       : "";
-    const result = await setupCompanyProfile({ authUserId, legalName, sector, websiteUrl: normalizedUrl, contactName });
+    const result = await setupCompanyProfile({ legalName, sector, websiteUrl: normalizedUrl, contactName });
 
     if (result.error) {
       // Sign out so the orphaned auth user doesn't block a retry
