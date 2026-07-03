@@ -32,6 +32,23 @@ export default async function CandidateDetailPage({ params }: Props) {
 
   if (!application) notFound();
 
+  // Fetch CV from storage and generate a 1-hour signed URL
+  const { data: transcriptFile } = await (supabase.from("uploaded_files") as any)
+    .select("file_path, bucket")
+    .eq("owner_user_id", (application as any).student_user_id)
+    .eq("bucket", "student-transcripts")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let transcriptUrl: string | null = null;
+  if (transcriptFile) {
+    const { data: signed } = await supabase.storage
+      .from("student-transcripts")
+      .createSignedUrl(transcriptFile.file_path, 3600);
+    transcriptUrl = signed?.signedUrl ?? null;
+  }
+
   const profile = application.profiles as { full_name: string | null; email: string };
   const student = application.student_profiles as Record<string, unknown>;
   const cycle = application.application_cycles as { title: string };
@@ -75,10 +92,23 @@ export default async function CandidateDetailPage({ params }: Props) {
               Candidatura per: {(application as any).selected_role_preferences[0]}
             </p>
           )}
-          <div className="mt-2 flex gap-3 text-body-sm text-ink-tertiary">
+          <div className="mt-2 flex items-center gap-3 text-body-sm text-ink-tertiary flex-wrap">
             <span>{(student?.degree_program as string) ?? "—"}</span>
             {student?.current_year && <span>· {student.current_year as number}° anno</span>}
             {student?.degree_level && <span>· {student.degree_level as string}</span>}
+            {transcriptUrl && (
+              <a
+                href={transcriptUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md border border-border bg-white text-navy text-body-sm font-medium hover:border-navy hover:bg-navy-50 transition-colors duration-100"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                </svg>
+                Vedi CV / Libretto
+              </a>
+            )}
           </div>
         </div>
         <CandidateActions applicationId={applicationId} currentStatus={application.status} candidateEmail={profile?.email} candidateName={profile?.full_name} associationName={assocName} />
