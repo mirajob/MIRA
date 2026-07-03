@@ -32,39 +32,31 @@ export default async function CandidateDetailPage({ params }: Props) {
 
   if (!application) notFound();
 
-  // Fetch transcript (libretto) and CV from storage, generate 1-hour signed URLs
+  // Read files directly from Storage (uploaded_files table may not be populated)
   const studentUserId = (application as any).student_user_id as string;
 
-  const { data: transcriptFile } = await (supabase.from("uploaded_files") as any)
-    .select("file_path, bucket")
-    .eq("owner_user_id", studentUserId)
-    .eq("bucket", "student-transcripts")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const { data: cvFile } = await (supabase.from("uploaded_files") as any)
-    .select("file_path, bucket")
-    .eq("owner_user_id", studentUserId)
-    .eq("bucket", "transcripts")
-    .eq("linked_entity_type", "student_cv")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
   let transcriptUrl: string | null = null;
-  if (transcriptFile) {
+  let cvUrl: string | null = null;
+
+  const { data: transcriptFiles } = await supabase.storage
+    .from("student-transcripts")
+    .list(studentUserId, { limit: 1, sortBy: { column: "created_at", order: "desc" } });
+
+  if (transcriptFiles?.[0]) {
     const { data: signed } = await supabase.storage
       .from("student-transcripts")
-      .createSignedUrl(transcriptFile.file_path, 3600);
+      .createSignedUrl(`${studentUserId}/${transcriptFiles[0].name}`, 3600);
     transcriptUrl = signed?.signedUrl ?? null;
   }
 
-  let cvUrl: string | null = null;
-  if (cvFile) {
+  const { data: cvFiles } = await supabase.storage
+    .from("transcripts")
+    .list(`cv/${studentUserId}`, { limit: 1, sortBy: { column: "created_at", order: "desc" } });
+
+  if (cvFiles?.[0]) {
     const { data: signed } = await supabase.storage
       .from("transcripts")
-      .createSignedUrl(cvFile.file_path, 3600);
+      .createSignedUrl(`cv/${studentUserId}/${cvFiles[0].name}`, 3600);
     cvUrl = signed?.signedUrl ?? null;
   }
 
