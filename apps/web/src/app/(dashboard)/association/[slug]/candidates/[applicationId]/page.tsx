@@ -32,11 +32,22 @@ export default async function CandidateDetailPage({ params }: Props) {
 
   if (!application) notFound();
 
-  // Fetch CV from storage and generate a 1-hour signed URL
+  // Fetch transcript (libretto) and CV from storage, generate 1-hour signed URLs
+  const studentUserId = (application as any).student_user_id as string;
+
   const { data: transcriptFile } = await (supabase.from("uploaded_files") as any)
     .select("file_path, bucket")
-    .eq("owner_user_id", (application as any).student_user_id)
+    .eq("owner_user_id", studentUserId)
     .eq("bucket", "student-transcripts")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { data: cvFile } = await (supabase.from("uploaded_files") as any)
+    .select("file_path, bucket")
+    .eq("owner_user_id", studentUserId)
+    .eq("bucket", "transcripts")
+    .eq("linked_entity_type", "student_cv")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -47,6 +58,14 @@ export default async function CandidateDetailPage({ params }: Props) {
       .from("student-transcripts")
       .createSignedUrl(transcriptFile.file_path, 3600);
     transcriptUrl = signed?.signedUrl ?? null;
+  }
+
+  let cvUrl: string | null = null;
+  if (cvFile) {
+    const { data: signed } = await supabase.storage
+      .from("transcripts")
+      .createSignedUrl(cvFile.file_path, 3600);
+    cvUrl = signed?.signedUrl ?? null;
   }
 
   const profile = application.profiles as { full_name: string | null; email: string };
@@ -106,7 +125,20 @@ export default async function CandidateDetailPage({ params }: Props) {
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                 </svg>
-                Vedi CV / Libretto
+                Vedi Libretto
+              </a>
+            )}
+            {cvUrl && (
+              <a
+                href={cvUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md border border-border bg-white text-navy text-body-sm font-medium hover:border-navy hover:bg-navy-50 transition-colors duration-100"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                </svg>
+                Vedi CV
               </a>
             )}
           </div>
