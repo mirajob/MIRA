@@ -1,20 +1,11 @@
 "use server";
 
-import { createHmac } from "crypto";
 import { chatCompletion } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getCompanyContext } from "@/lib/auth";
+import { makeRef } from "./company-search-ref";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-// Opaque token: HMAC(searchId, studentId) — reversible server-side, opaque to clients
-function makeRef(searchId: string, studentId: string): string {
-  return createHmac("sha256", searchId).update(studentId).digest("base64url").slice(0, 20);
-}
-
-export function resolveStudentRef(searchId: string, token: string, students: { id: string }[]): string | null {
-  return students.find((s) => makeRef(searchId, s.id) === token)?.id ?? null;
-}
 
 interface ChatMessage {
   role: "user" | "assistant";

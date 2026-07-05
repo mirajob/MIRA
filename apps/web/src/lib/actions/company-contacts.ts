@@ -2,7 +2,7 @@
 
 import { createServiceClient } from "@mira/supabase/server";
 import { getCompanyContext, getUserContext } from "@/lib/auth";
-import { resolveStudentRef } from "./company-search";
+import { resolveStudentRef } from "./company-search-ref";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
