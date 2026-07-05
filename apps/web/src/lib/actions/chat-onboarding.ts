@@ -5,345 +5,332 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { generatePathwayAnalysis } from "./pathway";
+import { ensureCardBlocksExist, approveCardBlock } from "./card-blocks";
+import type {
+  CardBlockType,
+  CardBlockStatus,
+  HeaderProseContent,
+  FormazioneProseContent,
+  EsperienzaItem,
+  EsperienzeProseContent,
+  DisponibilitaProseContent,
+} from "@mira/types";
 
-interface ChatMessage {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+export type OnboardingPhase =
+  | "welcome"
+  | "dati_base"
+  | "dati_base_magistrale"
+  | "transcript"
+  | "cv"
+  | "esperienze"
+  | "disponibilita"
+  | "gate";
 
-async function getStudentContext() {
+export interface FaseABlocksState {
+  header: { status: CardBlockStatus; data: HeaderProseContent };
+  formazione: { status: CardBlockStatus; data: FormazioneProseContent };
+  esperienze: { status: CardBlockStatus; data: EsperienzeProseContent };
+  disponibilita: { status: CardBlockStatus; data: DisponibilitaProseContent };
+}
+
+export interface OnboardingState {
+  conversation: ChatMessage[];
+  phase: OnboardingPhase;
+  blocks: FaseABlocksState;
+  transcriptUploaded: boolean;
+  cvUploaded: boolean;
+}
+
+const FASE_A_BLOCK_TYPES = ["header", "formazione", "esperienze", "disponibilita"] as const;
+
+export const EMPTY_FASE_A_BLOCKS: FaseABlocksState = {
+  header: { status: "empty", data: { corso: null, livello: null, anno: null, laurea_anno: null, media_voti: null } },
+  formazione: { status: "empty", data: { items: [] } },
+  esperienze: { status: "empty", data: { items: [] } },
+  disponibilita: { status: "empty", data: { cosa_cerca: null, da_quando: null, dove: null, vincoli: null } },
+};
+
+async function getOnboardingContext() {
   const ctx = await getUserContext();
   const supabase = await createServiceClient();
   const profileId = (ctx.profile as any).id as string;
 
   const { data: student } = await (supabase.from("student_profiles") as any)
-    .select("degree_program, degree_level, current_year, transcript_summary, transcript_uploaded, cv_uploaded, cv_summary")
+    .select("id, degree_program, degree_level, current_year, transcript_uploaded, cv_uploaded, cv_summary, availability, onboarding_answers")
     .eq("user_id", profileId)
     .single();
 
-  const { data: associations } = await (supabase.from("association_profiles") as any)
-    .select("name, slug, category, short_description")
-    .eq("public_page_status", "published");
+  const studentProfileId = student.id as string;
+  await ensureCardBlocksExist(studentProfileId);
 
-  const { data: openCycles } = await (supabase.from("application_cycles") as any)
-    .select("title, association_id, closes_at, association_profiles(name)")
-    .eq("status", "open");
+  const { data: blockRows } = await (supabase.from("card_blocks") as any)
+    .select("block_type, prose_content, status")
+    .eq("student_profile_id", studentProfileId)
+    .in("block_type", FASE_A_BLOCK_TYPES);
 
-  return { ctx, supabase, profileId, student, associations, openCycles };
+  const blocks: FaseABlocksState = JSON.parse(JSON.stringify(EMPTY_FASE_A_BLOCKS));
+  for (const row of blockRows ?? []) {
+    (blocks as any)[row.block_type] = { status: row.status, data: row.prose_content };
+  }
+
+  return { ctx, supabase, profileId, studentProfileId, student, blocks };
 }
 
-function buildSystemPrompt(student: any, associations: any[], openCycles: any[]): string {
-  let studentContext = "";
-  if (student?.transcript_uploaded && student?.transcript_summary) {
-    const ts = student.transcript_summary;
-    studentContext = `
-DATI DELLO STUDENTE (dal transcript caricato):
-- Corso: ${ts.degree_program || student.degree_program || "non noto"}
-- Livello: ${ts.degree_level || student.degree_level || "non noto"}
-- Esami completati: ${ts.courses?.length ?? 0}
-- Crediti totali: ${ts.total_credits ?? 0} CFU
-- Media ponderata: ${ts.weighted_average ? `${ts.weighted_average}/30` : "non calcolata"}
-- Voti più alti: ${ts.courses?.filter((c: any) => c.grade_numeric >= 28).map((c: any) => `${c.course_name} (${c.grade})`).slice(0, 5).join(", ") || "nessuno"}
-
-Lo studente È GIÀ ISCRITTO a Bocconi. Non chiedergli se ha preparato la candidatura per Bocconi — ci è già dentro.`;
-  }
-
-  let cvContext = "";
-  if (student?.cv_uploaded && student?.cv_summary) {
-    const cv = student.cv_summary;
-    const expList = cv.experiences
-      ?.map((e: any) => {
-        const period = [e.start_date, e.end_date].filter(Boolean).join(" – ");
-        return `  - ${e.title} @ ${e.organization}${period ? ` (${period})` : ""}: ${e.description}`;
-      })
-      .join("\n") ?? "";
-    cvContext = `
-CV DELLO STUDENTE (caricato dall'utente):
-${cv.raw_text_summary || ""}${expList ? `\nEsperienze:\n${expList}` : ""}${cv.skills?.length ? `\nCompetenze: ${cv.skills.join(", ")}` : ""}${cv.languages?.length ? `\nLingue: ${cv.languages.map((l: any) => `${l.language} ${l.level}`).join(", ")}` : ""}
-
-Usa queste informazioni per fare domande più mirate al punto 2 (esperienze). NON rielencare il CV — fai domande che approfondiscono ciò che ha fatto.`;
-  }
-
-  let assocContext = "";
-  if (associations?.length > 0) {
-    const list = associations.map((a: any) => `- ${a.name} (${a.category || "generale"}): ${a.short_description || ""}`).join("\n");
-    const openList = openCycles?.map((c: any) => `- ${c.association_profiles?.name}: "${c.title}"${c.closes_at ? ` (scade ${new Date(c.closes_at).toLocaleDateString("it-IT")})` : ""}`).join("\n") || "nessuna al momento";
-
-    assocContext = `
-ASSOCIAZIONI SU MIRA:
-${list}
-
-CANDIDATURE APERTE ORA:
-${openList}
-
-Quando lo studente parla di associazioni, TU SAI quali ci sono su MIRA. Se menziona un'associazione presente, digli che può candidarsi direttamente dalla piattaforma dopo aver completato il profilo.`;
-  }
-
-  return `Tu sei MIRA, la piattaforma AI per il talento universitario di Bocconi.
-Lo studente si è appena registrato e sta facendo l'onboarding. Gli hai già mandato il messaggio di presentazione e gli hai chiesto se studia triennale, magistrale o ciclo unico. NON ripresentarti.
-${studentContext}
-${cvContext}
-${assocContext}
-
-FLUSSO OBBLIGATORIO — segui questi step in ordine, UNA domanda alla volta:
-
-STEP 1 — PERCORSO ACCADEMICO
-Dopo che lo studente ha risposto triennale/magistrale/ciclo unico:
-
-SE TRIENNALE O CICLO UNICO:
-"Perfetto. Per costruire il tuo profilo iniziale parto dai dati più oggettivi: il tuo percorso accademico. Se ce l'hai, carica il transcript universitario o un documento con esami, voti e CFU. Da lì potrò ricavare automaticamente università, corso, esami sostenuti, voti, CFU e media ponderata. Ti chiederò solo alcune informazioni che non sono sempre nel transcript, come l'anno di corso. Puoi caricarlo qui."
-
-SE MAGISTRALE:
-"Perfetto. Se sei in magistrale, prima di leggere il transcript attuale ho bisogno di ricostruire brevemente il tuo percorso precedente. Mi dici: in quale università hai fatto la triennale? Qual era il nome del corso? Con che voto ti sei laureato? Se vuoi, su cosa hai fatto la tesi?"
-Dopo la risposta sulla triennale:
-"Grazie. Ora puoi caricare il transcript della magistrale, così aggiorno il tuo profilo con esami, voti, CFU, media e competenze collegate al percorso che stai facendo ora."
-
-DOPO IL TRANSCRIPT: Commenta i dati in modo naturale — cosa noti, cosa ti colpisce. NON elencare i corsi. Poi chiedi se ha un CV da caricare: spiegagli che lo usi per capire meglio le sue esperienze concrete prima di fare le domande, e che il pulsante è già visibile nell’interfaccia. Se non ce l’ha o non vuole caricarlo, va benissimo — puoi andare avanti con le domande. Chiedi l’anno di corso solo se non è emerso dal transcript e lo studente non carica il CV.
-
-STEP 2 — ESPERIENZE, PROGETTI, ATTIVITÀ
-Adatta la domanda al livello:
-- Primo anno: "Ora passiamo a quello che hai fatto fuori dagli esami. Se sei all'inizio dell'università è normalissimo non avere ancora esperienze lavorative strutturate. Vanno benissimo anche attività scolastiche, volontariato, sport, progetti personali, piccoli lavori, esperienze in associazioni, competizioni, viaggi studio o qualsiasi cosa ti abbia fatto imparare qualcosa. Raccontami tutto quello che pensi possa rappresentarti."
-- Triennale avanzata: "Ora vorrei capire meglio cosa hai fatto fuori dal percorso accademico. Puoi raccontarmi esperienze lavorative, stage, associazioni, progetti universitari, progetti personali, volontariato, sport, competizioni, attività imprenditoriali o qualsiasi esperienza in cui hai avuto responsabilità concrete. Non serve che sia tutto 'da CV': mi interessa capire cosa hai fatto davvero e cosa hai imparato."
-- Magistrale: "Ora vorrei ricostruire le tue esperienze extra-accademiche e professionali. Raccontami stage, lavori, associazioni, progetti universitari, tesi/progetti di ricerca, esperienze imprenditoriali, volontariato, competizioni o altre attività rilevanti. Per ogni esperienza, se riesci, indicami cosa facevi concretamente, quanto è durata e cosa hai imparato."
-
-STEP 3 — INTERESSI
-"Ora vorrei capire meglio cosa ti interessa. Da un lato, dimmi quali settori, ruoli o tipi di lavoro ti incuriosiscono, anche se non sei ancora sicuro: finanza, consulenza, marketing, startup, tech, sostenibilità, diritto, ricerca, prodotto, vendite, comunicazione o qualsiasi altra area. Dall'altro, raccontami anche interessi personali, hobby o attività che senti ti rappresentino. Spesso aiutano a capire molto meglio il tipo di ambiente e di lavoro in cui potresti trovarti bene."
-
-STEP 4 — PIANI FUTURI
-Adatta al livello:
-- Primo anno: "Guardando ai prossimi anni, hai già qualche idea su cosa vorresti esplorare? Può essere una magistrale, un exchange, un settore professionale, uno stage, un'esperienza all'estero, un'associazione o anche solo un tipo di percorso che ti incuriosisce. Se non lo sai ancora, va benissimo."
-- Secondo anno: "Nei prossimi mesi potresti iniziare a fare alcune scelte importanti: exchange, stage, associazioni, magistrale o prime idee di carriera. Hai già qualche direzione in mente?"
-- Terzo anno: "Come immagini il tuo percorso dopo la triennale? Magistrale, lavoro, stage, estero? Raccontami sia ciò che hai già fatto o stai facendo, sia le opzioni che stai valutando."
-- Magistrale: "Guardando ai prossimi 6-24 mesi, che direzione vorresti prendere? Mi interessa capire se hai già target di carriera, settori, aziende, ruoli, paesi o percorsi specifici in mente."
-
-STEP 5 — ATTITUDINI
-"Ultima parte: vorrei capire meglio come sei come persona e come lavori con gli altri. Puoi descriverti liberamente, oppure pensare a queste domande: ti senti più intraprendente o preferisci avere una direzione chiara? Ti piace parlare e presentare idee, oppure preferisci analizzare e costruire in profondità? Ti trovi meglio in gruppo o da solo? Sei più metodico o creativo? Cosa ti viene naturale fare meglio degli altri? E cosa vorresti migliorare?"
-
-STEP 6 — CHIUSURA
-"Perfetto, ho abbastanza informazioni per creare il tuo profilo iniziale. Da qui puoi candidarti alle associazioni disponibili su MIRA e, man mano che aggiungerai nuove esperienze o parlerai con me, il tuo profilo diventerà più preciso. Questo sarà utile anche per le opportunità aziendali: le aziende potranno cercare profili coerenti con ciò che stanno cercando e contattarti quando ci sarà un buon match."
-Poi concludi con ESATTAMENTE: "Il tuo profilo MIRA è pronto."
-
-REGOLE:
-- UNA domanda alla volta. Mai elenchi di domande.
-- Reagisci a quello che dice prima di passare allo step successivo.
-- Come un amico intelligente che conosce Bocconi. Diretto, genuino.
-- Lo studente È GIÀ A BOCCONI. Non chiedergli se vuole entrarci.
-- NON ripresentarti. NON dire "Grazie per aver condiviso!" NON elencare i corsi del libretto.
-- Se menziona associazioni, collegale a quelle su MIRA.
-- Adatta il tono e le domande al livello dello studente.`;
-}
-
-const MAX_EXCHANGES = 16;
-
-export async function saveConversation(messages: ChatMessage[]) {
-  const ctx = await getUserContext();
-  const supabase = await createServiceClient();
+async function saveConversation(supabase: any, profileId: string, conversation: ChatMessage[]) {
   await supabase
     .from("student_profiles")
-    .update({
-      onboarding_answers: {
-        conversation: messages,
-        last_updated: new Date().toISOString(),
-      },
-    })
-    .eq("user_id", ctx.profile.id);
-}
-
-export async function sendTranscriptMessage(
-  conversationHistory: ChatMessage[],
-  transcriptSummary: string
-) {
-  const { supabase, profileId, student, associations, openCycles } = await getStudentContext();
-  const systemPrompt = buildSystemPrompt(student, associations, openCycles);
-
-  const updatedHistory = [
-    ...conversationHistory,
-    { role: "user" as const, content: "[Ho caricato il mio libretto]" },
-  ];
-
-  const messages = [
-    { role: "system" as const, content: systemPrompt },
-    ...updatedHistory.map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    })),
-    {
-      role: "system" as const,
-      content: `DATI APPENA ESTRATTI DAL LIBRETTO:\n${transcriptSummary}\n\nCommenta in modo naturale — cosa noti, cosa ti colpisce. Poi chiedi se ha già un CV da caricare, spiegando che lo usi per capire meglio le sue esperienze concrete prima di fare le domande. Aggiungi che il pulsante per caricarlo è già disponibile qui sotto, e che se non ce l'ha può andare avanti lo stesso.`,
-    },
-  ];
-
-  const assistantMessage = await chatCompletion(messages, {
-    temperature: 0.7,
-    maxTokens: 512,
-  });
-
-  const fullHistory = [
-    ...updatedHistory,
-    { role: "assistant" as const, content: assistantMessage },
-  ];
-
-  await supabase
-    .from("student_profiles")
-    .update({
-      onboarding_answers: {
-        conversation: fullHistory,
-        last_updated: new Date().toISOString(),
-      },
-    })
+    .update({ onboarding_answers: { conversation, last_updated: new Date().toISOString() } })
     .eq("user_id", profileId);
-
-  return { message: assistantMessage };
 }
 
-export async function sendCVMessage(
-  conversationHistory: ChatMessage[],
-  cvSummary: string
-) {
-  const { supabase, profileId, student, associations, openCycles } = await getStudentContext();
-  const systemPrompt = buildSystemPrompt(student, associations, openCycles);
+export async function loadOnboardingState(): Promise<OnboardingState> {
+  const { student, blocks } = await getOnboardingContext();
 
-  const updatedHistory = [
-    ...conversationHistory,
-    { role: "user" as const, content: "[Ho caricato il mio CV]" },
-  ];
-
-  const messages = [
-    { role: "system" as const, content: systemPrompt },
-    ...updatedHistory.map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    })),
-    {
-      role: "system" as const,
-      content: `DATI APPENA ESTRATTI DAL CV:\n${cvSummary}\n\nRingrazia brevemente e conferma che hai capito le sue esperienze. Poi inizia lo STEP 2 (esperienze) facendo una domanda mirata su una delle esperienze che hai letto nel CV, per approfondire cosa ha fatto concretamente.`,
-    },
-  ];
-
-  const assistantMessage = await chatCompletion(messages, {
-    temperature: 0.7,
-    maxTokens: 512,
-  });
-
-  const fullHistory = [
-    ...updatedHistory,
-    { role: "assistant" as const, content: assistantMessage },
-  ];
-
-  await supabase
-    .from("student_profiles")
-    .update({
-      onboarding_answers: {
-        conversation: fullHistory,
-        last_updated: new Date().toISOString(),
-      },
-    })
-    .eq("user_id", profileId);
-
-  return { message: assistantMessage };
-}
-
-export async function sendOnboardingMessage(
-  conversationHistory: ChatMessage[],
-  userMessage: string
-) {
-  const { supabase, profileId, student, associations, openCycles } = await getStudentContext();
-  const systemPrompt = buildSystemPrompt(student, associations, openCycles);
-
-  const updatedHistory = [
-    ...conversationHistory,
-    { role: "user" as const, content: userMessage },
-  ];
-
-  const userMessageCount = updatedHistory.filter(m => m.role === "user").length;
-  const shouldWrapUp = userMessageCount >= MAX_EXCHANGES / 2;
-
-  const messages = [
-    { role: "system" as const, content: systemPrompt },
-    ...updatedHistory.map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    })),
-  ];
-
-  if (shouldWrapUp) {
-    messages.push({
-      role: "system" as const,
-      content: "ATTENZIONE: Hai già fatto abbastanza domande. È ora di chiudere. Fai un breve riassunto dello studente e concludi con: \"Il tuo profilo MIRA è pronto.\"",
-    });
-  }
-
-  const assistantMessage = await chatCompletion(messages, {
-    temperature: 0.7,
-    maxTokens: 512,
-  });
-
-  const fullHistory = [
-    ...updatedHistory,
-    { role: "assistant" as const, content: assistantMessage },
-  ];
-
-  await supabase
-    .from("student_profiles")
-    .update({
-      onboarding_answers: {
-        conversation: fullHistory,
-        last_updated: new Date().toISOString(),
-      },
-    })
-    .eq("user_id", profileId);
-
-  const isComplete = assistantMessage.includes("Il tuo profilo MIRA è pronto");
-
-  if (isComplete) {
-    await extractAndSaveProfile(profileId, fullHistory);
-  }
-
-  return { message: assistantMessage, isComplete };
-}
-
-export async function loadConversation(): Promise<ChatMessage[]> {
-  const ctx = await getUserContext();
-  const supabase = await createServiceClient();
-
-  const { data } = await supabase
-    .from("student_profiles")
-    .select("onboarding_answers")
-    .eq("user_id", (ctx.profile as any).id)
-    .single();
-
-  const answers = data?.onboarding_answers as Record<string, unknown> | null;
-  return (answers?.conversation as ChatMessage[]) ?? [];
-}
-
-export async function forceCompleteOnboarding() {
-  const ctx = await getUserContext();
-  const supabase = await createServiceClient();
-  const profileId = (ctx.profile as any).id as string;
-
-  const { data } = await supabase
-    .from("student_profiles")
-    .select("onboarding_answers")
-    .eq("user_id", profileId)
-    .single();
-
-  const answers = data?.onboarding_answers as Record<string, unknown> | null;
+  const answers = student.onboarding_answers as Record<string, unknown> | null;
   const conversation = (answers?.conversation as ChatMessage[]) ?? [];
+  const transcriptUploaded = !!student.transcript_uploaded;
+  const cvUploaded = !!student.cv_uploaded;
+  const skippedTranscript = conversation.some((m) => m.content === "[Libretto saltato]");
+  const skippedCV = conversation.some((m) => m.content === "[CV saltato]");
 
-  if (conversation.length >= 4) {
-    await extractAndSaveProfile(profileId, conversation);
-    return { success: true };
+  let phase: OnboardingPhase;
+  if (conversation.length === 0) {
+    phase = "welcome";
+  } else if (blocks.header.status !== "approved") {
+    const needsPreviousDegree =
+      blocks.header.data.livello === "magistrale" &&
+      !(student.availability as any)?.previous_degree?.university &&
+      conversation.some((m) => m.content.includes("carriera precedente"));
+    phase = needsPreviousDegree ? "dati_base_magistrale" : "dati_base";
+  } else if (!transcriptUploaded && !skippedTranscript) {
+    phase = "transcript";
+  } else if (!cvUploaded && !skippedCV) {
+    phase = "cv";
+  } else if (blocks.esperienze.status !== "approved") {
+    phase = "esperienze";
+  } else if (blocks.disponibilita.status !== "approved") {
+    phase = "disponibilita";
+  } else {
+    phase = "gate";
   }
 
-  return { error: "Rispondi ad almeno un paio di domande prima di completare." };
+  return { conversation, phase, blocks, transcriptUploaded, cvUploaded };
 }
 
-async function extractAndSaveProfile(profileId: string, conversation: ChatMessage[]) {
-  const supabase = await createServiceClient();
+export async function startOnboarding(firstName: string): Promise<{ message: string }> {
+  const { supabase, profileId } = await getOnboardingContext();
 
-  const conversationText = conversation
+  const message = `Ciao ${firstName}! Io sono MIRA.
+
+Costruiamo insieme la tua MIRA card: ti serve ora per candidarti, ed è il profilo con cui le aziende potranno trovarti e contattarti direttamente. Più è fatta bene, più lavora per te.
+
+Partiamo dalle basi: studi triennale, magistrale o ciclo unico? E che corso?`;
+
+  await saveConversation(supabase, profileId, [{ role: "assistant", content: message }]);
+  return { message };
+}
+
+async function extractJSON(systemPrompt: string, userText: string): Promise<any> {
+  const result = await chatCompletion(
+    [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userText },
+    ],
+    { temperature: 0.1, maxTokens: 400, jsonMode: true }
+  );
+  return JSON.parse(result);
+}
+
+export async function submitDatiBase(history: ChatMessage[], userMessage: string) {
+  const { supabase, profileId, studentProfileId } = await getOnboardingContext();
+  const conversation = [...history, { role: "user" as const, content: userMessage }];
+
+  const data = await extractJSON(
+    `Estrai dal messaggio dello studente: {"degree_level":"triennale|magistrale|ciclo_unico","degree_program":"nome corso","current_year":0}. Se un campo non emerge, null. Rispondi solo JSON.`,
+    userMessage
+  );
+
+  // LEGACY-WRITE(card-rework): rimuovere in Step 5/6.
+  await (supabase.from("student_profiles") as any)
+    .update({
+      degree_program: data.degree_program || null,
+      degree_level: data.degree_level || null,
+      current_year: data.current_year || null,
+    })
+    .eq("id", studentProfileId);
+
+  await (supabase.from("card_blocks") as any)
+    .update({
+      prose_content: {
+        corso: data.degree_program || null,
+        livello: data.degree_level || null,
+        anno: data.current_year || null,
+        laurea_anno: null,
+        media_voti: null,
+      },
+      status: "draft",
+    })
+    .eq("student_profile_id", studentProfileId)
+    .eq("block_type", "header");
+
+  let message: string;
+  let phase: OnboardingPhase;
+
+  if (data.degree_level === "magistrale") {
+    message = `Perfetto. Se sei in magistrale, prima di andare avanti ho bisogno di ricostruire brevemente la tua carriera precedente. In quale università hai fatto la triennale, con che corso e con che voto ti sei laureato? Se vuoi, dimmi anche su cosa hai fatto la tesi.`;
+    phase = "dati_base_magistrale";
+  } else {
+    message = `Segnato — lo vedi già sulla card qui a destra. Conferma il blocco Header quando sei pronto, poi passiamo al libretto.`;
+    phase = "dati_base";
+  }
+
+  const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+  await saveConversation(supabase, profileId, fullConversation);
+
+  const headerData: HeaderProseContent = {
+    corso: data.degree_program || null,
+    livello: data.degree_level || null,
+    anno: data.current_year || null,
+    laurea_anno: null,
+    media_voti: null,
+  };
+
+  return { message, phase, header: { status: "draft" as CardBlockStatus, data: headerData } };
+}
+
+export async function submitPreviousDegree(history: ChatMessage[], userMessage: string) {
+  const { supabase, profileId, studentProfileId, student } = await getOnboardingContext();
+  const conversation = [...history, { role: "user" as const, content: userMessage }];
+
+  const data = await extractJSON(
+    `Estrai dal messaggio: {"university":"università triennale","program":"corso triennale","grade":"voto di laurea","thesis_topic":"tema tesi"}. Se non emerge, stringa vuota. Rispondi solo JSON.`,
+    userMessage
+  );
+
+  // LEGACY-WRITE(card-rework): rimuovere in Step 5/6.
+  const existingAvail = (student.availability as Record<string, unknown>) ?? {};
+  await (supabase.from("student_profiles") as any)
+    .update({ availability: { ...existingAvail, previous_degree: data } })
+    .eq("id", studentProfileId);
+
+  const message = `Grazie. Conferma il blocco Header qui a destra, poi carica il transcript della magistrale: da lì aggiorno esami, voti, CFU e media.`;
+  const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+  await saveConversation(supabase, profileId, fullConversation);
+
+  return { message, phase: "dati_base" as OnboardingPhase };
+}
+
+export async function confirmHeaderAndAskTranscript(history: ChatMessage[]) {
+  const { supabase, profileId, blocks } = await getOnboardingContext();
+  await approveCardBlock("header");
+
+  const isMagistrale = blocks.header.data.livello === "magistrale";
+  const message = isMagistrale
+    ? `Ora puoi caricare il transcript della magistrale, così estraggo esami, voti, CFU e media aggiornati. Se non ce l'hai sotto mano, puoi saltare.`
+    : `Se ce l'hai, carica il tuo transcript universitario (PDF): estraggo esami, voti, CFU e media ponderata automaticamente. Se non ce l'hai sotto mano, puoi saltare e andiamo avanti lo stesso.`;
+
+  const fullConversation = [...history, { role: "assistant" as const, content: message }];
+  await saveConversation(supabase, profileId, fullConversation);
+  revalidatePath("/student/onboarding");
+
+  return { message, phase: "transcript" as OnboardingPhase };
+}
+
+export async function skipTranscript(history: ChatMessage[]) {
+  const { supabase, profileId } = await getOnboardingContext();
+  const message = `Va bene, nessun problema — potrai caricarlo quando vuoi dal tuo Profilo. Hai già un CV? Lo uso per capire meglio le tue esperienze prima di farti domande mirate.`;
+  const fullConversation: ChatMessage[] = [
+    ...history,
+    { role: "user", content: "[Libretto saltato]" },
+    { role: "assistant", content: message },
+  ];
+  await saveConversation(supabase, profileId, fullConversation);
+  return { message, phase: "cv" as OnboardingPhase };
+}
+
+export async function reactToTranscript(
+  history: ChatMessage[],
+  stats: { coursesCount: number; totalCredits: number; weightedAverage: number | null }
+) {
+  const { supabase, profileId, blocks } = await getOnboardingContext();
+  const avgText = stats.weightedAverage ? `, media ${stats.weightedAverage.toFixed(1)}/30` : "";
+  const message = `Fatto: ${stats.coursesCount} esami, ${stats.totalCredits} CFU${avgText}. La media la mostri tu se vuoi — c'è il toggle sul blocco Header nel tuo Profilo. Conferma il blocco Formazione qui a destra, poi ti chiedo del CV.`;
+  const fullConversation = [...history, { role: "assistant" as const, content: message }];
+  await saveConversation(supabase, profileId, fullConversation);
+  return { message, phase: "transcript" as OnboardingPhase, header: blocks.header, formazione: blocks.formazione };
+}
+
+export async function confirmFormazioneAndAskCV(history: ChatMessage[]) {
+  const { supabase, profileId } = await getOnboardingContext();
+  await approveCardBlock("formazione");
+
+  const message = `Hai un CV? Caricalo e parto da lì per farti domande più mirate sulle tue esperienze. Se non ce l'hai, nessun problema: lo costruiamo parlando.`;
+  const fullConversation = [...history, { role: "assistant" as const, content: message }];
+  await saveConversation(supabase, profileId, fullConversation);
+  return { message, phase: "cv" as OnboardingPhase };
+}
+
+const HIDDEN_EXPERIENCE_QUESTION = `C'è qualcosa che non hai mai messo nel CV? Progetti personali, competizioni, sport a livello agonistico, volontariato, lavori — qualsiasi cosa pensi possa rappresentarti.`;
+
+export async function skipCV(history: ChatMessage[]) {
+  const { supabase, profileId } = await getOnboardingContext();
+  const message = `Nessun problema, lo costruiamo parlando. ${HIDDEN_EXPERIENCE_QUESTION}`;
+  const fullConversation: ChatMessage[] = [
+    ...history,
+    { role: "user", content: "[CV saltato]" },
+    { role: "assistant", content: message },
+  ];
+  await saveConversation(supabase, profileId, fullConversation);
+  return { message, phase: "esperienze" as OnboardingPhase, totalExperienceQuestions: 1 };
+}
+
+export async function reactToCV(history: ChatMessage[]) {
+  const { supabase, profileId, student } = await getOnboardingContext();
+  const cv = student.cv_summary as { experiences?: Array<{ title: string; organization: string }> } | null;
+  const experiences = cv?.experiences ?? [];
+  const first = experiences[0];
+
+  const message = first
+    ? `Ho trovato ${experiences.length === 1 ? "un'esperienza" : `${experiences.length} esperienze`}. Su ${first.title} @ ${first.organization} — cosa hai fatto tu, concretamente?`
+    : HIDDEN_EXPERIENCE_QUESTION;
+
+  const fullConversation = [...history, { role: "assistant" as const, content: message }];
+  await saveConversation(supabase, profileId, fullConversation);
+  return { message, phase: "esperienze" as OnboardingPhase, totalExperienceQuestions: experiences.length + 1 };
+}
+
+export async function submitEsperienzaRisposta(
+  history: ChatMessage[],
+  userMessage: string,
+  subIndex: number,
+  totalSubQuestions: number
+) {
+  const { supabase, profileId, studentProfileId, student } = await getOnboardingContext();
+  const conversation = [...history, { role: "user" as const, content: userMessage }];
+  const isLast = subIndex + 1 >= totalSubQuestions;
+
+  if (!isLast) {
+    const cv = student.cv_summary as { experiences?: Array<{ title: string; organization: string }> } | null;
+    const experiences = cv?.experiences ?? [];
+    const next = experiences[subIndex + 1];
+    const message = next
+      ? `Segnato. Su ${next.title} @ ${next.organization} — cosa hai fatto tu, concretamente?`
+      : HIDDEN_EXPERIENCE_QUESTION;
+    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+    await saveConversation(supabase, profileId, fullConversation);
+    return { message, phase: "esperienze" as OnboardingPhase, done: false };
+  }
+
+  // Last answer: extract everything gathered in this phase into the esperienze block.
+  const recentText = conversation
+    .slice(-2 * totalSubQuestions - 2)
     .map((m) => `${m.role === "user" ? "Studente" : "MIRA"}: ${m.content}`)
     .join("\n");
 
@@ -351,101 +338,211 @@ async function extractAndSaveProfile(profileId: string, conversation: ChatMessag
     [
       {
         role: "system",
-        content: `Estrai TUTTE le informazioni dalla conversazione di onboarding. Rispondi SOLO in JSON:
-{
-  "degree_program": "nome corso di laurea",
-  "degree_level": "triennale|magistrale|ciclo_unico",
-  "current_year": 0,
-  "previous_degree": {
-    "university": "università triennale (solo se magistrale)",
-    "program": "corso triennale",
-    "grade": "voto laurea",
-    "thesis_topic": "tema tesi"
-  },
-  "interests": ["settori/ruoli che interessano lo studente"],
-  "personal_interests": ["hobby, passioni, attività personali"],
-  "goals": ["obiettivi professionali e accademici"],
-  "experiences": ["Descrizione narrativa di 2-3 frasi per ogni esperienza — CHI era, COSA ha fatto concretamente, DOVE/PER CHI, risultati o competenze acquisite. Es: 'Ha co-fondato Flasher Pay, una startup fintech orientata ai pagamenti P2P, partecipando al programma TEF Ignition e presentando il prodotto a Fintech District e Nexi.' NON usare solo il titolo. Se lo studente ha dato dettagli, riportali."],
-  "career_targets": {
-    "roles": ["ruoli target"],
-    "sectors": ["settori target"],
-    "companies": ["aziende menzionate"],
-    "geography": ["città/paesi di interesse"]
-  },
-  "career_plan": {
-    "short_term": "prossimi 6-12 mesi",
-    "medium_term": "1-3 anni",
-    "exchange_interest": "interessato|fatto|programmato|no",
-    "masters_interest": "sì|no|incerto",
-    "clarity_level": "molto_chiaro|abbastanza_chiaro|esplorativo|incerto"
-  },
-  "work_style": {
-    "leadership": "alta|media|bassa",
-    "teamwork_preference": "gruppo|solo|entrambi",
-    "style": "analitico|creativo|metodico|flessibile",
-    "communication": "estroverso|introverso|equilibrato",
-    "strengths": ["punti di forza dichiarati"],
-    "improvements": ["aree di miglioramento"]
-  },
-  "profile_summary": "Scrivi 3-4 frasi in terza persona che descrivono lo studente in modo curato. Esempio di tono: 'Mario è uno studente di triennale con un profilo orientato a finanza, startup e venture capital. Dal suo percorso emergono buone basi economico-finanziarie e una forte propensione all'iniziativa. Le esperienze imprenditoriali raccontate indicano interesse per costruzione di progetti, fintech e contesti competitivi.' NON elencare tag o liste — scrivi un paragrafo discorsivo che dia un'immagine chiara della persona."
-}
-Se un campo non è emerso dalla conversazione, lascia stringa vuota, null o array vuoto. NON inventare.`,
+        content: `Dalla conversazione, estrai le esperienze raccontate dallo studente. Per ognuna scrivi una descrizione di 2-3 righe di cosa ha fatto concretamente — fatti, non aggettivi di carattere. Rispondi SOLO in JSON: {"items":[{"titolo":"","organizzazione":"","periodo":"","descrizione":""}]}`,
       },
-      { role: "user", content: conversationText },
+      { role: "user", content: recentText },
     ],
-    { temperature: 0.1, maxTokens: 2048, jsonMode: true }
+    { temperature: 0.2, maxTokens: 800, jsonMode: true }
   );
 
-  const data = JSON.parse(extracted);
+  const parsed = JSON.parse(extracted);
+  const items: EsperienzaItem[] = (parsed.items ?? []).map((it: any) => ({
+    id: crypto.randomUUID(),
+    titolo: it.titolo ?? "",
+    ruolo: "",
+    organizzazione: it.organizzazione ?? "",
+    periodo: it.periodo ?? "",
+    descrizione: it.descrizione ?? "",
+    verified: false,
+    origin: "onboarding",
+  }));
 
-  console.log("[MIRA] Extracted onboarding data keys:", Object.keys(data));
-  console.log("[MIRA] Extracted data:", JSON.stringify(data).slice(0, 2000));
+  await (supabase.from("card_blocks") as any)
+    .update({ prose_content: { items }, status: "draft" })
+    .eq("student_profile_id", studentProfileId)
+    .eq("block_type", "esperienze");
 
-  // Save all structured data
-  const profileUpdate: Record<string, unknown> = {
-    degree_program: data.degree_program || null,
-    degree_level: data.degree_level || null,
-    current_year: data.current_year || null,
-    interests: data.interests?.filter(Boolean) ?? [],
-    goals: data.goals?.filter(Boolean) ?? [],
-    experiences: data.experiences?.filter(Boolean) ?? [],
-    profile_summary: data.profile_summary || null,
-    onboarding_completed: true,
-    onboarding_completed_at: new Date().toISOString(),
-    // Always save ALL structured data in availability (JSON)
-    availability: {
-      career_targets: data.career_targets ?? {},
-      career_plan: data.career_plan ?? {},
-      work_style: data.work_style ?? {},
-      previous_degree: data.previous_degree ?? {},
-      personal_interests: data.personal_interests ?? [],
-      raw_extraction: data,
-    },
+  // LEGACY-WRITE(card-rework): rimuovere in Step 5/6.
+  const { data: current } = await (supabase.from("student_profiles") as any)
+    .select("experiences")
+    .eq("id", studentProfileId)
+    .single();
+  const mergedExperiences = [
+    ...((current?.experiences as string[]) ?? []),
+    ...items.map((it) => it.descrizione).filter(Boolean),
+  ];
+  await (supabase.from("student_profiles") as any)
+    .update({ experiences: mergedExperiences })
+    .eq("id", studentProfileId);
+
+  const message = `Scritte — controlla il blocco Esperienze qui a destra. Confermalo quando sei pronto.`;
+  const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+  await saveConversation(supabase, profileId, fullConversation);
+
+  return { message, phase: "esperienze" as OnboardingPhase, done: true, items };
+}
+
+export async function confirmEsperienzeAndAskDisponibilita(history: ChatMessage[]) {
+  const { supabase, profileId } = await getOnboardingContext();
+  await approveCardBlock("esperienze");
+
+  const message = `Ultima cosa della parte essenziale: cosa cerchi e da quando? Stage, part-time, progetto... e dove?`;
+  const fullConversation = [...history, { role: "assistant" as const, content: message }];
+  await saveConversation(supabase, profileId, fullConversation);
+  return { message, phase: "disponibilita" as OnboardingPhase };
+}
+
+export async function submitDisponibilita(history: ChatMessage[], userMessage: string) {
+  const { supabase, profileId, studentProfileId, student } = await getOnboardingContext();
+  const conversation = [...history, { role: "user" as const, content: userMessage }];
+
+  const data = await extractJSON(
+    `Estrai dal messaggio: {"cosa_cerca":"stage curriculare|stage extracurriculare|part-time|progetto|nulla per ora","da_quando":"","dove":"","vincoli":""}. Se un campo non emerge, stringa vuota. Rispondi solo JSON.`,
+    userMessage
+  );
+
+  const disponibilitaData: DisponibilitaProseContent = {
+    cosa_cerca: data.cosa_cerca || null,
+    da_quando: data.da_quando || null,
+    dove: data.dove || null,
+    vincoli: data.vincoli || null,
   };
 
-  // Legacy compatibility block removed — always save above
-  if (false) {
+  await (supabase.from("card_blocks") as any)
+    .update({ prose_content: disponibilitaData, status: "draft" })
+    .eq("student_profile_id", studentProfileId)
+    .eq("block_type", "disponibilita");
+
+  // LEGACY-WRITE(card-rework): rimuovere in Step 5/6.
+  const existingAvail = (student.availability as Record<string, unknown>) ?? {};
+  await (supabase.from("student_profiles") as any)
+    .update({
+      availability: {
+        ...existingAvail,
+        status: data.cosa_cerca || null,
+        type: data.cosa_cerca || null,
+        period: data.da_quando || null,
+        city: data.dove || null,
+      },
+    })
+    .eq("id", studentProfileId);
+
+  const message = `Segnato — controlla il blocco Disponibilità. Confermalo per sbloccare la candidatura.`;
+  const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+  await saveConversation(supabase, profileId, fullConversation);
+
+  return { message, phase: "disponibilita" as OnboardingPhase, disponibilita: { status: "draft" as CardBlockStatus, data: disponibilitaData } };
+}
+
+export async function confirmDisponibilitaAndGate(history: ChatMessage[]) {
+  const { supabase, profileId, studentProfileId } = await getOnboardingContext();
+  await approveCardBlock("disponibilita");
+
+  await (supabase.from("student_profiles") as any)
+    .update({ onboarding_completed: true, onboarding_completed_at: new Date().toISOString() })
+    .eq("id", studentProfileId);
+
+  const { data: allBlocks } = await (supabase.from("card_blocks") as any)
+    .select("status")
+    .eq("student_profile_id", studentProfileId);
+  const approvedCount = (allBlocks ?? []).filter((b: any) => b.status === "approved").length;
+  const pct = Math.round((approvedCount / 9) * 100);
+
+  const message = `Candidatura sbloccata. La tua card è al ${pct}%: puoi già candidarti alle associazioni su MIRA. Le prossime sezioni (competenze, interessi, piano di carriera) arriveranno presto per rendere il profilo ancora più forte.`;
+  const fullConversation = [...history, { role: "assistant" as const, content: message }];
+  await saveConversation(supabase, profileId, fullConversation);
+
+  generatePathwayAnalysis(profileId).catch((err) => console.error("Background pathway analysis failed:", err));
+  revalidatePath("/student");
+
+  return { message, phase: "gate" as OnboardingPhase, progressPct: pct };
+}
+
+const CORRECTABLE_BLOCK_PROMPTS: Partial<Record<CardBlockType, string>> = {
+  header: `Aggiorna i dati del corso in base alla correzione: {"corso":"","livello":"","anno":0}. Rispondi solo JSON.`,
+  esperienze: `Riscrivi le esperienze in base alla correzione, stesso formato di prima: {"items":[{"titolo":"","organizzazione":"","periodo":"","descrizione":""}]}. Rispondi solo JSON.`,
+  disponibilita: `Aggiorna disponibilità in base alla correzione: {"cosa_cerca":"","da_quando":"","dove":"","vincoli":""}. Rispondi solo JSON.`,
+};
+
+export async function submitCorrection(blockType: CardBlockType, history: ChatMessage[], userMessage: string) {
+  const { supabase, profileId, studentProfileId } = await getOnboardingContext();
+  const conversation = [...history, { role: "user" as const, content: userMessage }];
+  const prompt = CORRECTABLE_BLOCK_PROMPTS[blockType];
+
+  if (prompt) {
+    const data = await extractJSON(prompt, userMessage);
+    if (blockType === "header") {
+      await (supabase.from("card_blocks") as any)
+        .update({ prose_content: { corso: data.corso, livello: data.livello, anno: data.anno, laurea_anno: null, media_voti: null } })
+        .eq("student_profile_id", studentProfileId)
+        .eq("block_type", "header");
+    } else if (blockType === "esperienze") {
+      const items = (data.items ?? []).map((it: any) => ({
+        id: crypto.randomUUID(),
+        titolo: it.titolo ?? "",
+        ruolo: "",
+        organizzazione: it.organizzazione ?? "",
+        periodo: it.periodo ?? "",
+        descrizione: it.descrizione ?? "",
+        verified: false,
+        origin: "onboarding",
+      }));
+      await (supabase.from("card_blocks") as any)
+        .update({ prose_content: { items } })
+        .eq("student_profile_id", studentProfileId)
+        .eq("block_type", "esperienze");
+    } else if (blockType === "disponibilita") {
+      await (supabase.from("card_blocks") as any)
+        .update({ prose_content: data })
+        .eq("student_profile_id", studentProfileId)
+        .eq("block_type", "disponibilita");
+    }
   }
 
-  await supabase
-    .from("student_profiles")
-    .update(profileUpdate)
-    .eq("user_id", profileId);
+  const message = `Corretto — dai un'occhiata al blocco qui a destra. Conferma quando va bene.`;
+  const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+  await saveConversation(supabase, profileId, fullConversation);
 
-  await (supabase.from("ai_logs") as any).insert({
-    module: "student_onboarding",
-    provider: "openai",
-    model: "gpt-4o-mini",
-    entity_type: "student_profile",
-    user_id: profileId,
-    input_metadata: { message_count: conversation.length },
-    status: "success",
-  });
+  const { blocks } = await getOnboardingContext();
+  return { message, blocks };
+}
 
-  // Generate pathway analysis in background
-  generatePathwayAnalysis(profileId).catch((err) =>
-    console.error("Background pathway analysis failed:", err)
-  );
+export async function forceCompleteOnboarding() {
+  const { studentProfileId, supabase, profileId } = await getOnboardingContext();
 
+  const placeholders: Record<string, unknown> = {
+    header: { corso: "[test] Corso placeholder", livello: "triennale", anno: 1, laurea_anno: null, media_voti: null },
+    formazione: { items: [] },
+    esperienze: { items: [{ id: crypto.randomUUID(), titolo: "[test] Esperienza placeholder", ruolo: "", organizzazione: "", periodo: "", descrizione: "[test] descrizione placeholder", verified: false, origin: "onboarding" }] },
+    disponibilita: { cosa_cerca: "[test] stage", da_quando: "[test] subito", dove: "[test] Milano", vincoli: null },
+  };
+
+  for (const blockType of FASE_A_BLOCK_TYPES) {
+    const { data: row } = await (supabase.from("card_blocks") as any)
+      .select("status, prose_content")
+      .eq("student_profile_id", studentProfileId)
+      .eq("block_type", blockType)
+      .single();
+
+    if (row?.status === "empty") {
+      await (supabase.from("card_blocks") as any)
+        .update({ prose_content: placeholders[blockType], status: "approved", approved_at: new Date().toISOString() })
+        .eq("student_profile_id", studentProfileId)
+        .eq("block_type", blockType);
+    } else if (row?.status === "draft") {
+      await (supabase.from("card_blocks") as any)
+        .update({ status: "approved", approved_at: new Date().toISOString() })
+        .eq("student_profile_id", studentProfileId)
+        .eq("block_type", blockType);
+    }
+  }
+
+  await (supabase.from("student_profiles") as any)
+    .update({ onboarding_completed: true, onboarding_completed_at: new Date().toISOString() })
+    .eq("id", studentProfileId);
+
+  generatePathwayAnalysis(profileId).catch((err) => console.error("Background pathway analysis failed:", err));
   revalidatePath("/student");
+
+  return { success: true };
 }

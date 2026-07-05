@@ -6,3 +6,4 @@ export { parseTranscriptFile, formatTranscriptForChat } from "./modules/transcri
 export type { ParsedTranscript, ParsedCourse } from "./modules/transcript-parser";
 export { parseCVFile, formatCVForChat } from "./modules/cv-parser";
 export type { ParsedCV, ParsedCVExperience } from "./modules/cv-parser";
+export { syncCardBlockStructuredData } from "./modules/card-block-sync";

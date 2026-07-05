@@ -27,11 +27,16 @@ export interface StudentProfile {
   onboarding_completed_at: string | null;
   transcript_uploaded: boolean;
   transcript_summary: Record<string, unknown> | null;
+  /** @deprecated Sostituito da card_blocks (interessi) — rimozione in step futuro di cleanup, quando nessun codepath li legge più */
   interests: unknown[];
+  /** @deprecated Sostituito da card_blocks (piano_carriera) — rimozione in step futuro di cleanup, quando nessun codepath li legge più */
   goals: unknown[];
+  /** @deprecated Sostituito da card_blocks (esperienze) — rimozione in step futuro di cleanup, quando nessun codepath li legge più */
   experiences: unknown[];
   working_style: Record<string, unknown> | null;
+  /** @deprecated Sostituito da card_blocks (disponibilita, piano_carriera) — rimozione in step futuro di cleanup, quando nessun codepath li legge più */
   availability: Record<string, unknown> | null;
+  /** @deprecated Sostituito da card_blocks (autodescrizione) — rimozione in step futuro di cleanup, quando nessun codepath li legge più */
   profile_summary: string | null;
   visibility_settings: Record<string, unknown>;
   created_at: string;

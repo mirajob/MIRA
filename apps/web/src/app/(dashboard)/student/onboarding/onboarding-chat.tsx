@@ -1,74 +1,78 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
-  sendOnboardingMessage,
-  sendTranscriptMessage,
-  sendCVMessage,
-  loadConversation,
-  saveConversation,
+  loadOnboardingState,
+  startOnboarding,
+  submitDatiBase,
+  submitPreviousDegree,
+  confirmHeaderAndAskTranscript,
+  skipTranscript,
+  reactToTranscript,
+  confirmFormazioneAndAskCV,
+  skipCV,
+  reactToCV,
+  submitEsperienzaRisposta,
+  confirmEsperienzeAndAskDisponibilita,
+  submitDisponibilita,
+  confirmDisponibilitaAndGate,
+  submitCorrection,
   forceCompleteOnboarding,
+  EMPTY_FASE_A_BLOCKS,
 } from "@/lib/actions/chat-onboarding";
+import type { ChatMessage, OnboardingPhase, FaseABlocksState } from "@/lib/actions/chat-onboarding";
 import { uploadTranscript } from "@/lib/actions/transcript-upload";
 import { uploadCV } from "@/lib/actions/cv-upload";
 import { signOut } from "@/lib/actions/auth";
-import { useRouter } from "next/navigation";
+import { OnboardingCardPanel } from "@/components/onboarding/onboarding-card-panel";
+import type { CardBlockType } from "@mira/types";
 
-interface Message {
-  role: "user" | "assistant" | "system";
-  content: string;
-}
+const UPLOAD_PHASES: OnboardingPhase[] = ["transcript", "cv"];
+const GATED_PHASES: OnboardingPhase[] = ["transcript", "cv", "gate"];
 
 export function OnboardingChat({ userName }: { userName: string }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [phase, setPhase] = useState<OnboardingPhase>("welcome");
+  const [blocks, setBlocks] = useState<FaseABlocksState>(EMPTY_FASE_A_BLOCKS);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [transcriptUploaded, setTranscriptUploaded] = useState(false);
-  const [cvUploaded, setCvUploaded] = useState(false);
+  const [confirmingBlock, setConfirmingBlock] = useState<CardBlockType | null>(null);
+  const [correctingBlock, setCorrectingBlock] = useState<CardBlockType | null>(null);
+  const [expIndex, setExpIndex] = useState(0);
+  const [expTotal, setExpTotal] = useState(1);
   const [complete, setComplete] = useState(false);
+  const [cardOpenMobile, setCardOpenMobile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const cvFileInputRef = useRef<HTMLInputElement>(null);
+  const transcriptFileRef = useRef<HTMLInputElement>(null);
+  const cvFileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-
-  const firstName = userName.split(" ")[0];
-
-  const MIRA_INTRO = `Ciao ${firstName}! Io sono MIRA.
-
-Ti aiuto a costruire un profilo che racconti meglio il tuo percorso universitario: cosa studi, cosa hai fatto, cosa ti interessa, come ragioni e quali opportunità potrebbero essere più adatte a te.
-
-Probabilmente sei arrivato qui perché vuoi candidarti a una o più associazioni universitarie. Prima di farlo, ti farò qualche domanda per creare il tuo profilo iniziale.
-
-Ma MIRA non serve solo per candidarti alle associazioni. Il tuo profilo potrà diventare il modo in cui aziende e opportunità ti scoprono: tra pochissimo, le aziende potranno cercare studenti con caratteristiche specifiche e contattarti quando il tuo profilo sarà coerente con quello che stanno cercando.
-
-Per questo, dopo l'onboarding, potrai continuare a parlare con me: più mi racconti cosa ti interessa, che esperienze hai fatto, cosa vuoi imparare e che direzione vuoi prendere, più il tuo profilo diventerà preciso e utile.
-
-Partiamo dalle basi: studi **triennale**, **magistrale** o **ciclo unico**?`;
+  const firstName = userName.split(" ")[0] ?? "Studente";
 
   useEffect(() => {
     async function init() {
-      const saved = await loadConversation();
-      if (saved.length > 0) {
-        setMessages(saved);
-        const hasTranscript = saved.some(
-          (m) => m.role === "user" && m.content === "[Ho caricato il mio libretto]"
-        );
-        if (hasTranscript) setTranscriptUploaded(true);
-        const hasCV = saved.some(
-          (m) => m.role === "user" && m.content === "[Ho caricato il mio CV]"
-        );
-        if (hasCV) setCvUploaded(true);
-        setLoading(false);
+      const state = await loadOnboardingState();
+      if (state.phase === "welcome") {
+        const { message } = await startOnboarding(firstName);
+        setMessages([{ role: "assistant", content: message }]);
+        setPhase("dati_base");
       } else {
-        const intro = [{ role: "assistant" as const, content: MIRA_INTRO }];
-        setMessages(intro);
-        saveConversation(intro);
-        setLoading(false);
+        setMessages(state.conversation);
+        setPhase(state.phase);
+        setBlocks(state.blocks);
+        if (state.phase === "esperienze") {
+          // Resume semplificato: si riparte dalla domanda sulle esperienze nascoste,
+          // non si ricostruisce la posizione esatta nel sotto-ciclo del CV.
+          setExpIndex(0);
+          setExpTotal(1);
+        }
       }
+      setLoading(false);
     }
     init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -76,130 +80,166 @@ Partiamo dalle basi: studi **triennale**, **magistrale** o **ciclo unico**?`;
   }, [messages]);
 
   useEffect(() => {
-    if (!loading && !uploading) inputRef.current?.focus();
-  }, [loading, uploading]);
+    if (!loading && !uploading && !GATED_PHASES.includes(phase)) inputRef.current?.focus();
+  }, [loading, uploading, phase]);
+
+  function appendAssistant(message: string) {
+    setMessages((prev) => [...prev, { role: "assistant", content: message }]);
+  }
+  function appendUser(content: string) {
+    setMessages((prev) => [...prev, { role: "user", content }]);
+  }
 
   async function handleSend() {
     if (!input.trim() || loading || uploading) return;
-
     const userMessage = input.trim();
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    const history = messages;
+    appendUser(userMessage);
     setLoading(true);
 
-    const history = chatMessages();
-    const result = await sendOnboardingMessage(history, userMessage);
-
-    setMessages((prev) => [
-      ...prev,
-      { role: "assistant", content: result.message },
-    ]);
-    setLoading(false);
-
-    if (result.isComplete) {
-      setComplete(true);
-      setTimeout(() => {
-        router.push("/student");
-        router.refresh();
-      }, 3000);
+    try {
+      if (correctingBlock) {
+        const result = await submitCorrection(correctingBlock, history, userMessage);
+        appendAssistant(result.message);
+        setBlocks(result.blocks);
+        setCorrectingBlock(null);
+      } else if (phase === "dati_base") {
+        const result = await submitDatiBase(history, userMessage);
+        appendAssistant(result.message);
+        setBlocks((b) => ({ ...b, header: result.header }));
+        setPhase(result.phase);
+      } else if (phase === "dati_base_magistrale") {
+        const result = await submitPreviousDegree(history, userMessage);
+        appendAssistant(result.message);
+        setPhase(result.phase);
+      } else if (phase === "esperienze") {
+        const result = await submitEsperienzaRisposta(history, userMessage, expIndex, expTotal);
+        appendAssistant(result.message);
+        if (result.done && result.items) {
+          setBlocks((b) => ({ ...b, esperienze: { status: "draft", data: { items: result.items! } } }));
+        } else {
+          setExpIndex((i) => i + 1);
+        }
+      } else if (phase === "disponibilita") {
+        const result = await submitDisponibilita(history, userMessage);
+        appendAssistant(result.message);
+        if (result.disponibilita) setBlocks((b) => ({ ...b, disponibilita: result.disponibilita! }));
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleConfirm(blockType: CardBlockType) {
+    setConfirmingBlock(blockType);
+    const history = messages;
+    try {
+      if (blockType === "header") {
+        setBlocks((b) => ({ ...b, header: { ...b.header, status: "approved" } }));
+        const result = await confirmHeaderAndAskTranscript(history);
+        appendAssistant(result.message);
+        setPhase(result.phase);
+      } else if (blockType === "formazione") {
+        setBlocks((b) => ({ ...b, formazione: { ...b.formazione, status: "approved" } }));
+        const result = await confirmFormazioneAndAskCV(history);
+        appendAssistant(result.message);
+        setPhase(result.phase);
+      } else if (blockType === "esperienze") {
+        setBlocks((b) => ({ ...b, esperienze: { ...b.esperienze, status: "approved" } }));
+        const result = await confirmEsperienzeAndAskDisponibilita(history);
+        appendAssistant(result.message);
+        setPhase(result.phase);
+      } else if (blockType === "disponibilita") {
+        setBlocks((b) => ({ ...b, disponibilita: { ...b.disponibilita, status: "approved" } }));
+        const result = await confirmDisponibilitaAndGate(history);
+        appendAssistant(result.message);
+        setPhase("gate");
+        setComplete(true);
+        setTimeout(() => {
+          router.push("/student");
+          router.refresh();
+        }, 3000);
+      }
+    } finally {
+      setConfirmingBlock(null);
+    }
+  }
+
+  function handleCorrect(blockType: CardBlockType) {
+    setCorrectingBlock(blockType);
+    inputRef.current?.focus();
+  }
+
+  async function handleTranscriptFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setUploading(true);
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", content: "[Ho caricato il mio libretto]" },
-      { role: "system", content: "Sto analizzando il tuo libretto..." },
-    ]);
+    const historyWithMarker: ChatMessage[] = [...messages, { role: "user", content: "[Ho caricato il mio libretto]" }];
+    appendUser("[Ho caricato il mio libretto]");
 
     const formData = new FormData();
     formData.append("file", file);
-
     const result = await uploadTranscript(formData);
 
-    // Remove the "analyzing" system message
-    setMessages((prev) => prev.filter((m) => m.content !== "Sto analizzando il tuo libretto..."));
-
-    if (result.error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: `Non sono riuscito a leggere il file — ${result.error} Puoi riprovare o, se preferisci, raccontami tu cosa studi.`,
-        },
-      ]);
-      // Remove the "[Ho caricato il mio libretto]" message since it failed
-      setMessages((prev) =>
-        prev.filter((m) => m.content !== "[Ho caricato il mio libretto]")
-      );
+    if (result.error || !result.parsed) {
+      appendAssistant(`Non sono riuscito a leggere il file — ${result.error ?? "errore sconosciuto"}. Puoi riprovare o saltare.`);
+      setMessages((prev) => prev.filter((m) => m.content !== "[Ho caricato il mio libretto]"));
       setUploading(false);
+      if (transcriptFileRef.current) transcriptFileRef.current.value = "";
       return;
     }
 
-    setTranscriptUploaded(true);
-
-    // Get MIRA's response to the transcript
-    const history = chatMessages();
-    const response = await sendTranscriptMessage(history, result.summary!);
-
-    setMessages((prev) => [
-      ...prev,
-      { role: "assistant", content: response.message },
-    ]);
+    const reaction = await reactToTranscript(historyWithMarker, {
+      coursesCount: result.parsed.courses.length,
+      totalCredits: result.parsed.total_credits,
+      weightedAverage: result.parsed.weighted_average,
+    });
+    appendAssistant(reaction.message);
+    setBlocks((b) => ({ ...b, header: reaction.header, formazione: reaction.formazione }));
     setUploading(false);
-
-    // Reset file input
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (transcriptFileRef.current) transcriptFileRef.current.value = "";
   }
 
-  async function handleCVUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleSkipTranscript() {
+    const history = messages;
+    appendUser("[Libretto saltato]");
+    const result = await skipTranscript(history);
+    appendAssistant(result.message);
+    setPhase(result.phase);
+  }
+
+  async function handleCVFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setUploading(true);
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", content: "[Ho caricato il mio CV]" },
-      { role: "system", content: "Sto analizzando il tuo CV..." },
-    ]);
+    const historyWithMarker: ChatMessage[] = [...messages, { role: "user", content: "[Ho caricato il mio CV]" }];
+    appendUser("[Ho caricato il mio CV]");
 
     const formData = new FormData();
     formData.append("file", file);
-
     const result = await uploadCV(formData);
-
-    setMessages((prev) => prev.filter((m) => m.content !== "Sto analizzando il tuo CV..."));
-
     if (result.error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: `Non sono riuscito a leggere il CV — ${result.error} Puoi riprovare o andare avanti direttamente.`,
-        },
-      ]);
-      setMessages((prev) => prev.filter((m) => m.content !== "[Ho caricato il mio CV]"));
-      setUploading(false);
-      if (cvFileInputRef.current) cvFileInputRef.current.value = "";
-      return;
+      appendAssistant("Non sono riuscito a leggere bene il CV, ma va bene lo stesso.");
     }
 
-    setCvUploaded(true);
-
-    const history = chatMessages();
-    const response = await sendCVMessage(history, result.summary!);
-
-    setMessages((prev) => [
-      ...prev,
-      { role: "assistant", content: response.message },
-    ]);
+    const reaction = await reactToCV(historyWithMarker);
+    appendAssistant(reaction.message);
+    setPhase(reaction.phase);
+    setExpIndex(0);
+    setExpTotal(reaction.totalExperienceQuestions);
     setUploading(false);
+    if (cvFileRef.current) cvFileRef.current.value = "";
+  }
 
-    if (cvFileInputRef.current) cvFileInputRef.current.value = "";
+  async function handleSkipCV() {
+    const history = messages;
+    appendUser("[CV saltato]");
+    const result = await skipCV(history);
+    appendAssistant(result.message);
+    setPhase(result.phase);
+    setExpIndex(0);
+    setExpTotal(result.totalExperienceQuestions);
   }
 
   async function handleForceComplete() {
@@ -216,202 +256,172 @@ Partiamo dalle basi: studi **triennale**, **magistrale** o **ciclo unico**?`;
     }
   }
 
-  function chatMessages() {
-    return messages
-      .filter((m) => m.role !== "system")
-      .map((m) => ({
-        role: m.role as "user" | "assistant",
-        content: m.content,
-      }));
-  }
-
   const userMessageCount = messages.filter((m) => m.role === "user").length;
   const isWorking = loading || uploading;
+  const cardPanel = (
+    <OnboardingCardPanel
+      blocks={blocks}
+      onConfirm={handleConfirm}
+      onCorrect={handleCorrect}
+      confirmingBlock={confirmingBlock}
+    />
+  );
 
   return (
-    <div className="flex flex-col h-full max-w-3xl mx-auto">
-      <div className="px-6 py-3 flex items-center justify-between shrink-0 border-b border-border">
-        <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
-        <div className="flex items-center gap-4">
-          {userMessageCount >= 3 && !complete && (
-            <button
-              onClick={handleForceComplete}
-              disabled={isWorking}
-              className="text-body-sm text-ink-secondary hover:text-navy border border-border rounded-md px-3 py-1.5 hover:border-border-strong transition-colors duration-100 disabled:opacity-40"
-            >
-              Completa profilo
-            </button>
-          )}
-          <span className="text-body-sm text-ink-secondary">{userName}</span>
-          <form action={signOut}>
-            <button type="submit" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors duration-100">
-              Esci
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto space-y-4 px-6 py-4">
-        {messages.map((msg, i) => {
-          if (msg.role === "system") {
-            return (
-              <div key={i} className="flex justify-center">
-                <div className="bg-navy/5 rounded-full px-4 py-2">
-                  <p className="text-body-sm text-ink-secondary">{msg.content}</p>
-                </div>
-              </div>
-            );
-          }
-
-          if (msg.role === "user" && msg.content === "[Ho caricato il mio libretto]") {
-            return (
-              <div key={i} className="flex justify-end">
-                <div className="bg-navy text-white rounded-lg px-4 py-3 flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <polyline points="10 9 9 9 8 9" />
-                  </svg>
-                  <span className="text-body">Libretto caricato</span>
-                </div>
-              </div>
-            );
-          }
-
-          if (msg.role === "user" && msg.content === "[Ho caricato il mio CV]") {
-            return (
-              <div key={i} className="flex justify-end">
-                <div className="bg-navy text-white rounded-lg px-4 py-3 flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <polyline points="10 9 9 9 8 9" />
-                  </svg>
-                  <span className="text-body">CV caricato</span>
-                </div>
-              </div>
-            );
-          }
-
-          return (
-            <div
-              key={i}
-              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                  msg.role === "user"
-                    ? "bg-navy text-white"
-                    : "bg-white border border-border text-ink"
-                }`}
+    <div className="flex flex-col lg:grid lg:grid-cols-[1fr_400px] h-full">
+      <div className="flex flex-col h-full min-h-0">
+        <div className="px-6 py-3 flex items-center justify-between shrink-0 border-b border-border">
+          <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
+          <div className="flex items-center gap-4">
+            {userMessageCount >= 3 && !complete && (
+              <button
+                onClick={handleForceComplete}
+                disabled={isWorking}
+                className="text-body-sm text-ink-secondary hover:text-navy border border-border rounded-md px-3 py-1.5 hover:border-border-strong transition-colors duration-100 disabled:opacity-40"
               >
-                {msg.role === "assistant" && (
-                  <p className="text-eyebrow text-petrol uppercase mb-1">MIRA</p>
-                )}
-                <p className="text-body whitespace-pre-wrap">{msg.content}</p>
+                Completa profilo
+              </button>
+            )}
+            <span className="text-body-sm text-ink-secondary">{userName}</span>
+            <form action={signOut}>
+              <button type="submit" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors duration-100">
+                Esci
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto space-y-4 px-6 py-4 min-h-0">
+          {messages.map((msg, i) => {
+            const isMarker =
+              msg.role === "user" &&
+              ["[Ho caricato il mio libretto]", "[Ho caricato il mio CV]", "[Libretto saltato]", "[CV saltato]"].includes(
+                msg.content
+              );
+            if (isMarker) {
+              return (
+                <div key={i} className="flex justify-end">
+                  <div className="bg-navy/80 text-white rounded-lg px-4 py-2 text-body-sm">{msg.content.replace(/[[\]]/g, "")}</div>
+                </div>
+              );
+            }
+            return (
+              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={`max-w-[80%] rounded-lg px-4 py-3 ${
+                    msg.role === "user" ? "bg-navy text-white" : "bg-white border border-border text-ink"
+                  }`}
+                >
+                  {msg.role === "assistant" && <p className="text-eyebrow text-petrol uppercase mb-1">MIRA</p>}
+                  <p className="text-body whitespace-pre-wrap">{msg.content}</p>
+                </div>
+              </div>
+            );
+          })}
+
+          {isWorking && messages.length > 0 && (
+            <div className="flex justify-start">
+              <div className="bg-white border border-border rounded-lg px-4 py-3">
+                <p className="text-eyebrow text-petrol uppercase mb-1">MIRA</p>
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-navy-200 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-2 h-2 bg-navy-200 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-2 h-2 bg-navy-200 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
               </div>
             </div>
-          );
-        })}
+          )}
+          <div ref={messagesEndRef} />
+        </div>
 
-        {isWorking && messages.length > 0 && (
-          <div className="flex justify-start">
-            <div className="bg-white border border-border rounded-lg px-4 py-3">
-              <p className="text-eyebrow text-petrol uppercase mb-1">MIRA</p>
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-navy-200 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 bg-navy-200 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 bg-navy-200 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+        {/* pannello card espandibile, solo mobile */}
+        <div className="lg:hidden border-t border-border shrink-0">
+          <button
+            onClick={() => setCardOpenMobile((o) => !o)}
+            className="w-full px-6 py-2 text-body-sm text-petrol flex items-center justify-between"
+          >
+            <span>La tua MIRA card</span>
+            <span>{cardOpenMobile ? "▾" : "▸"}</span>
+          </button>
+          {cardOpenMobile && <div className="max-h-[45vh] overflow-y-auto border-t border-border">{cardPanel}</div>}
+        </div>
+
+        {!complete ? (
+          <div className="border-t border-border px-6 py-3 shrink-0">
+            {phase === "transcript" && (
+              <div className="flex gap-3 mb-3">
+                <input ref={transcriptFileRef} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleTranscriptFile} className="hidden" />
+                <button
+                  onClick={() => transcriptFileRef.current?.click()}
+                  disabled={isWorking}
+                  className="text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
+                >
+                  Carica libretto
+                </button>
+                <button
+                  onClick={handleSkipTranscript}
+                  disabled={isWorking}
+                  className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
+                >
+                  Salta
+                </button>
               </div>
+            )}
+            {phase === "cv" && (
+              <div className="flex gap-3 mb-3">
+                <input ref={cvFileRef} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleCVFile} className="hidden" />
+                <button
+                  onClick={() => cvFileRef.current?.click()}
+                  disabled={isWorking}
+                  className="text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
+                >
+                  Carica CV
+                </button>
+                <button
+                  onClick={handleSkipCV}
+                  disabled={isWorking}
+                  className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
+                >
+                  Salta
+                </button>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                placeholder={
+                  correctingBlock
+                    ? "Cosa vuoi correggere?"
+                    : GATED_PHASES.includes(phase)
+                      ? "Usa i pulsanti qui sopra..."
+                      : "Scrivi un messaggio..."
+                }
+                disabled={isWorking || GATED_PHASES.includes(phase)}
+                className="flex-1 px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200 disabled:opacity-50"
+              />
+              <button
+                onClick={handleSend}
+                disabled={isWorking || !input.trim() || GATED_PHASES.includes(phase)}
+                className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
+              >
+                Invia
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="border-t border-border px-6 py-3 shrink-0">
+            <div className="rounded-md bg-success-bg p-4 text-center">
+              <p className="text-body font-medium text-success">Candidatura sbloccata! Reindirizzamento...</p>
             </div>
           </div>
         )}
-
-        <div ref={messagesEndRef} />
       </div>
 
-      {!complete ? (
-        <div className="border-t border-border px-6 py-3 shrink-0">
-          <div className="flex gap-3">
-            {!transcriptUploaded && (
-              <>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="application/pdf,image/png,image/jpeg,image/webp"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isWorking}
-                  title="Carica libretto"
-                  className="flex items-center justify-center w-12 h-12 rounded-md border border-border text-ink-secondary hover:text-navy hover:border-border-strong transition-colors duration-100 disabled:opacity-40 shrink-0"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                </button>
-              </>
-            )}
-            {transcriptUploaded && !cvUploaded && (
-              <>
-                <input
-                  ref={cvFileInputRef}
-                  type="file"
-                  accept="application/pdf,image/png,image/jpeg,image/webp"
-                  onChange={handleCVUpload}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => cvFileInputRef.current?.click()}
-                  disabled={isWorking}
-                  title="Carica CV"
-                  className="flex items-center gap-2 px-3 h-12 rounded-md border border-border text-ink-secondary hover:text-navy hover:border-border-strong transition-colors duration-100 disabled:opacity-40 shrink-0 text-body-sm"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                  Carica CV
-                </button>
-              </>
-            )}
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-              placeholder="Scrivi un messaggio..."
-              disabled={isWorking}
-              className="flex-1 px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200 disabled:opacity-50"
-            />
-            <button
-              onClick={handleSend}
-              disabled={isWorking || !input.trim()}
-              className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
-            >
-              Invia
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="border-t border-border px-6 py-3 shrink-0">
-          <div className="rounded-md bg-success-bg p-4 text-center">
-            <p className="text-body font-medium text-success">
-              Profilo completato! Reindirizzamento...
-            </p>
-          </div>
-        </div>
-      )}
+      <div className="hidden lg:block border-l border-border h-full min-h-0">{cardPanel}</div>
     </div>
   );
 }

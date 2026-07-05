@@ -1,0 +1,68 @@
+"use client";
+
+import { useState } from "react";
+import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
+import { CardBlockHeader } from "./card-block-header";
+import type { CardBlockStatus, DisponibilitaProseContent } from "@mira/types";
+
+export function DisponibilitaBlock({
+  proseContent,
+  status,
+}: {
+  proseContent: DisponibilitaProseContent;
+  status: CardBlockStatus;
+}) {
+  const [form, setForm] = useState(proseContent);
+  const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  function update<K extends keyof DisponibilitaProseContent>(key: K, value: DisponibilitaProseContent[K]) {
+    setForm((f) => ({ ...f, [key]: value }));
+    setDirty(true);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    await updateCardBlockProseContent("disponibilita", form);
+    setSaving(false);
+    setDirty(false);
+  }
+
+  const fields: Array<{ key: keyof DisponibilitaProseContent; label: string; placeholder: string }> = [
+    { key: "cosa_cerca", label: "Cosa cerca", placeholder: "es. stage curriculare, part-time..." },
+    { key: "da_quando", label: "Da quando", placeholder: "es. da settembre 2026" },
+    { key: "dove", label: "Dove", placeholder: "es. Milano, full remote..." },
+    { key: "vincoli", label: "Vincoli", placeholder: "es. massimo 3 giorni a settimana" },
+  ];
+
+  return (
+    <div className="rounded-lg border border-border bg-white overflow-hidden">
+      <CardBlockHeader title="Disponibilità" status={status} blockType="disponibilita" />
+      <div className="p-5 space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          {fields.map(({ key, label, placeholder }) => (
+            <div key={key}>
+              <label className="text-ink-tertiary text-body-sm">{label}</label>
+              <input
+                type="text"
+                value={form[key] ?? ""}
+                placeholder={placeholder}
+                onChange={(e) => update(key, e.target.value)}
+                className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
+              />
+            </div>
+          ))}
+        </div>
+        {dirty && (
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="text-body-sm font-medium text-white bg-petrol rounded-md px-4 py-2 hover:bg-petrol-700 transition-colors disabled:opacity-50"
+          >
+            {saving ? "Salvataggio..." : "Salva"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

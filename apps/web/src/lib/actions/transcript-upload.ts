@@ -3,6 +3,8 @@
 import { parseTranscriptFile, formatTranscriptForChat, type ParsedCourse } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
+import { ensureCardBlocksExist } from "./card-blocks";
+import type { HeaderProseContent, FormazioneItem } from "@mira/types";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
@@ -124,6 +126,8 @@ export async function uploadTranscript(formData: FormData) {
       );
     }
 
+    // LEGACY-WRITE(card-rework): rimuovere in Step 5/6 quando pathway.ts e la vista associazione
+    // leggeranno direttamente da card_blocks invece che da queste colonne.
     await (supabase.from("student_profiles") as any)
       .update({
         degree_program: parsed.degree_program || null,
@@ -132,6 +136,53 @@ export async function uploadTranscript(formData: FormData) {
         transcript_summary: parsed,
       })
       .eq("id", studentProfile.id);
+
+    // Transcript-only write path for header.media_voti and formazione.items — the one
+    // legitimate way these fields change (spec: "si aggiornano ricaricando il libretto").
+    await ensureCardBlocksExist(studentProfile.id);
+
+    const { data: headerRow } = await (supabase.from("card_blocks") as any)
+      .select("prose_content")
+      .eq("student_profile_id", studentProfile.id)
+      .eq("block_type", "header")
+      .single();
+
+    const existingHeader = (headerRow?.prose_content ?? {}) as Partial<HeaderProseContent>;
+    await (supabase.from("card_blocks") as any)
+      .update({
+        prose_content: {
+          corso: existingHeader.corso ?? parsed.degree_program ?? null,
+          livello: existingHeader.livello ?? parsed.degree_level ?? null,
+          anno: existingHeader.anno ?? null,
+          laurea_anno: existingHeader.laurea_anno ?? null,
+          media_voti: parsed.weighted_average,
+        },
+        status: "draft",
+        structured_data: { media_voti: parsed.weighted_average, cfu: parsed.total_credits },
+      })
+      .eq("student_profile_id", studentProfile.id)
+      .eq("block_type", "header");
+
+    if (parsed.courses.length > 0) {
+      const formazioneItems: FormazioneItem[] = parsed.courses.map((c: ParsedCourse) => ({
+        id: crypto.randomUUID(),
+        esame: c.course_name,
+        voto: c.grade,
+        cfu: c.credits,
+        anno: c.academic_year || null,
+        semestre: c.semester || null,
+        verified: true,
+        origin: "transcript",
+      }));
+
+      await (supabase.from("card_blocks") as any)
+        .update({
+          prose_content: { items: formazioneItems },
+          status: "draft",
+        })
+        .eq("student_profile_id", studentProfile.id)
+        .eq("block_type", "formazione");
+    }
 
     await (supabase.from("ai_logs") as any).insert({
       module: "transcript_parser",

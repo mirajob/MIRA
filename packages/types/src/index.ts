@@ -13,3 +13,26 @@ export type {
   AssociationPageStatus,
   ApplicationCycleStatus,
 } from "./enums";
+
+export type {
+  CardBlockType,
+  CardBlockStatus,
+  ItemOrigin,
+  HeaderProseContent,
+  HeaderVisibility,
+  DisponibilitaProseContent,
+  EsperienzaItem,
+  EsperienzeProseContent,
+  FormazioneItem,
+  FormazioneProseContent,
+  CompetenzaItem,
+  CompetenzeProseContent,
+  LinguaItem,
+  LingueProseContent,
+  AutodescrizioneProseContent,
+  InteressiProseContent,
+  PianoCarrieraStato,
+  PianoCarrieraProseContent,
+  ProseContentByBlockType,
+  CardBlock,
+} from "./card-blocks";
