@@ -2,6 +2,7 @@ import { createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { CandidateActions } from "./candidate-actions";
+import { CandidateCard } from "@/components/card-view/candidate-card";
 
 interface Props {
   params: Promise<{ slug: string; applicationId: string }>;
@@ -20,7 +21,7 @@ export default async function CandidateDetailPage({ params }: Props) {
     .select(`
       *,
       profiles(full_name, email),
-      student_profiles(degree_program, degree_level, current_year, interests, goals, experiences, profile_summary, availability, transcript_summary, onboarding_answers, privacy_settings),
+      student_profiles(id, degree_program, degree_level, current_year, transcript_summary),
       application_cycles(title),
       application_answers(id, answer_text, answer_json, application_questions(question_text, question_type)),
       candidate_ai_evaluations(*),
@@ -76,17 +77,29 @@ export default async function CandidateDetailPage({ params }: Props) {
     id: string; note_text: string; created_at: string; profiles: { full_name: string | null };
   }>;
   const aiEval = (application.candidate_ai_evaluations as Array<Record<string, unknown>>)?.[0];
-
-  // Student profile data
   const ts = (student?.transcript_summary as Record<string, any>) ?? {};
-  const avail = (student?.availability as Record<string, any>) ?? {};
-  const privacy = (student?.privacy_settings as Record<string, boolean>) ?? {};
-  const showGrades = privacy.show_grades_to_associations === true;
-  const ws = avail.work_style ?? {};
-  const ct = avail.career_targets ?? {};
-  const cp = avail.career_plan ?? {};
-  const pd = avail.previous_degree ?? {};
-  const pi = avail.personal_interests ?? [];
+
+  // Card: solo blocchi approved, esplicito (il service client bypassa RLS).
+  const studentProfileId = (student as any)?.id as string | undefined;
+  const { data: blockRows } = studentProfileId
+    ? await (supabase.from("card_blocks") as any)
+        .select("block_type, prose_content, visibility")
+        .eq("student_profile_id", studentProfileId)
+        .eq("status", "approved")
+    : { data: [] };
+
+  const blockMap = new Map<string, any>((blockRows ?? []).map((b: any) => [b.block_type, b]));
+  const cardProps = {
+    header: blockMap.has("header") ? { data: blockMap.get("header").prose_content, visibility: blockMap.get("header").visibility } : undefined,
+    disponibilita: blockMap.has("disponibilita") ? { data: blockMap.get("disponibilita").prose_content } : undefined,
+    esperienze: blockMap.has("esperienze") ? { data: blockMap.get("esperienze").prose_content } : undefined,
+    formazione: blockMap.has("formazione") ? { data: blockMap.get("formazione").prose_content } : undefined,
+    competenze: blockMap.has("competenze") ? { data: blockMap.get("competenze").prose_content } : undefined,
+    lingue: blockMap.has("lingue") ? { data: blockMap.get("lingue").prose_content } : undefined,
+    interessi: blockMap.has("interessi") ? { data: blockMap.get("interessi").prose_content } : undefined,
+    autodescrizione: blockMap.has("autodescrizione") ? { data: blockMap.get("autodescrizione").prose_content } : undefined,
+    pianoCarriera: blockMap.has("piano_carriera") ? { data: blockMap.get("piano_carriera").prose_content } : undefined,
+  };
 
   return (
     <div className="space-y-6">
@@ -156,281 +169,64 @@ export default async function CandidateDetailPage({ params }: Props) {
       {/* Main 2-column layout: profile (CV) + MIRA analysis */}
       <div className="grid gap-6 lg:grid-cols-2">
 
-        {/* LEFT — Profile as CV */}
+        {/* LEFT — MIRA Card (solo blocchi approved, filtrata per visibilità) */}
         <div className="space-y-4">
-          <h3 className="font-sans text-h3 text-navy">Profilo studente</h3>
-
-          {/* Academic */}
-          <div className="rounded-lg border border-border bg-white p-5 space-y-3">
-            <p className="text-eyebrow text-navy/60 uppercase text-[10px]">Percorso accademico</p>
-            <div className="grid grid-cols-2 gap-2 text-body-sm">
-              {(() => {
-                const prog = (student?.degree_program as string) || (ts?.degree_program as string);
-                return prog ? <div className="col-span-2"><span className="text-ink-tertiary">Corso:</span> <span className="text-ink">{prog}</span></div> : null;
-              })()}
-              {student?.degree_level && <div><span className="text-ink-tertiary">Livello:</span> <span className="text-ink">{student.degree_level as string}</span></div>}
-              {student?.current_year && <div><span className="text-ink-tertiary">Anno:</span> <span className="text-ink">{student.current_year as number}°</span></div>}
-              {showGrades && ts?.weighted_average && <div><span className="text-ink-tertiary">Media:</span> <span className="text-ink font-medium">{ts.weighted_average}/30</span></div>}
-              {ts?.total_credits && <div><span className="text-ink-tertiary">Crediti:</span> <span className="text-ink">{ts.total_credits} CFU</span></div>}
-            </div>
-            {showGrades && ts?.courses?.length > 0 && (() => {
-              const graded = ts.courses.filter((c: any) => c.grade_numeric >= 28).slice(0, 5);
-              return graded.length > 0 ? (
-                <div className="pt-2 border-t border-border">
-                  <p className="text-[10px] text-ink-tertiary mb-1">Voti migliori</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {graded.map((c: any, i: number) => (
-                      <span key={i} className="text-xs px-2 py-0.5 rounded bg-success-bg text-success font-medium">
-                        {c.course_name} — {c.grade}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : null;
-            })()}
-            {!showGrades && (
-              <p className="text-[10px] text-ink-tertiary italic pt-1 border-t border-border">
-                Media e voti non condivisi dallo studente
-              </p>
-            )}
-          </div>
-
-          {/* Previous degree (magistrale) */}
-          {pd.university && (
-            <div className="rounded-lg border border-border bg-white p-5">
-              <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Triennale precedente</p>
-              <div className="space-y-1 text-body-sm text-ink">
-                <p><span className="text-ink-tertiary">Università:</span> {pd.university}</p>
-                {pd.program && <p><span className="text-ink-tertiary">Corso:</span> {pd.program}</p>}
-                {pd.grade && <p><span className="text-ink-tertiary">Voto:</span> {pd.grade}</p>}
-                {pd.thesis_topic && <p><span className="text-ink-tertiary">Tesi:</span> {pd.thesis_topic}</p>}
-              </div>
-            </div>
-          )}
-
-          {/* Experiences */}
-          {(student?.experiences as string[])?.length > 0 && (
-            <div className="rounded-lg border border-border bg-white p-5">
-              <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Esperienze</p>
-              <ul className="space-y-1">
-                {(student.experiences as string[]).map((exp, i) => (
-                  <li key={i} className="text-body-sm text-ink">• {exp}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Interests & goals */}
-          {((student?.interests as string[])?.length > 0 || (student?.goals as string[])?.length > 0 || pi.length > 0) && (
-            <div className="rounded-lg border border-border bg-white p-5 space-y-3">
-              {(student?.interests as string[])?.length > 0 && (
-                <div>
-                  <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-1.5">Interessi professionali</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(student.interests as string[]).map((int, i) => (
-                      <span key={i} className="px-2 py-0.5 rounded-full text-xs bg-navy-50 text-navy">{int}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {pi.length > 0 && (
-                <div>
-                  <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-1.5">Interessi personali</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {pi.map((p: string, i: number) => (
-                      <span key={i} className="px-2 py-0.5 rounded-full text-xs bg-petrol-50 text-petrol-700">{p}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {(student?.goals as string[])?.length > 0 && (
-                <div>
-                  <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-1.5">Obiettivi</p>
-                  <ul className="space-y-1">
-                    {(student.goals as string[]).map((g, i) => (
-                      <li key={i} className="text-body-sm text-ink">• {g}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Career targets */}
-          {(ct.roles?.length > 0 || ct.sectors?.length > 0) && (
-            <div className="rounded-lg border border-border bg-white p-5">
-              <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Target di carriera</p>
-              <div className="space-y-1 text-body-sm">
-                {ct.roles?.length > 0 && <p><span className="text-ink-tertiary">Ruoli:</span> <span className="text-ink">{ct.roles.join(", ")}</span></p>}
-                {ct.sectors?.length > 0 && <p><span className="text-ink-tertiary">Settori:</span> <span className="text-ink">{ct.sectors.join(", ")}</span></p>}
-                {ct.companies?.length > 0 && <p><span className="text-ink-tertiary">Aziende:</span> <span className="text-ink">{ct.companies.join(", ")}</span></p>}
-                {ct.geography?.length > 0 && <p><span className="text-ink-tertiary">Geografie:</span> <span className="text-ink">{ct.geography.join(", ")}</span></p>}
-                {cp.short_term && <p><span className="text-ink-tertiary">Breve termine:</span> <span className="text-ink">{cp.short_term}</span></p>}
-              </div>
-            </div>
-          )}
-
-          {/* Work style */}
-          {(ws.leadership || ws.style || ws.teamwork_preference || ws.strengths?.length > 0) && (
-            <div className="rounded-lg border border-border bg-white p-5">
-              <p className="text-eyebrow text-navy/60 uppercase text-[10px] mb-2">Stile di lavoro e attitudini</p>
-              <div className="space-y-1 text-body-sm">
-                {ws.style && <p><span className="text-ink-tertiary">Stile:</span> <span className="text-ink">{ws.style}</span></p>}
-                {ws.leadership && <p><span className="text-ink-tertiary">Leadership:</span> <span className="text-ink">{ws.leadership}</span></p>}
-                {ws.teamwork_preference && <p><span className="text-ink-tertiary">Preferenza team:</span> <span className="text-ink">{ws.teamwork_preference}</span></p>}
-                {ws.communication && <p><span className="text-ink-tertiary">Comunicazione:</span> <span className="text-ink">{ws.communication}</span></p>}
-                {ws.strengths?.length > 0 && <p><span className="text-ink-tertiary">Punti di forza:</span> <span className="text-ink">{ws.strengths.join(", ")}</span></p>}
-                {ws.improvements?.length > 0 && <p><span className="text-ink-tertiary">Da migliorare:</span> <span className="text-ink">{ws.improvements.join(", ")}</span></p>}
-              </div>
-            </div>
-          )}
+          <h3 className="font-sans text-h3 text-navy">MIRA Card</h3>
+          <CandidateCard {...cardProps} />
         </div>
 
-        {/* RIGHT — MIRA Analysis */}
+        {/* RIGHT — Per questa candidatura (generato al volo, mai un giudizio permanente) */}
         <div className="space-y-4">
-          <h3 className="font-sans text-h3 text-navy">Valutazione MIRA</h3>
+          <h3 className="font-sans text-h3 text-navy">Per questa candidatura</h3>
 
           {!aiEval ? (
             <div className="rounded-lg border border-border bg-white p-5">
               <p className="text-body-sm text-ink-secondary">La valutazione AI è in elaborazione o non ancora disponibile.</p>
             </div>
           ) : (() => {
-            const ev = (aiEval.evaluation_json ?? aiEval) as Record<string, any>;
-            const fitColor = (cat: string) =>
-              cat === "strong_fit" ? "bg-success-bg text-success"
-              : cat === "good_fit" ? "bg-petrol-50 text-petrol-700"
-              : cat === "uncertain_fit" ? "bg-warning-bg text-warning"
-              : "bg-error-bg text-error";
-            const fitLabel = (cat: string) =>
-              cat === "strong_fit" ? "Strong fit"
-              : cat === "good_fit" ? "Good fit"
-              : cat === "uncertain_fit" ? "Da valutare"
-              : "Weak fit";
-            const posRec = ev.position_recommendation as { candidate_selected?: string; ai_recommended?: string; match?: boolean; explanation?: string } | null;
+            const ev = (aiEval.evaluation_json ?? aiEval) as {
+              rilevanza?: Array<{ claim: string; evidenza: string }>;
+              gap?: string[];
+              domande_colloquio?: string[];
+            };
 
             return (
               <div className="space-y-4">
-                {/* Synthesis */}
                 <div className="rounded-lg border border-border bg-white p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${fitColor(ev.overall_fit_category)}`}>
-                      {fitLabel(ev.overall_fit_category)}
-                    </span>
-                  </div>
-                  {ev.candidate_synthesis && (
-                    <p className="text-body-sm text-ink whitespace-pre-wrap">{ev.candidate_synthesis}</p>
+                  <p className="text-label text-navy text-xs mb-3">Perché è rilevante</p>
+                  {ev.rilevanza?.length ? (
+                    <div className="space-y-2">
+                      {ev.rilevanza.slice(0, 3).map((r, i) => (
+                        <div key={i}>
+                          <p className="text-body-sm text-ink">{r.claim}</p>
+                          <p className="text-xs text-ink-tertiary">— {r.evidenza}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-body-sm text-ink-secondary">Nessuna evidenza sufficiente sui criteri di questo ciclo.</p>
                   )}
                 </div>
 
-                {/* Fit with association */}
-                {ev.association_fit && (
-                  <div className="rounded-lg border border-border bg-white p-5">
-                    <p className="text-label text-navy text-xs mb-2">Fit con {assocName}</p>
-                    <p className="text-body-sm text-ink mb-3">{ev.association_fit}</p>
-                    {(ev.fit_strengths?.length > 0 || ev.fit_gaps?.length > 0) && (
-                      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
-                        {ev.fit_strengths?.length > 0 && (
-                          <div>
-                            <p className="text-[10px] text-success uppercase font-medium mb-1">Punti di forza</p>
-                            <ul className="space-y-1">{ev.fit_strengths.map((s: string, i: number) => <li key={i} className="text-body-sm text-ink">• {s}</li>)}</ul>
-                          </div>
-                        )}
-                        {ev.fit_gaps?.length > 0 && (
-                          <div>
-                            <p className="text-[10px] text-warning uppercase font-medium mb-1">Da approfondire</p>
-                            <ul className="space-y-1">{ev.fit_gaps.map((g: string, i: number) => <li key={i} className="text-body-sm text-ink">• {g}</li>)}</ul>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
+                <div className="rounded-lg border border-border bg-white p-5">
+                  <p className="text-label text-navy text-xs mb-2">Cosa non sappiamo</p>
+                  <ul className="space-y-1">
+                    {(ev.gap ?? []).map((g, i) => (
+                      <li key={i} className="text-body-sm text-ink">• {g}</li>
+                    ))}
+                  </ul>
+                </div>
 
-                {/* Position recommendation */}
-                {posRec && (
+                {ev.domande_colloquio?.length ? (
                   <div className="rounded-lg border border-border bg-white p-5">
-                    <p className="text-label text-navy text-xs mb-2">Raccomandazione posizione</p>
-                    <div className="space-y-1.5 text-body-sm">
-                      <p><span className="text-ink-tertiary">Scelta candidato:</span> <span className="text-ink font-medium">{posRec.candidate_selected}</span></p>
-                      {posRec.ai_recommended && posRec.ai_recommended !== posRec.candidate_selected && (
-                        <p><span className="text-ink-tertiary">Consigliata MIRA:</span> <span className="text-petrol font-medium">{posRec.ai_recommended}</span></p>
-                      )}
-                      {posRec.match === true && <p className="text-success text-xs">✓ La scelta del candidato è coerente</p>}
-                      {posRec.explanation && <p className="text-ink-secondary mt-1">{posRec.explanation}</p>}
-                    </div>
-                  </div>
-                )}
-
-                {/* Competencies */}
-                {(ev.academic_competencies?.length > 0 || ev.practical_competencies?.length > 0) && (
-                  <div className="rounded-lg border border-border bg-white p-5">
-                    <p className="text-label text-navy text-xs mb-3">Competenze</p>
-                    {ev.academic_competencies?.length > 0 && (
-                      <div className="mb-3">
-                        <p className="text-[10px] text-ink-tertiary uppercase mb-2">Accademiche</p>
-                        <div className="space-y-2">
-                          {ev.academic_competencies.map((c: any, i: number) => (
-                            <div key={i}><p className="text-body-sm font-medium text-ink">{c.area}</p><p className="text-body-sm text-ink-secondary">{c.description}</p></div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {ev.practical_competencies?.length > 0 && (
-                      <div className={ev.academic_competencies?.length > 0 ? "pt-3 border-t border-border" : ""}>
-                        <p className="text-[10px] text-ink-tertiary uppercase mb-2">Pratiche</p>
-                        <div className="space-y-2">
-                          {ev.practical_competencies.map((c: any, i: number) => (
-                            <div key={i}><p className="text-body-sm font-medium text-ink">{c.area}</p><p className="text-body-sm text-ink-secondary">{c.description}</p></div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Competencies to verify */}
-                {ev.competencies_to_verify && (
-                  <div className="rounded-lg border border-border bg-white p-5">
-                    <p className="text-label text-navy text-xs mb-2">Competenze da verificare</p>
-                    <p className="text-body-sm text-ink">{ev.competencies_to_verify}</p>
-                  </div>
-                )}
-
-                {/* Attitude */}
-                {ev.attitude_description && (
-                  <div className="rounded-lg border border-border bg-white p-5">
-                    <p className="text-label text-navy text-xs mb-2">Attitudine e stile</p>
-                    <p className="text-body-sm text-ink">{ev.attitude_description}</p>
-                  </div>
-                )}
-
-                {/* Application quality */}
-                {ev.application_quality && (
-                  <div className="rounded-lg border border-border bg-white p-5">
-                    <p className="text-label text-navy text-xs mb-2">Qualità risposte candidatura</p>
-                    <p className="text-body-sm text-ink">{ev.application_quality}</p>
-                  </div>
-                )}
-
-                {/* Interview questions */}
-                {ev.interview_questions?.length > 0 && (
-                  <div className="rounded-lg border border-border bg-white p-5">
-                    <p className="text-label text-navy text-xs mb-2">Domande consigliate per il colloquio</p>
+                    <p className="text-label text-navy text-xs mb-2">Da chiedere al colloquio</p>
                     <ol className="space-y-1.5">
-                      {ev.interview_questions.map((q: string, i: number) => (
+                      {ev.domande_colloquio.map((q, i) => (
                         <li key={i} className="text-body-sm text-ink"><span className="text-ink-tertiary mr-1">{i + 1}.</span>{q}</li>
                       ))}
                     </ol>
                   </div>
-                )}
-
-                {/* Suggested roles */}
-                {ev.suggested_roles && (
-                  <div className="rounded-lg border border-border bg-white p-5">
-                    <p className="text-label text-navy text-xs mb-2">Ruoli suggeriti</p>
-                    <p className="text-body-sm text-ink">{ev.suggested_roles}</p>
-                  </div>
-                )}
+                ) : null}
               </div>
             );
           })()}

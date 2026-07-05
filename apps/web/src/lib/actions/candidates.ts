@@ -156,10 +156,20 @@ export async function evaluateCandidate(applicationId: string) {
     if (!membership) return { error: "Non hai i permessi" };
   }
 
-  const { data: student } = await (supabase.from("student_profiles") as any)
-    .select("profile_summary, degree_program, degree_level, current_year, interests, goals, experiences, transcript_summary, availability, privacy_settings")
+  const { data: studentProfile } = await (supabase.from("student_profiles") as any)
+    .select("id")
     .eq("user_id", application.student_user_id)
     .single();
+
+  // Solo blocchi approved — esplicito perché il service client bypassa RLS.
+  const { data: blockRows } = studentProfile
+    ? await (supabase.from("card_blocks") as any)
+        .select("block_type, prose_content")
+        .eq("student_profile_id", studentProfile.id)
+        .eq("status", "approved")
+    : { data: [] };
+
+  const blocks = new Map<string, any>((blockRows ?? []).map((b: any) => [b.block_type, b.prose_content]));
 
   const { data: association } = await (supabase.from("association_profiles") as any)
     .select("name, category, short_description, long_description")
@@ -183,58 +193,26 @@ export async function evaluateCandidate(applicationId: string) {
     `- ${p.name}${p.description ? `: ${p.description}` : ""}${p.requirements ? ` [REQUISITI: ${p.requirements}]` : ""}`
   ).join("\n");
 
-  // Build rich student context
-  const avail = student?.availability as Record<string, any> ?? {};
-  const ct = avail.career_targets ?? {};
-  const cp = avail.career_plan ?? {};
-  const ws = avail.work_style ?? {};
-  const pd = avail.previous_degree ?? {};
-  const pi = avail.personal_interests ?? [];
-  const ts = student?.transcript_summary;
-  const privacy = (student?.privacy_settings as Record<string, boolean>) ?? {};
-  const gradesShared = privacy.show_grades_to_associations === true;
+  const header = blocks.get("header") ?? {};
+  const disponibilita = blocks.get("disponibilita") ?? {};
+  const formazione = (blocks.get("formazione")?.items ?? []) as Array<{ esame: string; voto: string }>;
+  const esperienze = (blocks.get("esperienze")?.items ?? []) as Array<{ titolo: string; organizzazione: string; descrizione: string }>;
+  const competenze = (blocks.get("competenze")?.items ?? []) as Array<{ testo: string; evidenza_ref?: string }>;
+  const interessi = blocks.get("interessi")?.testo ?? "";
+  const pianoCarriera = blocks.get("piano_carriera") ?? {};
 
-  const degreeProgram = student?.degree_program || ts?.degree_program || null;
-  const degreeLevel = student?.degree_level || null;
-
-  let studentContext = `PROFILO COMPLETO CANDIDATO:
-Riassunto: ${student?.profile_summary || "Non disponibile"}
-Corso di laurea: ${degreeProgram || "non specificato"} — ${degreeLevel || "livello non specificato"}
-NOTA PROGRAMMA: I programmi Bocconi come CLEAM (Economics and Management), BIEM (International Economics and Management), BIEMF (Economics and Finance), BAI (Business Analytics), BESS (Economics and Social Sciences) indicano la specializzazione dello studente. Tieni conto di questa specializzazione nella valutazione.
-Anno: ${student?.current_year || "?"}
-${gradesShared && ts?.weighted_average ? `Media ponderata: ${ts.weighted_average}/30` : ""}
-${ts?.total_credits ? `Crediti: ${ts.total_credits} CFU` : ""}
-
-INTERESSI: ${(student?.interests ?? []).join(", ") || "non specificati"}
-OBIETTIVI: ${(student?.goals ?? []).join(", ") || "non specificati"}
-ESPERIENZE: ${(student?.experiences ?? []).join("\n- ") || "nessuna"}
-INTERESSI PERSONALI: ${pi.join(", ") || "non specificati"}
-
-TARGET CARRIERA: ruoli=${(ct.roles ?? []).join(", ")}, settori=${(ct.sectors ?? []).join(", ")}, aziende=${(ct.companies ?? []).join(", ")}, geografie=${(ct.geography ?? []).join(", ")}
-PIANO CARRIERA: breve termine=${cp.short_term || "?"}, medio termine=${cp.medium_term || "?"}, exchange=${cp.exchange_interest || "?"}, magistrale=${cp.masters_interest || "?"}, chiarezza=${cp.clarity_level || "?"}
-STILE LAVORO: leadership=${ws.leadership || "?"}, teamwork=${ws.teamwork_preference || "?"}, stile=${ws.style || "?"}, comunicazione=${ws.communication || "?"}, punti forza=${(ws.strengths ?? []).join(", ")}, da migliorare=${(ws.improvements ?? []).join(", ")}`;
-
-  if (pd.university) {
-    studentContext += `\nPERCORSO PRECEDENTE: ${pd.university}, ${pd.program || "?"}, voto ${pd.grade || "?"}, tesi: ${pd.thesis_topic || "?"}`;
-  }
-
-  if (ts?.courses?.length) {
-    // Include all course names so AI can detect language of instruction
-    const allCourseNames = ts.courses.map((c: any) => c.course_name).join(", ");
-    studentContext += `\nCORSI UNIVERSITARI (tutti): ${allCourseNames}`;
-    studentContext += `\nNOTA LINGUA: I corsi universitari a Bocconi sono tenuti principalmente in inglese. Se i nomi dei corsi sono in inglese, lo studente studia in lingua inglese.`;
-
-    if (gradesShared) {
-      const topCourses = ts.courses.filter((c: any) => c.grade_numeric >= 28).slice(0, 5);
-      if (topCourses.length) {
-        studentContext += `\nVOTI MIGLIORI: ${topCourses.map((c: any) => `${c.course_name} (${c.grade})`).join(", ")}`;
-      }
-    }
-  }
+  const cardContext = `CARD DELLO STUDENTE (solo blocchi approvati dallo studente):
+Corso: ${header.corso || "?"} (${header.livello || "?"}, anno ${header.anno || "?"})
+Disponibilità: ${[disponibilita.cosa_cerca, disponibilita.da_quando, disponibilita.dove].filter(Boolean).join(", ") || "non specificata"}
+Esami: ${formazione.map((e) => `${e.esame} (${e.voto})`).join(", ") || "nessuno approvato"}
+Esperienze: ${esperienze.map((e) => `${e.titolo || e.organizzazione}: ${e.descrizione}`).join("\n") || "nessuna approvata"}
+Competenze: ${competenze.map((c) => `${c.testo}${c.evidenza_ref ? ` (${c.evidenza_ref})` : ""}`).join("; ") || "nessuna approvata"}
+Interessi: ${interessi || "non specificati"}
+Piano di carriera: ${pianoCarriera.testo || "non specificato"} (${pianoCarriera.stato || "?"})`;
 
   const evalCriteria = (cycle?.evaluation_criteria as Record<string, any>)?.general_requirements || "";
 
-  const prompt = `Genera una SCHEDA CANDIDATO NARRATIVA per l'associazione ${association?.name}.
+  const prompt = `Genera il layer "Per questa candidatura" per l'associazione ${association?.name}. Questo layer NON è un giudizio permanente sullo studente: è specifico per QUESTA candidatura e questo ciclo.
 
 ASSOCIAZIONE: ${association?.name} (${association?.category})
 ${association?.short_description || ""}
@@ -245,64 +223,28 @@ POSIZIONE SCELTA DAL CANDIDATO: ${selectedPosition}
 POSIZIONI DISPONIBILI:
 ${positionsText || "Nessuna posizione specifica — candidatura generica"}
 
-${studentContext}
+${cardContext}
 
 RISPOSTE CANDIDATURA:
 ${answers || "Nessuna risposta specifica"}
 
 Rispondi in JSON con questa struttura:
 {
-  "overall_fit_category": "strong_fit|good_fit|uncertain_fit|weak_fit",
-
-  "candidate_synthesis": "Paragrafo narrativo di 4-5 frasi che descrive chi è questo candidato, cosa ha fatto, cosa cerca. Non usare tag o elenchi — scrivi come se stessi presentando la persona a qualcuno.",
-
-  "association_fit": "Paragrafo: perché è o non è coerente con ${association?.name}. Confronta il profilo con i CRITERI DI VALUTAZIONE dell'associazione. Spiega i motivi, non dare solo un punteggio.",
-
-  "fit_strengths": ["punto di forza specifico rispetto ai criteri di ${association?.name}"],
-  "fit_gaps": ["area da approfondire specifica per ${association?.name}"],
-
-  "position_recommendation": {
-    "candidate_selected": "${selectedPosition}",
-    "ai_recommended": "la posizione che l'AI ritiene più adatta tra quelle disponibili",
-    "match": true/false,
-    "explanation": "Se match=true: conferma perché il candidato ha scelto bene. Se match=false: spiega perché la posizione consigliata è più adatta del candidato, senza sminuire la scelta del candidato."
-  },
-
-  "key_evidence": [
-    {"title": "nome esperienza/progetto", "description": "2-3 frasi che spiegano cosa ha fatto, perché è rilevante, cosa va approfondito. Distingui tra ciò che è certo (transcript) e ciò che è dichiarato."}
+  "rilevanza": [
+    {"claim": "affermazione su perché è rilevante per questa candidatura", "evidenza": "il fatto specifico della card da cui deriva (esame, esperienza, competenza — mai generico)"}
   ],
-
-  "academic_competencies": [
-    {"area": "nome area", "description": "1-2 frasi: cosa emerge dal transcript, cosa significa concretamente, per quali ruoli è utile. NON esagerare: un esame non equivale a una competenza pratica."}
-  ],
-
-  "practical_competencies": [
-    {"area": "nome competenza", "description": "1-2 frasi: da quale esperienza emerge, cosa suggerisce, cosa va verificato."}
-  ],
-
-  "competencies_to_verify": "Paragrafo: quali competenze importanti per l'associazione non emergono ancora dal profilo. Non giudicante — una guida per il colloquio.",
-
-  "attitude_description": "Paragrafo narrativo sullo stile di lavoro, attitudini, preferenze. NON etichette secche tipo 'leadership: alta'. Scrivi come emerge dalla conversazione: autonomia, iniziativa, creatività, preferenze di team, comunicazione, motivazioni.",
-
-  "suggested_roles": "Se ci sono posizioni interne, suggerisci quali sarebbero più coerenti e perché. Altrimenti suggerisci quale tipo di attività interna sarebbe più adatta.",
-
-  "interview_questions": ["domanda specifica basata sul profilo e sui gap — non domande generiche"],
-
-  "application_quality": "Se le risposte alla candidatura sono povere o generiche, segnalalo. Se sono buone, dillo. Spiega cosa aggiungono o non aggiungono alla valutazione."
+  "gap": ["cosa manca rispetto ai criteri di questo ciclo — SEZIONE OBBLIGATORIA, mai vuota. Se il matching non trova riscontri per un criterio, dillo esplicitamente invece di gonfiare la rilevanza."],
+  "domande_colloquio": ["1-2 domande concrete derivate direttamente dai gap sopra"]
 }
 
 REGOLE:
-- Scrivi in italiano, tono professionale ma leggibile
-- Il FIT deve essere valutato rispetto ai CRITERI DI VALUTAZIONE dell'associazione, non in astratto
-- La RACCOMANDAZIONE POSIZIONE deve confrontare cosa ha scelto il candidato vs cosa consigli tu. Se la candidatura è generica o c'è una sola posizione, match=true e spiega il fit
-- NON mostrare confidence score, punteggi tecnici o logiche interne
-- NON trasformare ogni esame in una competenza enorme
-- Distingui tra competenze ACCADEMICHE (transcript) e PRATICHE (esperienze)
-- Se mancano prove, scrivi "da approfondire", non "manca"
-- Le esperienze dichiarate vanno presentate come "lo studente dichiara/racconta", non come fatti certi
-- L'attitudine deve essere narrativa, non una tabella di punteggi`;
+- Massimo 3 elementi in "rilevanza", ognuno con un riferimento esplicito a un fatto reale della card — mai un'affermazione senza evidenza
+- "gap" non può mai essere vuoto: se non trovi lacune ovvie, indica cosa non è ancora emerso dalla card rispetto ai criteri
+- Vietati aggettivi di carattere o inferenze psicologiche (niente "leadership", "resiliente", "intraprendente")
+- Nessun punteggio, nessuna categoria di fit assoluta — solo fatti e gap rispetto A QUESTO ciclo
+- Scrivi in italiano, tono di nota interna di un recruiter, non lettera di presentazione`;
 
-  const systemMsg = `Sei un sistema di valutazione candidature per associazioni universitarie. Genera schede candidato narrative, motivate e contestualizzate all'associazione specifica. Il fit va sempre valutato rispetto ai criteri di selezione indicati dall'associazione. Non inventare informazioni. Distingui tra dati certi (transcript), dichiarazioni dello studente e inferenze. Rispondi SOLO in JSON valido. IMPORTANTE: se i nomi dei corsi universitari sono in inglese, NON suggerire di "verificare le competenze in inglese" — lo studente studia già in inglese.`;
+  const systemMsg = `Sei MIRA. Generi un layer di valutazione per una specifica candidatura a una specifica associazione — mai un giudizio permanente sulla persona. Ogni affermazione deve citare un fatto della card. Non inventare informazioni. Vietate inferenze psicologiche o di carattere. Rispondi SOLO in JSON valido.`;
 
   try {
     const result = await chatCompletion(
@@ -310,7 +252,7 @@ REGOLE:
         { role: "system", content: systemMsg },
         { role: "user", content: prompt },
       ],
-      { temperature: 0.3, maxTokens: 3000, jsonMode: true }
+      { temperature: 0.3, maxTokens: 1200, jsonMode: true }
     );
 
     const evaluation = JSON.parse(result);
@@ -320,12 +262,10 @@ REGOLE:
       model_provider: "openai",
       model_name: "gpt-4o",
       evaluation_json: evaluation,
-      overall_fit_category: evaluation.overall_fit_category,
-      fit_summary: evaluation.association_fit,
-      strengths: evaluation.fit_strengths,
-      gaps: evaluation.fit_gaps,
+      fit_summary: null,
+      strengths: (evaluation.rilevanza ?? []).map((r: any) => r.claim),
+      gaps: evaluation.gap ?? [],
       input_snapshot: {
-        student_summary: student?.profile_summary,
         answers_count: (application.application_answers ?? []).length,
         evaluation_criteria: evalCriteria || null,
       },
