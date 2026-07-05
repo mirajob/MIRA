@@ -30,9 +30,9 @@ import {
   confirmAutodescrizioneAndAskPiano,
   submitPianoCarriera,
   confirmPianoCarrieraAndChiudi,
-  EMPTY_ONBOARDING_BLOCKS,
 } from "@/lib/actions/chat-onboarding";
 import type { ChatMessage, OnboardingPhase, OnboardingBlocksState } from "@/lib/actions/chat-onboarding";
+import { EMPTY_ONBOARDING_BLOCKS } from "@/lib/onboarding-defaults";
 import { uploadTranscript } from "@/lib/actions/transcript-upload";
 import { uploadCV } from "@/lib/actions/cv-upload";
 import { signOut } from "@/lib/actions/auth";

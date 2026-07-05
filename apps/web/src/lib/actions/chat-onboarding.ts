@@ -6,6 +6,7 @@ import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { generatePathwayAnalysis } from "./pathway";
 import { ensureCardBlocksExist, approveCardBlock } from "./card-blocks";
+import { EMPTY_ONBOARDING_BLOCKS } from "@/lib/onboarding-defaults";
 import type {
   CardBlockType,
   CardBlockStatus,
@@ -81,18 +82,6 @@ const ALL_BLOCK_TYPES = [
 ] as const;
 
 const FASE_A_BLOCK_TYPES = ["header", "formazione", "esperienze", "disponibilita"] as const;
-
-export const EMPTY_ONBOARDING_BLOCKS: OnboardingBlocksState = {
-  header: { status: "empty", data: { corso: null, livello: null, anno: null, laurea_anno: null, media_voti: null } },
-  formazione: { status: "empty", data: { items: [] } },
-  esperienze: { status: "empty", data: { items: [] } },
-  disponibilita: { status: "empty", data: { cosa_cerca: null, da_quando: null, dove: null, vincoli: null } },
-  competenze: { status: "empty", data: { items: [] } },
-  lingue: { status: "empty", data: { items: [] } },
-  interessi: { status: "empty", data: { testo: null } },
-  autodescrizione: { status: "empty", data: { testo: null } },
-  piano_carriera: { status: "empty", data: { stato: "esplorazione", testo: null } },
-};
 
 async function getOnboardingContext() {
   const ctx = await getUserContext();
