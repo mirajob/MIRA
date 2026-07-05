@@ -43,11 +43,11 @@ Calcola (SOLO sugli esami completati):
 - graded_credits: crediti degli esami con voto numerico
 - pass_fail_credits: crediti degli esami pass/fail
 
-Estrai anche dal documento:
-- degree_program: nome completo del corso di laurea. Se trovi solo la sigla, ricostruisci il nome completo usando questa lista di programmi Bocconi:
+Estrai anche dal documento (campo OBBLIGATORIO, non lasciarlo mai vuoto se il documento è un libretto Bocconi):
+- degree_program: nome completo del corso di laurea. Nei libretti Bocconi è quasi sempre scritto per esteso vicino all'intestazione, in una riga tipo "Corso di Laurea in NOME DEL CORSO (SIGLA)" — leggi ATTENTAMENTE la parte alta del documento, anche se il resto della pagina è una tabella di esami: il nome del corso NON è nella tabella, è nel blocco anagrafico sopra. Se in quella riga trovi il nome per esteso (es. "INTERNATIONAL ECONOMICS AND MANAGEMENT"), usa quello direttamente, capitalizzato normalmente ("International Economics and Management") — NON serve la lista sigle in quel caso. Usa la lista sigle qui sotto SOLO se nel documento vedi esclusivamente la sigla tra parentesi e non il nome per esteso:
   Triennali: CLEAM = "Economics and Management", BIEM = "International Economics and Management", BIEMF = "International Economics and Finance", BAI = "Business Analytics and Informatics", BESS = "Economics and Social Sciences", BIEF = "Economics, Finance and International Business", BICN = "International Politics and Government", BIR = "International Relations and Organizations", BIG = "Government and Public Policy", BEL = "Economics and Law", BIEM-FR = "International Economics and Management (French track)"
   Magistrali: CLMG = "Management", MAFINRISK = "Finance and Risk Management", ACME = "Accounting, Financial Management and Control", MIF = "Marketing Management", EMIT = "Economics and Management of Innovation and Technology", CLAPI = "Public Administration and International Institutions", EPMC = "Economics and Policy in a Global Environment", LM82 = "Law and Business Management"
-  Se non trovi la sigla nella lista, scrivi il nome come appare nel documento. Se non è visibile, lascia stringa vuota.
+  Solo se il nome del corso non è visibile da nessuna parte (né per esteso né come sigla riconosciuta), lascia stringa vuota — è l'eccezione, non la norma.
 - degree_level: triennale se "Bachelor", magistrale se "Master", ciclo_unico, phd
 
 Rispondi SOLO in JSON valido con questa struttura:
