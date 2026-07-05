@@ -95,3 +95,32 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
     </div>
   );
 }
+
+/** Resa di sola lettura, riusata dal Profilo (default) e dalla vista associazione/azienda. */
+export function ProseView({
+  title,
+  testo,
+  stato,
+  serif,
+}: {
+  title: string;
+  testo: string | null;
+  stato?: PianoCarrieraStato;
+  serif?: boolean;
+}) {
+  return (
+    <div className="p-5">
+      <p className="text-eyebrow text-navy/60 uppercase mb-2">{title}</p>
+      {stato && (
+        <span className="inline-block mb-2 text-xs px-2 py-0.5 rounded-full border border-border text-ink-secondary">
+          {STATO_LABELS[stato]}
+        </span>
+      )}
+      {testo ? (
+        <p className={`text-body-sm text-ink ${serif ? "font-display italic" : ""}`}>{testo}</p>
+      ) : (
+        <p className="text-body-sm text-ink-tertiary italic">Non ancora indicato.</p>
+      )}
+    </div>
+  );
+}

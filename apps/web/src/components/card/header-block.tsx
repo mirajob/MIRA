@@ -252,3 +252,75 @@ export function HeaderBlock({
     </div>
   );
 }
+
+/**
+ * Resa di sola lettura, riusata dal Profilo (default) e dalla vista associazione/azienda —
+ * unica fonte per come "appare" l'Header, per non avere due stili che divergono nel tempo.
+ */
+export function HeaderView({
+  data,
+  formazioneItems,
+  /** Sul Profilo lo studente vede sempre la propria media; qui riflette il toggle di visibilità scelto. */
+  showMedia = true,
+}: {
+  data: HeaderProseContent;
+  formazioneItems: FormazioneItem[];
+  showMedia?: boolean;
+}) {
+  const [esamiExpanded, setEsamiExpanded] = useState(false);
+  const fp = data.formazione_precedente;
+
+  return (
+    <div className="p-5">
+      <p className="text-eyebrow text-navy/60 uppercase mb-2">Header</p>
+      <div className="flex flex-wrap items-baseline gap-x-2">
+        {data.corso && <span className="text-body font-medium text-ink">{data.corso}</span>}
+        {data.universita && <span className="text-body-sm text-ink-tertiary">— {data.universita}</span>}
+      </div>
+      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-ink-secondary">
+        {data.livello && <span>{LEVEL_LABELS[data.livello] ?? data.livello}</span>}
+        {data.anno && <span>{data.anno}° anno</span>}
+        {data.media_voti != null &&
+          (showMedia ? (
+            <span className="font-medium text-ink">{Number(data.media_voti).toFixed(1)}/30</span>
+          ) : (
+            <span className="italic text-ink-tertiary text-xs">media non condivisa</span>
+          ))}
+      </div>
+
+      {fp && (fp.corso || fp.universita) && (
+        <p className="mt-2 text-xs text-ink-tertiary">
+          Triennale: {fp.corso ?? "—"}{fp.universita ? ` — ${fp.universita}` : ""}{fp.voto_laurea ? ` (${fp.voto_laurea})` : ""}
+        </p>
+      )}
+
+      {formazioneItems.length > 0 && (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setEsamiExpanded((e) => !e)}
+            className="flex items-center gap-1.5 text-xs text-petrol hover:text-petrol-700 transition-colors"
+          >
+            <span>{esamiExpanded ? "▾" : "▸"}</span>
+            <span>Esami ({formazioneItems.length})</span>
+          </button>
+          {esamiExpanded && (
+            <div className="mt-2 space-y-1">
+              {formazioneItems.map((it) => (
+                <div key={it.id} className="flex items-center justify-between gap-2 text-body-sm">
+                  <span className="text-ink truncate">{it.esame}</span>
+                  {showMedia && (
+                    <span className="text-ink-secondary whitespace-nowrap">
+                      {it.voto ?? "—"}
+                      {it.cfu != null && <span className="text-xs text-ink-tertiary"> · {it.cfu} CFU</span>}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

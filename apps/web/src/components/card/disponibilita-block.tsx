@@ -73,3 +73,24 @@ export function DisponibilitaBlock({
     </div>
   );
 }
+
+/** Resa di sola lettura, riusata dal Profilo (default) e dalla vista associazione/azienda. */
+export function DisponibilitaView({ data }: { data: DisponibilitaProseContent }) {
+  const pills = [data.cosa_cerca, data.da_quando, data.dove, data.vincoli].filter(Boolean) as string[];
+  return (
+    <div className="p-5">
+      <p className="text-eyebrow text-navy/60 uppercase mb-2">Disponibilità</p>
+      {pills.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {pills.map((p, i) => (
+            <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
+              {p}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <p className="text-body-sm text-ink-tertiary italic">Non ancora indicata.</p>
+      )}
+    </div>
+  );
+}

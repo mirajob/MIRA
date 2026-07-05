@@ -162,3 +162,48 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
     </div>
   );
 }
+
+/**
+ * Resa di sola lettura generica, riusata dal Profilo (default) e dalla vista associazione/azienda
+ * per Esperienze/Competenze/Lingue — ognuna passa il proprio `renderItem` perché il layout
+ * naturale di una riga cambia per tipo (non ha senso forzare la stessa griglia di campi del form).
+ */
+export function ListView<T extends { id: string }>({
+  title,
+  items,
+  renderItem,
+  emptyLabel,
+  collapseAt = 5,
+}: {
+  title: string;
+  items: T[];
+  renderItem: (item: T) => React.ReactNode;
+  emptyLabel: string;
+  collapseAt?: number;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const visibleItems = expanded ? items : items.slice(0, collapseAt);
+
+  return (
+    <div className="p-5">
+      <p className="text-eyebrow text-navy/60 uppercase mb-2">{title}</p>
+      {items.length === 0 ? (
+        <p className="text-body-sm text-ink-tertiary italic">{emptyLabel}</p>
+      ) : (
+        <div className="space-y-3">
+          {visibleItems.map((item) => (
+            <div key={item.id}>{renderItem(item)}</div>
+          ))}
+        </div>
+      )}
+      {items.length > collapseAt && (
+        <button
+          onClick={() => setExpanded((e) => !e)}
+          className="mt-2 text-xs text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
+        >
+          {expanded ? "Mostra meno" : `Mostra tutti (${items.length})`}
+        </button>
+      )}
+    </div>
+  );
+}
