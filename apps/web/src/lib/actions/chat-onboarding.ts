@@ -256,13 +256,18 @@ export async function submitLivello(history: ChatMessage[], userMessage: string)
   );
   const livello = data.degree_level as string | null;
 
-  const { error } = await (supabase.from("card_blocks") as any)
+  const { data: updatedRows, error } = await (supabase.from("card_blocks") as any)
     .update({ prose_content: { ...blocks.header.data, livello } })
     .eq("student_profile_id", studentProfileId)
-    .eq("block_type", "header");
+    .eq("block_type", "header")
+    .select("id");
   if (error) {
     console.error("[MIRA] submitLivello card_blocks write failed:", error);
     throw new Error("Impossibile salvare il livello di studi — riprova.");
+  }
+  if (!updatedRows || updatedRows.length === 0) {
+    console.error("[MIRA] submitLivello: 0 righe aggiornate per studentProfileId", studentProfileId);
+    throw new Error("Riga Header non trovata per questo studente — riprova.");
   }
 
   // LEGACY-WRITE(card-rework): rimuovere in Step 5/6.
@@ -307,13 +312,18 @@ export async function submitPreviousDegree(history: ChatMessage[], userMessage: 
     },
   };
 
-  const { error } = await (supabase.from("card_blocks") as any)
+  const { data: updatedRows, error } = await (supabase.from("card_blocks") as any)
     .update({ prose_content: headerData })
     .eq("student_profile_id", studentProfileId)
-    .eq("block_type", "header");
+    .eq("block_type", "header")
+    .select("id");
   if (error) {
     console.error("[MIRA] submitPreviousDegree card_blocks write failed:", error);
     throw new Error("Impossibile salvare la formazione precedente — riprova.");
+  }
+  if (!updatedRows || updatedRows.length === 0) {
+    console.error("[MIRA] submitPreviousDegree: 0 righe aggiornate per studentProfileId", studentProfileId);
+    throw new Error("Riga Header non trovata per questo studente — riprova.");
   }
 
   const message = `Grazie. Ora carica il libretto della magistrale: leggo corso, esami, voti e media aggiornati. Se non ce l'hai sotto mano, puoi saltare.`;
@@ -378,13 +388,18 @@ export async function submitHeaderGap(history: ChatMessage[], userMessage: strin
 
   const complete = isHeaderComplete(headerData, transcriptSkipped);
 
-  const { error } = await (supabase.from("card_blocks") as any)
+  const { data: updatedRows, error } = await (supabase.from("card_blocks") as any)
     .update({ prose_content: headerData, status: complete ? "draft" : "empty" })
     .eq("student_profile_id", studentProfileId)
-    .eq("block_type", "header");
+    .eq("block_type", "header")
+    .select("id");
   if (error) {
     console.error("[MIRA] submitHeaderGap card_blocks write failed:", error);
     throw new Error("Impossibile salvare l'Header — riprova.");
+  }
+  if (!updatedRows || updatedRows.length === 0) {
+    console.error("[MIRA] submitHeaderGap: 0 righe aggiornate per studentProfileId", studentProfileId);
+    throw new Error("Riga Header non trovata per questo studente — riprova.");
   }
 
   const message = complete

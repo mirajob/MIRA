@@ -73,10 +73,29 @@ export async function ensureCardBlocksExist(studentProfileId: string) {
       : {}),
   }));
 
-  await (supabase.from("card_blocks") as any).upsert(rows, {
+  const { error } = await (supabase.from("card_blocks") as any).upsert(rows, {
     onConflict: "student_profile_id,block_type",
     ignoreDuplicates: true,
   });
+  if (error) {
+    console.error("[MIRA] ensureCardBlocksExist upsert failed:", error, "studentProfileId:", studentProfileId);
+    throw new Error("Impossibile inizializzare i blocchi della card.");
+  }
+
+  // Verifica esplicita: con ignoreDuplicates:true, upsert() non ritorna le righe già esistenti
+  // (ON CONFLICT DO NOTHING non produce output per quelle) — un conteggio è l'unico modo
+  // affidabile di sapere se le 9 righe esistono davvero, invece di dedurlo dall'assenza di errori.
+  const { count, error: countError } = await (supabase.from("card_blocks") as any)
+    .select("block_type", { count: "exact", head: true })
+    .eq("student_profile_id", studentProfileId);
+  if (countError) {
+    console.error("[MIRA] ensureCardBlocksExist count check failed:", countError);
+  } else if (count !== ALL_BLOCK_TYPES.length) {
+    console.error(
+      `[MIRA] ensureCardBlocksExist: attese ${ALL_BLOCK_TYPES.length} righe per studentProfileId ${studentProfileId}, trovate ${count}.`
+    );
+    throw new Error("I blocchi della card non risultano tutti creati — riprova.");
+  }
 }
 
 function stripMeta(item: Record<string, unknown>): Record<string, unknown> {

@@ -147,8 +147,13 @@ export async function uploadTranscript(formData: FormData) {
       .eq("block_type", "header")
       .single();
 
-    const existingHeader = (headerRow?.prose_content ?? {}) as Partial<HeaderProseContent>;
-    const { error: headerWriteError } = await (supabase.from("card_blocks") as any)
+    if (!headerRow) {
+      console.error("[MIRA] transcript-upload: riga Header non trovata per studentProfileId", studentProfile.id);
+      throw new Error("Riga Header non trovata per questo studente.");
+    }
+
+    const existingHeader = (headerRow.prose_content ?? {}) as Partial<HeaderProseContent>;
+    const { data: headerUpdatedRows, error: headerWriteError } = await (supabase.from("card_blocks") as any)
       .update({
         prose_content: {
           universita: existingHeader.universita ?? parsed.university_name ?? "Università Bocconi",
@@ -163,10 +168,15 @@ export async function uploadTranscript(formData: FormData) {
         structured_data: { media_voti: parsed.weighted_average, cfu: parsed.total_credits },
       })
       .eq("student_profile_id", studentProfile.id)
-      .eq("block_type", "header");
+      .eq("block_type", "header")
+      .select("id");
     if (headerWriteError) {
       console.error("[MIRA] transcript-upload header write failed:", headerWriteError);
       throw new Error("Impossibile salvare i dati del libretto sull'Header.");
+    }
+    if (!headerUpdatedRows || headerUpdatedRows.length === 0) {
+      console.error("[MIRA] transcript-upload: 0 righe Header aggiornate per studentProfileId", studentProfile.id);
+      throw new Error("Riga Header non trovata per questo studente.");
     }
 
     if (parsed.courses.length > 0) {
@@ -181,16 +191,21 @@ export async function uploadTranscript(formData: FormData) {
         origin: "transcript",
       }));
 
-      const { error: formazioneWriteError } = await (supabase.from("card_blocks") as any)
+      const { data: formazioneUpdatedRows, error: formazioneWriteError } = await (supabase.from("card_blocks") as any)
         .update({
           prose_content: { items: formazioneItems },
           status: "draft",
         })
         .eq("student_profile_id", studentProfile.id)
-        .eq("block_type", "formazione");
+        .eq("block_type", "formazione")
+        .select("id");
       if (formazioneWriteError) {
         console.error("[MIRA] transcript-upload formazione write failed:", formazioneWriteError);
         throw new Error("Impossibile salvare gli esami del libretto.");
+      }
+      if (!formazioneUpdatedRows || formazioneUpdatedRows.length === 0) {
+        console.error("[MIRA] transcript-upload: 0 righe Formazione aggiornate per studentProfileId", studentProfile.id);
+        throw new Error("Riga Formazione non trovata per questo studente.");
       }
     }
 
