@@ -1,6 +1,7 @@
 "use client";
 
-import { ListBlock, type ListFieldConfig } from "./list-block";
+import { ListBlock, ListView, type ListFieldConfig } from "./list-block";
+import { originLabel } from "@/lib/origin-label";
 import type { CardBlockStatus, CompetenzaItem } from "@mira/types";
 
 const fields: ListFieldConfig<CompetenzaItem>[] = [
@@ -43,6 +44,31 @@ export function CompetenzeBlock({
         verified: false,
         origin: "manual",
       })}
+    />
+  );
+}
+
+/**
+ * Resa di sola lettura, riusata dal Profilo (default) e dalla vista associazione/azienda.
+ * Il renderItem resta interno a questo componente client (vedi nota in EsperienzeView).
+ */
+export function CompetenzeView({ items }: { items: CompetenzaItem[] }) {
+  return (
+    <ListView
+      title="Competenze · ognuna con la sua evidenza"
+      items={items}
+      emptyLabel="Nessuna competenza ancora."
+      renderItem={(it) => (
+        <div className="flex items-start justify-between gap-2 text-body-sm">
+          <span className="text-ink">
+            {it.testo}
+            {it.evidenza_ref && <span className="text-ink-tertiary"> → {it.evidenza_ref}</span>}
+          </span>
+          <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-navy-50 text-navy-700">
+            {originLabel(it.origin)}
+          </span>
+        </div>
+      )}
     />
   );
 }

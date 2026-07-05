@@ -8,12 +8,10 @@ import { ensureCardBlocksExist } from "@/lib/actions/card-blocks";
 import { EditableSection } from "@/components/card/editable-section";
 import { HeaderBlock, HeaderView } from "@/components/card/header-block";
 import { DisponibilitaBlock, DisponibilitaView } from "@/components/card/disponibilita-block";
-import { EsperienzeBlock } from "@/components/card/esperienze-block";
-import { CompetenzeBlock } from "@/components/card/competenze-block";
+import { EsperienzeBlock, EsperienzeView } from "@/components/card/esperienze-block";
+import { CompetenzeBlock, CompetenzeView } from "@/components/card/competenze-block";
 import { LingueBlock } from "@/components/card/lingue-block";
-import { ListView } from "@/components/card/list-block";
 import { ProseBlock, ProseView } from "@/components/card/prose-block";
-import { originLabel } from "@/lib/origin-label";
 import type {
   CardBlockType,
   CardBlockStatus,
@@ -155,48 +153,14 @@ export default async function StudentHomePage() {
 
         {esperienze && (
           <EditableSection
-            view={
-              <ListView
-                title="Esperienze"
-                items={esperienzeItems}
-                emptyLabel="Nessuna esperienza ancora."
-                renderItem={(it) => (
-                  <div>
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-body-sm font-medium text-ink">{it.titolo || it.organizzazione}</p>
-                      <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-navy-50 text-navy-700">
-                        {originLabel(it.origin)}
-                      </span>
-                    </div>
-                    <p className="text-body-sm text-ink-secondary">{it.descrizione}</p>
-                  </div>
-                )}
-              />
-            }
+            view={<EsperienzeView items={esperienzeItems} />}
             edit={<EsperienzeBlock items={esperienzeItems} status={esperienze.status} />}
           />
         )}
 
         {competenze && (
           <EditableSection
-            view={
-              <ListView
-                title="Competenze · ognuna con la sua evidenza"
-                items={competenzeItems}
-                emptyLabel="Nessuna competenza ancora."
-                renderItem={(it) => (
-                  <div className="flex items-start justify-between gap-2 text-body-sm">
-                    <span className="text-ink">
-                      {it.testo}
-                      {it.evidenza_ref && <span className="text-ink-tertiary"> → {it.evidenza_ref}</span>}
-                    </span>
-                    <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-navy-50 text-navy-700">
-                      {originLabel(it.origin)}
-                    </span>
-                  </div>
-                )}
-              />
-            }
+            view={<CompetenzeView items={competenzeItems} />}
             edit={<CompetenzeBlock items={competenzeItems} status={competenze.status} />}
           />
         )}

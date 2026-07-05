@@ -1,6 +1,7 @@
 "use client";
 
-import { ListBlock, type ListFieldConfig } from "./list-block";
+import { ListBlock, ListView, type ListFieldConfig } from "./list-block";
+import { originLabel } from "@/lib/origin-label";
 import type { CardBlockStatus, EsperienzaItem } from "@mira/types";
 
 const fields: ListFieldConfig<EsperienzaItem>[] = [
@@ -38,6 +39,33 @@ export function EsperienzeBlock({
         verified: false,
         origin: "manual",
       })}
+    />
+  );
+}
+
+/**
+ * Resa di sola lettura, riusata dal Profilo (default) e dalla vista associazione/azienda.
+ * Il renderItem resta interno a questo componente client — passarlo da un Server Component
+ * (student/page.tsx, candidate-card.tsx) come prop farebbe fallire la serializzazione RSC
+ * ("Functions cannot be passed directly to Client Components").
+ */
+export function EsperienzeView({ items }: { items: EsperienzaItem[] }) {
+  return (
+    <ListView
+      title="Esperienze"
+      items={items}
+      emptyLabel="Nessuna esperienza ancora."
+      renderItem={(it) => (
+        <div>
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-body-sm font-medium text-ink">{it.titolo || it.organizzazione}</p>
+            <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-navy-50 text-navy-700">
+              {originLabel(it.origin)}
+            </span>
+          </div>
+          <p className="text-body-sm text-ink-secondary">{it.descrizione}</p>
+        </div>
+      )}
     />
   );
 }

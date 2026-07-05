@@ -1,8 +1,8 @@
 import { HeaderView } from "../card/header-block";
 import { DisponibilitaView } from "../card/disponibilita-block";
-import { ListView } from "../card/list-block";
+import { EsperienzeView } from "../card/esperienze-block";
+import { CompetenzeView } from "../card/competenze-block";
 import { ProseView } from "../card/prose-block";
-import { originLabel } from "@/lib/origin-label";
 import type {
   HeaderProseContent,
   HeaderVisibility,
@@ -60,41 +60,11 @@ export function CandidateCard(props: CandidateCardProps) {
       {props.disponibilita && <DisponibilitaView data={props.disponibilita.data} />}
 
       {props.esperienze && props.esperienze.data.items.length > 0 && (
-        <ListView
-          title="Esperienze"
-          items={props.esperienze.data.items}
-          emptyLabel="Nessuna esperienza."
-          renderItem={(it) => (
-            <div>
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-body-sm font-medium text-ink">{it.titolo || it.organizzazione}</p>
-                <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-navy-50 text-navy-700">
-                  {originLabel(it.origin)}
-                </span>
-              </div>
-              <p className="text-body-sm text-ink-secondary">{it.descrizione}</p>
-            </div>
-          )}
-        />
+        <EsperienzeView items={props.esperienze.data.items} />
       )}
 
       {props.competenze && props.competenze.data.items.length > 0 && (
-        <ListView
-          title="Competenze · ognuna con la sua evidenza"
-          items={props.competenze.data.items}
-          emptyLabel="Nessuna competenza."
-          renderItem={(it) => (
-            <div className="flex items-start justify-between gap-2 text-body-sm">
-              <span className="text-ink">
-                {it.testo}
-                {it.evidenza_ref && <span className="text-ink-tertiary"> → {it.evidenza_ref}</span>}
-              </span>
-              <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-navy-50 text-navy-700">
-                {originLabel(it.origin)}
-              </span>
-            </div>
-          )}
-        />
+        <CompetenzeView items={props.competenze.data.items} />
       )}
 
       {props.lingue && props.lingue.data.items.length > 0 && (
