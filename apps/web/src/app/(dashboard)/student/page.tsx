@@ -126,24 +126,24 @@ export default async function StudentHomePage() {
       )}
       {esperienze && (
         <EsperienzeBlock
-          items={(esperienze.prose_content as EsperienzeProseContent).items}
+          items={(esperienze.prose_content as EsperienzeProseContent).items ?? []}
           status={esperienze.status}
         />
       )}
       {formazione && (
         <FormazioneBlock
-          items={(formazione.prose_content as FormazioneProseContent).items}
+          items={(formazione.prose_content as FormazioneProseContent).items ?? []}
           status={formazione.status}
         />
       )}
       {competenze && (
         <CompetenzeBlock
-          items={(competenze.prose_content as CompetenzeProseContent).items}
+          items={(competenze.prose_content as CompetenzeProseContent).items ?? []}
           status={competenze.status}
         />
       )}
       {lingue && (
-        <LingueBlock items={(lingue.prose_content as LingueProseContent).items} status={lingue.status} />
+        <LingueBlock items={(lingue.prose_content as LingueProseContent).items ?? []} status={lingue.status} />
       )}
       {autodescrizione && (
         <ProseBlock

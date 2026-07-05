@@ -43,12 +43,29 @@ async function getStudentProfileId(): Promise<string> {
   return (data as any).id as string;
 }
 
+// Default prose_content per block type — every renderer (onboarding preview, profile
+// card, association card view) assumes this shape, never the raw {} column default.
+// Missing this caused a client-side crash for any account created after the Step 1
+// backfill (rows made only by this function, never touched by the backfill migration).
+const DEFAULT_PROSE_CONTENT: Record<CardBlockType, unknown> = {
+  header: { corso: null, livello: null, anno: null, laurea_anno: null, media_voti: null },
+  disponibilita: { cosa_cerca: null, da_quando: null, dove: null, vincoli: null },
+  esperienze: { items: [] },
+  formazione: { items: [] },
+  competenze: { items: [] },
+  lingue: { items: [] },
+  autodescrizione: { testo: null },
+  interessi: { testo: null },
+  piano_carriera: { stato: "esplorazione", testo: null },
+};
+
 /** Idempotent: creates any of the 9 rows missing for a student (e.g. accounts created after the Step 1 backfill). */
 export async function ensureCardBlocksExist(studentProfileId: string) {
   const supabase = await createServiceClient();
   const rows = ALL_BLOCK_TYPES.map((block_type) => ({
     student_profile_id: studentProfileId,
     block_type,
+    prose_content: DEFAULT_PROSE_CONTENT[block_type],
     // header needs a populated visibility shape from the start (HeaderBlock reads
     // visibility.media_voti directly) — every other block is fine with the {} column default.
     ...(block_type === "header"

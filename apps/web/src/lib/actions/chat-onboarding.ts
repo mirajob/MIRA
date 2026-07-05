@@ -116,7 +116,13 @@ async function getOnboardingContext() {
 
   const blocks: OnboardingBlocksState = JSON.parse(JSON.stringify(EMPTY_ONBOARDING_BLOCKS));
   for (const row of blockRows ?? []) {
-    (blocks as any)[row.block_type] = { status: row.status, data: row.prose_content };
+    // Difesa contro righe con prose_content vuoto ({}) create prima che ensureCardBlocksExist
+    // scrivesse una forma di default corretta — mai passare {} ai renderer che si aspettano items/testo.
+    const hasShape = row.prose_content && Object.keys(row.prose_content).length > 0;
+    (blocks as any)[row.block_type] = {
+      status: row.status,
+      data: hasShape ? row.prose_content : (blocks as any)[row.block_type].data,
+    };
   }
 
   return { ctx, supabase, profileId, studentProfileId, student, blocks };
