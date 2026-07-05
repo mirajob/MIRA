@@ -18,7 +18,7 @@ interface SidebarNavProps {
 
 const STUDENT_LINKS = [
   { label: "Profilo", href: "/student" },
-  { label: "Percorso", href: "/student/percorso" },
+  { label: "Prossimi passi", href: "/student/prossimi-passi" },
   { label: "Associazioni", href: "/student/associazioni" },
   { label: "Candidature", href: "/student/applications" },
 ];

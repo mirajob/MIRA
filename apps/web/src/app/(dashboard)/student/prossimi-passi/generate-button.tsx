@@ -37,7 +37,7 @@ export function GeneratePathwayButton({
       disabled={loading}
       className="bg-navy text-white px-5 py-2.5 rounded-md text-label hover:bg-navy-700 disabled:opacity-40 transition-colors"
     >
-      {loading ? "MIRA sta analizzando il tuo percorso..." : "Genera analisi del percorso"}
+      {loading ? "MIRA sta analizzando il tuo percorso..." : "Genera i tuoi prossimi passi"}
     </button>
   );
 }

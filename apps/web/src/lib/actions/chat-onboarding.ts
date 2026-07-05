@@ -799,6 +799,8 @@ export async function confirmPianoCarrieraAndChiudi(history: ChatMessage[]) {
   const result = await completeChiusura();
   const fullConversation = [...history, { role: "assistant" as const, content: result.message }];
   await saveFaseBConversation(supabase, profileId, fullConversation);
+  // Fase B completa: rigenera Prossimi passi ora che competenze/interessi/piano sono disponibili.
+  generatePathwayAnalysis(profileId).catch((err) => console.error("Background pathway analysis failed:", err));
   return result;
 }
 

@@ -22,112 +22,76 @@ export async function generatePathwayAnalysis(userId: string) {
   if (!callerProfile || callerProfile.id !== userId) return { error: "Non autorizzato." };
 
   const { data: student } = await (supabase.from("student_profiles") as any)
-    .select("id, profile_summary, degree_program, degree_level, current_year, interests, goals, experiences, transcript_summary, availability")
+    .select("id")
     .eq("user_id", userId)
     .single();
 
   if (!student) return { error: "Profilo studente non trovato" };
 
-  const ts = student.transcript_summary as Record<string, any> | null;
-  const avail = (student.availability as Record<string, any>) ?? {};
-  const ct = avail.career_targets ?? {};
-  const cp = avail.career_plan ?? {};
-  const ws = avail.work_style ?? {};
-  const pd = avail.previous_degree ?? {};
-  const pi = avail.personal_interests ?? [];
+  const { data: blockRows } = await (supabase.from("card_blocks") as any)
+    .select("block_type, prose_content")
+    .eq("student_profile_id", student.id)
+    .eq("status", "approved");
 
-  // Build student context
-  let studentContext = `PROFILO STUDENTE:
-Riassunto: ${student.profile_summary || "Non disponibile"}
-Corso: ${student.degree_program || "?"} (${student.degree_level || "?"})
-Anno: ${student.current_year || "?"}
-${ts?.weighted_average ? `Media ponderata: ${ts.weighted_average}/30` : ""}
-${ts?.total_credits ? `Crediti: ${ts.total_credits} CFU` : ""}
+  const blocks = new Map<string, any>((blockRows ?? []).map((b: any) => [b.block_type, b.prose_content]));
+  const header = blocks.get("header") ?? {};
+  const esperienze = (blocks.get("esperienze")?.items ?? []) as Array<{ titolo: string; organizzazione: string; descrizione: string }>;
+  const formazione = (blocks.get("formazione")?.items ?? []) as Array<{ esame: string; voto: string }>;
+  const competenze = (blocks.get("competenze")?.items ?? []) as Array<{ testo: string; evidenza_ref?: string }>;
+  const interessi = blocks.get("interessi")?.testo ?? "";
+  const pianoCarriera = blocks.get("piano_carriera") ?? {};
 
-INTERESSI: ${(student.interests ?? []).join(", ") || "non specificati"}
-OBIETTIVI: ${(student.goals ?? []).join(", ") || "non specificati"}
-ESPERIENZE: ${(student.experiences ?? []).join("; ") || "nessuna"}
-INTERESSI PERSONALI: ${pi.join(", ") || "non specificati"}
+  const cardContext = `CARD DELLO STUDENTE (solo blocchi approvati dallo studente):
+Corso: ${header.corso || "?"} (${header.livello || "?"}, anno ${header.anno || "?"})
+Esami sostenuti: ${formazione.map((e) => `${e.esame} (${e.voto})`).join(", ") || "nessuno approvato"}
+Esperienze: ${esperienze.map((e) => `${e.titolo || e.organizzazione}: ${e.descrizione}`).join("\n") || "nessuna approvata"}
+Competenze: ${competenze.map((c) => `${c.testo}${c.evidenza_ref ? ` (${c.evidenza_ref})` : ""}`).join("; ") || "nessuna approvata"}
+Interessi: ${interessi || "non specificati"}
+Piano di carriera: ${pianoCarriera.testo || "non specificato"} (stato: ${pianoCarriera.stato || "esplorazione"})`;
 
-TARGET CARRIERA: ruoli=${(ct.roles ?? []).join(", ")}, settori=${(ct.sectors ?? []).join(", ")}, aziende=${(ct.companies ?? []).join(", ")}, geografie=${(ct.geography ?? []).join(", ")}
-PIANO CARRIERA: breve termine=${cp.short_term || "?"}, medio termine=${cp.medium_term || "?"}, exchange=${cp.exchange_interest || "?"}, magistrale=${cp.masters_interest || "?"}, chiarezza=${cp.clarity_level || "?"}
-STILE LAVORO: leadership=${ws.leadership || "?"}, teamwork=${ws.teamwork_preference || "?"}, stile=${ws.style || "?"}, comunicazione=${ws.communication || "?"}, punti forza=${(ws.strengths ?? []).join(", ")}, da migliorare=${(ws.improvements ?? []).join(", ")}`;
+  // Cicli di candidatura aperti — le uniche "azioni" concrete che MIRA può offrire.
+  const { data: openCycles } = await (supabase.from("application_cycles") as any)
+    .select("id, title, association_id, association_profiles(name, slug)")
+    .eq("status", "open");
 
-  if (pd.university) {
-    studentContext += `\nPERCORSO PRECEDENTE: ${pd.university}, ${pd.program || "?"}, voto ${pd.grade || "?"}, tesi: ${pd.thesis_topic || "?"}`;
-  }
-
-  if (ts?.courses?.length) {
-    const courseList = ts.courses.map((c: any) =>
-      `${c.course_name} (${c.grade || "idoneo"}, ${c.credits} CFU)`
-    ).join(", ");
-    studentContext += `\nESAMI: ${courseList}`;
-  }
-
-  // Fetch active associations for suggestions
-  const { data: associations } = await (supabase.from("association_profiles") as any)
-    .select("name, category, short_description")
-    .eq("public_page_status", "published");
-
-  const assocList = (associations ?? [])
-    .map((a: any) => `${a.name} (${a.category}): ${a.short_description || ""}`)
+  const cyclesText = (openCycles ?? [])
+    .map((c: any) => `- ${c.association_profiles?.name}: "${c.title}" (slug: ${c.association_profiles?.slug})`)
     .join("\n");
 
-  const prompt = `Analizza il percorso di questo studente universitario e genera un'analisi narrativa completa.
+  const prompt = `Genera la pagina "Prossimi passi" per questo studente, basata SOLO sulla card sotto e sui cicli di candidatura aperti elencati.
 
-${studentContext}
+${cardContext}
 
-ASSOCIAZIONI ATTIVE SULLA PIATTAFORMA:
-${assocList || "Nessuna associazione attiva al momento"}
+CICLI DI CANDIDATURA APERTI SU MIRA:
+${cyclesText || "Nessun ciclo aperto al momento"}
 
 Rispondi in JSON con questa struttura:
 {
-  "profile_overview": "Paragrafo di 3-4 frasi che descrive cosa emerge dal percorso dello studente. Non dire solo 'finanza' o 'startup' — spiega PERCHÉ MIRA vede quelle aree. Collega esami, esperienze e interessi.",
-
-  "competencies": [
-    {
-      "area": "nome competenza",
-      "source": "academic" o "practical",
-      "description": "2-3 frasi: da dove emerge questa competenza, cosa significa concretamente, per quali ruoli o direzioni è utile. NON esagerare: un esame non equivale a una competenza pratica."
-    }
+  "obiettivo": {
+    "stato": "direzione_chiara|ipotesi|esplorazione",
+    "testo": "una riga, onesta. Se stato=esplorazione, formato tipo 'In esplorazione — curiosità: X, Y' basato sugli interessi/piano di carriera dichiarati."
+  },
+  "cosa_hai_gia": [
+    {"fatto": "un fatto concreto della card che supporta l'obiettivo", "evidenza": "l'esame, l'esperienza o la competenza specifica da cui deriva"}
   ],
-
-  "coherent_directions": [
-    {
-      "direction": "nome direzione (es. Venture Capital, Consulenza, Data Analysis)",
-      "description": "2-3 frasi: perché questa direzione è coerente con il profilo. Collega esami, esperienze e interessi.",
-      "gaps": "1-2 frasi: cosa servirebbe per rendere questa direzione più solida."
-    }
+  "cosa_manca": [
+    "gap concreto rispetto all'obiettivo dichiarato — mai vuoto se l'obiettivo non è già pienamente supportato dalla card"
   ],
-
-  "association_suggestions": [
-    {
-      "name": "nome associazione dalla lista sopra",
-      "reason": "1-2 frasi: perché potrebbe essere coerente con il profilo dello studente."
-    }
-  ],
-
-  "areas_to_strengthen": [
-    {
-      "area": "nome area",
-      "description": "1-2 frasi: perché è utile rafforzare quest'area e come potrebbe farlo."
-    }
-  ],
-
-  "next_steps": "Paragrafo di 3-4 frasi con consigli concreti: cosa fare per rendere il profilo più forte. Non consigli generici — basati su ciò che manca rispetto alle ambizioni dichiarate."
+  "azioni": [
+    {"testo": "azione concreta", "tipo": "candidatura|blocco|esperienza", "href": "per candidatura: /associations/{slug}/apply — SOLO se lo slug è tra i cicli aperti sopra; per blocco: /student; per esperienza: stringa vuota"}
+  ]
 }
 
-REGOLE:
-- Scrivi in italiano, tono positivo ma onesto
-- NON trasformare ogni esame in una competenza enorme — un esame dà una BASE, non una competenza pratica
-- Distingui tra competenze ACCADEMICHE (da transcript) e PRATICHE (da esperienze)
-- Le esperienze dichiarate vanno presentate come "dallo studente emerge...", non come fatti certi
-- Se mancano dati, non inventare — scrivi "da esplorare" o "non ancora emerso"
-- Le direzioni devono essere realistiche per uno studente universitario
-- I suggerimenti associazioni devono basarsi solo sulle associazioni nella lista fornita
-- I prossimi passi devono essere actionable, non generici`;
+REGOLE FERREE:
+- MASSIMO 3 elementi in "cosa_hai_gia", MASSIMO 3 in "cosa_manca", MASSIMO 4 in "azioni". Se non hai abbastanza dati concreti, metti MENO elementi — mai riempitivo.
+- "azioni" di tipo candidatura SOLO se esiste un ciclo aperto realmente elencato sopra, con lo slug esatto.
+- "azioni" di tipo blocco: solo se manca un dato concreto che rafforzerebbe l'obiettivo dichiarato (es. "completa il blocco Competenze").
+- VIETATO citare esami o corsi del piano di studi universitario che lo studente non ha sostenuto — MIRA conosce solo gli esami REALMENTE sostenuti (elencati sopra), non il catalogo dell'ateneo.
+- VIETATI: sintesi del profilo, paragrafi motivazionali, consigli generici ("partecipa a workshop", "migliora la comunicazione"), riferimenti a soft skill dedotte (leadership, resilienza, ecc.).
+- Se lo studente è in esplorazione, non forzare mai un obiettivo definito: è un dato valido, non un fallimento.
+- Scrivi in italiano, tono di nota interna concreta.`;
 
-  const systemMsg = `Sei MIRA, una piattaforma AI per studenti universitari. Analizzi il percorso dello studente per aiutarlo a capire chi è, dove può andare e cosa può rafforzare. Scrivi in modo narrativo, mai con tag o punteggi. Non inventare informazioni. Rispondi SOLO in JSON valido.`;
+  const systemMsg = `Sei MIRA. Generi SOLO la struttura richiesta, mai testo aggiuntivo. Non inventare fatti non presenti nella card. Vietate inferenze psicologiche o di carattere. Rispondi SOLO in JSON valido.`;
 
   try {
     const result = await chatCompletion(
@@ -135,14 +99,11 @@ REGOLE:
         { role: "system", content: systemMsg },
         { role: "user", content: prompt },
       ],
-      { temperature: 0.4, maxTokens: 3000, jsonMode: true }
+      { temperature: 0.3, maxTokens: 1200, jsonMode: true }
     );
 
     const analysis = JSON.parse(result);
-    const pathwayData = {
-      ...analysis,
-      generated_at: new Date().toISOString(),
-    };
+    const pathwayData = { ...analysis, generated_at: new Date().toISOString() };
 
     await (supabase.from("student_profiles") as any)
       .update({ pathway_analysis: pathwayData })
