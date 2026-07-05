@@ -672,15 +672,85 @@ export async function startFaseB() {
   }));
 
   const { studentProfileId } = await getOnboardingContext();
-  await (supabase.from("card_blocks") as any)
+  const { data: updatedRows, error } = await (supabase.from("card_blocks") as any)
     .update({ prose_content: { items }, status: "draft" })
     .eq("student_profile_id", studentProfileId)
-    .eq("block_type", "competenze");
+    .eq("block_type", "competenze")
+    .select("id");
+  if (error) {
+    console.error("[MIRA] startFaseB write failed:", error);
+    throw new Error("Impossibile salvare le competenze proposte — riprova.");
+  }
+  if (!updatedRows || updatedRows.length === 0) {
+    console.error("[MIRA] startFaseB: 0 righe aggiornate per studentProfileId", studentProfileId);
+    throw new Error("Riga Competenze non trovata per questo studente — riprova.");
+  }
 
   const listText = items.map((i) => `• ${i.testo}${i.evidenza_ref ? ` (${i.tipo ?? "—"} — ${i.evidenza_ref})` : ""}`).join("\n");
   const message = `Completiamo insieme le ultime sezioni: 5 minuti e la tua card è finita.\n\nDai tuoi esami e dalle tue esperienze ti propongo queste competenze:\n${listText || "(nessuna bozza — puoi aggiungerne dal Profilo dopo)"}\n\nConfermale a destra quando vanno bene.`;
 
   await saveFaseBConversation(supabase, profileId, [{ role: "assistant", content: message }]);
+
+  return { message, phase: "competenze" as OnboardingPhase, competenze: { status: "draft" as CardBlockStatus, data: { items } } };
+}
+
+/**
+ * Fase "competenze": MIRA propone le competenze e lo studente può solo Confermare dal
+ * pannello — ma può anche scrivere in chat per aggiungerne altre. Senza questa funzione
+ * quel messaggio cadeva nel vuoto senza risposta (nessun ramo lo intercettava).
+ */
+export async function submitCompetenzeAggiunta(history: ChatMessage[], userMessage: string) {
+  const { supabase, profileId, studentProfileId, blocks } = await getOnboardingContext();
+  const conversation = [...history, { role: "user" as const, content: userMessage }];
+
+  const contextLines = [
+    ...blocks.formazione.data.items.map((i) => `Esame: ${i.esame} (voto ${i.voto ?? "idoneo"})`),
+    ...blocks.esperienze.data.items.map((i) => `Esperienza: ${i.titolo || i.organizzazione} — ${i.descrizione}`),
+  ].join("\n");
+
+  const extracted = await chatCompletion(
+    [
+      {
+        role: "system",
+        content: `Lo studente vuole aggiungere competenze alla sua card. Dal suo messaggio, collegale ai fatti elencati (esami o esperienze reali — mai inventare un'evidenza). Se menziona un esame o un'esperienza non presente nella lista, ignora quella competenza (senza evidenza reale non entra in card). Ogni competenza è una frase concreta di una riga, "teorica" o "applicata". Vietati aggettivi di carattere. Rispondi SOLO in JSON: {"items":[{"testo":"","tipo":"teorica|applicata","evidenza_ref":""}]}`,
+      },
+      { role: "user", content: `Fatti disponibili:\n${contextLines || "nessuno"}\n\nMessaggio studente: "${userMessage}"` },
+    ],
+    { temperature: 0.3, maxTokens: 400, jsonMode: true }
+  );
+
+  const parsed = JSON.parse(extracted);
+  const newItems: CompetenzaItem[] = (parsed.items ?? []).map((it: any) => ({
+    id: crypto.randomUUID(),
+    testo: it.testo ?? "",
+    tipo: it.tipo === "applicata" ? "applicata" : it.tipo === "teorica" ? "teorica" : null,
+    evidenza_ref: it.evidenza_ref ?? null,
+    verified: false,
+    origin: "onboarding",
+  }));
+
+  const items = [...blocks.competenze.data.items, ...newItems];
+
+  const { data: updatedRows, error } = await (supabase.from("card_blocks") as any)
+    .update({ prose_content: { items }, status: "draft" })
+    .eq("student_profile_id", studentProfileId)
+    .eq("block_type", "competenze")
+    .select("id");
+  if (error) {
+    console.error("[MIRA] submitCompetenzeAggiunta write failed:", error);
+    throw new Error("Impossibile salvare le competenze — riprova.");
+  }
+  if (!updatedRows || updatedRows.length === 0) {
+    console.error("[MIRA] submitCompetenzeAggiunta: 0 righe aggiornate per studentProfileId", studentProfileId);
+    throw new Error("Riga Competenze non trovata per questo studente — riprova.");
+  }
+
+  const message =
+    newItems.length > 0
+      ? `Aggiunte — controlla le competenze a destra. Confermale quando vanno bene.`
+      : `Non sono riuscito a collegarlo a un esame o un'esperienza concreta — puoi aggiungerla direttamente nel blocco Competenze a destra, indicando a cosa si riferisce.`;
+  const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+  await saveFaseBConversation(supabase, profileId, fullConversation);
 
   return { message, phase: "competenze" as OnboardingPhase, competenze: { status: "draft" as CardBlockStatus, data: { items } } };
 }

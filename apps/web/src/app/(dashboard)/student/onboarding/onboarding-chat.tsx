@@ -20,6 +20,7 @@ import {
   forceCompleteOnboarding,
   startFaseB,
   resumeFaseB,
+  submitCompetenzeAggiunta,
   afterCompetenzeApproved,
   submitLingue,
   afterLingueApproved,
@@ -161,6 +162,10 @@ export function OnboardingChat({ userName }: { userName: string }) {
         }
       } else if (phase === "disponibilita") {
         const result = await submitDisponibilita(history, userMessage);
+        appendAssistant(result.message);
+        await resyncBlocks();
+      } else if (phase === "competenze") {
+        const result = await submitCompetenzeAggiunta(history, userMessage);
         appendAssistant(result.message);
         await resyncBlocks();
       } else if (phase === "lingue") {
