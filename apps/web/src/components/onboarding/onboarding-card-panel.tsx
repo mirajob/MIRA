@@ -6,22 +6,32 @@ import {
   FormazionePreview,
   EsperienzePreview,
   DisponibilitaPreview,
+  CompetenzePreview,
+  LinguePreview,
+  InteressiPreview,
+  AutodescrizionePreview,
+  PianoCarrieraPreview,
 } from "./block-preview";
-import type { FaseABlocksState } from "@/lib/actions/chat-onboarding";
+import type { OnboardingBlocksState } from "@/lib/actions/chat-onboarding";
 import type { CardBlockType } from "@mira/types";
 
 interface OnboardingCardPanelProps {
-  blocks: FaseABlocksState;
+  blocks: OnboardingBlocksState;
   onConfirm: (blockType: CardBlockType) => void;
   onCorrect: (blockType: CardBlockType) => void;
   confirmingBlock: CardBlockType | null;
 }
 
-const BLOCK_ORDER: Array<{ key: keyof FaseABlocksState; title: string; blockType: CardBlockType }> = [
+const BLOCK_ORDER: Array<{ key: keyof OnboardingBlocksState; title: string; blockType: CardBlockType }> = [
   { key: "header", title: "Header", blockType: "header" },
-  { key: "formazione", title: "Formazione", blockType: "formazione" },
-  { key: "esperienze", title: "Esperienze", blockType: "esperienze" },
   { key: "disponibilita", title: "Disponibilità", blockType: "disponibilita" },
+  { key: "esperienze", title: "Esperienze", blockType: "esperienze" },
+  { key: "formazione", title: "Formazione", blockType: "formazione" },
+  { key: "competenze", title: "Competenze", blockType: "competenze" },
+  { key: "lingue", title: "Lingue", blockType: "lingue" },
+  { key: "autodescrizione", title: "Come si descrive", blockType: "autodescrizione" },
+  { key: "interessi", title: "Interessi", blockType: "interessi" },
+  { key: "piano_carriera", title: "Piano di carriera", blockType: "piano_carriera" },
 ];
 
 export function OnboardingCardPanel({ blocks, onConfirm, onCorrect, confirmingBlock }: OnboardingCardPanelProps) {
@@ -57,6 +67,11 @@ export function OnboardingCardPanel({ blocks, onConfirm, onCorrect, confirmingBl
               {key === "formazione" && <FormazionePreview items={blocks.formazione.data.items} />}
               {key === "esperienze" && <EsperienzePreview items={blocks.esperienze.data.items} />}
               {key === "disponibilita" && <DisponibilitaPreview data={blocks.disponibilita.data} />}
+              {key === "competenze" && <CompetenzePreview items={blocks.competenze.data.items} />}
+              {key === "lingue" && <LinguePreview items={blocks.lingue.data.items} />}
+              {key === "interessi" && <InteressiPreview data={blocks.interessi.data} />}
+              {key === "autodescrizione" && <AutodescrizionePreview data={blocks.autodescrizione.data} />}
+              {key === "piano_carriera" && <PianoCarrieraPreview data={blocks.piano_carriera.data} />}
             </BlockPreviewShell>
           );
         })}

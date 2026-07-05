@@ -1,6 +1,7 @@
 import { getUserContext } from "@/lib/auth";
 import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { RoadmapBanner } from "@/components/roadmap-banner";
 import { EditableRole } from "@/components/editable-role";
 import { ensureCardBlocksExist } from "@/lib/actions/card-blocks";
@@ -92,9 +93,21 @@ export default async function StudentHomePage() {
   const interessi = blocks.get("interessi");
   const pianoCarriera = blocks.get("piano_carriera");
 
+  const faseBBlocks = [competenze, lingue, interessi, autodescrizione, pianoCarriera];
+  const faseBIncomplete = faseBBlocks.some((b) => b?.status !== "approved");
+
   return (
     <div className="mx-auto max-w-2xl px-6 py-6 space-y-5">
       <h1 className="font-display text-h2 text-navy">Ciao{name ? `, ${name}` : ""}</h1>
+
+      {faseBIncomplete && (
+        <Link
+          href="/student/onboarding"
+          className="block rounded-lg border border-petrol/30 bg-petrol-50 px-4 py-3 text-body-sm text-petrol-700 hover:bg-petrol-100 transition-colors"
+        >
+          Completa la tua card: mancano competenze, lingue, interessi, come ti descrivi e piano di carriera (~5 minuti) →
+        </Link>
+      )}
 
       {!roadmapDismissed && <RoadmapBanner />}
 

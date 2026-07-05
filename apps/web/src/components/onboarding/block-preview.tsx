@@ -6,7 +6,18 @@ import type {
   FormazioneItem,
   EsperienzaItem,
   DisponibilitaProseContent,
+  CompetenzaItem,
+  LinguaItem,
+  InteressiProseContent,
+  AutodescrizioneProseContent,
+  PianoCarrieraProseContent,
 } from "@mira/types";
+
+const PIANO_STATO_LABELS: Record<string, string> = {
+  direzione_chiara: "Direzione chiara",
+  ipotesi: "Alcune ipotesi",
+  esplorazione: "In esplorazione",
+};
 
 export function BlockPreviewShell({
   title,
@@ -130,6 +141,51 @@ export function DisponibilitaPreview({ data }: { data: DisponibilitaProseContent
           {p}
         </span>
       ))}
+    </div>
+  );
+}
+
+export function CompetenzePreview({ items }: { items: CompetenzaItem[] }) {
+  return (
+    <div className="space-y-2">
+      {items.map((it) => (
+        <div key={it.id} className="text-body-sm">
+          <span className="text-ink">{it.testo}</span>
+          {it.tipo && <span className="text-xs text-ink-tertiary"> ({it.tipo})</span>}
+          {it.evidenza_ref && <p className="text-xs text-ink-tertiary">— {it.evidenza_ref}</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function LinguePreview({ items }: { items: LinguaItem[] }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map((it) => (
+        <span key={it.id} className="text-xs px-2 py-1 rounded bg-petrol-50 text-petrol font-medium">
+          {it.lingua} {it.livello}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export function InteressiPreview({ data }: { data: InteressiProseContent }) {
+  return <p className="text-body-sm text-ink">{data.testo}</p>;
+}
+
+export function AutodescrizionePreview({ data }: { data: AutodescrizioneProseContent }) {
+  return <p className="font-display text-body-sm italic text-ink">{data.testo}</p>;
+}
+
+export function PianoCarrieraPreview({ data }: { data: PianoCarrieraProseContent }) {
+  return (
+    <div className="space-y-1">
+      <span className="text-xs px-2 py-0.5 rounded-full border border-border text-ink-secondary">
+        {PIANO_STATO_LABELS[data.stato] ?? data.stato}
+      </span>
+      <p className="text-body-sm text-ink">{data.testo}</p>
     </div>
   );
 }

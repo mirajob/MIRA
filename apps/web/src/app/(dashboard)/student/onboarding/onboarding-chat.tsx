@@ -19,22 +19,33 @@ import {
   confirmDisponibilitaAndGate,
   submitCorrection,
   forceCompleteOnboarding,
-  EMPTY_FASE_A_BLOCKS,
+  startFaseB,
+  resumeFaseB,
+  confirmCompetenzeAndAskLingue,
+  submitLingue,
+  confirmLingueAndAskInteressi,
+  submitInteressi,
+  confirmInteressiAndAskAutodescrizione,
+  submitAutodescrizioneRisposta,
+  confirmAutodescrizioneAndAskPiano,
+  submitPianoCarriera,
+  confirmPianoCarrieraAndChiudi,
+  EMPTY_ONBOARDING_BLOCKS,
 } from "@/lib/actions/chat-onboarding";
-import type { ChatMessage, OnboardingPhase, FaseABlocksState } from "@/lib/actions/chat-onboarding";
+import type { ChatMessage, OnboardingPhase, OnboardingBlocksState } from "@/lib/actions/chat-onboarding";
 import { uploadTranscript } from "@/lib/actions/transcript-upload";
 import { uploadCV } from "@/lib/actions/cv-upload";
 import { signOut } from "@/lib/actions/auth";
 import { OnboardingCardPanel } from "@/components/onboarding/onboarding-card-panel";
 import type { CardBlockType } from "@mira/types";
 
-const UPLOAD_PHASES: OnboardingPhase[] = ["transcript", "cv"];
-const GATED_PHASES: OnboardingPhase[] = ["transcript", "cv", "gate"];
+const FASE_B_PHASES: OnboardingPhase[] = ["competenze", "lingue", "interessi", "autodescrizione", "piano_carriera", "chiusura"];
+const GATED_PHASES: OnboardingPhase[] = ["transcript", "cv", "gate", "chiusura"];
 
 export function OnboardingChat({ userName }: { userName: string }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [phase, setPhase] = useState<OnboardingPhase>("welcome");
-  const [blocks, setBlocks] = useState<FaseABlocksState>(EMPTY_FASE_A_BLOCKS);
+  const [blocks, setBlocks] = useState<OnboardingBlocksState>(EMPTY_ONBOARDING_BLOCKS);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -42,6 +53,8 @@ export function OnboardingChat({ userName }: { userName: string }) {
   const [correctingBlock, setCorrectingBlock] = useState<CardBlockType | null>(null);
   const [expIndex, setExpIndex] = useState(0);
   const [expTotal, setExpTotal] = useState(1);
+  const [interessiSubIndex, setInteressiSubIndex] = useState<0 | 1>(0);
+  const [autoSubIndex, setAutoSubIndex] = useState(0);
   const [complete, setComplete] = useState(false);
   const [cardOpenMobile, setCardOpenMobile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -54,14 +67,28 @@ export function OnboardingChat({ userName }: { userName: string }) {
   useEffect(() => {
     async function init() {
       const state = await loadOnboardingState();
+      setBlocks(state.blocks);
+
       if (state.phase === "welcome") {
         const { message } = await startOnboarding(firstName);
         setMessages([{ role: "assistant", content: message }]);
         setPhase("dati_base");
+      } else if (FASE_B_PHASES.includes(state.phase) && !state.faseBStarted) {
+        // Prima volta in Fase B (subito dopo il gate, o al rientro in una nuova sessione):
+        // un solo messaggio di ripresa, mai il replay della Fase A.
+        if (state.phase === "competenze") {
+          const result = await startFaseB();
+          setMessages([{ role: "assistant", content: result.message }]);
+          setBlocks((b) => ({ ...b, competenze: result.competenze }));
+        } else {
+          const result = await resumeFaseB(state.phase);
+          setMessages([{ role: "assistant", content: result.message }]);
+        }
+        setPhase(state.phase);
+        if (state.phase === "chiusura") setComplete(true);
       } else {
         setMessages(state.conversation);
         setPhase(state.phase);
-        setBlocks(state.blocks);
         if (state.phase === "esperienze") {
           // Resume semplificato: si riparte dalla domanda sulle esperienze nascoste,
           // non si ricostruisce la posizione esatta nel sotto-ciclo del CV.
@@ -125,6 +152,30 @@ export function OnboardingChat({ userName }: { userName: string }) {
         const result = await submitDisponibilita(history, userMessage);
         appendAssistant(result.message);
         if (result.disponibilita) setBlocks((b) => ({ ...b, disponibilita: result.disponibilita! }));
+      } else if (phase === "lingue") {
+        const result = await submitLingue(history, userMessage);
+        appendAssistant(result.message);
+        setBlocks((b) => ({ ...b, lingue: result.lingue }));
+      } else if (phase === "interessi") {
+        const result = await submitInteressi(history, userMessage, interessiSubIndex);
+        appendAssistant(result.message);
+        if (result.done && result.interessi) {
+          setBlocks((b) => ({ ...b, interessi: result.interessi! }));
+        } else {
+          setInteressiSubIndex(1);
+        }
+      } else if (phase === "autodescrizione") {
+        const result = await submitAutodescrizioneRisposta(history, userMessage, autoSubIndex);
+        appendAssistant(result.message);
+        if (result.done && result.autodescrizione) {
+          setBlocks((b) => ({ ...b, autodescrizione: result.autodescrizione! }));
+        } else {
+          setAutoSubIndex((i) => i + 1);
+        }
+      } else if (phase === "piano_carriera") {
+        const result = await submitPianoCarriera(history, userMessage);
+        appendAssistant(result.message);
+        setBlocks((b) => ({ ...b, piano_carriera: result.piano_carriera }));
       }
     } finally {
       setLoading(false);
@@ -155,6 +206,31 @@ export function OnboardingChat({ userName }: { userName: string }) {
         const result = await confirmDisponibilitaAndGate(history);
         appendAssistant(result.message);
         setPhase("gate");
+      } else if (blockType === "competenze") {
+        setBlocks((b) => ({ ...b, competenze: { ...b.competenze, status: "approved" } }));
+        const result = await confirmCompetenzeAndAskLingue(history);
+        appendAssistant(result.message);
+        setPhase(result.phase);
+      } else if (blockType === "lingue") {
+        setBlocks((b) => ({ ...b, lingue: { ...b.lingue, status: "approved" } }));
+        const result = await confirmLingueAndAskInteressi(history);
+        appendAssistant(result.message);
+        setPhase(result.phase);
+      } else if (blockType === "interessi") {
+        setBlocks((b) => ({ ...b, interessi: { ...b.interessi, status: "approved" } }));
+        const result = await confirmInteressiAndAskAutodescrizione(history);
+        appendAssistant(result.message);
+        setPhase(result.phase);
+      } else if (blockType === "autodescrizione") {
+        setBlocks((b) => ({ ...b, autodescrizione: { ...b.autodescrizione, status: "approved" } }));
+        const result = await confirmAutodescrizioneAndAskPiano(history);
+        appendAssistant(result.message);
+        setPhase(result.phase);
+      } else if (blockType === "piano_carriera") {
+        setBlocks((b) => ({ ...b, piano_carriera: { ...b.piano_carriera, status: "approved" } }));
+        const result = await confirmPianoCarrieraAndChiudi(history);
+        appendAssistant(result.message);
+        setPhase(result.phase);
         setComplete(true);
         setTimeout(() => {
           router.push("/student");
@@ -169,6 +245,23 @@ export function OnboardingChat({ userName }: { userName: string }) {
   function handleCorrect(blockType: CardBlockType) {
     setCorrectingBlock(blockType);
     inputRef.current?.focus();
+  }
+
+  async function handleContinueNow() {
+    setLoading(true);
+    const result = await startFaseB();
+    appendAssistant(result.message);
+    setBlocks((b) => ({ ...b, competenze: result.competenze }));
+    setPhase("competenze");
+    setLoading(false);
+  }
+
+  function handleContinueLater() {
+    setComplete(true);
+    setTimeout(() => {
+      router.push("/student");
+      router.refresh();
+    }, 1200);
   }
 
   async function handleTranscriptFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -364,6 +457,24 @@ export function OnboardingChat({ userName }: { userName: string }) {
                   className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
                 >
                   Salta
+                </button>
+              </div>
+            )}
+            {phase === "gate" && (
+              <div className="flex gap-3 mb-3">
+                <button
+                  onClick={handleContinueNow}
+                  disabled={isWorking}
+                  className="text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
+                >
+                  Completa ora (5 min)
+                </button>
+                <button
+                  onClick={handleContinueLater}
+                  disabled={isWorking}
+                  className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
+                >
+                  Più tardi
                 </button>
               </div>
             )}

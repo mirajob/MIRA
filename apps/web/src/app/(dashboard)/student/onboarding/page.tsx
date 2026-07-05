@@ -3,6 +3,8 @@ import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import { OnboardingChat } from "./onboarding-chat";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export default async function OnboardingPage() {
   const ctx = await getUserContext();
   if (!ctx.isStudent) redirect("/api/auth/redirect");
@@ -10,12 +12,19 @@ export default async function OnboardingPage() {
   const supabase = await createServerClient();
   const { data: student } = await supabase
     .from("student_profiles")
-    .select("onboarding_completed")
+    .select("id, onboarding_completed")
     .eq("user_id", ctx.profile.id)
     .single();
 
   if (student?.onboarding_completed) {
-    redirect("/student");
+    // Fase A completa non basta più: reindirizza solo se anche la Fase B lo è.
+    const { data: blocks } = await (supabase.from("card_blocks") as any)
+      .select("status")
+      .eq("student_profile_id", (student as any).id)
+      .in("block_type", ["competenze", "lingue", "interessi", "autodescrizione", "piano_carriera"]);
+
+    const faseBComplete = (blocks ?? []).length === 5 && (blocks ?? []).every((b: any) => b.status === "approved");
+    if (faseBComplete) redirect("/student");
   }
 
   return (
