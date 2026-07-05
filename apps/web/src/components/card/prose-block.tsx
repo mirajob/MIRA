@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
 import type { CardBlockStatus, PianoCarrieraStato } from "@mira/types";
@@ -20,13 +20,23 @@ interface ProseBlockProps {
   stato?: PianoCarrieraStato;
   intro?: string;
   placeholder?: string;
+  onApproved?: () => void;
 }
 
-export function ProseBlock({ blockType, title, testo, status, serif, stato, intro, placeholder }: ProseBlockProps) {
+export function ProseBlock({ blockType, title, testo, status, serif, stato, intro, placeholder, onApproved }: ProseBlockProps) {
   const [text, setText] = useState(testo ?? "");
   const [statoValue, setStatoValue] = useState<PianoCarrieraStato | undefined>(stato ?? "esplorazione");
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!dirty) setText(testo ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testo]);
+  useEffect(() => {
+    if (!dirty && stato) setStatoValue(stato);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stato]);
 
   async function handleSave() {
     setSaving(true);
@@ -38,7 +48,7 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
 
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
-      <CardBlockHeader title={title} status={status} blockType={blockType} />
+      <CardBlockHeader title={title} status={status} blockType={blockType} onApproved={onApproved} />
       <div className="p-5 space-y-3">
         {intro && <p className="text-body-sm text-ink-secondary italic">{intro}</p>}
         {blockType === "piano_carriera" && (

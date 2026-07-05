@@ -8,18 +8,22 @@ export function CardBlockHeader({
   title,
   status,
   blockType,
+  onApproved,
 }: {
   title: string;
   status: CardBlockStatus;
   blockType: CardBlockType;
+  /** Onboarding only: reagisce a un Conferma riuscito (es. per far avanzare la fase). Sul Profilo resta undefined. */
+  onApproved?: () => void;
 }) {
   const [pending, startTransition] = useTransition();
   const [localStatus, setLocalStatus] = useState(status);
 
   function handleApprove() {
     setLocalStatus("approved");
-    startTransition(() => {
-      approveCardBlock(blockType);
+    startTransition(async () => {
+      await approveCardBlock(blockType);
+      onApproved?.();
     });
   }
 

@@ -1,41 +1,35 @@
 "use client";
 
-import {
-  BlockPreviewShell,
-  HeaderPreview,
-  FormazionePreview,
-  EsperienzePreview,
-  DisponibilitaPreview,
-  CompetenzePreview,
-  LinguePreview,
-  InteressiPreview,
-  AutodescrizionePreview,
-  PianoCarrieraPreview,
-} from "./block-preview";
+import { HeaderBlock } from "@/components/card/header-block";
+import { DisponibilitaBlock } from "@/components/card/disponibilita-block";
+import { EsperienzeBlock } from "@/components/card/esperienze-block";
+import { FormazioneBlock } from "@/components/card/formazione-block";
+import { CompetenzeBlock } from "@/components/card/competenze-block";
+import { LingueBlock } from "@/components/card/lingue-block";
+import { ProseBlock } from "@/components/card/prose-block";
 import type { OnboardingBlocksState } from "@/lib/actions/chat-onboarding";
 import type { CardBlockType } from "@mira/types";
 
 interface OnboardingCardPanelProps {
   blocks: OnboardingBlocksState;
-  onConfirm: (blockType: CardBlockType) => void;
-  onCorrect: (blockType: CardBlockType) => void;
-  confirmingBlock: CardBlockType | null;
+  /** Chiamato dopo che uno dei componenti Step 2 ha già approvato il blocco lato server. */
+  onApproved: (blockType: CardBlockType) => void;
 }
 
-const BLOCK_ORDER: Array<{ key: keyof OnboardingBlocksState; title: string; blockType: CardBlockType }> = [
-  { key: "header", title: "Header", blockType: "header" },
-  { key: "disponibilita", title: "Disponibilità", blockType: "disponibilita" },
-  { key: "esperienze", title: "Esperienze", blockType: "esperienze" },
-  { key: "formazione", title: "Formazione", blockType: "formazione" },
-  { key: "competenze", title: "Competenze", blockType: "competenze" },
-  { key: "lingue", title: "Lingue", blockType: "lingue" },
-  { key: "autodescrizione", title: "Come si descrive", blockType: "autodescrizione" },
-  { key: "interessi", title: "Interessi", blockType: "interessi" },
-  { key: "piano_carriera", title: "Piano di carriera", blockType: "piano_carriera" },
+const BLOCK_ORDER: CardBlockType[] = [
+  "header",
+  "disponibilita",
+  "esperienze",
+  "formazione",
+  "competenze",
+  "lingue",
+  "autodescrizione",
+  "interessi",
+  "piano_carriera",
 ];
 
-export function OnboardingCardPanel({ blocks, onConfirm, onCorrect, confirmingBlock }: OnboardingCardPanelProps) {
-  const approvedCount = BLOCK_ORDER.filter((b) => blocks[b.key].status === "approved").length;
+export function OnboardingCardPanel({ blocks, onApproved }: OnboardingCardPanelProps) {
+  const approvedCount = BLOCK_ORDER.filter((key) => blocks[key].status === "approved").length;
   const progressPct = Math.round((approvedCount / BLOCK_ORDER.length) * 100);
 
   return (
@@ -52,29 +46,63 @@ export function OnboardingCardPanel({ blocks, onConfirm, onCorrect, confirmingBl
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {BLOCK_ORDER.map(({ key, title, blockType }) => {
-          const block = blocks[key];
-          return (
-            <BlockPreviewShell
-              key={key}
-              title={title}
-              status={block.status}
-              onConfirm={() => onConfirm(blockType)}
-              onCorrect={() => onCorrect(blockType)}
-              confirming={confirmingBlock === blockType}
-            >
-              {key === "header" && <HeaderPreview data={blocks.header.data} />}
-              {key === "formazione" && <FormazionePreview items={blocks.formazione.data.items} />}
-              {key === "esperienze" && <EsperienzePreview items={blocks.esperienze.data.items} />}
-              {key === "disponibilita" && <DisponibilitaPreview data={blocks.disponibilita.data} />}
-              {key === "competenze" && <CompetenzePreview items={blocks.competenze.data.items} />}
-              {key === "lingue" && <LinguePreview items={blocks.lingue.data.items} />}
-              {key === "interessi" && <InteressiPreview data={blocks.interessi.data} />}
-              {key === "autodescrizione" && <AutodescrizionePreview data={blocks.autodescrizione.data} />}
-              {key === "piano_carriera" && <PianoCarrieraPreview data={blocks.piano_carriera.data} />}
-            </BlockPreviewShell>
-          );
-        })}
+        <HeaderBlock
+          proseContent={blocks.header.data}
+          visibility={blocks.header.visibility}
+          status={blocks.header.status}
+          onApproved={() => onApproved("header")}
+        />
+        <DisponibilitaBlock
+          proseContent={blocks.disponibilita.data}
+          status={blocks.disponibilita.status}
+          onApproved={() => onApproved("disponibilita")}
+        />
+        <EsperienzeBlock
+          items={blocks.esperienze.data.items}
+          status={blocks.esperienze.status}
+          onApproved={() => onApproved("esperienze")}
+        />
+        <FormazioneBlock
+          items={blocks.formazione.data.items}
+          status={blocks.formazione.status}
+          onApproved={() => onApproved("formazione")}
+        />
+        <CompetenzeBlock
+          items={blocks.competenze.data.items}
+          status={blocks.competenze.status}
+          onApproved={() => onApproved("competenze")}
+        />
+        <LingueBlock
+          items={blocks.lingue.data.items}
+          status={blocks.lingue.status}
+          onApproved={() => onApproved("lingue")}
+        />
+        <ProseBlock
+          blockType="autodescrizione"
+          title="Come si descrive"
+          testo={blocks.autodescrizione.data.testo}
+          status={blocks.autodescrizione.status}
+          serif
+          placeholder="Racconta chi sei, con parole tue..."
+          onApproved={() => onApproved("autodescrizione")}
+        />
+        <ProseBlock
+          blockType="interessi"
+          title="Interessi"
+          testo={blocks.interessi.data.testo}
+          status={blocks.interessi.status}
+          placeholder="I tuoi interessi professionali e personali..."
+          onApproved={() => onApproved("interessi")}
+        />
+        <ProseBlock
+          blockType="piano_carriera"
+          title="Piano di carriera"
+          testo={blocks.piano_carriera.data.testo}
+          stato={blocks.piano_carriera.data.stato}
+          status={blocks.piano_carriera.status}
+          placeholder="Come ti vedi nei prossimi 1-2 anni?"
+          onApproved={() => onApproved("piano_carriera")}
+        />
       </div>
     </div>
   );

@@ -20,6 +20,7 @@ export type {
   ItemOrigin,
   HeaderProseContent,
   HeaderVisibility,
+  FormazionePrecedente,
   DisponibilitaProseContent,
   EsperienzaItem,
   EsperienzeProseContent,

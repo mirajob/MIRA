@@ -16,12 +16,21 @@ export type CardBlockStatus = "empty" | "draft" | "approved";
 /** Where an item's data came from. Saved internally, never shown in UI (spec 3.2). */
 export type ItemOrigin = "transcript" | "cv_upload" | "onboarding" | "manual";
 
+export interface FormazionePrecedente {
+  universita: string | null;
+  corso: string | null;
+  voto_laurea: string | null;
+  tema_tesi: string | null;
+}
+
 export interface HeaderProseContent {
   corso: string | null;
   livello: string | null;
   anno: number | null;
   laurea_anno: number | null;
   media_voti: number | null;
+  /** Solo per magistrale: la triennale fatta prima, raccolta come contesto. */
+  formazione_precedente?: FormazionePrecedente | null;
 }
 
 export interface HeaderVisibility {

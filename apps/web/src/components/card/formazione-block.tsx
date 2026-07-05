@@ -10,13 +10,22 @@ const fields: ListFieldConfig<FormazioneItem>[] = [
   { key: "anno", label: "Anno accademico" },
 ];
 
-export function FormazioneBlock({ items, status }: { items: FormazioneItem[]; status: CardBlockStatus }) {
+export function FormazioneBlock({
+  items,
+  status,
+  onApproved,
+}: {
+  items: FormazioneItem[];
+  status: CardBlockStatus;
+  onApproved?: () => void;
+}) {
   return (
     <ListBlock
       blockType="formazione"
       title="Formazione"
       items={items}
       status={status}
+      onApproved={onApproved}
       fields={fields}
       readOnly
       emptyLabel="Nessun esame registrato. Carica il libretto per vederli qui."

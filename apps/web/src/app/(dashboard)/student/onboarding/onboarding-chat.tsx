@@ -5,31 +5,30 @@ import { useRouter } from "next/navigation";
 import {
   loadOnboardingState,
   startOnboarding,
-  submitDatiBase,
+  submitLivello,
   submitPreviousDegree,
-  confirmHeaderAndAskTranscript,
   skipTranscript,
   reactToTranscript,
-  confirmFormazioneAndAskCV,
+  submitHeaderGap,
+  afterHeaderApproved,
   skipCV,
   reactToCV,
   submitEsperienzaRisposta,
-  confirmEsperienzeAndAskDisponibilita,
+  afterEsperienzeApproved,
   submitDisponibilita,
-  confirmDisponibilitaAndGate,
-  submitCorrection,
+  afterDisponibilitaApproved,
   forceCompleteOnboarding,
   startFaseB,
   resumeFaseB,
-  confirmCompetenzeAndAskLingue,
+  afterCompetenzeApproved,
   submitLingue,
-  confirmLingueAndAskInteressi,
+  afterLingueApproved,
   submitInteressi,
-  confirmInteressiAndAskAutodescrizione,
+  afterInteressiApproved,
   submitAutodescrizioneRisposta,
-  confirmAutodescrizioneAndAskPiano,
+  afterAutodescrizioneApproved,
   submitPianoCarriera,
-  confirmPianoCarrieraAndChiudi,
+  afterPianoCarrieraApproved,
 } from "@/lib/actions/chat-onboarding";
 import type { ChatMessage, OnboardingPhase, OnboardingBlocksState } from "@/lib/actions/chat-onboarding";
 import { EMPTY_ONBOARDING_BLOCKS } from "@/lib/onboarding-defaults";
@@ -49,16 +48,12 @@ export function OnboardingChat({ userName }: { userName: string }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [confirmingBlock, setConfirmingBlock] = useState<CardBlockType | null>(null);
-  const [correctingBlock, setCorrectingBlock] = useState<CardBlockType | null>(null);
   const [expIndex, setExpIndex] = useState(0);
   const [expTotal, setExpTotal] = useState(1);
   const [interessiSubIndex, setInteressiSubIndex] = useState<0 | 1>(0);
   const [autoSubIndex, setAutoSubIndex] = useState(0);
   const [complete, setComplete] = useState(false);
   const [cardOpenMobile, setCardOpenMobile] = useState(false);
-  const [transcriptDone, setTranscriptDone] = useState(false);
-  const [cvDone, setCvDone] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const transcriptFileRef = useRef<HTMLInputElement>(null);
@@ -74,7 +69,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
       if (state.phase === "welcome") {
         const { message } = await startOnboarding(firstName);
         setMessages([{ role: "assistant", content: message }]);
-        setPhase("dati_base");
+        setPhase("livello");
       } else if (FASE_B_PHASES.includes(state.phase) && !state.faseBStarted) {
         // Prima volta in Fase B (subito dopo il gate, o al rientro in una nuova sessione):
         // un solo messaggio di ripresa, mai il replay della Fase A.
@@ -135,20 +130,21 @@ export function OnboardingChat({ userName }: { userName: string }) {
     setLoading(true);
 
     try {
-      if (correctingBlock) {
-        const result = await submitCorrection(correctingBlock, history, userMessage);
-        appendAssistant(result.message);
-        setCorrectingBlock(null);
-        await resyncBlocks();
-      } else if (phase === "dati_base") {
-        const result = await submitDatiBase(history, userMessage);
+      if (phase === "livello") {
+        const result = await submitLivello(history, userMessage);
         appendAssistant(result.message);
         setPhase(result.phase);
         await resyncBlocks();
-      } else if (phase === "dati_base_magistrale") {
+      } else if (phase === "previous_degree") {
         const result = await submitPreviousDegree(history, userMessage);
         appendAssistant(result.message);
         setPhase(result.phase);
+        await resyncBlocks();
+      } else if (phase === "header_gap") {
+        const result = await submitHeaderGap(history, userMessage);
+        appendAssistant(result.message);
+        setPhase(result.phase);
+        await resyncBlocks();
       } else if (phase === "esperienze") {
         const result = await submitEsperienzaRisposta(history, userMessage, expIndex, expTotal);
         appendAssistant(result.message);
@@ -191,76 +187,50 @@ export function OnboardingChat({ userName }: { userName: string }) {
     }
   }
 
-  async function handleConfirm(blockType: CardBlockType) {
-    setConfirmingBlock(blockType);
-    setCorrectingBlock(null);
+  /** Chiamato dal pannello dopo che un blocco Step 2 è già stato approvato lì —
+   * decide solo la prossima domanda; mai richiama approveCardBlock (già fatto dal click). */
+  async function handleBlockApproved(blockType: CardBlockType) {
     const history = messages;
-    try {
-      if (blockType === "header") {
-        setBlocks((b) => ({ ...b, header: { ...b.header, status: "approved" } }));
-        const result = await confirmHeaderAndAskTranscript(history);
-        appendAssistant(result.message);
-        setPhase(result.phase);
-      } else if (blockType === "formazione") {
-        setBlocks((b) => ({ ...b, formazione: { ...b.formazione, status: "approved" } }));
-        const result = await confirmFormazioneAndAskCV(history);
-        appendAssistant(result.message);
-        setPhase(result.phase);
-      } else if (blockType === "esperienze") {
-        setBlocks((b) => ({ ...b, esperienze: { ...b.esperienze, status: "approved" } }));
-        const result = await confirmEsperienzeAndAskDisponibilita(history);
-        appendAssistant(result.message);
-        setPhase(result.phase);
-      } else if (blockType === "disponibilita") {
-        setBlocks((b) => ({ ...b, disponibilita: { ...b.disponibilita, status: "approved" } }));
-        const result = await confirmDisponibilitaAndGate(history);
-        appendAssistant(result.message);
-        setPhase("gate");
-      } else if (blockType === "competenze") {
-        setBlocks((b) => ({ ...b, competenze: { ...b.competenze, status: "approved" } }));
-        const result = await confirmCompetenzeAndAskLingue(history);
-        appendAssistant(result.message);
-        setPhase(result.phase);
-      } else if (blockType === "lingue") {
-        setBlocks((b) => ({ ...b, lingue: { ...b.lingue, status: "approved" } }));
-        const result = await confirmLingueAndAskInteressi(history);
-        appendAssistant(result.message);
-        setPhase(result.phase);
-      } else if (blockType === "interessi") {
-        setBlocks((b) => ({ ...b, interessi: { ...b.interessi, status: "approved" } }));
-        const result = await confirmInteressiAndAskAutodescrizione(history);
-        appendAssistant(result.message);
-        setPhase(result.phase);
-      } else if (blockType === "autodescrizione") {
-        setBlocks((b) => ({ ...b, autodescrizione: { ...b.autodescrizione, status: "approved" } }));
-        const result = await confirmAutodescrizioneAndAskPiano(history);
-        appendAssistant(result.message);
-        setPhase(result.phase);
-      } else if (blockType === "piano_carriera") {
-        setBlocks((b) => ({ ...b, piano_carriera: { ...b.piano_carriera, status: "approved" } }));
-        const result = await confirmPianoCarrieraAndChiudi(history);
-        appendAssistant(result.message);
-        setPhase(result.phase);
-        setComplete(true);
-        setTimeout(() => {
-          router.push("/student");
-          router.refresh();
-        }, 3000);
-      }
-      // Rilettura completa dopo il salvataggio ottimistico: fonte di verità è il server.
-      await resyncBlocks();
-    } finally {
-      setConfirmingBlock(null);
+    if (blockType === "header") {
+      const result = await afterHeaderApproved(history);
+      appendAssistant(result.message);
+      setPhase(result.phase);
+    } else if (blockType === "esperienze") {
+      const result = await afterEsperienzeApproved(history);
+      appendAssistant(result.message);
+      setPhase(result.phase);
+    } else if (blockType === "disponibilita") {
+      const result = await afterDisponibilitaApproved(history);
+      appendAssistant(result.message);
+      setPhase(result.phase);
+    } else if (blockType === "competenze") {
+      const result = await afterCompetenzeApproved(history);
+      appendAssistant(result.message);
+      setPhase(result.phase);
+    } else if (blockType === "lingue") {
+      const result = await afterLingueApproved(history);
+      appendAssistant(result.message);
+      setPhase(result.phase);
+    } else if (blockType === "interessi") {
+      const result = await afterInteressiApproved(history);
+      appendAssistant(result.message);
+      setPhase(result.phase);
+    } else if (blockType === "autodescrizione") {
+      const result = await afterAutodescrizioneApproved(history);
+      appendAssistant(result.message);
+      setPhase(result.phase);
+    } else if (blockType === "piano_carriera") {
+      const result = await afterPianoCarrieraApproved(history);
+      appendAssistant(result.message);
+      setPhase(result.phase);
+      setComplete(true);
+      setTimeout(() => {
+        router.push("/student");
+        router.refresh();
+      }, 3000);
     }
-  }
-
-  function handleCorrect(blockType: CardBlockType) {
-    setCorrectingBlock(blockType);
-    inputRef.current?.focus();
-  }
-
-  function cancelCorrecting() {
-    setCorrectingBlock(null);
+    // Formazione è sola lettura e non fa avanzare la fase: qui basta risincronizzare.
+    await resyncBlocks();
   }
 
   async function handleContinueNow() {
@@ -305,7 +275,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
       weightedAverage: result.parsed.weighted_average,
     });
     appendAssistant(reaction.message);
-    setTranscriptDone(true);
+    setPhase(reaction.phase);
     await resyncBlocks();
     setUploading(false);
     if (transcriptFileRef.current) transcriptFileRef.current.value = "";
@@ -317,7 +287,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
     const result = await skipTranscript(history);
     appendAssistant(result.message);
     setPhase(result.phase);
-    setTranscriptDone(true);
+    await resyncBlocks();
   }
 
   async function handleCVFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -339,7 +309,6 @@ export function OnboardingChat({ userName }: { userName: string }) {
     setPhase(reaction.phase);
     setExpIndex(0);
     setExpTotal(reaction.totalExperienceQuestions);
-    setCvDone(true);
     setUploading(false);
     if (cvFileRef.current) cvFileRef.current.value = "";
   }
@@ -352,7 +321,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
     setPhase(result.phase);
     setExpIndex(0);
     setExpTotal(result.totalExperienceQuestions);
-    setCvDone(true);
+    await resyncBlocks();
   }
 
   async function handleForceComplete() {
@@ -371,14 +340,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
 
   const userMessageCount = messages.filter((m) => m.role === "user").length;
   const isWorking = loading || uploading;
-  const cardPanel = (
-    <OnboardingCardPanel
-      blocks={blocks}
-      onConfirm={handleConfirm}
-      onCorrect={handleCorrect}
-      confirmingBlock={confirmingBlock}
-    />
-  );
+  const cardPanel = <OnboardingCardPanel blocks={blocks} onApproved={handleBlockApproved} />;
 
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-[1fr_400px] h-full">
@@ -461,7 +423,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
 
         {!complete ? (
           <div className="border-t border-border px-6 py-3 shrink-0">
-            {phase === "transcript" && !transcriptDone && (
+            {phase === "transcript" && (
               <div className="flex gap-3 mb-3">
                 <input ref={transcriptFileRef} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleTranscriptFile} className="hidden" />
                 <button
@@ -479,9 +441,6 @@ export function OnboardingChat({ userName }: { userName: string }) {
                   Salta
                 </button>
               </div>
-            )}
-            {phase === "transcript" && transcriptDone && (
-              <p className="text-body-sm text-ink-tertiary mb-3">Conferma il blocco Formazione qui a destra per continuare →</p>
             )}
             {phase === "gate" && (
               <div className="flex gap-3 mb-3">
@@ -501,7 +460,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
                 </button>
               </div>
             )}
-            {phase === "cv" && !cvDone && (
+            {phase === "cv" && (
               <div className="flex gap-3 mb-3">
                 <input ref={cvFileRef} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleCVFile} className="hidden" />
                 <button
@@ -520,14 +479,6 @@ export function OnboardingChat({ userName }: { userName: string }) {
                 </button>
               </div>
             )}
-            {correctingBlock && (
-              <div className="flex items-center justify-between gap-3 mb-3 rounded-md bg-warning-bg px-3 py-2">
-                <p className="text-body-sm text-warning">Stai correggendo: {correctingBlock} — scrivi la correzione e invia.</p>
-                <button onClick={cancelCorrecting} className="text-xs text-ink-secondary hover:text-navy underline underline-offset-2">
-                  Annulla
-                </button>
-              </div>
-            )}
             <div className="flex gap-3">
               <input
                 ref={inputRef}
@@ -535,13 +486,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                placeholder={
-                  correctingBlock
-                    ? "Cosa vuoi correggere?"
-                    : GATED_PHASES.includes(phase)
-                      ? "Usa i pulsanti qui sopra..."
-                      : "Scrivi un messaggio..."
-                }
+                placeholder={GATED_PHASES.includes(phase) ? "Usa i pulsanti qui sopra..." : "Scrivi un messaggio..."}
                 disabled={isWorking || GATED_PHASES.includes(phase)}
                 className="flex-1 px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200 disabled:opacity-50"
               />

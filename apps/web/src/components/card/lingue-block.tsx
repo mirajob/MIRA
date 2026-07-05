@@ -9,13 +9,22 @@ const fields: ListFieldConfig<LinguaItem>[] = [
   { key: "certificazione", label: "Certificazione (opzionale)", placeholder: "es. IELTS 7.5" },
 ];
 
-export function LingueBlock({ items, status }: { items: LinguaItem[]; status: CardBlockStatus }) {
+export function LingueBlock({
+  items,
+  status,
+  onApproved,
+}: {
+  items: LinguaItem[];
+  status: CardBlockStatus;
+  onApproved?: () => void;
+}) {
   return (
     <ListBlock
       blockType="lingue"
       title="Lingue"
       items={items}
       status={status}
+      onApproved={onApproved}
       fields={fields}
       emptyLabel="Nessuna lingua ancora. Aggiungine una."
       emptyItem={(): LinguaItem => ({

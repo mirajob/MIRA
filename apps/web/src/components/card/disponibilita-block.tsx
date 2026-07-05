@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
 import type { CardBlockStatus, DisponibilitaProseContent } from "@mira/types";
@@ -8,13 +8,20 @@ import type { CardBlockStatus, DisponibilitaProseContent } from "@mira/types";
 export function DisponibilitaBlock({
   proseContent,
   status,
+  onApproved,
 }: {
   proseContent: DisponibilitaProseContent;
   status: CardBlockStatus;
+  onApproved?: () => void;
 }) {
   const [form, setForm] = useState(proseContent);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!dirty) setForm(proseContent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proseContent]);
 
   function update<K extends keyof DisponibilitaProseContent>(key: K, value: DisponibilitaProseContent[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -37,7 +44,7 @@ export function DisponibilitaBlock({
 
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
-      <CardBlockHeader title="Disponibilità" status={status} blockType="disponibilita" />
+      <CardBlockHeader title="Disponibilità" status={status} blockType="disponibilita" onApproved={onApproved} />
       <div className="p-5 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           {fields.map(({ key, label, placeholder }) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { updateCardBlockProseContent, updateHeaderVisibility } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
 import type { CardBlockStatus, HeaderProseContent, HeaderVisibility } from "@mira/types";
@@ -16,10 +16,12 @@ export function HeaderBlock({
   proseContent,
   visibility,
   status,
+  onApproved,
 }: {
   proseContent: HeaderProseContent;
   visibility: HeaderVisibility;
   status: CardBlockStatus;
+  onApproved?: () => void;
 }) {
   const [form, setForm] = useState(proseContent);
   const [vis, setVis] = useState<HeaderVisibility>(
@@ -28,8 +30,33 @@ export function HeaderBlock({
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // In onboarding proseContent arriva in modo asincrono (es. dopo il parsing del libretto):
+  // se non c'è un edit locale in corso, riflette sempre l'ultimo dato dal server.
+  useEffect(() => {
+    if (!dirty) setForm(proseContent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proseContent]);
+  useEffect(() => {
+    if (visibility?.media_voti) setVis(visibility);
+  }, [visibility]);
+
   function update<K extends keyof HeaderProseContent>(key: K, value: HeaderProseContent[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+    setDirty(true);
+  }
+
+  function updateFP(key: "universita" | "corso" | "voto_laurea" | "tema_tesi", value: string) {
+    setForm((f) => ({
+      ...f,
+      formazione_precedente: {
+        universita: null,
+        corso: null,
+        voto_laurea: null,
+        tema_tesi: null,
+        ...f.formazione_precedente,
+        [key]: value || null,
+      },
+    }));
     setDirty(true);
   }
 
@@ -48,7 +75,7 @@ export function HeaderBlock({
 
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
-      <CardBlockHeader title="Header" status={status} blockType="header" />
+      <CardBlockHeader title="Header" status={status} blockType="header" onApproved={onApproved} />
       <div className="p-5 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -89,6 +116,42 @@ export function HeaderBlock({
             </p>
           </div>
         </div>
+
+        {(form.livello === "magistrale" || form.formazione_precedente) && (
+          <div className="border-t border-border pt-4 space-y-3">
+            <p className="text-body-sm font-medium text-ink">Formazione precedente (triennale)</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input
+                type="text"
+                placeholder="Università"
+                value={form.formazione_precedente?.universita ?? ""}
+                onChange={(e) => updateFP("universita", e.target.value)}
+                className="px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
+              />
+              <input
+                type="text"
+                placeholder="Corso"
+                value={form.formazione_precedente?.corso ?? ""}
+                onChange={(e) => updateFP("corso", e.target.value)}
+                className="px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
+              />
+              <input
+                type="text"
+                placeholder="Voto di laurea"
+                value={form.formazione_precedente?.voto_laurea ?? ""}
+                onChange={(e) => updateFP("voto_laurea", e.target.value)}
+                className="px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
+              />
+              <input
+                type="text"
+                placeholder="Tema tesi (opzionale)"
+                value={form.formazione_precedente?.tema_tesi ?? ""}
+                onChange={(e) => updateFP("tema_tesi", e.target.value)}
+                className="px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
+              />
+            </div>
+          </div>
+        )}
 
         {dirty && (
           <button

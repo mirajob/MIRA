@@ -17,13 +17,22 @@ const fields: ListFieldConfig<CompetenzaItem>[] = [
   { key: "evidenza_ref", label: "Evidenza (esame o esperienza collegata)", placeholder: "es. Financial Accounting" },
 ];
 
-export function CompetenzeBlock({ items, status }: { items: CompetenzaItem[]; status: CardBlockStatus }) {
+export function CompetenzeBlock({
+  items,
+  status,
+  onApproved,
+}: {
+  items: CompetenzaItem[];
+  status: CardBlockStatus;
+  onApproved?: () => void;
+}) {
   return (
     <ListBlock
       blockType="competenze"
       title="Competenze"
       items={items}
       status={status}
+      onApproved={onApproved}
       fields={fields}
       emptyLabel="Nessuna competenza ancora. Ogni competenza deve avere un'evidenza collegata."
       emptyItem={(): CompetenzaItem => ({

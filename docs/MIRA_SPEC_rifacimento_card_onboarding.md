@@ -20,6 +20,7 @@ Questi principi vincolano ogni scelta implementativa e ogni prompt. Se una featu
 4. **Nessuna diagnosi AI nascosta.** Vietato mostrare a terzi valutazioni caratteriali che lo studente non vede (es. "è introverso, potrebbe influenzare il lavoro di squadra"). Rilevante anche per GDPR (profilazione, art. 22).
 5. **Prosa per gli umani, struttura per le query.** Ogni blocco ha un rendering in prosa (quello che si legge) e dati strutturati sottostanti (quelli usati dal matching). Quando lo studente edita la prosa, i dati strutturati vengono riallineati da una chiamata AI di sincronizzazione.
 6. **Raccomandazioni solo azionabili.** Nella pagina "Prossimi passi" ogni raccomandazione deve corrispondere a un'azione concreta (candidatura su MIRA, esame specifico, esperienza specifica). Consigli generici ("partecipa a workshop", "migliora la comunicazione") sono vietati a livello di prompt.
+7. **Il server è l'unica fonte di verità.** Ogni turno di chat rilegge lo stato dei blocchi dal server; il pannello card in onboarding è uno specchio di ciò che è realmente salvato, mai uno stato ottimistico calcolato solo lato client. MIRA controlla sempre cosa possiede già prima di fare una domanda — non richiede mai un dato che ha già, non risponde mai con un messaggio fisso/canned indipendente da quanto detto. **Prova secca che tutto funziona: si ricarica la pagina a metà onboarding e lo stato resta esattamente quello reale**, senza tornare a "In attesa" o ripetere domande già risposte.
 
 ---
 
@@ -68,13 +69,18 @@ Ogni blocco appena generato mostra due azioni inline: **Conferma** e **Modifica*
 
 ### 4.2 Fase A — Minimo per candidarsi (obbligatoria, target: 8–10 minuti)
 
-1. **Benvenuto**: MIRA si presenta in 2–3 frasi: cosa succede ora + perché ne vale la pena. La card serve subito per candidarsi, ma è la stessa card con cui le aziende potranno trovare lo studente e contattarlo direttamente su MIRA, e la base con cui MIRA lo aiuta a orientarsi sui prossimi passi. Copy di riferimento: "Costruiamo insieme la tua MIRA card: ti serve ora per candidarti, ed è il profilo con cui le aziende potranno trovarti e contattarti direttamente. Più è fatta bene, più lavora per te." Niente elenco di feature future e nessuna menzione di funzionalità non ancora live (es. simulazioni): la promessa deve essere onesta.
-2. **Dati base**: livello di studi, corso, anno.
-3. **Transcript**: upload libretto (PDF) → estrazione esami, voti, media, CFU → blocco Formazione + Header compilati → conferma. Se lo studente non ha il libretto sotto mano: skip consentito, con reminder successivo.
-4. **CV (opzionale)**: upload → estrazione esperienze e lingue in bozza. Se non ha un CV: MIRA lo dice esplicitamente ("nessun problema, lo costruiamo parlando") e passa alle domande.
-5. **Esperienze**: per ogni esperienza estratta dal CV, MIRA chiede una cosa sola: "cosa hai fatto *tu* concretamente qui?" → redige la descrizione di 2–3 righe → conferma/modifica. Poi: "c'è qualcosa che non hai mai messo nel CV? Progetti personali, competizioni, sport a livello agonistico, volontariato, lavori?" (questa è la domanda che tira fuori il campionato di matematica: è la domanda più importante dell'onboarding).
-6. **Disponibilità**: cosa cerca, da quando, dove.
-7. **Gate sbloccato**: la candidatura all'associazione ora è possibile. MIRA lo dice e mostra il progresso: "La tua card è al ~60%. Puoi già candidarti, oppure completiamo le ultime tre sezioni: 5 minuti."
+**Questa sezione sostituisce integralmente una versione precedente e più generica** (chiedeva corso/anno a voce prima del transcript). Riscritta dopo test in produzione che hanno mostrato l'ordine sbagliato e domande ridondanti con dati già noti. Regola guida: **"le domande servono a colmare i buchi, non a raccogliere da zero: se il dato è nel PDF, MIRA non lo chiede."**
+
+1. **Benvenuto**: MIRA si presenta in 2–3 frasi: cosa succede ora + perché ne vale la pena. Copy di riferimento: "Costruiamo insieme la tua MIRA card: ti serve ora per candidarti alle associazioni, ed è il profilo con cui le aziende potranno trovarti e contattarti direttamente quando sarai compatibile con quello che stanno cercando. Più è fatta bene, più lavora per te." Niente elenco di feature future, nessuna menzione di funzionalità non live.
+2. **Livello di studi — unica domanda iniziale**: "Studi triennale, magistrale o ciclo unico?" Niente nome del corso qui.
+   - **Triennale o ciclo unico** → passa direttamente al punto 3 (transcript). Ciclo unico è trattato come triennale: non ha una laurea precedente da raccogliere.
+   - **Magistrale** → prima raccoglie la formazione precedente come contesto: università, corso, voto di laurea (campo `formazione_precedente` nell'Header, mostrato in card come "formazione precedente"). Poi passa al punto 3.
+3. **Transcript**: upload libretto (PDF) → estrazione automatica di università, corso, livello, esami+voti (collassati/espandibili in card, non tutti elencati: "occupano troppo spazio nella card") e media ponderata, marcata **verificata**. Se lo studente non ha il libretto: skip consentito.
+4. **Buchi residui (`header_gap`)**: SOLO ORA, dopo il transcript (o dopo lo skip), MIRA chiede ciò che manca — tipicamente solo l'anno corrente. Il bottone Conferma sull'Header appare solo quando il blocco è genuinamente completo (livello, corso, anno, media tutti presenti — media esclusa se il transcript è stato saltato).
+5. **CV (opzionale)**: upload → estrazione esperienze e lingue in bozza; il bottone di upload sparisce dopo l'uso (mai doppio upload). Se non ha un CV: MIRA lo dice esplicitamente ("nessun problema, lo costruiamo parlando") e passa alle domande.
+6. **Esperienze**: per ogni esperienza dal CV, MIRA chiede "cosa hai fatto *tu* concretamente" **solo se la descrizione del CV non è già sufficientemente concreta**; se lo è, la propone direttamente e chiede solo conferma/aggiunta. Lo studente può modificare tutto direttamente sulla card (editing inline), tranne i dati accademici derivati dal transcript. Sempre, alla fine: "c'è qualcosa che non hai mai messo nel CV? Progetti personali, competizioni, sport a livello agonistico, volontariato, lavori?" — la domanda più importante dell'onboarding. Un solo Conferma per l'intero blocco.
+7. **Disponibilità**: cosa cerca, da quando, dove — copy naturale, non un template fisso rigido.
+8. **Gate sbloccato**: invariato. Percentuale reale calcolata sui blocchi realmente approvati (mai inventata). MIRA offre "Completa ora" / "Più tardi".
 
 ### 4.3 Fase B — Completamento (proseguibile subito o ripresa dopo)
 

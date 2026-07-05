@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
 import type { CardBlockStatus, CardBlockType } from "@mira/types";
+
+const COLLAPSE_THRESHOLD = 5;
 
 export interface ListFieldConfig<T> {
   key: keyof T;
@@ -22,6 +24,7 @@ interface ListBlockProps<T extends { id: string; verified: boolean }> {
   emptyItem: () => T;
   emptyLabel: string;
   readOnly?: boolean;
+  onApproved?: () => void;
 }
 
 export function ListBlock<T extends { id: string; verified: boolean }>({
@@ -33,10 +36,19 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
   emptyItem,
   emptyLabel,
   readOnly,
+  onApproved,
 }: ListBlockProps<T>) {
   const [items, setItems] = useState<T[]>(initialItems);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!dirty) setItems(initialItems);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialItems]);
+
+  const visibleItems = readOnly && !expanded ? items.slice(0, COLLAPSE_THRESHOLD) : items;
 
   function updateItem(index: number, key: keyof T, value: unknown) {
     setItems((prev) => prev.map((it, i) => (i === index ? { ...it, [key]: value } : it)));
@@ -62,10 +74,10 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
 
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
-      <CardBlockHeader title={title} status={status} blockType={blockType as CardBlockType} />
+      <CardBlockHeader title={title} status={status} blockType={blockType as CardBlockType} onApproved={onApproved} />
       <div className="p-5 space-y-4">
         {items.length === 0 && <p className="text-body-sm text-ink-secondary">{emptyLabel}</p>}
-        {items.map((item, index) => (
+        {visibleItems.map((item, index) => (
           <div key={item.id} className="rounded-md border border-border p-4 space-y-3">
             <div className="flex items-center justify-between">
               {item.verified && (
@@ -119,6 +131,14 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
             </div>
           </div>
         ))}
+        {readOnly && items.length > COLLAPSE_THRESHOLD && (
+          <button
+            onClick={() => setExpanded((e) => !e)}
+            className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
+          >
+            {expanded ? "Mostra meno" : `Mostra tutti (${items.length})`}
+          </button>
+        )}
         {!readOnly && (
           <div className="flex items-center gap-3">
             <button

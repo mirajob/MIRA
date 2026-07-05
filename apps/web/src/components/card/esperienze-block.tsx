@@ -10,13 +10,22 @@ const fields: ListFieldConfig<EsperienzaItem>[] = [
   { key: "descrizione", label: "Cosa hai fatto concretamente", type: "textarea", placeholder: "2-3 righe su cosa hai fatto tu" },
 ];
 
-export function EsperienzeBlock({ items, status }: { items: EsperienzaItem[]; status: CardBlockStatus }) {
+export function EsperienzeBlock({
+  items,
+  status,
+  onApproved,
+}: {
+  items: EsperienzaItem[];
+  status: CardBlockStatus;
+  onApproved?: () => void;
+}) {
   return (
     <ListBlock
       blockType="esperienze"
       title="Esperienze"
       items={items}
       status={status}
+      onApproved={onApproved}
       fields={fields}
       emptyLabel="Nessuna esperienza ancora. Aggiungine una."
       emptyItem={(): EsperienzaItem => ({
