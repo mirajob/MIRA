@@ -7,7 +7,15 @@ import type { OnboardingBlocksState } from "./actions/chat-onboarding";
 export const EMPTY_ONBOARDING_BLOCKS: OnboardingBlocksState = {
   header: {
     status: "empty",
-    data: { corso: null, livello: null, anno: null, laurea_anno: null, media_voti: null, formazione_precedente: null },
+    data: {
+      universita: "Università Bocconi",
+      corso: null,
+      livello: null,
+      anno: null,
+      laurea_anno: null,
+      media_voti: null,
+      formazione_precedente: null,
+    },
     visibility: { media_voti: { associazioni: false, aziende: false } },
   },
   formazione: { status: "empty", data: { items: [] } },

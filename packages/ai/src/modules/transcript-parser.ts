@@ -12,6 +12,7 @@ export interface ParsedCourse {
 }
 
 export interface ParsedTranscript {
+  university_name: string;
   degree_program: string;
   degree_level: "triennale" | "magistrale" | "ciclo_unico" | "phd";
   courses: ParsedCourse[];
@@ -43,7 +44,8 @@ Calcola (SOLO sugli esami completati):
 - graded_credits: crediti degli esami con voto numerico
 - pass_fail_credits: crediti degli esami pass/fail
 
-Estrai anche dal documento (campo OBBLIGATORIO, non lasciarlo mai vuoto se il documento è un libretto Bocconi):
+Estrai anche dal documento (campi OBBLIGATORI, non lasciarli mai vuoti se il documento è un libretto Bocconi):
+- university_name: nome dell'ateneo, es. "Università Bocconi" (di solito nel logo/intestazione). Se non è Bocconi, scrivi il nome che vedi.
 - degree_program: nome completo del corso di laurea. Nei libretti Bocconi è quasi sempre scritto per esteso vicino all'intestazione, in una riga tipo "Corso di Laurea in NOME DEL CORSO (SIGLA)" — leggi ATTENTAMENTE la parte alta del documento, anche se il resto della pagina è una tabella di esami: il nome del corso NON è nella tabella, è nel blocco anagrafico sopra. Se in quella riga trovi il nome per esteso (es. "INTERNATIONAL ECONOMICS AND MANAGEMENT"), usa quello direttamente, capitalizzato normalmente ("International Economics and Management") — NON serve la lista sigle in quel caso. Usa la lista sigle qui sotto SOLO se nel documento vedi esclusivamente la sigla tra parentesi e non il nome per esteso:
   Triennali: CLEAM = "Economics and Management", BIEM = "International Economics and Management", BIEMF = "International Economics and Finance", BAI = "Business Analytics and Informatics", BESS = "Economics and Social Sciences", BIEF = "Economics, Finance and International Business", BICN = "International Politics and Government", BIR = "International Relations and Organizations", BIG = "Government and Public Policy", BEL = "Economics and Law", BIEM-FR = "International Economics and Management (French track)"
   Magistrali: CLMG = "Management", MAFINRISK = "Finance and Risk Management", ACME = "Accounting, Financial Management and Control", MIF = "Marketing Management", EMIT = "Economics and Management of Innovation and Technology", CLAPI = "Public Administration and International Institutions", EPMC = "Economics and Policy in a Global Environment", LM82 = "Law and Business Management"
@@ -51,7 +53,7 @@ Estrai anche dal documento (campo OBBLIGATORIO, non lasciarlo mai vuoto se il do
 - degree_level: triennale se "Bachelor", magistrale se "Master", ciclo_unico, phd
 
 Rispondi SOLO in JSON valido con questa struttura:
-{"degree_program":"","degree_level":"triennale|magistrale|ciclo_unico|phd","courses":[...],"weighted_average":null,"total_credits":0,"graded_credits":0,"pass_fail_credits":0}`;
+{"university_name":"","degree_program":"","degree_level":"triennale|magistrale|ciclo_unico|phd","courses":[...],"weighted_average":null,"total_credits":0,"graded_credits":0,"pass_fail_credits":0}`;
 
 export async function parseTranscriptFile(base64Data: string, mimeType: string): Promise<ParsedTranscript> {
   const isPdf = mimeType === "application/pdf";

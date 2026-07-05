@@ -229,7 +229,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
         router.refresh();
       }, 3000);
     }
-    // Formazione è sola lettura e non fa avanzare la fase: qui basta risincronizzare.
+    // Formazione non ha una fase propria: viene approvata insieme all'Header (alsoApprove).
     await resyncBlocks();
   }
 

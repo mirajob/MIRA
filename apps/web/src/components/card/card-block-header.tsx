@@ -8,11 +8,14 @@ export function CardBlockHeader({
   title,
   status,
   blockType,
+  alsoApprove,
   onApproved,
 }: {
   title: string;
   status: CardBlockStatus;
   blockType: CardBlockType;
+  /** Blocchi approvati insieme a questo con un solo Conferma (es. Formazione dentro Header). */
+  alsoApprove?: CardBlockType[];
   /** Onboarding only: reagisce a un Conferma riuscito (es. per far avanzare la fase). Sul Profilo resta undefined. */
   onApproved?: () => void;
 }) {
@@ -22,7 +25,7 @@ export function CardBlockHeader({
   function handleApprove() {
     setLocalStatus("approved");
     startTransition(async () => {
-      await approveCardBlock(blockType);
+      await approveCardBlock(alsoApprove ? [blockType, ...alsoApprove] : blockType);
       onApproved?.();
     });
   }

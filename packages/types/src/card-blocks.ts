@@ -24,6 +24,7 @@ export interface FormazionePrecedente {
 }
 
 export interface HeaderProseContent {
+  universita: string | null;
   corso: string | null;
   livello: string | null;
   anno: number | null;

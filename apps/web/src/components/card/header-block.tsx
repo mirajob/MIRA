@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { updateCardBlockProseContent, updateHeaderVisibility } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
-import type { CardBlockStatus, HeaderProseContent, HeaderVisibility } from "@mira/types";
+import type { CardBlockStatus, FormazioneItem, HeaderProseContent, HeaderVisibility } from "@mira/types";
 
 const LEVEL_LABELS: Record<string, string> = {
   triennale: "Triennale (Bachelor)",
@@ -16,11 +16,14 @@ export function HeaderBlock({
   proseContent,
   visibility,
   status,
+  formazioneItems,
   onApproved,
 }: {
   proseContent: HeaderProseContent;
   visibility: HeaderVisibility;
   status: CardBlockStatus;
+  /** Esami dal libretto, mostrati come sezione espandibile qui — non un blocco a sé (spec: un solo Conferma per Header+Formazione). */
+  formazioneItems: FormazioneItem[];
   onApproved?: () => void;
 }) {
   const [form, setForm] = useState(proseContent);
@@ -29,6 +32,7 @@ export function HeaderBlock({
   );
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [esamiExpanded, setEsamiExpanded] = useState(false);
 
   // In onboarding proseContent arriva in modo asincrono (es. dopo il parsing del libretto):
   // se non c'è un edit locale in corso, riflette sempre l'ultimo dato dal server.
@@ -75,9 +79,24 @@ export function HeaderBlock({
 
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
-      <CardBlockHeader title="Header" status={status} blockType="header" onApproved={onApproved} />
+      <CardBlockHeader
+        title="Header"
+        status={status}
+        blockType="header"
+        alsoApprove={["formazione"]}
+        onApproved={onApproved}
+      />
       <div className="p-5 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="text-ink-tertiary text-body-sm">Università</label>
+            <input
+              type="text"
+              value={form.universita ?? ""}
+              onChange={(e) => update("universita", e.target.value)}
+              className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
+            />
+          </div>
           <div>
             <label className="text-ink-tertiary text-body-sm">Corso di laurea</label>
             <input
@@ -116,6 +135,33 @@ export function HeaderBlock({
             </p>
           </div>
         </div>
+
+        {formazioneItems.length > 0 && (
+          <div className="border-t border-border pt-4">
+            <button
+              type="button"
+              onClick={() => setEsamiExpanded((e) => !e)}
+              className="flex items-center gap-2 text-body-sm font-medium text-ink hover:text-petrol transition-colors"
+            >
+              <span>{esamiExpanded ? "▾" : "▸"}</span>
+              <span>Esami ({formazioneItems.length})</span>
+            </button>
+            {esamiExpanded && (
+              <div className="mt-3 space-y-1">
+                {formazioneItems.map((it) => (
+                  <div key={it.id} className="flex items-center justify-between gap-2 text-body-sm">
+                    <span className="text-ink truncate">{it.esame}</span>
+                    <span className="text-ink-secondary whitespace-nowrap">
+                      {it.voto ?? "—"}
+                      {it.cfu != null && <span className="text-xs text-ink-tertiary"> · {it.cfu} CFU</span>}
+                      <span className="ml-2 text-xs text-success font-medium">verificata</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {(form.livello === "magistrale" || form.formazione_precedente) && (
           <div className="border-t border-border pt-4 space-y-3">

@@ -48,7 +48,7 @@ async function getStudentProfileId(): Promise<string> {
 // Missing this caused a client-side crash for any account created after the Step 1
 // backfill (rows made only by this function, never touched by the backfill migration).
 const DEFAULT_PROSE_CONTENT: Record<CardBlockType, unknown> = {
-  header: { corso: null, livello: null, anno: null, laurea_anno: null, media_voti: null },
+  header: { universita: "Università Bocconi", corso: null, livello: null, anno: null, laurea_anno: null, media_voti: null },
   disponibilita: { cosa_cerca: null, da_quando: null, dove: null, vincoli: null },
   esperienze: { items: [] },
   formazione: { items: [] },
@@ -129,11 +129,13 @@ export async function updateCardBlockProseContent(
     const incoming = proseContent as Partial<HeaderProseContent>;
     const existing = current.prose_content as HeaderProseContent;
     nextProseContent = {
+      universita: incoming.universita ?? existing.universita ?? null,
       corso: incoming.corso ?? existing.corso ?? null,
       livello: incoming.livello ?? existing.livello ?? null,
       anno: incoming.anno ?? existing.anno ?? null,
       laurea_anno: incoming.laurea_anno ?? existing.laurea_anno ?? null,
       media_voti: existing.media_voti ?? null, // transcript-only, never writable here
+      formazione_precedente: incoming.formazione_precedente ?? existing.formazione_precedente ?? null,
     };
   } else if (blockType === "esperienze" || blockType === "competenze" || blockType === "lingue") {
     const incomingItems = (proseContent as { items: Array<Record<string, unknown>> }).items ?? [];
@@ -181,23 +183,30 @@ export async function updateHeaderVisibility(visibility: HeaderVisibility) {
   const studentProfileId = await getStudentProfileId();
   const supabase = await createServiceClient();
 
-  await (supabase.from("card_blocks") as any)
+  const { error } = await (supabase.from("card_blocks") as any)
     .update({ visibility })
     .eq("student_profile_id", studentProfileId)
     .eq("block_type", "header");
+  if (error) throw error;
 
   revalidatePath("/student");
   return { success: true };
 }
 
-export async function approveCardBlock(blockType: CardBlockType) {
+/**
+ * Approva uno o più blocchi insieme (es. Header + Formazione, che condividono un solo
+ * Conferma: gli esami sono una sezione espandibile dentro Header, non un blocco a sé).
+ */
+export async function approveCardBlock(blockType: CardBlockType | CardBlockType[]) {
   const studentProfileId = await getStudentProfileId();
   const supabase = await createServiceClient();
+  const blockTypes = Array.isArray(blockType) ? blockType : [blockType];
 
-  await (supabase.from("card_blocks") as any)
+  const { error } = await (supabase.from("card_blocks") as any)
     .update({ status: "approved", approved_at: new Date().toISOString() })
     .eq("student_profile_id", studentProfileId)
-    .eq("block_type", blockType);
+    .in("block_type", blockTypes);
+  if (error) throw error;
 
   revalidatePath("/student");
   return { success: true };

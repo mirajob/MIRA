@@ -148,20 +148,26 @@ export async function uploadTranscript(formData: FormData) {
       .single();
 
     const existingHeader = (headerRow?.prose_content ?? {}) as Partial<HeaderProseContent>;
-    await (supabase.from("card_blocks") as any)
+    const { error: headerWriteError } = await (supabase.from("card_blocks") as any)
       .update({
         prose_content: {
+          universita: existingHeader.universita ?? parsed.university_name ?? "Università Bocconi",
           corso: existingHeader.corso ?? parsed.degree_program ?? null,
           livello: existingHeader.livello ?? parsed.degree_level ?? null,
           anno: existingHeader.anno ?? null,
           laurea_anno: existingHeader.laurea_anno ?? null,
           media_voti: parsed.weighted_average,
+          formazione_precedente: existingHeader.formazione_precedente ?? null,
         },
         status: "draft",
         structured_data: { media_voti: parsed.weighted_average, cfu: parsed.total_credits },
       })
       .eq("student_profile_id", studentProfile.id)
       .eq("block_type", "header");
+    if (headerWriteError) {
+      console.error("[MIRA] transcript-upload header write failed:", headerWriteError);
+      throw new Error("Impossibile salvare i dati del libretto sull'Header.");
+    }
 
     if (parsed.courses.length > 0) {
       const formazioneItems: FormazioneItem[] = parsed.courses.map((c: ParsedCourse) => ({
@@ -175,13 +181,17 @@ export async function uploadTranscript(formData: FormData) {
         origin: "transcript",
       }));
 
-      await (supabase.from("card_blocks") as any)
+      const { error: formazioneWriteError } = await (supabase.from("card_blocks") as any)
         .update({
           prose_content: { items: formazioneItems },
           status: "draft",
         })
         .eq("student_profile_id", studentProfile.id)
         .eq("block_type", "formazione");
+      if (formazioneWriteError) {
+        console.error("[MIRA] transcript-upload formazione write failed:", formazioneWriteError);
+        throw new Error("Impossibile salvare gli esami del libretto.");
+      }
     }
 
     await (supabase.from("ai_logs") as any).insert({
@@ -193,6 +203,9 @@ export async function uploadTranscript(formData: FormData) {
       user_id: profileId,
       input_metadata: { file_name: file.name, file_size: file.size, file_type: file.type },
       output_summary: {
+        university_name: parsed.university_name,
+        degree_program: parsed.degree_program,
+        degree_level: parsed.degree_level,
         courses_found: parsed.courses.length,
         total_credits: parsed.total_credits,
         weighted_average: parsed.weighted_average,

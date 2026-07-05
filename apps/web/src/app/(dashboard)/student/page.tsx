@@ -8,7 +8,6 @@ import { ensureCardBlocksExist } from "@/lib/actions/card-blocks";
 import { HeaderBlock } from "@/components/card/header-block";
 import { DisponibilitaBlock } from "@/components/card/disponibilita-block";
 import { EsperienzeBlock } from "@/components/card/esperienze-block";
-import { FormazioneBlock } from "@/components/card/formazione-block";
 import { CompetenzeBlock } from "@/components/card/competenze-block";
 import { LingueBlock } from "@/components/card/lingue-block";
 import { ProseBlock } from "@/components/card/prose-block";
@@ -116,6 +115,7 @@ export default async function StudentHomePage() {
           proseContent={header.prose_content as HeaderProseContent}
           visibility={header.visibility as HeaderVisibility}
           status={header.status}
+          formazioneItems={(formazione?.prose_content as FormazioneProseContent | undefined)?.items ?? []}
         />
       )}
       {disponibilita && (
@@ -128,12 +128,6 @@ export default async function StudentHomePage() {
         <EsperienzeBlock
           items={(esperienze.prose_content as EsperienzeProseContent).items ?? []}
           status={esperienze.status}
-        />
-      )}
-      {formazione && (
-        <FormazioneBlock
-          items={(formazione.prose_content as FormazioneProseContent).items ?? []}
-          status={formazione.status}
         />
       )}
       {competenze && (

@@ -144,11 +144,25 @@ async function saveFaseBConversation(supabase: any, profileId: string, conversat
     .eq("user_id", profileId);
 }
 
+// Unica lista da cui derivano sia il messaggio "cosa manca" sia il controllo di completezza:
+// tenerle separate (come prima) permette che divergano — es. un campo richiesto da un lato
+// e non controllato dall'altro produce un messaggio vuoto o una card mai "pronta".
+const REQUIRED_HEADER_FIELDS: Array<{ key: keyof HeaderProseContent; label: string }> = [
+  { key: "universita", label: "l'università" },
+  { key: "corso", label: "il corso di laurea" },
+  { key: "livello", label: "il livello di studi" },
+  { key: "anno", label: "l'anno che frequenti" },
+];
+
+function missingHeaderFields(data: HeaderProseContent, transcriptSkipped: boolean): string[] {
+  const missing = REQUIRED_HEADER_FIELDS.filter((f) => !data[f.key]).map((f) => f.label);
+  if (!transcriptSkipped && data.media_voti == null) missing.push("la media (ricarica il libretto)");
+  return missing;
+}
+
 /** Campi richiesti perché l'Header sia completo. La media manca di senso se il libretto è stato saltato. */
 function isHeaderComplete(data: HeaderProseContent, transcriptSkipped: boolean): boolean {
-  const base = !!data.corso && !!data.livello && !!data.anno;
-  if (transcriptSkipped) return base;
-  return base && data.media_voti != null;
+  return missingHeaderFields(data, transcriptSkipped).length === 0;
 }
 
 export async function loadOnboardingState(): Promise<OnboardingState> {
@@ -242,10 +256,14 @@ export async function submitLivello(history: ChatMessage[], userMessage: string)
   );
   const livello = data.degree_level as string | null;
 
-  await (supabase.from("card_blocks") as any)
+  const { error } = await (supabase.from("card_blocks") as any)
     .update({ prose_content: { ...blocks.header.data, livello } })
     .eq("student_profile_id", studentProfileId)
     .eq("block_type", "header");
+  if (error) {
+    console.error("[MIRA] submitLivello card_blocks write failed:", error);
+    throw new Error("Impossibile salvare il livello di studi — riprova.");
+  }
 
   // LEGACY-WRITE(card-rework): rimuovere in Step 5/6.
   await (supabase.from("student_profiles") as any).update({ degree_level: livello }).eq("id", studentProfileId);
@@ -289,10 +307,14 @@ export async function submitPreviousDegree(history: ChatMessage[], userMessage: 
     },
   };
 
-  await (supabase.from("card_blocks") as any)
+  const { error } = await (supabase.from("card_blocks") as any)
     .update({ prose_content: headerData })
     .eq("student_profile_id", studentProfileId)
     .eq("block_type", "header");
+  if (error) {
+    console.error("[MIRA] submitPreviousDegree card_blocks write failed:", error);
+    throw new Error("Impossibile salvare la formazione precedente — riprova.");
+  }
 
   const message = `Grazie. Ora carica il libretto della magistrale: leggo corso, esami, voti e media aggiornati. Se non ce l'hai sotto mano, puoi saltare.`;
   const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
@@ -330,41 +352,40 @@ export async function reactToTranscript(
   return { message, phase: "header_gap" as OnboardingPhase, header: blocks.header, formazione: blocks.formazione };
 }
 
-function missingHeaderFields(data: HeaderProseContent, transcriptSkipped: boolean): string[] {
-  const missing: string[] = [];
-  if (!data.corso) missing.push("il corso di laurea");
-  if (!data.anno) missing.push("l'anno che frequenti");
-  if (!transcriptSkipped && data.media_voti == null) missing.push("");
-  return missing.filter(Boolean);
-}
-
 export async function submitHeaderGap(history: ChatMessage[], userMessage: string) {
   const { supabase, profileId, studentProfileId, student, blocks } = await getOnboardingContext();
   const conversation = [...history, { role: "user" as const, content: userMessage }];
   const transcriptSkipped = conversation.some((m) => m.content === "[Libretto saltato]");
 
   const data = await extractJSON(
-    `Estrai dal messaggio ciò che manca sul percorso accademico: {"corso":"nome corso, o null","anno":0}. Se un campo non emerge, null. Rispondi solo JSON.`,
+    `Estrai dal messaggio ciò che manca sul percorso accademico: {"universita":"nome università, o null","corso":"nome corso, o null","livello":"triennale|magistrale|ciclo_unico, o null","anno":0}. Se un campo non emerge, null. Rispondi solo JSON.`,
     userMessage
   );
 
   const headerData: HeaderProseContent = {
     ...blocks.header.data,
+    universita: blocks.header.data.universita || data.universita || null,
     corso: blocks.header.data.corso || data.corso || null,
+    livello: blocks.header.data.livello || data.livello || null,
     anno: blocks.header.data.anno || data.anno || null,
   };
 
   // LEGACY-WRITE(card-rework): rimuovere in Step 5/6.
-  await (supabase.from("student_profiles") as any)
+  const { error: legacyError } = await (supabase.from("student_profiles") as any)
     .update({ degree_program: headerData.corso, current_year: headerData.anno })
     .eq("id", studentProfileId);
+  if (legacyError) console.error("[MIRA] submitHeaderGap legacy student_profiles write failed:", legacyError);
 
   const complete = isHeaderComplete(headerData, transcriptSkipped);
 
-  await (supabase.from("card_blocks") as any)
+  const { error } = await (supabase.from("card_blocks") as any)
     .update({ prose_content: headerData, status: complete ? "draft" : "empty" })
     .eq("student_profile_id", studentProfileId)
     .eq("block_type", "header");
+  if (error) {
+    console.error("[MIRA] submitHeaderGap card_blocks write failed:", error);
+    throw new Error("Impossibile salvare l'Header — riprova.");
+  }
 
   const message = complete
     ? `Perfetto, la card è pronta — conferma il blocco Header qui a destra per continuare.`
@@ -526,7 +547,7 @@ export async function submitEsperienzaRisposta(
 /** Chiamata dal pannello dopo che Esperienze è stato approvato lì. */
 export async function afterEsperienzeApproved(history: ChatMessage[]) {
   const { supabase, profileId } = await getOnboardingContext();
-  const message = `Ultima cosa della parte essenziale: cosa cerchi — stage, part-time, un progetto — e da quando? Dimmi anche dove, se hai una preferenza.`;
+  const message = `Ultima cosa per sbloccare la candidatura: cosa cerchi — stage, part-time, un progetto — in che ambito o ruolo, e da quando sei disponibile? Anche solo un'indicazione di massima va benissimo, e dimmi pure se hai una preferenza di sede.`;
   const fullConversation = [...history, { role: "assistant" as const, content: message }];
   await saveConversation(supabase, profileId, fullConversation);
   return { message, phase: "disponibilita" as OnboardingPhase };
@@ -537,7 +558,7 @@ export async function submitDisponibilita(history: ChatMessage[], userMessage: s
   const conversation = [...history, { role: "user" as const, content: userMessage }];
 
   const data = await extractJSON(
-    `Estrai dal messaggio: {"cosa_cerca":"stage curriculare|stage extracurriculare|part-time|progetto|nulla per ora","da_quando":"","dove":"","vincoli":""}. Se un campo non emerge, stringa vuota. Rispondi solo JSON.`,
+    `Estrai dal messaggio: {"cosa_cerca":"tipo di opportunità (stage curriculare|stage extracurriculare|part-time|progetto|nulla per ora) e, se menzionato, l'ambito o ruolo desiderato nella stessa frase (es. 'stage in M&A', 'part-time in marketing')","da_quando":"","dove":"","vincoli":""}. Se un campo non emerge, stringa vuota. Rispondi solo JSON.`,
     userMessage
   );
 
@@ -582,11 +603,14 @@ export async function afterDisponibilitaApproved(history: ChatMessage[]) {
     .update({ onboarding_completed: true, onboarding_completed_at: new Date().toISOString() })
     .eq("id", studentProfileId);
 
+  // "formazione" non è un blocco confermabile a sé (è dentro Header): non conta nella percentuale,
+  // per restare coerente con quella mostrata nel pannello (8 blocchi visibili, non 9 righe DB).
   const { data: allBlocks } = await (supabase.from("card_blocks") as any)
     .select("status")
-    .eq("student_profile_id", studentProfileId);
+    .eq("student_profile_id", studentProfileId)
+    .neq("block_type", "formazione");
   const approvedCount = (allBlocks ?? []).filter((b: any) => b.status === "approved").length;
-  const pct = Math.round((approvedCount / 9) * 100);
+  const pct = Math.round((approvedCount / 8) * 100);
 
   const message = `Candidatura sbloccata. La tua card è al ${pct}%: puoi già candidarti alle associazioni su MIRA. Oppure completiamo le ultime sezioni — competenze, interessi, come ti descrivi, piano di carriera — in circa 5 minuti: le associazioni vedono un profilo molto più forte.`;
   const fullConversation = [...history, { role: "assistant" as const, content: message }];
@@ -647,20 +671,27 @@ export async function startFaseB() {
 }
 
 const RESUME_FASE_B_QUESTIONS: Partial<Record<OnboardingPhase, string>> = {
-  lingue: `Che lingue conosci, e a che livello?`,
+  lingue: `Che lingue conosci, e a che livello? (Se il tuo corso è in inglese, indicalo pure insieme alle altre.)`,
   interessi: `Cosa ti interessa a livello professionale — settori, ruoli, tipi di lavoro?`,
   autodescrizione: `Raccontami un progetto di cui vai fiero: che ruolo hai preso?`,
-  piano_carriera: `Come ti vedi nei prossimi 1-2 anni? Direzione chiara, qualche ipotesi, o stai ancora esplorando?`,
 };
+
+/** La domanda si adatta a cosa MIRA sa già: a chi è in magistrale non si chiede più se vuole farla. */
+function pianoCarrieraQuestion(livello: string | null): string {
+  if (livello === "magistrale") {
+    return `Come ti vedi nei prossimi 1-2 anni dopo la magistrale? Hai una direzione professionale precisa, qualche ipotesi, o stai ancora esplorando?`;
+  }
+  return `Come ti vedi nei prossimi 1-2 anni? Magistrale, un periodo di exchange, il primo lavoro in un ambito preciso — hai una direzione chiara, qualche ipotesi, o stai ancora esplorando?`;
+}
 
 /** Resume cross-sessione: un solo messaggio di ripresa, mai il replay dell'intera Fase A. */
 export async function resumeFaseB(phase: OnboardingPhase) {
-  const { supabase, profileId } = await getOnboardingContext();
+  const { supabase, profileId, blocks } = await getOnboardingContext();
 
   if (phase === "competenze") return startFaseB();
   if (phase === "chiusura") return completeChiusura();
 
-  const question = RESUME_FASE_B_QUESTIONS[phase] ?? "Continuiamo?";
+  const question = phase === "piano_carriera" ? pianoCarrieraQuestion(blocks.header.data.livello) : RESUME_FASE_B_QUESTIONS[phase] ?? "Continuiamo?";
   const message = `Bentornato! Completiamo insieme le ultime sezioni della tua card.\n\n${question}`;
   await saveFaseBConversation(supabase, profileId, [{ role: "assistant", content: message }]);
   return { message, phase };
@@ -836,8 +867,8 @@ export async function submitAutodescrizioneRisposta(history: ChatMessage[], user
 }
 
 export async function afterAutodescrizioneApproved(history: ChatMessage[]) {
-  const { supabase, profileId } = await getOnboardingContext();
-  const message = RESUME_FASE_B_QUESTIONS.piano_carriera!;
+  const { supabase, profileId, blocks } = await getOnboardingContext();
+  const message = pianoCarrieraQuestion(blocks.header.data.livello);
   const fullConversation = [...history, { role: "assistant" as const, content: message }];
   await saveFaseBConversation(supabase, profileId, fullConversation);
   return { message, phase: "piano_carriera" as OnboardingPhase };

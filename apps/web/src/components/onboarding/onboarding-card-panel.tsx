@@ -3,7 +3,6 @@
 import { HeaderBlock } from "@/components/card/header-block";
 import { DisponibilitaBlock } from "@/components/card/disponibilita-block";
 import { EsperienzeBlock } from "@/components/card/esperienze-block";
-import { FormazioneBlock } from "@/components/card/formazione-block";
 import { CompetenzeBlock } from "@/components/card/competenze-block";
 import { LingueBlock } from "@/components/card/lingue-block";
 import { ProseBlock } from "@/components/card/prose-block";
@@ -16,11 +15,12 @@ interface OnboardingCardPanelProps {
   onApproved: (blockType: CardBlockType) => void;
 }
 
+// "formazione" non compare qui: gli esami sono una sezione espandibile dentro Header,
+// non un blocco confermabile a sé (approvato insieme all'Header via alsoApprove).
 const BLOCK_ORDER: CardBlockType[] = [
   "header",
   "disponibilita",
   "esperienze",
-  "formazione",
   "competenze",
   "lingue",
   "autodescrizione",
@@ -50,6 +50,7 @@ export function OnboardingCardPanel({ blocks, onApproved }: OnboardingCardPanelP
           proseContent={blocks.header.data}
           visibility={blocks.header.visibility}
           status={blocks.header.status}
+          formazioneItems={blocks.formazione.data.items}
           onApproved={() => onApproved("header")}
         />
         <DisponibilitaBlock
@@ -61,11 +62,6 @@ export function OnboardingCardPanel({ blocks, onApproved }: OnboardingCardPanelP
           items={blocks.esperienze.data.items}
           status={blocks.esperienze.status}
           onApproved={() => onApproved("esperienze")}
-        />
-        <FormazioneBlock
-          items={blocks.formazione.data.items}
-          status={blocks.formazione.status}
-          onApproved={() => onApproved("formazione")}
         />
         <CompetenzeBlock
           items={blocks.competenze.data.items}
