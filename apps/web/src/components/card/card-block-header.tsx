@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { approveCardBlock } from "@/lib/actions/card-blocks";
 import type { CardBlockStatus, CardBlockType } from "@mira/types";
 
@@ -21,6 +21,14 @@ export function CardBlockHeader({
 }) {
   const [pending, startTransition] = useTransition();
   const [localStatus, setLocalStatus] = useState(status);
+
+  // Questo componente non viene rimontato tra un resync e l'altro nel pannello onboarding
+  // (stessa posizione nell'albero React): senza questo effetto, localStatus resterebbe
+  // bloccato al valore del primissimo mount ("empty") anche quando il server passa a "draft" —
+  // il bottone Conferma non comparirebbe mai finché non si ricarica l'intera pagina.
+  useEffect(() => {
+    setLocalStatus(status);
+  }, [status]);
 
   function handleApprove() {
     setLocalStatus("approved");
