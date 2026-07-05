@@ -213,7 +213,7 @@ async function extractJSON(systemPrompt: string, userText: string): Promise<any>
 }
 
 export async function submitDatiBase(history: ChatMessage[], userMessage: string) {
-  const { supabase, profileId, studentProfileId } = await getOnboardingContext();
+  const { supabase, profileId, studentProfileId, blocks, student } = await getOnboardingContext();
   const conversation = [...history, { role: "user" as const, content: userMessage }];
 
   const data = await extractJSON(
@@ -221,33 +221,40 @@ export async function submitDatiBase(history: ChatMessage[], userMessage: string
     userMessage
   );
 
+  // Merge con la bozza già esistente: uno studente può dare le info su più turni
+  // (es. "triennale" prima, il nome del corso dopo) senza perdere quanto già detto.
+  const existing = blocks.header.data;
+  const degreeProgram = data.degree_program || existing.corso || null;
+  const degreeLevel = data.degree_level || existing.livello || null;
+  const currentYear = data.current_year || existing.anno || null;
+
   // LEGACY-WRITE(card-rework): rimuovere in Step 5/6.
   await (supabase.from("student_profiles") as any)
-    .update({
-      degree_program: data.degree_program || null,
-      degree_level: data.degree_level || null,
-      current_year: data.current_year || null,
-    })
+    .update({ degree_program: degreeProgram, degree_level: degreeLevel, current_year: currentYear })
     .eq("id", studentProfileId);
 
+  const headerData: HeaderProseContent = {
+    corso: degreeProgram,
+    livello: degreeLevel,
+    anno: currentYear,
+    laurea_anno: null,
+    media_voti: null,
+  };
+
   await (supabase.from("card_blocks") as any)
-    .update({
-      prose_content: {
-        corso: data.degree_program || null,
-        livello: data.degree_level || null,
-        anno: data.current_year || null,
-        laurea_anno: null,
-        media_voti: null,
-      },
-      status: "draft",
-    })
+    .update({ prose_content: headerData, status: "draft" })
     .eq("student_profile_id", studentProfileId)
     .eq("block_type", "header");
 
   let message: string;
   let phase: OnboardingPhase;
 
-  if (data.degree_level === "magistrale") {
+  if (!degreeProgram) {
+    // Manca ancora il corso: non invitare a confermare un blocco incompleto,
+    // chiedi solo quello che manca (non ripetere le domande già risposte).
+    message = `Perfetto. Mi manca solo il nome del corso di laurea — quale corso segui?`;
+    phase = "dati_base";
+  } else if (degreeLevel === "magistrale" && !(student.availability as any)?.previous_degree?.university) {
     message = `Perfetto. Se sei in magistrale, prima di andare avanti ho bisogno di ricostruire brevemente la tua carriera precedente. In quale università hai fatto la triennale, con che corso e con che voto ti sei laureato? Se vuoi, dimmi anche su cosa hai fatto la tesi.`;
     phase = "dati_base_magistrale";
   } else {
@@ -257,14 +264,6 @@ export async function submitDatiBase(history: ChatMessage[], userMessage: string
 
   const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
   await saveConversation(supabase, profileId, fullConversation);
-
-  const headerData: HeaderProseContent = {
-    corso: data.degree_program || null,
-    livello: data.degree_level || null,
-    anno: data.current_year || null,
-    laurea_anno: null,
-    media_voti: null,
-  };
 
   return { message, phase, header: { status: "draft" as CardBlockStatus, data: headerData } };
 }
@@ -384,9 +383,24 @@ export async function submitEsperienzaRisposta(
     const cv = student.cv_summary as { experiences?: Array<{ title: string; organization: string }> } | null;
     const experiences = cv?.experiences ?? [];
     const next = experiences[subIndex + 1];
-    const message = next
-      ? `Segnato. Su ${next.title} @ ${next.organization} — cosa hai fatto tu, concretamente?`
+    const nextQuestion = next
+      ? `Su ${next.title} @ ${next.organization} — cosa hai fatto tu, concretamente?`
       : HIDDEN_EXPERIENCE_QUESTION;
+
+    // Breve reazione reale a quello che ha appena detto, non un "Segnato" fisso —
+    // altrimenti sembra che MIRA non legga le risposte.
+    const reaction = await chatCompletion(
+      [
+        {
+          role: "system",
+          content: `Lo studente ha appena risposto a una domanda su un'esperienza. Scrivi UNA riga breve che reagisca concretamente a quello che ha detto (fatti, non entusiasmo generico tipo "fantastico!"). Poi, a capo, prosegui con la prossima domanda esatta che ti viene data. Rispondi SOLO con il testo finale del messaggio, niente JSON.`,
+        },
+        { role: "user", content: `Risposta studente: "${userMessage}"\n\nProssima domanda da porre: "${nextQuestion}"` },
+      ],
+      { temperature: 0.4, maxTokens: 150 }
+    );
+
+    const message = reaction.trim() || nextQuestion;
     const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
     await saveConversation(supabase, profileId, fullConversation);
     return { message, phase: "esperienze" as OnboardingPhase, done: false };

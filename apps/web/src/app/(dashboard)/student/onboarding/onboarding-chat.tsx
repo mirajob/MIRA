@@ -57,6 +57,8 @@ export function OnboardingChat({ userName }: { userName: string }) {
   const [autoSubIndex, setAutoSubIndex] = useState(0);
   const [complete, setComplete] = useState(false);
   const [cardOpenMobile, setCardOpenMobile] = useState(false);
+  const [transcriptDone, setTranscriptDone] = useState(false);
+  const [cvDone, setCvDone] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const transcriptFileRef = useRef<HTMLInputElement>(null);
@@ -110,6 +112,13 @@ export function OnboardingChat({ userName }: { userName: string }) {
     if (!loading && !uploading && !GATED_PHASES.includes(phase)) inputRef.current?.focus();
   }, [loading, uploading, phase]);
 
+  /** Rilettura completa dal server: mai fidarsi solo dei merge ottimistici parziali,
+   * che possono disallinearsi dallo stato reale (es. dopo una revalidatePath). */
+  async function resyncBlocks() {
+    const fresh = await loadOnboardingState();
+    setBlocks(fresh.blocks);
+  }
+
   function appendAssistant(message: string) {
     setMessages((prev) => [...prev, { role: "assistant", content: message }]);
   }
@@ -129,13 +138,13 @@ export function OnboardingChat({ userName }: { userName: string }) {
       if (correctingBlock) {
         const result = await submitCorrection(correctingBlock, history, userMessage);
         appendAssistant(result.message);
-        setBlocks(result.blocks);
         setCorrectingBlock(null);
+        await resyncBlocks();
       } else if (phase === "dati_base") {
         const result = await submitDatiBase(history, userMessage);
         appendAssistant(result.message);
-        setBlocks((b) => ({ ...b, header: result.header }));
         setPhase(result.phase);
+        await resyncBlocks();
       } else if (phase === "dati_base_magistrale") {
         const result = await submitPreviousDegree(history, userMessage);
         appendAssistant(result.message);
@@ -143,39 +152,39 @@ export function OnboardingChat({ userName }: { userName: string }) {
       } else if (phase === "esperienze") {
         const result = await submitEsperienzaRisposta(history, userMessage, expIndex, expTotal);
         appendAssistant(result.message);
-        if (result.done && result.items) {
-          setBlocks((b) => ({ ...b, esperienze: { status: "draft", data: { items: result.items! } } }));
+        if (result.done) {
+          await resyncBlocks();
         } else {
           setExpIndex((i) => i + 1);
         }
       } else if (phase === "disponibilita") {
         const result = await submitDisponibilita(history, userMessage);
         appendAssistant(result.message);
-        if (result.disponibilita) setBlocks((b) => ({ ...b, disponibilita: result.disponibilita! }));
+        await resyncBlocks();
       } else if (phase === "lingue") {
         const result = await submitLingue(history, userMessage);
         appendAssistant(result.message);
-        setBlocks((b) => ({ ...b, lingue: result.lingue }));
+        await resyncBlocks();
       } else if (phase === "interessi") {
         const result = await submitInteressi(history, userMessage, interessiSubIndex);
         appendAssistant(result.message);
-        if (result.done && result.interessi) {
-          setBlocks((b) => ({ ...b, interessi: result.interessi! }));
+        if (result.done) {
+          await resyncBlocks();
         } else {
           setInteressiSubIndex(1);
         }
       } else if (phase === "autodescrizione") {
         const result = await submitAutodescrizioneRisposta(history, userMessage, autoSubIndex);
         appendAssistant(result.message);
-        if (result.done && result.autodescrizione) {
-          setBlocks((b) => ({ ...b, autodescrizione: result.autodescrizione! }));
+        if (result.done) {
+          await resyncBlocks();
         } else {
           setAutoSubIndex((i) => i + 1);
         }
       } else if (phase === "piano_carriera") {
         const result = await submitPianoCarriera(history, userMessage);
         appendAssistant(result.message);
-        setBlocks((b) => ({ ...b, piano_carriera: result.piano_carriera }));
+        await resyncBlocks();
       }
     } finally {
       setLoading(false);
@@ -184,6 +193,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
 
   async function handleConfirm(blockType: CardBlockType) {
     setConfirmingBlock(blockType);
+    setCorrectingBlock(null);
     const history = messages;
     try {
       if (blockType === "header") {
@@ -237,6 +247,8 @@ export function OnboardingChat({ userName }: { userName: string }) {
           router.refresh();
         }, 3000);
       }
+      // Rilettura completa dopo il salvataggio ottimistico: fonte di verità è il server.
+      await resyncBlocks();
     } finally {
       setConfirmingBlock(null);
     }
@@ -247,12 +259,16 @@ export function OnboardingChat({ userName }: { userName: string }) {
     inputRef.current?.focus();
   }
 
+  function cancelCorrecting() {
+    setCorrectingBlock(null);
+  }
+
   async function handleContinueNow() {
     setLoading(true);
     const result = await startFaseB();
     appendAssistant(result.message);
-    setBlocks((b) => ({ ...b, competenze: result.competenze }));
     setPhase("competenze");
+    await resyncBlocks();
     setLoading(false);
   }
 
@@ -289,7 +305,8 @@ export function OnboardingChat({ userName }: { userName: string }) {
       weightedAverage: result.parsed.weighted_average,
     });
     appendAssistant(reaction.message);
-    setBlocks((b) => ({ ...b, header: reaction.header, formazione: reaction.formazione }));
+    setTranscriptDone(true);
+    await resyncBlocks();
     setUploading(false);
     if (transcriptFileRef.current) transcriptFileRef.current.value = "";
   }
@@ -300,6 +317,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
     const result = await skipTranscript(history);
     appendAssistant(result.message);
     setPhase(result.phase);
+    setTranscriptDone(true);
   }
 
   async function handleCVFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -321,6 +339,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
     setPhase(reaction.phase);
     setExpIndex(0);
     setExpTotal(reaction.totalExperienceQuestions);
+    setCvDone(true);
     setUploading(false);
     if (cvFileRef.current) cvFileRef.current.value = "";
   }
@@ -333,6 +352,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
     setPhase(result.phase);
     setExpIndex(0);
     setExpTotal(result.totalExperienceQuestions);
+    setCvDone(true);
   }
 
   async function handleForceComplete() {
@@ -441,7 +461,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
 
         {!complete ? (
           <div className="border-t border-border px-6 py-3 shrink-0">
-            {phase === "transcript" && (
+            {phase === "transcript" && !transcriptDone && (
               <div className="flex gap-3 mb-3">
                 <input ref={transcriptFileRef} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleTranscriptFile} className="hidden" />
                 <button
@@ -459,6 +479,9 @@ export function OnboardingChat({ userName }: { userName: string }) {
                   Salta
                 </button>
               </div>
+            )}
+            {phase === "transcript" && transcriptDone && (
+              <p className="text-body-sm text-ink-tertiary mb-3">Conferma il blocco Formazione qui a destra per continuare →</p>
             )}
             {phase === "gate" && (
               <div className="flex gap-3 mb-3">
@@ -478,7 +501,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
                 </button>
               </div>
             )}
-            {phase === "cv" && (
+            {phase === "cv" && !cvDone && (
               <div className="flex gap-3 mb-3">
                 <input ref={cvFileRef} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleCVFile} className="hidden" />
                 <button
@@ -494,6 +517,14 @@ export function OnboardingChat({ userName }: { userName: string }) {
                   className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
                 >
                   Salta
+                </button>
+              </div>
+            )}
+            {correctingBlock && (
+              <div className="flex items-center justify-between gap-3 mb-3 rounded-md bg-warning-bg px-3 py-2">
+                <p className="text-body-sm text-warning">Stai correggendo: {correctingBlock} — scrivi la correzione e invia.</p>
+                <button onClick={cancelCorrecting} className="text-xs text-ink-secondary hover:text-navy underline underline-offset-2">
+                  Annulla
                 </button>
               </div>
             )}
