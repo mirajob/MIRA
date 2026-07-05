@@ -98,10 +98,17 @@ export function CandidateCard(props: CandidateCardProps) {
             {props.formazione.data.items.map((it) => (
               <div key={it.id} className="flex items-center justify-between text-body-sm">
                 <span className="text-ink">{it.esame}</span>
-                <span className="text-ink-secondary">{it.voto} <span className="text-xs text-success font-medium">verificata</span></span>
+                {/* Stesso toggle "Visibilità media voti" dell'Header: se lo studente non ha
+                    condiviso la media, nemmeno i voti dei singoli esami vanno mostrati. */}
+                {showMedia ? (
+                  <span className="text-ink-secondary">{it.voto} <span className="text-xs text-success font-medium">verificata</span></span>
+                ) : (
+                  <span className="text-xs text-success font-medium">verificata</span>
+                )}
               </div>
             ))}
           </div>
+          {!showMedia && <p className="text-[10px] text-ink-tertiary italic pt-2 mt-2 border-t border-border">Voti non condivisi dallo studente</p>}
         </Block>
       )}
 
