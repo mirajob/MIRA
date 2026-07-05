@@ -54,6 +54,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
   const [autoSubIndex, setAutoSubIndex] = useState(0);
   const [complete, setComplete] = useState(false);
   const [cardOpenMobile, setCardOpenMobile] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const transcriptFileRef = useRef<HTMLInputElement>(null);
@@ -63,35 +64,40 @@ export function OnboardingChat({ userName }: { userName: string }) {
 
   useEffect(() => {
     async function init() {
-      const state = await loadOnboardingState();
-      setBlocks(state.blocks);
+      try {
+        const state = await loadOnboardingState();
+        setBlocks(state.blocks);
 
-      if (state.phase === "welcome") {
-        const { message } = await startOnboarding(firstName);
-        setMessages([{ role: "assistant", content: message }]);
-        setPhase("livello");
-      } else if (FASE_B_PHASES.includes(state.phase) && !state.faseBStarted) {
-        // Prima volta in Fase B (subito dopo il gate, o al rientro in una nuova sessione):
-        // un solo messaggio di ripresa, mai il replay della Fase A.
-        if (state.phase === "competenze") {
-          const result = await startFaseB();
-          setMessages([{ role: "assistant", content: result.message }]);
-          setBlocks((b) => ({ ...b, competenze: result.competenze }));
+        if (state.phase === "welcome") {
+          const { message } = await startOnboarding(firstName);
+          setMessages([{ role: "assistant", content: message }]);
+          setPhase("livello");
+        } else if (FASE_B_PHASES.includes(state.phase) && !state.faseBStarted) {
+          // Prima volta in Fase B (subito dopo il gate, o al rientro in una nuova sessione):
+          // un solo messaggio di ripresa, mai il replay della Fase A.
+          if (state.phase === "competenze") {
+            const result = await startFaseB();
+            setMessages([{ role: "assistant", content: result.message }]);
+            setBlocks((b) => ({ ...b, competenze: result.competenze }));
+          } else {
+            const result = await resumeFaseB(state.phase);
+            setMessages([{ role: "assistant", content: result.message }]);
+          }
+          setPhase(state.phase);
+          if (state.phase === "chiusura") setComplete(true);
         } else {
-          const result = await resumeFaseB(state.phase);
-          setMessages([{ role: "assistant", content: result.message }]);
+          setMessages(state.conversation);
+          setPhase(state.phase);
+          if (state.phase === "esperienze") {
+            // Resume semplificato: si riparte dalla domanda sulle esperienze nascoste,
+            // non si ricostruisce la posizione esatta nel sotto-ciclo del CV.
+            setExpIndex(0);
+            setExpTotal(1);
+          }
         }
-        setPhase(state.phase);
-        if (state.phase === "chiusura") setComplete(true);
-      } else {
-        setMessages(state.conversation);
-        setPhase(state.phase);
-        if (state.phase === "esperienze") {
-          // Resume semplificato: si riparte dalla domanda sulle esperienze nascoste,
-          // non si ricostruisce la posizione esatta nel sotto-ciclo del CV.
-          setExpIndex(0);
-          setExpTotal(1);
-        }
+      } catch (err) {
+        console.error("[MIRA] onboarding init failed:", err);
+        setLoadError(err instanceof Error ? err.message : "Errore imprevisto nel caricamento della card.");
       }
       setLoading(false);
     }
@@ -182,6 +188,13 @@ export function OnboardingChat({ userName }: { userName: string }) {
         appendAssistant(result.message);
         await resyncBlocks();
       }
+    } catch (err) {
+      console.error("[MIRA] handleSend failed:", err);
+      appendAssistant(
+        err instanceof Error
+          ? `Si è verificato un errore: ${err.message}`
+          : "Si è verificato un errore imprevisto. Riprova."
+      );
     } finally {
       setLoading(false);
     }
@@ -191,6 +204,20 @@ export function OnboardingChat({ userName }: { userName: string }) {
    * decide solo la prossima domanda; mai richiama approveCardBlock (già fatto dal click). */
   async function handleBlockApproved(blockType: CardBlockType) {
     const history = messages;
+    try {
+      await handleBlockApprovedInner(blockType, history);
+    } catch (err) {
+      console.error("[MIRA] handleBlockApproved failed:", err);
+      appendAssistant(
+        err instanceof Error
+          ? `Si è verificato un errore: ${err.message}`
+          : "Si è verificato un errore imprevisto. Riprova."
+      );
+    }
+    await resyncBlocks();
+  }
+
+  async function handleBlockApprovedInner(blockType: CardBlockType, history: ChatMessage[]) {
     if (blockType === "header") {
       const result = await afterHeaderApproved(history);
       appendAssistant(result.message);
@@ -230,7 +257,6 @@ export function OnboardingChat({ userName }: { userName: string }) {
       }, 3000);
     }
     // Formazione non ha una fase propria: viene approvata insieme all'Header (alsoApprove).
-    await resyncBlocks();
   }
 
   async function handleContinueNow() {
@@ -367,6 +393,18 @@ export function OnboardingChat({ userName }: { userName: string }) {
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-4 px-6 py-4 min-h-0">
+          {loadError && (
+            <div className="rounded-lg border border-error/30 bg-error-bg px-4 py-3">
+              <p className="text-body-sm font-medium text-error">Non sono riuscito a caricare la tua card.</p>
+              <p className="text-body-sm text-error/80 mt-1">{loadError}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-2 text-xs font-medium text-error underline underline-offset-2"
+              >
+                Ricarica la pagina
+              </button>
+            </div>
+          )}
           {messages.map((msg, i) => {
             const isMarker =
               msg.role === "user" &&

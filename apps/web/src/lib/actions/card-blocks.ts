@@ -62,15 +62,15 @@ const DEFAULT_PROSE_CONTENT: Record<CardBlockType, unknown> = {
 /** Idempotent: creates any of the 9 rows missing for a student (e.g. accounts created after the Step 1 backfill). */
 export async function ensureCardBlocksExist(studentProfileId: string) {
   const supabase = await createServiceClient();
+  // Ogni riga deve avere lo STESSO insieme di chiavi: upsert() invia l'array come un unico
+  // batch e PostgREST può fallire (o comportarsi in modo incoerente) se gli oggetti hanno
+  // chiavi diverse tra loro — mai rendere `visibility` condizionale al block_type per questo.
   const rows = ALL_BLOCK_TYPES.map((block_type) => ({
     student_profile_id: studentProfileId,
     block_type,
     prose_content: DEFAULT_PROSE_CONTENT[block_type],
-    // header needs a populated visibility shape from the start (HeaderBlock reads
-    // visibility.media_voti directly) — every other block is fine with the {} column default.
-    ...(block_type === "header"
-      ? { visibility: { media_voti: { associazioni: false, aziende: false } } }
-      : {}),
+    visibility:
+      block_type === "header" ? { media_voti: { associazioni: false, aziende: false } } : {},
   }));
 
   const { error } = await (supabase.from("card_blocks") as any).upsert(rows, {
