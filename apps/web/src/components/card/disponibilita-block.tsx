@@ -36,10 +36,10 @@ export function DisponibilitaBlock({
   }
 
   const fields: Array<{ key: keyof DisponibilitaProseContent; label: string; placeholder: string }> = [
-    { key: "cosa_cerca", label: "Cosa cerca", placeholder: "es. stage curriculare, part-time..." },
-    { key: "da_quando", label: "Da quando", placeholder: "es. da settembre 2026" },
+    { key: "cosa_cerca", label: "Cosa cerca", placeholder: "es. stage curriculare, part-time, non in cerca..." },
+    { key: "ambito", label: "Ambito", placeholder: "es. venture capital, marketing..." },
+    { key: "periodo", label: "Periodo", placeholder: "es. da settembre 2026, da giugno ad agosto..." },
     { key: "dove", label: "Dove", placeholder: "es. Milano, full remote..." },
-    { key: "vincoli", label: "Vincoli", placeholder: "es. massimo 3 giorni a settimana" },
   ];
 
   return (
@@ -76,7 +76,7 @@ export function DisponibilitaBlock({
 
 /** Resa di sola lettura, riusata dal Profilo (default) e dalla vista associazione/azienda. */
 export function DisponibilitaView({ data }: { data: DisponibilitaProseContent }) {
-  const pills = [data.cosa_cerca, data.da_quando, data.dove, data.vincoli].filter(Boolean) as string[];
+  const pills = [data.cosa_cerca, data.ambito, data.periodo, data.dove].filter(Boolean) as string[];
   return (
     <div className="p-5">
       <p className="text-eyebrow text-navy/60 uppercase mb-2">Disponibilità</p>

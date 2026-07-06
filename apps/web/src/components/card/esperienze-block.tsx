@@ -1,7 +1,6 @@
 "use client";
 
 import { ListBlock, ListView, type ListFieldConfig } from "./list-block";
-import { originLabel } from "@/lib/origin-label";
 import type { CardBlockStatus, EsperienzaItem } from "@mira/types";
 
 const fields: ListFieldConfig<EsperienzaItem>[] = [
@@ -57,12 +56,7 @@ export function EsperienzeView({ items }: { items: EsperienzaItem[] }) {
       emptyLabel="Nessuna esperienza ancora."
       renderItem={(it) => (
         <div>
-          <div className="flex items-start justify-between gap-2">
-            <p className="text-body-sm font-medium text-ink">{it.titolo || it.organizzazione}</p>
-            <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-navy-50 text-navy-700">
-              {originLabel(it.origin)}
-            </span>
-          </div>
+          <p className="text-body-sm font-medium text-ink">{it.titolo || it.organizzazione}</p>
           <p className="text-body-sm text-ink-secondary">{it.descrizione}</p>
         </div>
       )}

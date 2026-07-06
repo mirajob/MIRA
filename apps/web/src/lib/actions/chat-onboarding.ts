@@ -562,7 +562,7 @@ export async function submitEsperienzaRisposta(
 /** Chiamata dal pannello dopo che Esperienze è stato approvato lì. */
 export async function afterEsperienzeApproved(history: ChatMessage[]) {
   const { supabase, profileId } = await getOnboardingContext();
-  const message = `Ultima cosa per sbloccare la candidatura: cosa cerchi — stage, part-time, un progetto — in che ambito o ruolo, e da quando sei disponibile? Anche solo un'indicazione di massima va benissimo, e dimmi pure se hai una preferenza di sede.`;
+  const message = `Ultima cosa per sbloccare la candidatura: hai una disponibilità lavorativa da indicare, così le aziende possono trovarti quando sei compatibile? Dimmi cosa cerchi — uno stage in un ambito specifico, un part-time, un progetto — e da quando: va bene sia una data aperta ("da settembre in avanti") sia un periodo preciso ("da giugno ad agosto"). Dimmi pure se hai una preferenza di sede. Se invece non sei in cerca al momento o sei già impegnato altrove, dimmelo pure: va bene anche così.`;
   const fullConversation = [...history, { role: "assistant" as const, content: message }];
   await saveConversation(supabase, profileId, fullConversation);
   return { message, phase: "disponibilita" as OnboardingPhase };
@@ -573,15 +573,15 @@ export async function submitDisponibilita(history: ChatMessage[], userMessage: s
   const conversation = [...history, { role: "user" as const, content: userMessage }];
 
   const data = await extractJSON(
-    `Estrai dal messaggio: {"cosa_cerca":"tipo di opportunità (stage curriculare|stage extracurriculare|part-time|progetto|nulla per ora) e, se menzionato, l'ambito o ruolo desiderato nella stessa frase (es. 'stage in M&A', 'part-time in marketing')","da_quando":"","dove":"","vincoli":""}. Se un campo non emerge, stringa vuota. Rispondi solo JSON.`,
+    `Estrai dal messaggio: {"cosa_cerca":"tipo di opportunità: stage curriculare|stage extracurriculare|part-time|progetto|non in cerca|già occupato","ambito":"settore o ruolo cercato, es. venture capital, marketing, finanza","periodo":"il quando: una data di inizio aperta (es. 'da settembre 2026'), un intervallo preciso (es. 'da giugno ad agosto 2026'), o uno stato speciale se già occupato/non in cerca (es. 'già impegnato fino a dicembre')","dove":""}. Se un campo non emerge, stringa vuota. Rispondi solo JSON.`,
     userMessage
   );
 
   const disponibilitaData: DisponibilitaProseContent = {
     cosa_cerca: data.cosa_cerca || null,
-    da_quando: data.da_quando || null,
+    ambito: data.ambito || null,
+    periodo: data.periodo || null,
     dove: data.dove || null,
-    vincoli: data.vincoli || null,
   };
 
   await (supabase.from("card_blocks") as any)
@@ -597,7 +597,7 @@ export async function submitDisponibilita(history: ChatMessage[], userMessage: s
         ...existingAvail,
         status: data.cosa_cerca || null,
         type: data.cosa_cerca || null,
-        period: data.da_quando || null,
+        period: data.periodo || null,
         city: data.dove || null,
       },
     })
@@ -642,6 +642,19 @@ export async function afterDisponibilitaApproved(history: ChatMessage[]) {
 // solo adattata a non chiamare più approveCardBlock da sola (fatto dal pannello).
 // ---------------------------------------------------------------------------
 
+/** Distingue esplicitamente esperienza (cosa hai fatto) da competenza (cosa hai imparato/sai fare) —
+ * senza questo l'AI tende a ricopiare la descrizione dell'esperienza come se fosse una competenza. */
+const COMPETENZE_EXTRACTION_PROMPT = `Proponi competenze concrete, una per riga, derivate dai fatti elencati (esami o esperienze reali, mai inventate).
+
+DIFFERENZA FONDAMENTALE (non confonderla mai):
+- Un'ESPERIENZA è un'attività che lo studente ha fatto (un progetto, un programma, un'iniziativa) — è già scritta nei fatti sotto, non va ripetuta.
+- Una COMPETENZA è un'abilità trasferibile che lo studente ha imparato o dimostrato facendo quella cosa — MAI una parafrasi o un riassunto dell'esperienza stessa.
+
+Esempio SBAGLIATO (vietato): esperienza "Ha costruito una piattaforma AI-first per l'orientamento professionale, usando Claude Code, Vercel, Supabase" → competenza "Sviluppo di una piattaforma AI-first per l'orientamento professionale" (è solo una copia del fatto, non un'abilità).
+Esempio CORRETTO per la stessa esperienza → competenze come "Uso di strumenti di sviluppo AI-assisted (Claude Code, Vercel, Supabase)" oppure "Capacità di portare avanti un progetto in autonomia dall'idea al prodotto funzionante".
+
+Per ogni esame proponi al massimo una competenza teorica (quella più specifica e rilevante — mai generica tipo "conoscenza della materia"). Per ogni esperienza proponi 1-2 competenze applicate concrete. Ogni competenza indica se è "teorica" o "applicata" e a quale esame/esperienza fa riferimento (evidenza) — mai una competenza senza un'evidenza reale nei fatti forniti. Vietati aggettivi di carattere. Rispondi SOLO in JSON: {"items":[{"testo":"","tipo":"teorica|applicata","evidenza_ref":""}]}`;
+
 export async function startFaseB() {
   const { supabase, profileId, blocks } = await getOnboardingContext();
 
@@ -652,13 +665,10 @@ export async function startFaseB() {
 
   const extracted = await chatCompletion(
     [
-      {
-        role: "system",
-        content: `Proponi 2-4 competenze concrete in formato frase-di-una-riga, derivate SOLO dai fatti elencati (esami o esperienze reali, mai inventati). Ogni competenza indica se è "teorica" o "applicata" e a quale esame/esperienza fa riferimento (evidenza). Vietati aggettivi di carattere. Rispondi SOLO in JSON: {"items":[{"testo":"","tipo":"teorica|applicata","evidenza_ref":""}]}`,
-      },
+      { role: "system", content: COMPETENZE_EXTRACTION_PROMPT },
       { role: "user", content: contextLines || "Nessun esame o esperienza disponibile." },
     ],
-    { temperature: 0.3, maxTokens: 600, jsonMode: true }
+    { temperature: 0.3, maxTokens: 700, jsonMode: true }
   );
 
   const parsed = JSON.parse(extracted);
@@ -712,7 +722,7 @@ export async function submitCompetenzeAggiunta(history: ChatMessage[], userMessa
     [
       {
         role: "system",
-        content: `Lo studente vuole aggiungere competenze alla sua card. Dal suo messaggio, collegale ai fatti elencati (esami o esperienze reali — mai inventare un'evidenza). Se menziona un esame o un'esperienza non presente nella lista, ignora quella competenza (senza evidenza reale non entra in card). Ogni competenza è una frase concreta di una riga, "teorica" o "applicata". Vietati aggettivi di carattere. Rispondi SOLO in JSON: {"items":[{"testo":"","tipo":"teorica|applicata","evidenza_ref":""}]}`,
+        content: `${COMPETENZE_EXTRACTION_PROMPT}\n\nLo studente ha scritto un messaggio in chat per aggiungere competenze — collegale ai fatti elencati sotto (mai inventare un'evidenza). Se menziona un esame o un'esperienza non presente nella lista, ignora quella competenza (senza evidenza reale non entra in card).`,
       },
       { role: "user", content: `Fatti disponibili:\n${contextLines || "nessuno"}\n\nMessaggio studente: "${userMessage}"` },
     ],

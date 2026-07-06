@@ -20,7 +20,7 @@ export const EMPTY_ONBOARDING_BLOCKS: OnboardingBlocksState = {
   },
   formazione: { status: "empty", data: { items: [] } },
   esperienze: { status: "empty", data: { items: [] } },
-  disponibilita: { status: "empty", data: { cosa_cerca: null, da_quando: null, dove: null, vincoli: null } },
+  disponibilita: { status: "empty", data: { cosa_cerca: null, ambito: null, periodo: null, dove: null } },
   competenze: { status: "empty", data: { items: [] } },
   lingue: { status: "empty", data: { items: [] } },
   interessi: { status: "empty", data: { testo: null } },

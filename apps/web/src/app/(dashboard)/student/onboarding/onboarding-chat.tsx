@@ -371,10 +371,10 @@ export function OnboardingChat({ userName }: { userName: string }) {
 
   const userMessageCount = messages.filter((m) => m.role === "user").length;
   const isWorking = loading || uploading;
-  const cardPanel = <OnboardingCardPanel blocks={blocks} onApproved={handleBlockApproved} />;
+  const cardPanel = <OnboardingCardPanel blocks={blocks} phase={phase} onApproved={handleBlockApproved} />;
 
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-[1fr_400px] h-full">
+    <div className="flex flex-col lg:grid lg:grid-cols-[1fr_520px] h-full">
       <div className="flex flex-col h-full min-h-0">
         <div className="px-6 py-3 flex items-center justify-between shrink-0 border-b border-border">
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />

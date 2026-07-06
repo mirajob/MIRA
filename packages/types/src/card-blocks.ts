@@ -42,10 +42,14 @@ export interface HeaderVisibility {
 }
 
 export interface DisponibilitaProseContent {
+  /** Tipo di opportunità: stage curriculare/extracurriculare, part-time, progetto — o "non in cerca"/"già occupato". */
   cosa_cerca: string | null;
-  da_quando: string | null;
+  /** Settore o ruolo cercato, es. "venture capital", "marketing". */
+  ambito: string | null;
+  /** Il "quando": una data di inizio aperta ("da settembre 2026"), un intervallo ("da giugno ad agosto 2026"),
+   * o uno stato speciale ("già occupato fino a dicembre", "non in cerca al momento"). */
+  periodo: string | null;
   dove: string | null;
-  vincoli: string | null;
 }
 
 export interface EsperienzaItem {

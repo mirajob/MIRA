@@ -49,7 +49,7 @@ async function getStudentProfileId(): Promise<string> {
 // backfill (rows made only by this function, never touched by the backfill migration).
 const DEFAULT_PROSE_CONTENT: Record<CardBlockType, unknown> = {
   header: { universita: "Università Bocconi", corso: null, livello: null, anno: null, laurea_anno: null, media_voti: null },
-  disponibilita: { cosa_cerca: null, da_quando: null, dove: null, vincoli: null },
+  disponibilita: { cosa_cerca: null, ambito: null, periodo: null, dove: null },
   esperienze: { items: [] },
   formazione: { items: [] },
   competenze: { items: [] },
