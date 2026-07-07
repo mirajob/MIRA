@@ -24,38 +24,59 @@ export default async function HomePage() {
         </div>
       </header>
 
-      <main className="flex flex-col items-center justify-center px-6 py-32">
+      <main className="flex flex-col items-center justify-center px-6 py-28">
         <p className="text-eyebrow text-navy/60 mb-4 uppercase">
-          University talent platform
+          La tua MiraCard
         </p>
         <h1 className="font-display text-display-xl text-navy text-center max-w-3xl">
-          Trova chi sa fare le cose, non chi le scrive bene.
+          Non un altro CV. Un profilo che si costruisce parlando.
         </h1>
         <p className="mt-6 text-body-lg text-ink-secondary text-center max-w-2xl">
-          Profili reali costruiti su evidenze, progetti e simulazioni.
-          Non auto-dichiarazioni.
+          Carichi il libretto, rispondi a MIRA in chat: nasce la tua MiraCard — esperienze, competenze e percorso, basati su evidenze reali. Zero form da compilare.
         </p>
-        <div className="mt-10 flex gap-4">
+        <div className="mt-10">
           <Link
             href="/signup"
             className="bg-navy text-white px-8 py-4 rounded-md text-body hover:bg-navy-700 transition-colors duration-100"
           >
             Registrati come studente
           </Link>
-          <Link
-            href="/associations"
-            className="bg-cream text-navy px-8 py-4 rounded-md text-body border border-border hover:border-border-strong transition-colors duration-100"
-          >
-            Scopri le associazioni
-          </Link>
         </div>
-        <p className="mt-6 text-body-sm text-ink-tertiary">
-          Sei un&apos;azienda?{" "}
-          <Link href="/aziende" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
-            Registra la tua azienda →
-          </Link>
-        </p>
       </main>
+
+      <section className="border-t border-border px-6 lg:px-12 py-16">
+        <div className="mx-auto max-w-4xl">
+          <p className="text-eyebrow text-navy/60 uppercase text-center mb-10">
+            Sei un&apos;azienda o un&apos;associazione?
+          </p>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div className="rounded-lg border border-border bg-white p-8 text-center">
+              <h2 className="font-display text-h2 text-navy mb-2">Associazione</h2>
+              <p className="text-body text-ink-secondary mb-6">
+                Candida la tua associazione: gestisci candidature, board e la tua pagina su MIRA.
+              </p>
+              <Link
+                href="/associations/candidati"
+                className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
+              >
+                Candida la tua associazione →
+              </Link>
+            </div>
+            <div className="rounded-lg border border-border bg-white p-8 text-center">
+              <h2 className="font-display text-h2 text-navy mb-2">Azienda</h2>
+              <p className="text-body text-ink-secondary mb-6">
+                Non c&apos;è neanche bisogno di una parola. Descrivi chi cerchi, MIRA ti mostra chi si adatta davvero.
+              </p>
+              <Link
+                href="/aziende"
+                className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
+              >
+                Registra la tua azienda →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,14 +1,21 @@
-import { createServerClient } from "@mira/supabase/server";
+import { createServiceClient } from "@mira/supabase/server";
+import { getUserContext } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { CopyLink } from "./copy-link";
 
 export default async function AdminUsersPage() {
-  const supabase = await createServerClient();
+  const ctx = await getUserContext();
+  if (!ctx.isMiraAdmin) redirect("/student");
 
-  const { data: profiles } = await supabase
+  const supabase = await createServiceClient();
+
+  const { data: profiles, error } = await supabase
     .from("profiles")
     .select("*, global_role_assignments(role), student_profiles(university, degree_program, onboarding_completed)")
     .order("created_at", { ascending: false })
     .limit(100);
+
+  if (error) console.error("admin users query error:", error);
 
   return (
     <div className="space-y-6">
