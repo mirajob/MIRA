@@ -34,10 +34,18 @@ export async function middleware(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (isAdminRoute(pathname)) {
     const { data: profile } = await (supabase.from("profiles") as any)
-      .select("global_role")
+      .select("id")
       .eq("auth_user_id", user.id)
       .maybeSingle();
-    if ((profile as any)?.global_role !== "mira_admin") {
+
+    const { data: roles } = profile
+      ? await (supabase.from("global_role_assignments") as any)
+          .select("role")
+          .eq("user_id", (profile as any).id)
+      : { data: null };
+
+    const isAdmin = (roles ?? []).some((r: any) => r.role === "mira_admin");
+    if (!isAdmin) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
