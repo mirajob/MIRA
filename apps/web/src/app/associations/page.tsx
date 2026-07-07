@@ -16,20 +16,31 @@ export default async function AssociationsPage() {
       <PublicHeader />
 
       <main className="mx-auto max-w-app px-6 lg:px-12 py-12">
-        <div className="mb-10">
-          <p className="text-eyebrow text-navy/60 uppercase mb-3">Associazioni</p>
-          <h1 className="font-display text-display-lg text-navy">
-            Le associazioni su MIRA
-          </h1>
-          <p className="mt-3 text-body-lg text-ink-secondary max-w-2xl">
-            Scopri le associazioni universitarie e candidati direttamente dalla piattaforma.
-          </p>
+        <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="text-eyebrow text-navy/60 uppercase mb-3">Associazioni</p>
+            <h1 className="font-display text-display-lg text-navy">
+              Le associazioni su MIRA
+            </h1>
+            <p className="mt-3 text-body-lg text-ink-secondary max-w-2xl">
+              Scopri le associazioni universitarie attive su MIRA e candidati direttamente dalla loro pagina.
+            </p>
+          </div>
+          <Link
+            href="/associations/candidati"
+            className="flex-shrink-0 bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
+          >
+            Sei presidente di un&apos;associazione? →
+          </Link>
         </div>
 
         {!associations?.length ? (
           <div className="rounded-lg border border-border bg-white p-12 text-center">
             <p className="text-body text-ink-secondary">
-              Nessuna associazione ancora pubblicata. Torna presto!
+              Nessuna associazione ancora pubblicata. Torna presto, oppure{" "}
+              <Link href="/associations/candidati" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
+                candida la tua
+              </Link>.
             </p>
           </div>
         ) : (

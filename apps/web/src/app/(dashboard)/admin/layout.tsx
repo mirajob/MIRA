@@ -3,12 +3,10 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 const adminNav = [
-  { label: "Dashboard", href: "/admin" },
-  { label: "Inviti", href: "/admin/invitations" },
   { label: "Associazioni", href: "/admin/associations" },
-  { label: "Utenti", href: "/admin/users" },
-  { label: "Knowledge Base", href: "/admin/knowledge-base" },
   { label: "Aziende", href: "/admin/companies" },
+  { label: "Utenti", href: "/admin/users" },
+  { label: "Team", href: "/admin/team" },
 ];
 
 export default async function AdminLayout({

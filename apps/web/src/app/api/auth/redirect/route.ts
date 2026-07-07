@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, createServiceClient } from "@mira/supabase/server";
+import { ensureStudentProfile } from "@/lib/student-provisioning";
 
 export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
@@ -55,23 +56,7 @@ export async function GET(request: NextRequest) {
   }
 
   // No role assigned — create student profile and role on the fly
-  const { data: existingStudent } = await (service.from("student_profiles") as any)
-    .select("id")
-    .eq("user_id", profileId)
-    .maybeSingle();
-
-  if (!existingStudent) {
-    await (service.from("student_profiles") as any).insert({
-      user_id: profileId,
-      university_email: user.email,
-      university: "Bocconi University",
-    });
-  }
-
-  await (service.from("global_role_assignments") as any).insert({
-    user_id: profileId,
-    role: "student",
-  });
+  await ensureStudentProfile(service, profileId, user.email);
 
   return NextResponse.redirect(new URL("/student", origin));
 }

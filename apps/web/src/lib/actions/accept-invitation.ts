@@ -3,6 +3,32 @@
 import { createServerClient, createServiceClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import { ROLE_PERMISSION_TEMPLATES } from "@mira/domain";
+import { ensureStudentProfile } from "@/lib/student-provisioning";
+
+function toSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 60);
+}
+
+async function uniqueSlug(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  table: "association_profiles" | "company_profiles",
+  base: string
+): Promise<string> {
+  let slug = base;
+  let i = 2;
+  while (true) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase.from(table) as any).select("id").eq("slug", slug).maybeSingle();
+    if (!data) return slug;
+    slug = `${base}-${i++}`;
+  }
+}
 
 export async function acceptInvitation(token: string) {
   // Use cookie-based client for auth, service client for DB writes
@@ -46,11 +72,15 @@ export async function acceptInvitation(token: string) {
   const metadata = invitation.metadata as Record<string, string>;
 
   if (invitation.invitation_type === "association_president") {
-    return await acceptPresidentInvitation(supabase, invitation, profile.id, metadata);
+    return await acceptPresidentInvitation(supabase, invitation, profile.id, metadata, user.email);
   }
 
   if (invitation.invitation_type === "association_board_member") {
-    return await acceptBoardInvitation(supabase, invitation, profile.id, metadata);
+    return await acceptBoardInvitation(supabase, invitation, profile.id, metadata, user.email);
+  }
+
+  if (invitation.invitation_type === "company_admin") {
+    return await acceptCompanyInvitation(supabase, invitation, profile.id, metadata);
   }
 
   return { error: "Tipo di invito non supportato" };
@@ -60,7 +90,8 @@ async function acceptPresidentInvitation(
   supabase: Awaited<ReturnType<typeof createServiceClient>>,
   invitation: Record<string, unknown>,
   profileId: string,
-  metadata: Record<string, string>
+  metadata: Record<string, string>,
+  email: string | null | undefined
 ) {
   const slug = metadata.association_name
     .toLowerCase()
@@ -75,6 +106,7 @@ async function acceptPresidentInvitation(
       category: metadata.category || null,
       website_url: metadata.website || null,
       official: true,
+      verification_status: "verified",
       created_by_user_id: profileId,
     })
     .select()
@@ -101,7 +133,8 @@ async function acceptPresidentInvitation(
     joined_at: new Date().toISOString(),
   });
 
-  await finalizeInvitation(supabase, invitation, profileId, association.id, metadata);
+  await ensureStudentProfile(supabase, profileId, email);
+  await finalizeInvitation(supabase, invitation, profileId, { association_id: association.id, metadata });
   redirect(`/association/${slug}`);
 }
 
@@ -109,7 +142,8 @@ async function acceptBoardInvitation(
   supabase: Awaited<ReturnType<typeof createServiceClient>>,
   invitation: Record<string, unknown>,
   profileId: string,
-  metadata: Record<string, string>
+  metadata: Record<string, string>,
+  email: string | null | undefined
 ) {
   const associationId = invitation.association_id as string;
   if (!associationId) {
@@ -129,16 +163,64 @@ async function acceptBoardInvitation(
     invited_by_user_id: invitation.invited_by_user_id as string,
   });
 
-  await finalizeInvitation(supabase, invitation, profileId, associationId, metadata);
+  await ensureStudentProfile(supabase, profileId, email);
+  await finalizeInvitation(supabase, invitation, profileId, { association_id: associationId, metadata });
   redirect(`/association/${metadata.association_slug}`);
+}
+
+async function acceptCompanyInvitation(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  invitation: Record<string, unknown>,
+  profileId: string,
+  metadata: Record<string, string>
+) {
+  const baseSlug = toSlug(metadata.company_name) || "azienda";
+  const slug = await uniqueSlug(supabase, "company_profiles", baseSlug);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: company, error: companyError } = await (supabase.from("company_profiles") as any)
+    .insert({
+      legal_name: metadata.company_name,
+      display_name: metadata.company_name,
+      slug,
+      sector: metadata.sector || null,
+      website_url: metadata.website || null,
+      verification_status: "verified",
+      verified_at: new Date().toISOString(),
+      created_by_user_id: profileId,
+    })
+    .select("id, slug")
+    .single();
+
+  if (companyError) {
+    return { error: `Errore: ${companyError.message}` };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (supabase.from("company_memberships") as any).insert({
+    company_id: company.id,
+    user_id: profileId,
+    role: "admin",
+    status: "active",
+    joined_at: new Date().toISOString(),
+    invited_by_user_id: invitation.invited_by_user_id as string,
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (supabase.from("global_role_assignments") as any).insert({
+    user_id: profileId,
+    role: "company_user",
+  });
+
+  await finalizeInvitation(supabase, invitation, profileId, { metadata });
+  redirect(`/company/${company.slug}`);
 }
 
 async function finalizeInvitation(
   supabase: Awaited<ReturnType<typeof createServiceClient>>,
   invitation: Record<string, unknown>,
   profileId: string,
-  associationId: string,
-  metadata: Record<string, string>
+  extra: { association_id?: string; metadata: Record<string, string> }
 ) {
   await supabase
     .from("invitations")
@@ -146,7 +228,7 @@ async function finalizeInvitation(
       status: "accepted",
       accepted_by_user_id: profileId,
       accepted_at: new Date().toISOString(),
-      association_id: associationId,
+      ...(extra.association_id ? { association_id: extra.association_id } : {}),
     })
     .eq("id", invitation.id as string);
 
@@ -157,8 +239,9 @@ async function finalizeInvitation(
     entity_id: invitation.id as string,
     metadata: {
       invitation_type: invitation.invitation_type,
-      association_id: associationId,
-      association_name: metadata.association_name,
+      association_id: extra.association_id ?? null,
+      association_name: extra.metadata.association_name ?? null,
+      company_name: extra.metadata.company_name ?? null,
     },
   });
 }

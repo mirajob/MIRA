@@ -7,10 +7,9 @@ import Link from "next/link";
 interface Props {
   token: string;
   email: string;
-  associationName: string;
 }
 
-export function AcceptInvitation({ token, email, associationName }: Props) {
+export function AcceptInvitation({ token, email }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 

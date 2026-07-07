@@ -2,6 +2,7 @@ import { getUserContext } from "@/lib/auth";
 import { createServerClient } from "@mira/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
+import { WORKSPACE_ROLES } from "@/lib/association-roles";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -16,7 +17,6 @@ const ROLE_LABELS: Record<string, string> = {
   association_member: "Membro",
 };
 
-const WORKSPACE_ROLES = ["association_president", "association_admin", "association_reviewer", "association_interviewer"];
 
 const getAssociationNav = (slug: string) => [
   { label: "Cicli", href: `/association/${slug}/cycles` },
@@ -64,8 +64,25 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
 
   const nav = getAssociationNav(slug);
 
+  const { data: studentProfile } = await supabase
+    .from("student_profiles")
+    .select("onboarding_completed")
+    .eq("user_id", ctx.profile.id)
+    .maybeSingle();
+
+  const showOnboardingBanner = membership && studentProfile && !studentProfile.onboarding_completed;
+
   return (
     <div>
+      {showOnboardingBanner && (
+        <Link
+          href="/student/onboarding"
+          className="mb-6 block rounded-lg border border-petrol/30 bg-petrol-50 px-4 py-3 text-body-sm text-petrol-700 hover:bg-petrol-100 transition-colors"
+        >
+          Prima di continuare, completa il tuo profilo MiraCard (~5 minuti) →
+        </Link>
+      )}
+
       <div className="mb-6 flex items-center gap-3">
         {association.logo_url ? (
           <img src={association.logo_url} alt="" className="h-10 w-10 rounded-md object-cover" />

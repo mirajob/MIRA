@@ -71,6 +71,27 @@ export default async function InvitePage({ params }: Props) {
 
   const metadata = invitation.metadata as Record<string, string>;
 
+  const copy =
+    invitation.invitation_type === "company_admin"
+      ? {
+          title: `Amministratore di ${metadata.company_name}`,
+          body: (
+            <>
+              Sei stato invitato ufficialmente ad attivare l&apos;account di{" "}
+              <strong className="text-navy">{metadata.company_name}</strong> su MIRA.
+            </>
+          ),
+        }
+      : {
+          title: `Presidente di ${metadata.association_name}`,
+          body: (
+            <>
+              Sei stato invitato ufficialmente a gestire l&apos;associazione{" "}
+              <strong className="text-navy">{metadata.association_name}</strong> su MIRA.
+            </>
+          ),
+        };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-paper">
       <div className="w-full max-w-md space-y-6 px-4">
@@ -80,24 +101,15 @@ export default async function InvitePage({ params }: Props) {
 
         <div className="rounded-lg border border-border bg-white p-6 space-y-4">
           <p className="text-eyebrow text-navy/60 uppercase">Invito ufficiale</p>
-          <h1 className="font-display text-h1 text-navy">
-            Presidente di {metadata.association_name}
-          </h1>
-          <p className="text-body text-ink-secondary">
-            Sei stato invitato ufficialmente a gestire l&apos;associazione{" "}
-            <strong className="text-navy">{metadata.association_name}</strong> su MIRA.
-          </p>
+          <h1 className="font-display text-h1 text-navy">{copy.title}</h1>
+          <p className="text-body text-ink-secondary">{copy.body}</p>
           {metadata.note && (
             <p className="text-body-sm text-ink-tertiary italic">
               &ldquo;{metadata.note}&rdquo;
             </p>
           )}
 
-          <AcceptInvitation
-            token={token}
-            email={invitation.invited_email}
-            associationName={metadata.association_name}
-          />
+          <AcceptInvitation token={token} email={invitation.invited_email} />
         </div>
       </div>
     </div>

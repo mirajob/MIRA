@@ -5,7 +5,7 @@ import { createPresidentInvitation } from "@/lib/actions/invitations";
 import { ASSOCIATION_CATEGORIES } from "@mira/domain";
 
 export function InvitationForm() {
-  const [result, setResult] = useState<{ error?: string; success?: boolean; token?: string } | null>(null);
+  const [result, setResult] = useState<{ error?: string; success?: boolean; token?: string; emailError?: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(formData: FormData) {
@@ -18,7 +18,10 @@ export function InvitationForm() {
 
   return (
     <div className="rounded-lg border border-border bg-white p-6">
-      <h2 className="font-sans text-h3 text-navy mb-4">Nuovo invito presidente</h2>
+      <h2 className="font-sans text-h3 text-navy mb-4">Invita direttamente un presidente</h2>
+      <p className="text-body-sm text-ink-secondary mb-4">
+        Usa questo se conosci già il presidente e vuoi dargli accesso subito, senza passare dalla candidatura pubblica. Riceverà un&apos;email con il link per creare l&apos;associazione.
+      </p>
 
       {result?.error && (
         <div className="mb-4 rounded-md bg-error-bg p-3 text-body-sm text-error">
@@ -28,7 +31,9 @@ export function InvitationForm() {
 
       {result?.success && (
         <div className="mb-4 rounded-md bg-success-bg p-3 text-body-sm text-success">
-          Invito creato. Link di invito:{" "}
+          {result.emailError
+            ? "Invito creato, ma l'invio dell'email non è riuscito. Copia il link e inviaglielo manualmente: "
+            : "Invito creato e inviato via email. Link di invito: "}
           <code className="font-mono text-xs break-all">
             {typeof window !== "undefined" ? window.location.origin : ""}/invite/{result.token}
           </code>

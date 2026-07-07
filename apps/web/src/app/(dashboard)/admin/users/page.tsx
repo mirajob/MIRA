@@ -1,4 +1,5 @@
 import { createServerClient } from "@mira/supabase/server";
+import { CopyLink } from "./copy-link";
 
 export default async function AdminUsersPage() {
   const supabase = await createServerClient();
@@ -16,6 +17,14 @@ export default async function AdminUsersPage() {
         <p className="mt-1 text-body text-ink-secondary">
           Tutti gli utenti registrati su MIRA
         </p>
+      </div>
+
+      <div className="rounded-lg border border-border bg-white p-5">
+        <p className="text-label text-navy mb-1">Link di iscrizione generale</p>
+        <p className="text-body-sm text-ink-secondary mb-3">
+          Condividi questo link per far registrare nuovi studenti su MIRA (email @studbocconi.it o @gmail.com).
+        </p>
+        <CopyLink url="https://mirajob.cloud/signup" />
       </div>
 
       {!profiles?.length ? (

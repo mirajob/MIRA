@@ -4,6 +4,7 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { sendAssociationInvitationEmail } from "@/lib/email";
 function generateToken() {
   const array = new Uint8Array(32);
   require("crypto").randomFillSync(array);
@@ -74,8 +75,16 @@ export async function createPresidentInvitation(formData: FormData) {
     },
   });
 
-  revalidatePath("/admin/invitations");
-  return { success: true, token };
+  const inviteUrl = `https://mirajob.cloud/invite/${token}`;
+  const emailResult = await sendAssociationInvitationEmail({
+    email: email.toLowerCase(),
+    associationName,
+    inviteUrl,
+    note,
+  });
+
+  revalidatePath("/admin/associations");
+  return { success: true, token, emailError: emailResult.error };
 }
 
 export async function revokeInvitation(invitationId: string) {
@@ -104,6 +113,6 @@ export async function revokeInvitation(invitationId: string) {
     entity_id: invitationId,
   });
 
-  revalidatePath("/admin/invitations");
+  revalidatePath("/admin/associations");
   return { success: true };
 }
