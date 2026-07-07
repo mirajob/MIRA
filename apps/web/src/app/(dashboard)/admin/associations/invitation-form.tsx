@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { createPresidentInvitation } from "@/lib/actions/invitations";
-import { ASSOCIATION_CATEGORIES } from "@mira/domain";
 
 export function InvitationForm() {
   const [result, setResult] = useState<{ error?: string; success?: boolean; token?: string; emailError?: string } | null>(null);
@@ -18,9 +17,9 @@ export function InvitationForm() {
 
   return (
     <div className="rounded-lg border border-border bg-white p-6">
-      <h2 className="font-sans text-h3 text-navy mb-4">Invita direttamente un presidente</h2>
+      <h2 className="font-sans text-h3 text-navy mb-4">Invita un presidente</h2>
       <p className="text-body-sm text-ink-secondary mb-4">
-        Usa questo se conosci già il presidente e vuoi dargli accesso subito, senza passare dalla candidatura pubblica. Riceverà un&apos;email con il link per creare l&apos;associazione.
+        Riceverà subito un&apos;email da MIRA con il link per creare il suo account e la pagina dell&apos;associazione.
       </p>
 
       {result?.error && (
@@ -63,37 +62,12 @@ export function InvitationForm() {
           />
         </label>
 
-        <label className="block">
-          <span className="text-label text-navy mb-2 block">Categoria</span>
-          <select
-            name="category"
-            className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
-          >
-            <option value="">Seleziona categoria</option>
-            {ASSOCIATION_CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat.charAt(0).toUpperCase() + cat.slice(1).replace("_", " ")}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="block">
-          <span className="text-label text-navy mb-2 block">Sito web</span>
-          <input
-            name="website"
-            type="url"
-            placeholder="https://..."
-            className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
-          />
-        </label>
-
         <label className="block sm:col-span-2">
-          <span className="text-label text-navy mb-2 block">Nota (opzionale)</span>
+          <span className="text-label text-navy mb-2 block">Messaggio nell&apos;email (opzionale)</span>
           <textarea
             name="note"
             rows={2}
-            placeholder="Note interne per questo invito..."
+            placeholder="Cosa deve sapere o fare — questo testo comparirà nell'email che riceve."
             className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200 resize-none"
           />
         </label>

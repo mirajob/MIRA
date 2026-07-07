@@ -1,9 +1,7 @@
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { revokeInvitation } from "@/lib/actions/invitations";
 import { InvitationForm } from "./invitation-form";
-import { InvitationList } from "@/components/admin/invitation-list";
 import { ApproveRejectButtons } from "./approve-reject-buttons";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -22,12 +20,7 @@ const STATUS_CLASS: Record<string, string> = {
   suspended: "bg-red-100 text-red-600",
 };
 
-function AssociationRow({ assoc }: { assoc: any }) {
-  const president = (assoc.association_memberships as Array<Record<string, unknown>>)?.find(
-    (m) => m.role === "association_president"
-  );
-  const presidentProfile = (president as any)?.profiles;
-
+function AssociationRow({ assoc, president }: { assoc: any; president: any }) {
   return (
     <tr className="border-b border-border last:border-0 hover:bg-paper transition-colors">
       <td className="px-4 py-3">
@@ -35,8 +28,8 @@ function AssociationRow({ assoc }: { assoc: any }) {
         <p className="text-body-sm text-ink-tertiary">/{assoc.slug}</p>
       </td>
       <td className="px-4 py-3">
-        <p className="text-body-sm text-ink">{presidentProfile?.full_name ?? "—"}</p>
-        <p className="text-body-sm text-ink-tertiary">{presidentProfile?.email ?? assoc.contact_email ?? "—"}</p>
+        <p className="text-body-sm text-ink">{president?.full_name ?? "—"}</p>
+        <p className="text-body-sm text-ink-tertiary">{president?.email ?? assoc.contact_email ?? "—"}</p>
       </td>
       <td className="px-4 py-3 text-body text-ink">{assoc.category ?? "—"}</td>
       <td className="px-4 py-3">
@@ -54,7 +47,7 @@ function AssociationRow({ assoc }: { assoc: any }) {
   );
 }
 
-function AssociationTable({ rows }: { rows: any[] }) {
+function AssociationTable({ rows, presidentByAssociation }: { rows: any[]; presidentByAssociation: Record<string, any> }) {
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
       <table className="w-full">
@@ -69,7 +62,9 @@ function AssociationTable({ rows }: { rows: any[] }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((assoc) => <AssociationRow key={assoc.id} assoc={assoc} />)}
+          {rows.map((assoc) => (
+            <AssociationRow key={assoc.id} assoc={assoc} president={presidentByAssociation[assoc.id]} />
+          ))}
         </tbody>
       </table>
     </div>
@@ -82,15 +77,25 @@ export default async function AdminAssociationsPage() {
 
   const supabase = await createServiceClient();
 
-  const { data: associations } = await (supabase.from("association_profiles") as any)
-    .select("*, association_memberships(user_id, role, profiles(full_name, email))")
+  const { data: associations, error: associationsErr } = await (supabase.from("association_profiles") as any)
+    .select("*")
     .order("created_at", { ascending: false });
 
-  const { data: invitations } = await supabase
-    .from("invitations")
-    .select("*")
-    .eq("invitation_type", "association_president")
-    .order("created_at", { ascending: false });
+  if (associationsErr) console.error("admin associations query error:", associationsErr);
+
+  // Fetch president memberships separately to avoid ambiguous FK (user_id vs invited_by_user_id → profiles)
+  const associationIds = (associations ?? []).map((a: any) => a.id);
+  const { data: memberships, error: membershipsErr } = associationIds.length
+    ? await (supabase.from("association_memberships") as any)
+        .select("association_id, role, profiles!association_memberships_user_id_fkey(full_name, email)")
+        .in("association_id", associationIds)
+        .eq("role", "association_president")
+    : { data: [], error: null };
+
+  if (membershipsErr) console.error("admin association memberships query error:", membershipsErr);
+
+  const presidentByAssociation: Record<string, any> = {};
+  for (const m of memberships ?? []) presidentByAssociation[m.association_id] = m.profiles;
 
   const pending = (associations ?? []).filter((a: any) => a.verification_status === "pending_verification");
   const active = (associations ?? []).filter((a: any) => a.verification_status === "verified");
@@ -105,26 +110,21 @@ export default async function AdminAssociationsPage() {
         </p>
       </div>
 
-      {pending.length > 0 && (
-        <section>
-          <h2 className="font-display text-h2 text-navy mb-4">In attesa di approvazione ({pending.length})</h2>
-          <AssociationTable rows={pending} />
-        </section>
-      )}
-
       <section>
         <InvitationForm />
       </section>
 
-      <section>
-        <h2 className="font-display text-h2 text-navy mb-4">Inviti inviati</h2>
-        <InvitationList invitations={invitations ?? []} onRevoke={revokeInvitation} nameColumn="Associazione" />
-      </section>
+      {pending.length > 0 && (
+        <section>
+          <h2 className="font-display text-h2 text-navy mb-4">In attesa di approvazione ({pending.length})</h2>
+          <AssociationTable rows={pending} presidentByAssociation={presidentByAssociation} />
+        </section>
+      )}
 
       <section>
         <h2 className="font-display text-h2 text-navy mb-4">Associazioni attive ({active.length})</h2>
         {active.length > 0 ? (
-          <AssociationTable rows={active} />
+          <AssociationTable rows={active} presidentByAssociation={presidentByAssociation} />
         ) : (
           <div className="rounded-lg border border-border bg-white p-8 text-center">
             <p className="text-body text-ink-secondary">Nessuna associazione attiva ancora.</p>
@@ -135,7 +135,7 @@ export default async function AdminAssociationsPage() {
       {others.length > 0 && (
         <section>
           <h2 className="font-display text-h2 text-navy mb-4">Altre ({others.length})</h2>
-          <AssociationTable rows={others} />
+          <AssociationTable rows={others} presidentByAssociation={presidentByAssociation} />
         </section>
       )}
     </div>

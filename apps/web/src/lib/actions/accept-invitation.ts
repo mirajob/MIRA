@@ -135,7 +135,7 @@ async function acceptPresidentInvitation(
 
   await ensureStudentProfile(supabase, profileId, email);
   await finalizeInvitation(supabase, invitation, profileId, { association_id: association.id, metadata });
-  redirect(`/association/${slug}`);
+  redirect("/student/associazioni");
 }
 
 async function acceptBoardInvitation(
@@ -165,7 +165,7 @@ async function acceptBoardInvitation(
 
   await ensureStudentProfile(supabase, profileId, email);
   await finalizeInvitation(supabase, invitation, profileId, { association_id: associationId, metadata });
-  redirect(`/association/${metadata.association_slug}`);
+  redirect("/student/associazioni");
 }
 
 async function acceptCompanyInvitation(

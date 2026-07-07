@@ -3,6 +3,7 @@ import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { JoinByCode } from "@/components/join-by-code";
+import { WORKSPACE_ROLES } from "@/lib/association-roles";
 
 const ROLE_LABELS: Record<string, string> = {
   association_president: "Presidente",
@@ -45,9 +46,14 @@ export default async function StudentAssociazioniPage() {
     .order("submitted_at", { ascending: false });
 
   const { data: myMemberships } = await (supabase.from("association_memberships") as any)
-    .select("association_id, role, joined_at")
+    .select("association_id, role, joined_at, association_profiles(name, slug, verification_status, public_page_status)")
     .eq("user_id", profileId)
     .eq("status", "active");
+
+  const { data: studentProfile } = await (supabase.from("student_profiles") as any)
+    .select("onboarding_completed")
+    .eq("user_id", profileId)
+    .maybeSingle();
 
   const cyclesByAssoc = new Map<string, any[]>();
   for (const c of openCycles ?? []) {
@@ -83,6 +89,44 @@ export default async function StudentAssociazioniPage() {
       <h1 className="font-display text-h2 text-navy">Associazioni</h1>
 
       <JoinByCode />
+
+      {(() => {
+        const pendingPages = (myMemberships ?? []).filter(
+          (m: any) => WORKSPACE_ROLES.includes(m.role) && m.association_profiles?.public_page_status === "draft"
+        );
+        const showOnboardingPrompt = (myMemberships ?? []).length > 0 && !studentProfile?.onboarding_completed;
+
+        if (pendingPages.length === 0 && !showOnboardingPrompt) return null;
+
+        return (
+          <div className="rounded-lg border border-petrol/30 bg-petrol-50 p-5 space-y-3">
+            <h2 className="font-sans text-h3 text-navy">Prossimi passi</h2>
+
+            {pendingPages.map((m: any) => (
+              <div key={m.association_id} className="flex items-center justify-between gap-3 rounded-md bg-white px-4 py-3">
+                <span className="text-body text-ink">
+                  La pagina di <strong className="text-navy">{m.association_profiles.name}</strong> non è ancora pubblica
+                </span>
+                <Link
+                  href={`/association/${m.association_profiles.slug}/public-page`}
+                  className="flex-shrink-0 bg-navy text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-navy-700 transition-colors duration-100"
+                >
+                  Completala →
+                </Link>
+              </div>
+            ))}
+
+            {showOnboardingPrompt && (
+              <Link
+                href="/student/onboarding"
+                className="block rounded-md bg-white px-4 py-3 text-body-sm text-petrol-700 hover:bg-petrol-100/50 transition-colors"
+              >
+                Completa il tuo profilo MiraCard (~5 minuti) →
+              </Link>
+            )}
+          </div>
+        );
+      })()}
 
       {activeApplications.length > 0 && (
         <div className="rounded-lg border border-border bg-white p-5">

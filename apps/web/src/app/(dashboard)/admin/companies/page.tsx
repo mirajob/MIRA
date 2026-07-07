@@ -3,8 +3,6 @@ import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { ApproveRejectButtons } from "./approve-reject-buttons";
 import { InvitationForm } from "./invitation-form";
-import { InvitationList } from "@/components/admin/invitation-list";
-import { revokeCompanyInvitation } from "@/lib/actions/company-register";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -19,12 +17,6 @@ export default async function AdminCompaniesPage() {
     .order("created_at", { ascending: false });
 
   if (companiesErr) console.error("admin companies query error:", companiesErr);
-
-  const { data: invitations } = await supabase
-    .from("invitations")
-    .select("*")
-    .eq("invitation_type", "company_admin")
-    .order("created_at", { ascending: false });
 
   // Fetch admin memberships separately to avoid ambiguous FK (user_id vs invited_by_user_id → profiles)
   const companyIds = (companies ?? []).map((c: any) => c.id);
@@ -106,11 +98,6 @@ export default async function AdminCompaniesPage() {
 
       <section>
         <InvitationForm />
-      </section>
-
-      <section>
-        <h2 className="font-display text-h2 text-navy mb-4">Inviti inviati</h2>
-        <InvitationList invitations={invitations ?? []} onRevoke={revokeCompanyInvitation} nameColumn="Azienda" />
       </section>
 
       {pending.length > 0 && (

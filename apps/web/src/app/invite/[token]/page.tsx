@@ -10,6 +10,8 @@ export default async function InvitePage({ params }: Props) {
   const { token } = await params;
   const supabase = await createServerClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+
   const { data: invitation } = await supabase
     .from("invitations")
     .select("*")
@@ -109,7 +111,11 @@ export default async function InvitePage({ params }: Props) {
             </p>
           )}
 
-          <AcceptInvitation token={token} email={invitation.invited_email} />
+          <AcceptInvitation
+            token={token}
+            invitedEmail={invitation.invited_email}
+            currentEmail={user?.email ?? null}
+          />
         </div>
       </div>
     </div>
