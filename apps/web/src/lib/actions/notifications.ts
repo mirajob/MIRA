@@ -43,6 +43,21 @@ export async function getUnreadCount() {
   return count ?? 0;
 }
 
+export async function getUnreadCounts() {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const { data } = await (supabase.from("notifications") as any)
+    .select("data")
+    .eq("user_id", ctx.profile.id)
+    .is("read_at", null);
+
+  const rows = (data ?? []) as Array<{ data: Record<string, any> }>;
+  const aziende = rows.filter((r) => r.data?.link === "/student/aziende").length;
+  return { total: rows.length, aziende, other: rows.length - aziende };
+}
+
 export async function getNotifications() {
   const ctx = await getUserContext();
   const supabase = await createServiceClient();

@@ -93,7 +93,13 @@ export function CompanyContactsClient({ slug, initialContacts }: Props) {
     setLoading(false);
   }
 
-  const activeChat = contacts.find((c) => c.company_chats?.[0]?.id === activeChatId);
+  // company_chats.contact_request_id is unique, so Supabase embeds it as a single
+  // object rather than an array — normalize both shapes defensively.
+  function getChat(c: any) {
+    return Array.isArray(c.company_chats) ? c.company_chats[0] : c.company_chats ?? null;
+  }
+
+  const activeChat = contacts.find((c) => getChat(c)?.id === activeChatId);
 
   return (
     <div className="h-full flex overflow-hidden" style={{ height: "calc(100vh - 89px)" }}>
@@ -109,7 +115,7 @@ export function CompanyContactsClient({ slug, initialContacts }: Props) {
               <p className="text-body-sm text-ink-tertiary">Nessun contatto ancora. Usa la ricerca per trovare candidati e contattarli.</p>
             </div>
           ) : contacts.map((c: any) => {
-            const chat = c.company_chats?.[0];
+            const chat = getChat(c);
             const isActive = chat?.id === activeChatId;
             return (
               <button

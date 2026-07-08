@@ -14,6 +14,7 @@ interface SidebarNavProps {
     } | null;
   }>;
   unreadNotifications?: number;
+  unreadAziende?: number;
 }
 
 const STUDENT_LINKS = [
@@ -32,7 +33,7 @@ const ROLE_LABELS: Record<string, string> = {
   association_member: "Membro",
 };
 
-export function SidebarNav({ isStudent, isMiraAdmin, memberships, unreadNotifications = 0 }: SidebarNavProps) {
+export function SidebarNav({ isStudent, isMiraAdmin, memberships, unreadNotifications = 0, unreadAziende = 0 }: SidebarNavProps) {
   const pathname = usePathname();
   const inAdminMode = pathname.startsWith("/admin");
 
@@ -54,12 +55,14 @@ export function SidebarNav({ isStudent, isMiraAdmin, memberships, unreadNotifica
           {STUDENT_LINKS.map((link) => {
             const active = isActive(link.href);
             const isCandidature = link.href === "/student/applications";
+            const isAziende = link.href === "/student/aziende";
+            const badgeCount = isCandidature ? unreadNotifications : isAziende ? unreadAziende : 0;
             return (
               <Link key={link.href} href={link.href} className={linkClass(active)}>
                 <span>{link.label}</span>
-                {isCandidature && unreadNotifications > 0 && (
+                {badgeCount > 0 && (
                   <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-error text-white text-[9px] font-bold px-1">
-                    {unreadNotifications > 9 ? "9+" : unreadNotifications}
+                    {badgeCount > 9 ? "9+" : badgeCount}
                   </span>
                 )}
               </Link>

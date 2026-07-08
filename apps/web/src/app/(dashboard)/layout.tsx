@@ -1,8 +1,7 @@
 import { getUserContext } from "@/lib/auth";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { UserNav } from "@/components/user-nav";
-import { NotificationBell } from "@/components/notification-bell";
-import { getUnreadCount } from "@/lib/actions/notifications";
+import { getUnreadCounts } from "@/lib/actions/notifications";
 import Link from "next/link";
 
 export default async function DashboardLayout({
@@ -26,18 +25,15 @@ export default async function DashboardLayout({
     } | null,
   }));
 
-  const unreadNotifications = ctx.isStudent ? await getUnreadCount() : 0;
+  const unreadCounts = ctx.isStudent ? await getUnreadCounts() : { total: 0, aziende: 0, other: 0 };
 
   return (
     <div className="flex min-h-screen">
       <aside className="sticky top-0 flex h-screen w-48 shrink-0 flex-col border-r border-border bg-white">
-        <div className="border-b border-border px-4 py-4 flex items-center justify-between">
+        <div className="border-b border-border px-4 py-4">
           <Link href="/student">
             <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
           </Link>
-          {ctx.isStudent && (
-            <NotificationBell initialUnreadCount={unreadNotifications} />
-          )}
         </div>
 
         <div className="flex-1 overflow-y-auto px-2 py-4">
@@ -45,7 +41,8 @@ export default async function DashboardLayout({
             isStudent={ctx.isStudent}
             isMiraAdmin={ctx.isMiraAdmin}
             memberships={memberships}
-            unreadNotifications={unreadNotifications}
+            unreadNotifications={unreadCounts.other}
+            unreadAziende={unreadCounts.aziende}
           />
         </div>
 

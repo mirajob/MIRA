@@ -122,9 +122,9 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
   const companyName = (c: any) => c.company_profiles?.display_name ?? c.company_profiles?.legal_name ?? "Azienda";
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+    <div className="px-6 py-8 space-y-6">
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-border">
+      <div className="max-w-3xl mx-auto flex gap-1 border-b border-border">
         <button
           onClick={() => setActiveTab("requests")}
           className={`px-4 py-2.5 text-body-sm font-medium border-b-2 transition-colors ${activeTab === "requests" ? "border-navy text-navy" : "border-transparent text-ink-secondary hover:text-navy"}`}
@@ -141,7 +141,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
 
       {/* Requests tab */}
       {activeTab === "requests" && (
-        <div className="space-y-3">
+        <div className="max-w-3xl mx-auto space-y-3">
           {requests.length === 0 ? (
             <div className="rounded-lg border border-border bg-white p-8 text-center">
               <p className="text-body text-ink-secondary">Nessuna richiesta di contatto ricevuta.</p>
@@ -205,14 +205,17 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                     </div>
                   )}
 
-                  {req.status === "accepted" && req.company_chats?.[0] && (
-                    <button
-                      onClick={() => { setActiveTab("chats"); setActiveChatId(req.company_chats[0].id); }}
-                      className="text-body-sm text-petrol underline underline-offset-2 decoration-1 mt-2"
-                    >
-                      Apri chat →
-                    </button>
-                  )}
+                  {req.status === "accepted" && (() => {
+                    const reqChat = Array.isArray(req.company_chats) ? req.company_chats[0] : req.company_chats;
+                    return reqChat && (
+                      <button
+                        onClick={() => { setActiveTab("chats"); setActiveChatId(reqChat.id); }}
+                        className="text-body-sm text-petrol underline underline-offset-2 decoration-1 mt-2"
+                      >
+                        Apri chat →
+                      </button>
+                    );
+                  })()}
                 </div>
               </div>
             );
@@ -221,18 +224,19 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
       )}
 
       {/* Chats tab */}
-      {activeTab === "chats" && (
-        <div className="space-y-4">
-          {chats.length === 0 ? (
-            <div className="rounded-lg border border-border bg-white p-8 text-center">
-              <p className="text-body text-ink-secondary">Nessuna chat attiva.</p>
-              <p className="text-body-sm text-ink-tertiary mt-1">Accetta una richiesta per aprire una chat con un&apos;azienda.</p>
-            </div>
-          ) : (
-            <div className="flex gap-4" style={{ height: "600px" }}>
-              {/* Chat list */}
-              <div className="w-56 shrink-0 border border-border rounded-lg bg-white overflow-hidden flex flex-col">
-                {chats.map((c: any) => {
+      {activeTab === "chats" && chats.length === 0 && (
+        <div className="max-w-3xl mx-auto">
+          <div className="rounded-lg border border-border bg-white p-8 text-center">
+            <p className="text-body text-ink-secondary">Nessuna chat attiva.</p>
+            <p className="text-body-sm text-ink-tertiary mt-1">Accetta una richiesta per aprire una chat con un&apos;azienda.</p>
+          </div>
+        </div>
+      )}
+      {activeTab === "chats" && chats.length > 0 && (
+        <div className="flex gap-4" style={{ height: "calc(100vh - 220px)", minHeight: "480px" }}>
+          {/* Chat list */}
+          <div className="w-72 shrink-0 border border-border rounded-lg bg-white overflow-hidden flex flex-col">
+            {chats.map((c: any) => {
                   const cName = c.company_profiles?.display_name ?? c.company_profiles?.legal_name ?? "Azienda";
                   return (
                     <button
@@ -356,8 +360,6 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                   </>
                 )}
               </div>
-            </div>
-          )}
         </div>
       )}
 
