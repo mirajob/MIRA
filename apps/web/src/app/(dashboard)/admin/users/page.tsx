@@ -11,7 +11,7 @@ export default async function AdminUsersPage() {
 
   const { data: profiles, error } = await supabase
     .from("profiles")
-    .select("*, global_role_assignments(role), student_profiles(university, degree_program, onboarding_completed)")
+    .select("*, global_role_assignments!global_role_assignments_user_id_fkey(role), student_profiles(university, degree_program, onboarding_completed)")
     .order("created_at", { ascending: false })
     .limit(100);
 

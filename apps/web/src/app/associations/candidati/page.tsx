@@ -68,12 +68,9 @@ export default function CandidatiAssociazionePage() {
 
   return (
     <div className="min-h-screen bg-paper flex flex-col">
-      <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
-        <Link href="/associations">
+      <header className="px-6 py-4 border-b border-border bg-white">
+        <Link href="/">
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
-        </Link>
-        <Link href="/associations" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors">
-          ← Torna alle associazioni
         </Link>
       </header>
 
