@@ -44,7 +44,7 @@ export default function AziendePage() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: contactName } },
+      options: { data: { full_name: contactName, signup_source: "company" } },
     });
 
     if (signUpError) {

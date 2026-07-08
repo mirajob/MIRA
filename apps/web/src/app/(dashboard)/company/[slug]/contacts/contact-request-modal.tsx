@@ -5,12 +5,11 @@ import { sendContactRequest } from "@/lib/actions/company-contacts";
 
 interface Props {
   slug: string;
-  searchId: string;
-  refToken: string;
+  code: string;
   onClose: () => void;
 }
 
-export function ContactRequestModal({ slug, searchId, refToken, onClose }: Props) {
+export function ContactRequestModal({ slug, code, onClose }: Props) {
   const [roleTitle, setRoleTitle] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,7 +20,7 @@ export function ContactRequestModal({ slug, searchId, refToken, onClose }: Props
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const result = await sendContactRequest(slug, searchId, refToken, roleTitle, message);
+    const result = await sendContactRequest(slug, code, roleTitle, message);
     if (result.error) {
       setError(result.error);
       setLoading(false);

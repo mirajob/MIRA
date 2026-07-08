@@ -28,7 +28,7 @@ export default function CandidatiAssociazionePage() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: presidentName } },
+      options: { data: { full_name: presidentName, signup_source: "association" } },
     });
 
     if (signUpError) {

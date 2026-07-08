@@ -3,27 +3,68 @@
 import { chatCompletion } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getCompanyContext } from "@/lib/auth";
-import { makeRef } from "./company-search-ref";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+export interface CandidateMatch {
+  code: string;
+  dimension: "competenze" | "disponibilita" | "entrambe";
+  reason: string;
+}
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  candidates?: CandidateMatch[];
 }
 
 const SEARCH_SYSTEM_PROMPT = `Sei MIRA, l'assistente AI per il recruiting di talenti universitari Bocconi.
 
-Aiuti le aziende a trovare studenti Bocconi con i profili più adatti alle loro esigenze. Hai accesso ai profili degli studenti onboardati sulla piattaforma.
+Aiuti le aziende a trovare studenti Bocconi con i profili più adatti alle loro esigenze, leggendo la MiraCard di ogni studente — un profilo costruito su evidenze reali (competenze, esperienze, disponibilità, lingue, come si descrive, piano di carriera), non auto-dichiarazioni generiche.
 
 COMPORTAMENTO:
-- Quando l'azienda descrive cosa cerca, analizza i profili disponibili e identifica i candidati più coerenti
-- Per ogni candidato identificato, spiega PERCHÉ è adatto (competenze specifiche, esperienze rilevanti, interessi allineati)
-- Mantieni l'anonimato: usa solo codice anonimo (es. "Candidato A", "Candidato B") — mai il nome reale
-- Puoi fare domande di chiarimento per restringere la ricerca
-- Dopo aver presentato i candidati, chiedi se l'azienda vuole contattarne qualcuno
+- Analizza davvero il contenuto delle card rispetto a quello che l'azienda cerca. Non fare matching per parole chiave isolate: ragiona su cosa significa davvero la richiesta e confrontala con l'evidenza in ogni card.
+- Valuta due dimensioni separate: "competenze" (esperienze/competenze/formazione coerenti col ruolo) e "disponibilita" (periodo, ambito, tipo di opportunità compatibili con quanto richiesto). Un candidato può essere fortissimo su una dimensione e debole sull'altra: segnalalo sempre, non nasconderlo e non appiattire tutto in un punteggio unico.
+- Se un candidato è forte su entrambe le dimensioni, usa "entrambe".
+- Restituisci al massimo 6 candidati, i più rilevanti. Se nessuno è davvero rilevante, restituisci un array vuoto e spiegalo nel messaggio invece di forzare risultati deboli.
+- Non inventare mai informazioni non presenti nella card.
+- Non usare nomi reali (non li conosci). Nel testo del messaggio non citare codici candidato: la UI mostrerà i risultati separatamente. Puoi riferirti a loro in modo generico ("un profilo con esperienza forte in...").
+- Se la richiesta è troppo vaga per essere utile, fai una domanda di chiarimento e restituisci un array vuoto.
 
-TONO: professionale ma diretto. Non verbose. Risposte strutturate, facili da leggere.`;
+TONO: professionale ma diretto. Risposte brevi, non verbose.
+
+Rispondi SOLO con un oggetto JSON in questa forma esatta, nessun altro testo:
+{
+  "message": "testo conversazionale per l'azienda — nessun nome, nessun codice candidato",
+  "matches": [
+    { "student_id": "<id esatto copiato dal profilo, non inventarlo>", "dimension": "competenze" | "disponibilita" | "entrambe", "reason": "una frase breve e specifica, basata su cosa c'è davvero nella card" }
+  ]
+}`;
+
+function buildCandidateContext(
+  students: Array<{ id: string; degree_program: string | null; degree_level: string | null; current_year: number | null }>,
+  blocksByStudent: Map<string, Record<string, any>>
+): string {
+  return students.map((s) => {
+    const blocks = blocksByStudent.get(s.id) ?? {};
+    const header = blocks.header?.prose_content ?? {};
+    const disp = blocks.disponibilita?.prose_content ?? {};
+    const esperienze = blocks.esperienze?.prose_content?.items ?? [];
+    const competenze = blocks.competenze?.prose_content?.items ?? [];
+    const lingue = blocks.lingue?.prose_content?.items ?? [];
+    const autodescrizione = blocks.autodescrizione?.prose_content?.testo ?? null;
+    const pianoCarriera = blocks.piano_carriera?.prose_content?.testo ?? null;
+
+    return `student_id: ${s.id}
+- Corso: ${header.corso ?? s.degree_program ?? "n/d"} (${header.livello ?? s.degree_level ?? "n/d"}, anno ${header.anno ?? s.current_year ?? "n/d"})
+- Cerca: ${disp.cosa_cerca ?? "n/d"}, ambito: ${disp.ambito ?? "n/d"}, periodo: ${disp.periodo ?? "n/d"}
+- Competenze: ${competenze.map((c: any) => c.testo).filter(Boolean).join(", ") || "n/d"}
+- Esperienze: ${esperienze.map((e: any) => `${e.ruolo || e.titolo || ""} @ ${e.organizzazione ?? ""} — ${e.descrizione ?? ""}`.trim()).filter((x: string) => x !== "@") .join(" | ") || "n/d"}
+- Lingue: ${lingue.map((l: any) => `${l.lingua} (${l.livello})`).join(", ") || "n/d"}
+- Come si descrive: ${autodescrizione ?? "n/d"}
+- Piano di carriera: ${pianoCarriera ?? "n/d"}`;
+  }).join("\n\n");
+}
 
 export async function createCompanySearch(slug: string) {
   const { company } = await getCompanyContext(slug);
@@ -76,50 +117,75 @@ export async function sendSearchMessage(
 ) {
   const { company } = await getCompanyContext(slug);
   const supabase = await createServiceClient();
+  const companyId = (company as any).id as string;
 
-  // Load student profiles for context
   const { data: students } = await (supabase.from("student_profiles") as any)
-    .select("id, degree_program, degree_level, current_year, interests, goals, experiences, profile_summary, availability")
-    .eq("onboarding_completed", true)
-    .not("profile_summary", "is", null);
+    .select("id, degree_program, degree_level, current_year")
+    .eq("onboarding_completed", true);
 
-  const studentContext = (students ?? []).map((s: any, idx: number) => {
-    const code = `Candidato ${String.fromCharCode(65 + idx)}`;
-    const av = s.availability ?? {};
-    // Use opaque token instead of raw UUID to protect student identity
-    const ref = makeRef(searchId, s.id);
-    return `${code} [REF:${ref}]:
-- Corso: ${s.degree_program ?? "n/d"} (${s.degree_level ?? "n/d"}, anno ${s.current_year ?? "n/d"})
-- Sommario: ${s.profile_summary ?? "non disponibile"}
-- Interessi: ${(s.interests ?? []).join(", ") || "n/d"}
-- Obiettivi: ${(s.goals ?? []).slice(0, 3).join(", ") || "n/d"}
-- Esperienze: ${(s.experiences ?? []).slice(0, 2).join(" | ") || "n/d"}
-- Settori target: ${(av.career_targets?.sectors ?? []).join(", ") || "n/d"}
-- Stile: ${av.work_style?.style ?? "n/d"}, ${av.work_style?.teamwork_preference ?? "n/d"}`;
-  }).join("\n\n");
+  const studentIds = (students ?? []).map((s: any) => s.id);
+
+  const { data: blockRows } = studentIds.length
+    ? await (supabase.from("card_blocks") as any)
+        .select("student_profile_id, block_type, prose_content")
+        .in("student_profile_id", studentIds)
+        .eq("status", "approved")
+    : { data: [] };
+
+  const blocksByStudent = new Map<string, Record<string, any>>();
+  for (const row of blockRows ?? []) {
+    const existing = blocksByStudent.get(row.student_profile_id) ?? {};
+    existing[row.block_type] = row;
+    blocksByStudent.set(row.student_profile_id, existing);
+  }
+
+  const candidateContext = buildCandidateContext(students ?? [], blocksByStudent);
 
   const systemWithProfiles = `${SEARCH_SYSTEM_PROMPT}
 
 ---
-PROFILI STUDENTI DISPONIBILI (${(students ?? []).length} studenti onboardati):
+MIRACARD DEGLI STUDENTI ONBOARDATI (${(students ?? []).length} studenti, solo blocchi approvati dallo studente):
 
-${studentContext || "Nessuno studente onboardato al momento."}
----
-
-Quando identifichi candidati adatti, includi sempre il loro riferimento anonimo tra parentesi quadre [REF:token] (usa il token esatto dal profilo) in modo che il sistema possa proporre l'azione di contatto.`;
+${candidateContext || "Nessuno studente onboardato al momento."}
+---`;
 
   const updatedHistory: ChatMessage[] = [...history, { role: "user", content: userMessage }];
 
   const messages = [
     { role: "system" as const, content: systemWithProfiles },
-    ...updatedHistory,
+    ...updatedHistory.map((m) => ({ role: m.role, content: m.content })),
   ];
 
-  const assistantMessage = await chatCompletion(messages, { temperature: 0.6, maxTokens: 1024 });
+  const raw = await chatCompletion(messages, { temperature: 0.4, maxTokens: 1500, jsonMode: true });
 
-  const fullHistory: ChatMessage[] = [...updatedHistory, { role: "assistant", content: assistantMessage }];
+  let parsed: { message: string; matches: Array<{ student_id: string; dimension: string; reason: string }> };
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    parsed = { message: raw, matches: [] };
+  }
 
-  // Update title on first real message
+  const validStudentIds = new Set((students ?? []).map((s: any) => s.id));
+  const validDimensions = new Set(["competenze", "disponibilita", "entrambe"]);
+
+  const candidates: CandidateMatch[] = [];
+  for (const m of parsed.matches ?? []) {
+    if (!validStudentIds.has(m.student_id)) continue;
+    const { data: code } = await supabase.rpc("get_or_create_candidate_code", {
+      p_company_id: companyId,
+      p_student_profile_id: m.student_id,
+    });
+    if (!code) continue;
+    candidates.push({
+      code: code as unknown as string,
+      dimension: validDimensions.has(m.dimension) ? (m.dimension as CandidateMatch["dimension"]) : "competenze",
+      reason: m.reason ?? "",
+    });
+  }
+
+  const assistantMessage: ChatMessage = { role: "assistant", content: parsed.message, candidates };
+  const fullHistory: ChatMessage[] = [...updatedHistory, assistantMessage];
+
   let title: string | undefined;
   if (history.length === 0) {
     title = userMessage.slice(0, 60) + (userMessage.length > 60 ? "..." : "");
@@ -131,9 +197,9 @@ Quando identifichi candidati adatti, includi sempre il loro riferimento anonimo 
       ...(title ? { title } : {}),
     })
     .eq("id", searchId)
-    .eq("company_id", (company as any).id);
+    .eq("company_id", companyId);
 
-  return { message: assistantMessage };
+  return { message: parsed.message, candidates };
 }
 
 export async function updateSearchTitle(slug: string, searchId: string, title: string) {

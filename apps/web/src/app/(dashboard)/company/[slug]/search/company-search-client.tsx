@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import {
   createCompanySearch,
   loadSearchMessages,
   sendSearchMessage,
   updateSearchTitle,
   deleteSearch,
+  type CandidateMatch,
 } from "@/lib/actions/company-search";
 import { ContactRequestModal } from "../contacts/contact-request-modal";
 
@@ -19,16 +21,20 @@ interface SearchThread {
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  candidates?: CandidateMatch[];
 }
 
-function extractStudentRefs(text: string): string[] {
-  const matches = text.match(/\[REF:([A-Za-z0-9_-]{20})\]/g) ?? [];
-  return [...new Set(matches.map((m) => m.replace("[REF:", "").replace("]", "")))];
-}
+const DIMENSION_LABEL: Record<CandidateMatch["dimension"], string> = {
+  competenze: "Match su competenze",
+  disponibilita: "Match su disponibilità",
+  entrambe: "Match forte",
+};
 
-function formatMessage(text: string): string {
-  return text.replace(/\[REF:[A-Za-z0-9_-]{20}\]/g, "");
-}
+const DIMENSION_CLASS: Record<CandidateMatch["dimension"], string> = {
+  competenze: "bg-petrol-50 text-petrol-700",
+  disponibilita: "bg-amber-100 text-amber-700",
+  entrambe: "bg-emerald-100 text-emerald-700",
+};
 
 interface Props {
   slug: string;
@@ -44,7 +50,7 @@ export function CompanySearchClient({ slug, initialSearches }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
-  const [contactRef, setContactRef] = useState<{ searchId: string; token: string } | null>(null);
+  const [contactCode, setContactCode] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -82,7 +88,7 @@ export function CompanySearchClient({ slug, initialSearches }: Props) {
     setLoading(true);
 
     const result = await sendSearchMessage(slug, activeId, userMsg, history);
-    setMessages((prev) => [...prev, { role: "assistant", content: result.message }]);
+    setMessages((prev) => [...prev, { role: "assistant", content: result.message, candidates: result.candidates }]);
     setLoading(false);
 
     if (history.length === 0) {
@@ -215,36 +221,45 @@ export function CompanySearchClient({ slug, initialSearches }: Props) {
                 </div>
               )}
 
-              {messages.map((msg, i) => {
-                const studentRefs = msg.role === "assistant" ? extractStudentRefs(msg.content) : [];
-                return (
-                  <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-lg px-4 py-3 ${msg.role === "user" ? "bg-navy text-white" : "bg-white border border-border text-ink"}`}>
-                      {msg.role === "assistant" && (
-                        <p className="text-eyebrow text-petrol uppercase mb-1">MIRA</p>
-                      )}
-                      <p className="text-body whitespace-pre-wrap">{formatMessage(msg.content)}</p>
-                      {studentRefs.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-border/50 flex flex-wrap gap-2">
-                          {studentRefs.map((token, j) => (
-                            <button
-                              key={j}
-                              onClick={() => activeId && setContactRef({ searchId: activeId, token })}
-                              className="flex items-center gap-1.5 text-body-sm border border-navy text-navy rounded-md px-3 py-1.5 hover:bg-navy hover:text-white transition-colors duration-100"
-                            >
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                                <polyline points="22,6 12,13 2,6" />
-                              </svg>
-                              Contatta Candidato {String.fromCharCode(65 + j)}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+              {messages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[80%] rounded-lg px-4 py-3 ${msg.role === "user" ? "bg-navy text-white" : "bg-white border border-border text-ink"}`}>
+                    {msg.role === "assistant" && (
+                      <p className="text-eyebrow text-petrol uppercase mb-1">MIRA</p>
+                    )}
+                    <p className="text-body whitespace-pre-wrap">{msg.content}</p>
+                    {msg.candidates && msg.candidates.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+                        {msg.candidates.map((c) => (
+                          <div key={c.code} className="rounded-md border border-border bg-paper px-3 py-2.5">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-label text-navy font-semibold">{c.code}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${DIMENSION_CLASS[c.dimension]}`}>
+                                {DIMENSION_LABEL[c.dimension]}
+                              </span>
+                            </div>
+                            <p className="text-body-sm text-ink-secondary mb-2">{c.reason}</p>
+                            <div className="flex items-center gap-3">
+                              <Link
+                                href={`/company/${slug}/candidates/${c.code}`}
+                                className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
+                              >
+                                Guarda la MiraCard
+                              </Link>
+                              <button
+                                onClick={() => setContactCode(c.code)}
+                                className="text-body-sm text-navy font-medium hover:underline"
+                              >
+                                Contatta
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                );
-              })}
+                </div>
+              ))}
 
               {loading && (
                 <div className="flex justify-start">
@@ -287,12 +302,11 @@ export function CompanySearchClient({ slug, initialSearches }: Props) {
         )}
       </div>
 
-      {contactRef && (
+      {contactCode && (
         <ContactRequestModal
           slug={slug}
-          searchId={contactRef.searchId}
-          refToken={contactRef.token}
-          onClose={() => setContactRef(null)}
+          code={contactCode}
+          onClose={() => setContactCode(null)}
         />
       )}
     </div>

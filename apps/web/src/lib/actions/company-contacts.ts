@@ -2,7 +2,6 @@
 
 import { createServiceClient } from "@mira/supabase/server";
 import { getCompanyContext, getUserContext } from "@/lib/auth";
-import { resolveStudentRef } from "./company-search-ref";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -10,20 +9,21 @@ import { resolveStudentRef } from "./company-search-ref";
 
 export async function sendContactRequest(
   slug: string,
-  searchId: string,
-  refToken: string,
+  code: string,
   roleTitle: string,
   message: string
 ) {
   const { company, profile } = await getCompanyContext(slug);
   const supabase = await createServiceClient();
 
-  // Resolve opaque token → real student profile ID server-side
-  const { data: students } = await (supabase.from("student_profiles") as any)
-    .select("id")
-    .eq("onboarding_completed", true);
+  // Resolve the stable per-company candidate code → real student profile ID server-side
+  const { data: codeRow } = await (supabase.from("company_candidate_codes") as any)
+    .select("student_profile_id")
+    .eq("company_id", (company as any).id)
+    .eq("code", code)
+    .maybeSingle();
 
-  const studentProfileId = resolveStudentRef(searchId, refToken, students ?? []);
+  const studentProfileId = codeRow?.student_profile_id as string | undefined;
   if (!studentProfileId) return { error: "Candidato non trovato." };
 
   const { data, error } = await (supabase.from("company_contact_requests") as any)

@@ -26,15 +26,17 @@ interface CandidateCardProps {
   interessi?: { data: InteressiProseContent };
   autodescrizione?: { data: AutodescrizioneProseContent };
   pianoCarriera?: { data: PianoCarrieraProseContent };
+  /** Chi sta guardando la card — decide quale flag di visibilità dei voti applicare. Default: associazioni. */
+  audience?: "associazioni" | "aziende";
 }
 
 /**
- * Card read-only per la vista associazione: solo blocchi approved, filtrata per visibilità.
+ * Card read-only per la vista associazione/azienda: solo blocchi approved, filtrata per visibilità.
  * Riusa gli stessi componenti View del Profilo studente — un'unica fonte per come "appare"
  * la card, invece di una resa duplicata che può andare fuori sincro visivo.
  */
 export function CandidateCard(props: CandidateCardProps) {
-  const showMedia = props.header?.visibility?.media_voti?.associazioni === true;
+  const showMedia = props.header?.visibility?.media_voti?.[props.audience ?? "associazioni"] === true;
   const hasAny = Object.values(props).some(Boolean);
 
   if (!hasAny) {
