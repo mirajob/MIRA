@@ -39,11 +39,16 @@ const DIMENSION_CLASS: Record<CandidateMatch["dimension"], string> = {
 interface Props {
   slug: string;
   initialSearches: SearchThread[];
+  initialActiveId?: string;
 }
 
-export function CompanySearchClient({ slug, initialSearches }: Props) {
+export function CompanySearchClient({ slug, initialSearches, initialActiveId }: Props) {
   const [searches, setSearches] = useState<SearchThread[]>(initialSearches);
-  const [activeId, setActiveId] = useState<string | null>(initialSearches[0]?.id ?? null);
+  const [activeId, setActiveId] = useState<string | null>(
+    (initialActiveId && initialSearches.some((s) => s.id === initialActiveId))
+      ? initialActiveId
+      : initialSearches[0]?.id ?? null
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -241,7 +246,7 @@ export function CompanySearchClient({ slug, initialSearches }: Props) {
                             <p className="text-body-sm text-ink-secondary mb-2">{c.reason}</p>
                             <div className="flex items-center gap-3">
                               <Link
-                                href={`/company/${slug}/candidates/${c.code}`}
+                                href={`/company/${slug}/candidates/${c.code}?searchId=${activeId}`}
                                 className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
                               >
                                 Guarda la MiraCard

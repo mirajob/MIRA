@@ -9,10 +9,12 @@ import { ContactButton } from "./contact-button";
 
 interface Props {
   params: Promise<{ slug: string; code: string }>;
+  searchParams: Promise<{ searchId?: string }>;
 }
 
-export default async function CompanyCandidateCardPage({ params }: Props) {
+export default async function CompanyCandidateCardPage({ params, searchParams }: Props) {
   const { slug, code } = await params;
+  const { searchId } = await searchParams;
   const { company } = await getCompanyContext(slug);
   const supabase = await createServiceClient();
 
@@ -56,7 +58,10 @@ export default async function CompanyCandidateCardPage({ params }: Props) {
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <Link href={`/company/${slug}/search`} className="text-body-sm text-ink-tertiary hover:text-navy transition-colors">
+          <Link
+            href={searchId ? `/company/${slug}/search?searchId=${searchId}` : `/company/${slug}/search`}
+            className="text-body-sm text-ink-tertiary hover:text-navy transition-colors"
+          >
             ← Torna alla ricerca
           </Link>
           <h1 className="font-display text-h1 text-navy mt-2">Candidato {code}</h1>
