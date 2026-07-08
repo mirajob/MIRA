@@ -151,10 +151,14 @@ export function CompanyContactsClient({ slug, initialContacts }: Props) {
             <div className="px-6 py-3 border-b border-border bg-white shrink-0 flex items-center justify-between">
               <div>
                 <p className="text-body font-medium text-navy">{activeChat?.role_title}</p>
-                {chatData?.chat?.student_identity_revealed && chatData?.chat?.company_contact_requests?.student_contact_info && (
+                {chatData?.chat?.student_identity_revealed && chatData?.chat?.shared_contact && (
                   <p className="text-body-sm text-petrol">
-                    Identità rivelata ·{" "}
-                    {chatData.chat.company_contact_requests.student_contact_info?.email}
+                    Contatti condivisi ·{" "}
+                    {[
+                      chatData.chat.shared_contact.name,
+                      chatData.chat.shared_contact.email,
+                      chatData.chat.shared_contact.phone,
+                    ].filter(Boolean).join(" · ")}
                   </p>
                 )}
               </div>

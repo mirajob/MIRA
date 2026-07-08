@@ -43,7 +43,7 @@ export async function getUnreadCount() {
   return count ?? 0;
 }
 
-export async function getStudentNotifications() {
+export async function getNotifications() {
   const ctx = await getUserContext();
   const supabase = await createServiceClient();
 

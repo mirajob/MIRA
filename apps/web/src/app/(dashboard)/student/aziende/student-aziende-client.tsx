@@ -6,7 +6,7 @@ import {
   respondToContactRequest,
   loadStudentChatMessages,
   sendStudentChatMessage,
-  revealStudentIdentity,
+  shareStudentContact,
   respondToInterviewInvite,
 } from "@/lib/actions/company-contacts";
 
@@ -26,8 +26,13 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [acceptDialog, setAcceptDialog] = useState<{ requestId: string; companyName: string } | null>(null);
+  const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [shareDialog, setShareDialog] = useState(false);
+  const [shareName, setShareName] = useState("");
+  const [shareEmail, setShareEmail] = useState("");
+  const [sharePhone, setSharePhone] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
   const supabase = createBrowserClient();
 
@@ -62,7 +67,8 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
     if (!acceptDialog) return;
     setLoading(true);
     const result = await respondToContactRequest(acceptDialog.requestId, true, {
-      email: contactEmail,
+      name: contactName || undefined,
+      email: contactEmail || undefined,
       phone: contactPhone || undefined,
     });
     if (result.success) {
@@ -73,6 +79,23 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
       const updated = await loadStudentChats();
       setChats(updated);
       setActiveTab("chats");
+    }
+    setLoading(false);
+  }
+
+  async function handleShareContact() {
+    if (!activeChatId) return;
+    setLoading(true);
+    const result = await shareStudentContact(activeChatId, {
+      name: shareName || undefined,
+      email: shareEmail || undefined,
+      phone: sharePhone || undefined,
+    });
+    if (result.success) {
+      setShareDialog(false);
+      setShareName(""); setShareEmail(""); setSharePhone("");
+      const updated = await loadStudentChatMessages(activeChatId);
+      setChatData(updated);
     }
     setLoading(false);
   }
@@ -90,15 +113,6 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
     setInput("");
     setLoading(true);
     await sendStudentChatMessage(activeChatId, msg);
-    const updated = await loadStudentChatMessages(activeChatId);
-    setChatData(updated);
-    setLoading(false);
-  }
-
-  async function handleRevealIdentity() {
-    if (!activeChatId) return;
-    setLoading(true);
-    await revealStudentIdentity(activeChatId);
     const updated = await loadStudentChatMessages(activeChatId);
     setChatData(updated);
     setLoading(false);
@@ -182,7 +196,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                         Rifiuta
                       </button>
                       <button
-                        onClick={() => { setAcceptDialog({ requestId: req.id, companyName: companyName(req) }); setContactEmail(""); }}
+                        onClick={() => { setAcceptDialog({ requestId: req.id, companyName: companyName(req) }); setContactName(""); setContactEmail(""); setContactPhone(""); }}
                         disabled={loading}
                         className="flex-1 px-4 py-2.5 rounded-md bg-navy text-white text-body-sm hover:bg-navy-700 transition-colors duration-100 disabled:opacity-40"
                       >
@@ -249,17 +263,18 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                         </p>
                         <p className="text-body-sm text-ink-secondary">{chatData?.chat?.company_contact_requests?.role_title}</p>
                       </div>
-                      {chatData?.chat && !chatData.chat.student_identity_revealed && (
+                      {chatData?.chat && (
                         <button
-                          onClick={handleRevealIdentity}
+                          onClick={() => setShareDialog(true)}
                           disabled={loading}
-                          className="text-body-sm text-petrol border border-petrol/30 rounded-md px-3 py-1.5 hover:bg-petrol hover:text-white transition-colors duration-100 disabled:opacity-40"
+                          className={`text-body-sm rounded-md px-3 py-1.5 transition-colors duration-100 disabled:opacity-40 ${
+                            chatData.chat.student_identity_revealed
+                              ? "text-success border border-success/30 hover:bg-success/10"
+                              : "text-petrol border border-petrol/30 hover:bg-petrol hover:text-white"
+                          }`}
                         >
-                          Rivela identità
+                          {chatData.chat.student_identity_revealed ? "Contatti condivisi ✓" : "Condividi i tuoi contatti"}
                         </button>
-                      )}
-                      {chatData?.chat?.student_identity_revealed && (
-                        <span className="text-body-sm text-success">Identità condivisa ✓</span>
                       )}
                     </div>
 
@@ -350,14 +365,20 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
       {acceptDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-lg border border-border w-full max-w-sm p-6 shadow-xl">
-            <h2 className="font-display text-h2 text-navy mb-2">Condividi i tuoi recapiti</h2>
+            <h2 className="font-display text-h2 text-navy mb-2">Accetta la richiesta</h2>
             <p className="text-body-sm text-ink-secondary mb-5">
-              <strong>{acceptDialog.companyName}</strong> riceverà i tuoi recapiti e si aprirà una chat.
+              Si aprirà una chat con <strong>{acceptDialog.companyName}</strong>. Resti anonimo: puoi condividere i tuoi contatti ora oppure in qualsiasi momento più avanti, dalla chat.
             </p>
             <div className="space-y-4 mb-5">
               <label className="block">
-                <span className="text-label text-navy mb-2 block">Email *</span>
-                <input type="email" required value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
+                <span className="text-label text-navy mb-2 block">Nome (opzionale)</span>
+                <input type="text" value={contactName} onChange={(e) => setContactName(e.target.value)}
+                  placeholder="Il tuo nome"
+                  className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20" />
+              </label>
+              <label className="block">
+                <span className="text-label text-navy mb-2 block">Email (opzionale)</span>
+                <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
                   placeholder="La tua email"
                   className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20" />
               </label>
@@ -373,9 +394,51 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                 className="flex-1 px-4 py-3 rounded-md border border-border text-body text-ink hover:border-border-strong transition-colors duration-100">
                 Annulla
               </button>
-              <button onClick={handleAccept} disabled={loading || !contactEmail.trim()}
+              <button onClick={handleAccept} disabled={loading}
                 className="flex-1 bg-navy text-white px-4 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100 disabled:opacity-40">
-                {loading ? "..." : "Conferma"}
+                {loading ? "..." : (contactName || contactEmail || contactPhone) ? "Condividi e accetta" : "Accetta, resta anonimo"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share contact dialog */}
+      {shareDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-lg border border-border w-full max-w-sm p-6 shadow-xl">
+            <h2 className="font-display text-h2 text-navy mb-2">Condividi i tuoi contatti</h2>
+            <p className="text-body-sm text-ink-secondary mb-5">
+              Scegli cosa condividere con l&apos;azienda. Puoi condividere anche un solo campo, e farlo di nuovo più avanti per aggiungerne altri.
+            </p>
+            <div className="space-y-4 mb-5">
+              <label className="block">
+                <span className="text-label text-navy mb-2 block">Nome</span>
+                <input type="text" value={shareName} onChange={(e) => setShareName(e.target.value)}
+                  placeholder="Il tuo nome"
+                  className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20" />
+              </label>
+              <label className="block">
+                <span className="text-label text-navy mb-2 block">Email</span>
+                <input type="email" value={shareEmail} onChange={(e) => setShareEmail(e.target.value)}
+                  placeholder="La tua email"
+                  className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20" />
+              </label>
+              <label className="block">
+                <span className="text-label text-navy mb-2 block">Telefono</span>
+                <input type="tel" value={sharePhone} onChange={(e) => setSharePhone(e.target.value)}
+                  placeholder="+39 333 …"
+                  className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20" />
+              </label>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setShareDialog(false)}
+                className="flex-1 px-4 py-3 rounded-md border border-border text-body text-ink hover:border-border-strong transition-colors duration-100">
+                Annulla
+              </button>
+              <button onClick={handleShareContact} disabled={loading || !(shareName.trim() || shareEmail.trim() || sharePhone.trim())}
+                className="flex-1 bg-navy text-white px-4 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100 disabled:opacity-40">
+                {loading ? "..." : "Condividi"}
               </button>
             </div>
           </div>

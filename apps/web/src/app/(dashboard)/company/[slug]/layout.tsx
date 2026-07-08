@@ -1,5 +1,7 @@
 import { getCompanyContext } from "@/lib/auth";
 import { signOut } from "@/lib/actions/auth";
+import { getUnreadCount } from "@/lib/actions/notifications";
+import { NotificationBell } from "@/components/notification-bell";
 import Link from "next/link";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -12,6 +14,7 @@ interface Props {
 export default async function CompanyLayout({ children, params }: Props) {
   const { slug } = await params;
   const { profile, company } = await getCompanyContext(slug);
+  const unreadNotifications = await getUnreadCount();
 
   const nav = [
     { href: `/company/${slug}`, label: "Cerca talenti" },
@@ -29,6 +32,7 @@ export default async function CompanyLayout({ children, params }: Props) {
             <span className="text-body-sm font-medium text-ink">{(company as any).display_name ?? (company as any).legal_name}</span>
           </div>
           <div className="flex items-center gap-4">
+            <NotificationBell initialUnreadCount={unreadNotifications} />
             <span className="text-body-sm text-ink-secondary">{(profile as any).full_name}</span>
             <form action={signOut}>
               <button type="submit" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors duration-100">

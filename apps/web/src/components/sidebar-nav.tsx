@@ -21,6 +21,7 @@ const STUDENT_LINKS = [
   { label: "Prossimi passi", href: "/student/prossimi-passi" },
   { label: "Associazioni", href: "/student/associazioni" },
   { label: "Candidature", href: "/student/applications" },
+  { label: "Aziende", href: "/student/aziende" },
 ];
 
 const ROLE_LABELS: Record<string, string> = {
