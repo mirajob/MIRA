@@ -271,7 +271,7 @@ async function updateProfileFromChat(profileId: string, conversation: ChatMessag
   },
   "profile_update": "Se emergono info significative, riscrivi il riassunto completo in 3-4 frasi in terza persona, tono curato e discorsivo. Esempio: 'Mario è uno studente di triennale orientato a finanza e startup. Dal percorso emergono basi in analisi economica e interesse per venture capital.' Se niente di significativo, stringa vuota."
 }
-Estrai SOLO info esplicitamente dette. Non inventare. Campi vuoti/null se niente di nuovo.`,
+Estrai SOLO info esplicitamente dette. Non inventare. Campi vuoti/null se niente di nuovo. La MIRA card è sempre in inglese: scrivi interests/goals/experiences/profile_update/career_update.plan in inglese anche se la conversazione è in italiano (i nomi propri, es. nomi di associazioni o aziende, restano invariati).`,
       },
       { role: "user", content: conversationText },
     ],

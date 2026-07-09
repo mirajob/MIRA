@@ -234,7 +234,9 @@ export async function startOnboarding(firstName: string): Promise<{ message: str
 
   const intro = `Ciao ${firstName}! Io sono MIRA.
 
-Costruiamo insieme la tua MIRA card: ti serve ora per candidarti alle associazioni, ed è il profilo con cui le aziende potranno trovarti e contattarti direttamente quando sarai compatibile con quello che stanno cercando. Più è fatta bene, più lavora per te.`;
+Costruiamo insieme la tua MIRA card: ti serve ora per candidarti alle associazioni, ed è il profilo con cui le aziende potranno trovarti e contattarti direttamente quando sarai compatibile con quello che stanno cercando. Più è fatta bene, più lavora per te.
+
+La tua MIRA card sarà scritta in inglese, il formato che aziende e associazioni si aspettano — ma con me puoi continuare a scrivere in italiano, ci penso io.`;
 
   // Se in registrazione ha già indicato il livello, lo confermiamo invece di richiederlo da zero.
   const knownLivello = blocks.header.data.livello;
@@ -533,7 +535,7 @@ export async function submitEsperienzaRisposta(
     [
       {
         role: "system",
-        content: `Dalla conversazione, estrai le esperienze raccontate dallo studente. Per ognuna scrivi una descrizione di 2-3 righe di cosa ha fatto concretamente — fatti, non aggettivi di carattere. Rispondi SOLO in JSON: {"items":[{"titolo":"","organizzazione":"","periodo":"","descrizione":""}]}`,
+        content: `Dalla conversazione, estrai le esperienze raccontate dallo studente. Per ognuna scrivi una descrizione di 2-3 righe di cosa ha fatto concretamente — fatti, non aggettivi di carattere. La MIRA card è sempre in inglese: scrivi "titolo" e "descrizione" in inglese anche se la conversazione è in italiano (non tradurre invece "organizzazione" se è un nome proprio, es. il nome di un'azienda). Rispondi SOLO in JSON: {"items":[{"titolo":"","organizzazione":"","periodo":"","descrizione":""}]}`,
       },
       { role: "user", content: recentText },
     ],
@@ -591,7 +593,7 @@ export async function submitDisponibilita(history: ChatMessage[], userMessage: s
   const conversation = [...history, { role: "user" as const, content: userMessage }];
 
   const data = await extractJSON(
-    `Estrai dal messaggio: {"cosa_cerca":"tipo di opportunità: stage curriculare|stage extracurriculare|part-time|progetto|non in cerca|già occupato","ambito":"settore o ruolo cercato, es. venture capital, marketing, finanza","periodo":"il quando: una data di inizio aperta (es. 'da settembre 2026'), un intervallo preciso (es. 'da giugno ad agosto 2026'), o uno stato speciale se già occupato/non in cerca (es. 'già impegnato fino a dicembre')","dove":""}. Se un campo non emerge, stringa vuota. Rispondi solo JSON.`,
+    `Estrai dal messaggio: {"cosa_cerca":"tipo di opportunità: stage curriculare|stage extracurriculare|part-time|progetto|non in cerca|già occupato","ambito":"settore o ruolo cercato, es. venture capital, marketing, finanza","periodo":"il quando: una data di inizio aperta (es. 'da settembre 2026'), un intervallo preciso (es. 'da giugno ad agosto 2026'), o uno stato speciale se già occupato/non in cerca (es. 'già impegnato fino a dicembre')","dove":""}. Se un campo non emerge, stringa vuota. La MIRA card è sempre in inglese: scrivi ogni campo in inglese anche se il messaggio è in italiano. Rispondi solo JSON.`,
     userMessage
   );
 
@@ -670,7 +672,7 @@ DIFFERENZA FONDAMENTALE (non confonderla mai):
 Esempio SBAGLIATO (vietato): esperienza "Ha costruito una piattaforma AI-first per l'orientamento professionale, usando Claude Code, Vercel, Supabase" → competenza "Sviluppo di una piattaforma AI-first per l'orientamento professionale" (è solo una copia del fatto, non un'abilità).
 Esempio CORRETTO per la stessa esperienza → competenze come "Uso di strumenti di sviluppo AI-assisted (Claude Code, Vercel, Supabase)" oppure "Capacità di portare avanti un progetto in autonomia dall'idea al prodotto funzionante".
 
-Per ogni esame proponi al massimo una competenza teorica (quella più specifica e rilevante — mai generica tipo "conoscenza della materia"). Per ogni esperienza proponi 1-2 competenze applicate concrete. Ogni competenza indica se è "teorica" o "applicata" e a quale esame/esperienza fa riferimento (evidenza) — mai una competenza senza un'evidenza reale nei fatti forniti. Vietati aggettivi di carattere. Rispondi SOLO in JSON: {"items":[{"testo":"","tipo":"teorica|applicata","evidenza_ref":""}]}`;
+Per ogni esame proponi al massimo una competenza teorica (quella più specifica e rilevante — mai generica tipo "conoscenza della materia"). Per ogni esperienza proponi 1-2 competenze applicate concrete. Ogni competenza indica se è "teorica" o "applicata" e a quale esame/esperienza fa riferimento (evidenza) — mai una competenza senza un'evidenza reale nei fatti forniti. Vietati aggettivi di carattere. La MIRA card è sempre in inglese: scrivi "testo" ed "evidenza_ref" in inglese anche se i fatti forniti sono in italiano. Rispondi SOLO in JSON: {"items":[{"testo":"","tipo":"teorica|applicata","evidenza_ref":""}]}`;
 
 export async function startFaseB() {
   const { supabase, profileId, blocks } = await getOnboardingContext();
@@ -889,7 +891,7 @@ export async function submitInteressi(history: ChatMessage[], userMessage: strin
     [
       {
         role: "system",
-        content: `Scrivi una prosa breve (2-3 frasi) che unisce interessi professionali e personali dello studente, in terza persona, solo fatti/temi concreti. Rispondi SOLO in JSON: {"testo":""}`,
+        content: `Scrivi una prosa breve (2-3 frasi) che unisce interessi professionali e personali dello studente, in terza persona, solo fatti/temi concreti. La MIRA card è sempre in inglese: scrivi "testo" in inglese anche se lo studente ha risposto in italiano. Rispondi SOLO in JSON: {"testo":""}`,
       },
       { role: "user", content: recentText },
     ],
@@ -949,7 +951,7 @@ export async function submitAutodescrizioneRisposta(history: ChatMessage[], user
     [
       {
         role: "system",
-        content: `Scrivi un paragrafo breve (max 4 frasi) in PRIMA PERSONA che riassume come lo studente si descrive, basato SOLO su quello che ha detto. Mai aggettivi di carattere dedotti da te ("intraprendente", "resiliente") — solo ciò che lo studente ha effettivamente detto, riformulato in prima persona scorrevole. Rispondi SOLO in JSON: {"testo":""}`,
+        content: `Scrivi un paragrafo breve (max 4 frasi) in PRIMA PERSONA che riassume come lo studente si descrive, basato SOLO su quello che ha detto. Mai aggettivi di carattere dedotti da te ("intraprendente", "resiliente") — solo ciò che lo studente ha effettivamente detto, riformulato in prima persona scorrevole. La MIRA card è sempre in inglese: scrivi "testo" in inglese (prima persona: "I...") anche se lo studente ha risposto in italiano. Rispondi SOLO in JSON: {"testo":""}`,
       },
       { role: "user", content: recentText },
     ],
@@ -991,7 +993,7 @@ export async function submitPianoCarriera(history: ChatMessage[], userMessage: s
   const conversation = [...history, { role: "user" as const, content: userMessage }];
 
   const data = await extractJSON(
-    `Estrai dal messaggio: {"stato":"direzione_chiara|ipotesi|esplorazione","testo":""}. "stato" è direzione_chiara SOLO se lo studente indica un settore/ruolo definito in modo esplicito e sicuro; ipotesi se menziona 2-3 direzioni in valutazione; esplorazione se non ha ancora idea o è vago. Non forzare mai direzione_chiara per default. Rispondi solo JSON.`,
+    `Estrai dal messaggio: {"stato":"direzione_chiara|ipotesi|esplorazione","testo":""}. "stato" è direzione_chiara SOLO se lo studente indica un settore/ruolo definito in modo esplicito e sicuro; ipotesi se menziona 2-3 direzioni in valutazione; esplorazione se non ha ancora idea o è vago. Non forzare mai direzione_chiara per default. "testo" va sempre valorizzato (riformula il messaggio se serve, non lasciarlo vuoto) e scritto in inglese anche se il messaggio è in italiano — la MIRA card è sempre in inglese. Rispondi solo JSON.`,
     userMessage
   );
 

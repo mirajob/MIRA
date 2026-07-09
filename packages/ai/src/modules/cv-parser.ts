@@ -35,7 +35,9 @@ Estrai dal CV le seguenti informazioni — ignora completamente la sezione Educa
 Rispondi SOLO in JSON valido:
 {"experiences":[],"skills":[],"languages":[],"raw_text_summary":""}
 
-Se un campo non è visibile nel CV, lascia array vuoto o stringa vuota. NON inventare.`;
+Se un campo non è visibile nel CV, lascia array vuoto o stringa vuota. NON inventare.
+
+La MIRA card è sempre in inglese: scrivi title, description e raw_text_summary in inglese anche se il CV è in italiano (non tradurre "organization" se è un nome proprio, es. il nome di un'azienda).`;
 
 export async function parseCVFile(base64Data: string, mimeType: string): Promise<ParsedCV> {
   if (mimeType === "application/pdf") {
