@@ -109,7 +109,7 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
-            placeholder={isCompany ? "nome@azienda.com" : "nome@studbocconi.it"}
+            placeholder={isCompany ? "nome@azienda.com" : "nome.cognome@studenti.tuateneo.it"}
           />
         </label>
 

@@ -1,6 +1,16 @@
 import { createServiceClient } from "@mira/supabase/server";
+import { ITALIAN_UNIVERSITY_DOMAINS } from "@mira/domain";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+function guessUniversityFromEmail(email: string | null | undefined): string {
+  const domain = email?.split("@")[1]?.toLowerCase();
+  if (!domain) return "Non specificata";
+  const match = ITALIAN_UNIVERSITY_DOMAINS.find(
+    (u) => domain === u.domain || domain.endsWith(`.${u.domain}`)
+  );
+  return match?.name ?? "Non specificata";
+}
 
 /**
  * Every MIRA user is a student at heart — association board members and
@@ -23,7 +33,7 @@ export async function ensureStudentProfile(
     await (supabase.from("student_profiles") as any).insert({
       user_id: profileId,
       university_email: email,
-      university: "Bocconi University",
+      university: guessUniversityFromEmail(email),
     });
   }
 

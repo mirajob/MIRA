@@ -3,6 +3,7 @@ import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { InvitationForm } from "./invitation-form";
 import { ApproveRejectButtons } from "./approve-reject-buttons";
+import { DeleteAssociationButton } from "./delete-association-button";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -41,7 +42,10 @@ function AssociationRow({ assoc, president }: { assoc: any; president: any }) {
         {new Date(assoc.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" })}
       </td>
       <td className="px-4 py-3">
-        <ApproveRejectButtons associationId={assoc.id} status={assoc.verification_status} />
+        <div className="flex items-center gap-3">
+          <ApproveRejectButtons associationId={assoc.id} status={assoc.verification_status} />
+          <DeleteAssociationButton associationId={assoc.id} name={assoc.name} />
+        </div>
       </td>
     </tr>
   );

@@ -2,6 +2,7 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { CopyLink } from "./copy-link";
+import { DeleteUserButton } from "./delete-user-button";
 
 export default async function AdminUsersPage() {
   const ctx = await getUserContext();
@@ -29,7 +30,7 @@ export default async function AdminUsersPage() {
       <div className="rounded-lg border border-border bg-white p-5">
         <p className="text-label text-navy mb-1">Link di iscrizione generale</p>
         <p className="text-body-sm text-ink-secondary mb-3">
-          Condividi questo link per far registrare nuovi studenti su MIRA (email @studbocconi.it o @gmail.com).
+          Condividi questo link per far registrare nuovi studenti su MIRA (richiede un'email istituzionale universitaria).
         </p>
         <CopyLink url="https://mirajob.cloud/signup" />
       </div>
@@ -48,6 +49,7 @@ export default async function AdminUsersPage() {
                 <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Ruoli</th>
                 <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Corso</th>
                 <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Registrato</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Azioni</th>
               </tr>
             </thead>
             <tbody>
@@ -79,6 +81,9 @@ export default async function AdminUsersPage() {
                     </td>
                     <td className="py-4 px-4 text-body-sm text-ink-secondary">
                       {new Date(p.created_at).toLocaleDateString("it-IT")}
+                    </td>
+                    <td className="py-4 px-4">
+                      <DeleteUserButton profileId={p.id} name={p.full_name ?? p.email} />
                     </td>
                   </tr>
                 );

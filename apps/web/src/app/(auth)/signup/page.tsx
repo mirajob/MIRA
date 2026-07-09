@@ -2,9 +2,17 @@
 
 import { Suspense, useState } from "react";
 import { createBrowserClient } from "@mira/supabase/client";
-import { validateStudentEmail } from "@mira/domain";
+import { validateStudentEmail, validatePassword, ITALIAN_UNIVERSITY_DOMAINS } from "@mira/domain";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+
+const UNIVERSITIES = [...ITALIAN_UNIVERSITY_DOMAINS].sort((a, b) => a.name.localeCompare(b.name, "it"));
+
+const DEGREE_LEVELS = [
+  { value: "triennale", label: "Triennale" },
+  { value: "magistrale", label: "Magistrale" },
+  { value: "ciclo_unico", label: "Ciclo unico" },
+];
 
 export default function SignupPage() {
   return (
@@ -25,6 +33,8 @@ function SignupForm() {
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState(searchParams.get("email") ?? "");
+  const [university, setUniversity] = useState("");
+  const [degreeLevel, setDegreeLevel] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,6 +50,16 @@ function SignupForm() {
         setError(emailValidation.error);
         return;
       }
+      if (!university || !degreeLevel) {
+        setError("Seleziona università e livello di studi.");
+        return;
+      }
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      setError(passwordValidation.error);
+      return;
     }
 
     setLoading(true);
@@ -49,7 +69,11 @@ function SignupForm() {
       email,
       password,
       options: {
-        data: { full_name: fullName, ...(source ? { signup_source: source } : {}) },
+        data: {
+          full_name: fullName,
+          ...(source ? { signup_source: source } : {}),
+          ...(!isInvite ? { university, degree_level: degreeLevel } : {}),
+        },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
@@ -62,6 +86,8 @@ function SignupForm() {
 
     router.push(redirect);
   }
+
+  const inputClass = "w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200";
 
   return (
     <form onSubmit={handleSubmit} className="mt-8 space-y-6">
@@ -81,33 +107,69 @@ function SignupForm() {
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
+            className={inputClass}
           />
         </label>
 
         <label className="block">
-          <span className="text-label text-navy mb-2 block">Email</span>
+          <span className="text-label text-navy mb-2 block">Email istituzionale</span>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
-            placeholder="nome@studbocconi.it"
+            className={inputClass}
+            placeholder="nome.cognome@studenti.tuateneo.it"
           />
+          {!isInvite && (
+            <p className="mt-1 text-body-sm text-ink-tertiary">Usa la tua email universitaria, non una email personale.</p>
+          )}
         </label>
+
+        {!isInvite && (
+          <>
+            <label className="block">
+              <span className="text-label text-navy mb-2 block">Università</span>
+              <select
+                required
+                value={university}
+                onChange={(e) => setUniversity(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Seleziona università</option>
+                {UNIVERSITIES.map((u) => (
+                  <option key={u.domain} value={u.name}>{u.name}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="text-label text-navy mb-2 block">Livello di studi</span>
+              <select
+                required
+                value={degreeLevel}
+                onChange={(e) => setDegreeLevel(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Seleziona livello</option>
+                {DEGREE_LEVELS.map((d) => (
+                  <option key={d.value} value={d.value}>{d.label}</option>
+                ))}
+              </select>
+            </label>
+          </>
+        )}
 
         <label className="block">
           <span className="text-label text-navy mb-2 block">Password</span>
           <input
             type="password"
             required
-            minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
+            className={inputClass}
           />
-          <p className="mt-1 text-body-sm text-ink-tertiary">Minimo 8 caratteri</p>
+          <p className="mt-1 text-body-sm text-ink-tertiary">Almeno 8 caratteri, una maiuscola, un numero e un carattere speciale.</p>
         </label>
 
         <button

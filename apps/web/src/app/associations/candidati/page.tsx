@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createBrowserClient } from "@mira/supabase/client";
 import { setupAssociationProfile } from "@/lib/actions/association-register";
-import { ASSOCIATION_CATEGORIES } from "@mira/domain";
+import { ASSOCIATION_CATEGORIES, validatePassword } from "@mira/domain";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -22,6 +22,13 @@ export default function CandidatiAssociazionePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      setError(passwordValidation.error);
+      return;
+    }
+
     setLoading(true);
 
     const supabase = createBrowserClient();
@@ -161,7 +168,7 @@ export default function CandidatiAssociazionePage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="nome@studbocconi.it"
+                    placeholder="nome.cognome@studenti.tuateneo.it"
                     className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
                   />
                 </label>
@@ -176,7 +183,7 @@ export default function CandidatiAssociazionePage() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
                   />
-                  <p className="mt-1 text-body-sm text-ink-tertiary">Minimo 8 caratteri</p>
+                  <p className="mt-1 text-body-sm text-ink-tertiary">Almeno 8 caratteri, una maiuscola, un numero e un carattere speciale.</p>
                 </label>
               </div>
             </div>
