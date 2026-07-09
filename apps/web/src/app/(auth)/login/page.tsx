@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { createBrowserClient } from "@mira/supabase/client";
 import { checkPendingCompanyRequest } from "@/lib/actions/company-register";
+import { checkAccountType } from "@/lib/actions/auth";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -44,6 +45,22 @@ function LoginForm() {
       return;
     }
 
+    // The toggle is a hard gate, not just a label: a student account can't
+    // slip in through "Azienda" mode and vice versa.
+    const accountType = await checkAccountType(email);
+    if (isCompany && accountType === "student") {
+      await supabase.auth.signOut();
+      setError("Questo è un account studente. Passa su “Studente” qui sopra per accedere.");
+      setLoading(false);
+      return;
+    }
+    if (!isCompany && accountType === "company") {
+      await supabase.auth.signOut();
+      setError("Questo è un account azienda. Passa su “Azienda” qui sopra per accedere.");
+      setLoading(false);
+      return;
+    }
+
     router.push(redirect);
     router.refresh();
   }
@@ -51,14 +68,30 @@ function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="mt-8 space-y-6">
       <div className="space-y-4 rounded-lg border border-border bg-white p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-h2 text-navy">Accedi</h2>
+        <h2 className="font-display text-h2 text-navy">Accedi</h2>
+
+        <div className="flex rounded-md border border-border p-1 bg-paper" role="tablist">
           <button
             type="button"
-            onClick={() => setIsCompany((v) => !v)}
-            className="text-label text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
+            role="tab"
+            aria-selected={!isCompany}
+            onClick={() => setIsCompany(false)}
+            className={`flex-1 py-2 rounded text-label transition-colors duration-100 ${
+              !isCompany ? "bg-navy text-white" : "text-ink-secondary hover:text-navy"
+            }`}
           >
-            {isCompany ? "Sono uno studente" : "Sono un'azienda"}
+            Studente
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={isCompany}
+            onClick={() => setIsCompany(true)}
+            className={`flex-1 py-2 rounded text-label transition-colors duration-100 ${
+              isCompany ? "bg-navy text-white" : "text-ink-secondary hover:text-navy"
+            }`}
+          >
+            Azienda
           </button>
         </div>
 
