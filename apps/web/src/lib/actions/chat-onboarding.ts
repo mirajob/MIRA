@@ -261,6 +261,34 @@ async function extractJSON(systemPrompt: string, userText: string): Promise<any>
   return JSON.parse(result);
 }
 
+/**
+ * Quando l'estrazione non produce il dato richiesto, MIRA non deve ripetere la stessa
+ * domanda a pappagallo né procedere in silenzio con un campo vuoto: deve reagire a quello
+ * che lo studente ha effettivamente scritto (una domanda, un dubbio, una battuta, un
+ * rifiuto...) e solo dopo tornare, con naturalezza, verso l'informazione necessaria.
+ */
+async function handleUnclearAnswer(userMessage: string, neededQuestion: string): Promise<string> {
+  const result = await chatCompletion(
+    [
+      {
+        role: "system",
+        content: `Sei MIRA, un'assistente che sta aiutando uno studente a costruire il proprio profilo (MIRA card) attraverso una conversazione guidata. In questo momento la domanda a cui lo studente deve rispondere è: "${neededQuestion}". Il messaggio che ha scritto non è una risposta chiara a questa domanda.
+
+Rispondi con naturalezza e brevità (massimo 3 frasi):
+- Se è una domanda su di te o sul processo, rispondi alla domanda direttamente.
+- Se è una critica, un dubbio o un rifiuto, riconoscilo con calma senza essere sulla difensiva, e spiega in una riga perché ti serve quell'informazione.
+- Se è vago o vuoi solo un chiarimento, chiedi di specificare in modo mirato.
+- In tutti i casi, chiudi riproponendo la domanda originale (puoi riformularla, mai ripeterla identica parola per parola).
+
+Non ignorare mai quello che lo studente ha scritto per ripetere la domanda come se non l'avessi letta. Tono diretto, umano, mai robotico. Rispondi in italiano.`,
+      },
+      { role: "user", content: userMessage },
+    ],
+    { temperature: 0.4, maxTokens: 250 }
+  );
+  return result.trim();
+}
+
 export async function submitLivello(history: ChatMessage[], userMessage: string) {
   const { supabase, profileId, studentProfileId, blocks } = await getOnboardingContext();
   const conversation = [...history, { role: "user" as const, content: userMessage }];
@@ -273,6 +301,21 @@ export async function submitLivello(history: ChatMessage[], userMessage: string)
     userMessage
   );
   const livello = data.degree_level as string | null;
+
+  let message: string;
+  let phase: OnboardingPhase;
+
+  if (!livello) {
+    // Non scrive nulla: un campo vuoto non deve sovrascrivere un valore già noto (es. dalla
+    // registrazione), e prima di tutto MIRA reagisce a quello che lo studente ha scritto
+    // invece di ripetere la domanda come se non l'avesse letta.
+    message = await handleUnclearAnswer(userMessage, "Studi triennale, magistrale o ciclo unico?");
+    phase = "livello";
+
+    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+    await saveConversation(supabase, profileId, fullConversation);
+    return { message, phase, header: blocks.header };
+  }
 
   const { data: updatedRows, error } = await (supabase.from("card_blocks") as any)
     .update({ prose_content: { ...blocks.header.data, livello } })
@@ -291,13 +334,7 @@ export async function submitLivello(history: ChatMessage[], userMessage: string)
   // LEGACY-WRITE(card-rework): rimuovere in Step 5/6.
   await (supabase.from("student_profiles") as any).update({ degree_level: livello }).eq("id", studentProfileId);
 
-  let message: string;
-  let phase: OnboardingPhase;
-
-  if (!livello) {
-    message = `Scusa, non ho capito bene — studi triennale, magistrale o ciclo unico?`;
-    phase = "livello";
-  } else if (livello === "magistrale") {
+  if (livello === "magistrale") {
     message = `Perfetto. Prima di procedere, dove hai fatto la triennale, in che corso e con che voto di laurea?`;
     phase = "previous_degree";
   } else {
@@ -319,6 +356,13 @@ export async function submitPreviousDegree(history: ChatMessage[], userMessage: 
     `Estrai dal messaggio: {"universita":"università triennale","corso":"corso triennale","voto_laurea":"voto di laurea","tema_tesi":"tema tesi, o null"}. Se un campo non emerge, null. Rispondi solo JSON.`,
     userMessage
   );
+
+  if (!data.universita && !data.corso && !data.voto_laurea) {
+    const message = await handleUnclearAnswer(userMessage, "Dove hai fatto la triennale, in che corso e con che voto di laurea?");
+    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+    await saveConversation(supabase, profileId, fullConversation);
+    return { message, phase: "previous_degree" as OnboardingPhase, header: blocks.header };
+  }
 
   const headerData: HeaderProseContent = {
     ...blocks.header.data,
@@ -389,6 +433,15 @@ export async function submitHeaderGap(history: ChatMessage[], userMessage: strin
     `Estrai dal messaggio ciò che manca sul percorso accademico: {"universita":"nome università, o null","corso":"nome corso, o null","livello":"triennale|magistrale|ciclo_unico, o null","anno":0,"anno_inizio":"anno di immatricolazione a questo corso, es. 2023, o null","laurea_anno":"anno di laurea previsto, es. 2026, o null"}. Se un campo non emerge, null. Rispondi solo JSON.`,
     userMessage
   );
+
+  const nothingNew = !data.universita && !data.corso && !data.livello && !data.anno && !data.anno_inizio && !data.laurea_anno;
+  if (nothingNew) {
+    const missing = missingHeaderFields(blocks.header.data, transcriptSkipped);
+    const message = await handleUnclearAnswer(userMessage, `Mi dici ${missing.join(" e ")}?`);
+    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+    await saveConversation(supabase, profileId, fullConversation);
+    return { message, phase: "header_gap" as OnboardingPhase, header: blocks.header };
+  }
 
   const headerData: HeaderProseContent = {
     ...blocks.header.data,
@@ -589,13 +642,23 @@ export async function afterEsperienzeApproved(history: ChatMessage[]) {
 }
 
 export async function submitDisponibilita(history: ChatMessage[], userMessage: string) {
-  const { supabase, profileId, studentProfileId, student } = await getOnboardingContext();
+  const { supabase, profileId, studentProfileId, student, blocks } = await getOnboardingContext();
   const conversation = [...history, { role: "user" as const, content: userMessage }];
 
   const data = await extractJSON(
     `Estrai dal messaggio: {"cosa_cerca":"tipo di opportunità: stage curriculare|stage extracurriculare|part-time|progetto|non in cerca|già occupato","ambito":"settore o ruolo cercato, es. venture capital, marketing, finanza","periodo":"il quando: una data di inizio aperta (es. 'da settembre 2026'), un intervallo preciso (es. 'da giugno ad agosto 2026'), o uno stato speciale se già occupato/non in cerca (es. 'già impegnato fino a dicembre')","dove":""}. Se un campo non emerge, stringa vuota. La MIRA card è sempre in inglese: scrivi ogni campo in inglese anche se il messaggio è in italiano. Rispondi solo JSON.`,
     userMessage
   );
+
+  if (!data.cosa_cerca) {
+    const message = await handleUnclearAnswer(
+      userMessage,
+      "Cosa cerchi (uno stage, un part-time, un progetto...) e da quando sei disponibile?"
+    );
+    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+    await saveConversation(supabase, profileId, fullConversation);
+    return { message, phase: "disponibilita" as OnboardingPhase, disponibilita: blocks.disponibilita };
+  }
 
   const disponibilitaData: DisponibilitaProseContent = {
     cosa_cerca: data.cosa_cerca || null,
