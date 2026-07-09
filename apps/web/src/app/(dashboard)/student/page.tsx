@@ -3,10 +3,8 @@ import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { RoadmapBanner } from "@/components/roadmap-banner";
-import { EditableRole } from "@/components/editable-role";
 import { ensureCardBlocksExist } from "@/lib/actions/card-blocks";
 import { EditableSection } from "@/components/card/editable-section";
-import { WORKSPACE_ROLES } from "@/lib/association-roles";
 import { HeaderBlock, HeaderView } from "@/components/card/header-block";
 import { DisponibilitaBlock, DisponibilitaView } from "@/components/card/disponibilita-block";
 import { EsperienzeBlock, EsperienzeView } from "@/components/card/esperienze-block";
@@ -29,14 +27,6 @@ import type {
 } from "@mira/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-const ROLE_LABELS: Record<string, string> = {
-  association_president: "Presidente",
-  association_admin: "Admin",
-  association_reviewer: "Reviewer",
-  association_interviewer: "Interviewer",
-  association_member: "Membro",
-};
 
 interface CardBlockRow {
   block_type: CardBlockType;
@@ -74,11 +64,6 @@ export default async function StudentHomePage() {
   const blocks = new Map<CardBlockType, CardBlockRow>(
     ((blockRows ?? []) as CardBlockRow[]).map((b) => [b.block_type, b])
   );
-
-  const { data: memberships } = await (supabase.from("association_memberships") as any)
-    .select("id, role, title, joined_at, association_profiles(name, slug, verification_status)")
-    .eq("user_id", profileId)
-    .eq("status", "active");
 
   const answers = (student as any).onboarding_answers as Record<string, unknown> | null;
   const roadmapDismissed = answers?.roadmap_dismissed === true;
@@ -239,40 +224,6 @@ export default async function StudentHomePage() {
           </div>
         )}
       </div>
-
-      {(memberships?.length ?? 0) > 0 && (
-        <div className="rounded-lg border border-border bg-white p-5">
-          <p className="text-eyebrow text-navy/60 uppercase mb-3">Le mie associazioni</p>
-          <div className="space-y-3">
-            {memberships!.map((m: any) => {
-              const status = m.association_profiles?.verification_status;
-              const slug = m.association_profiles?.slug;
-              const canOpenWorkspace = WORKSPACE_ROLES.includes(m.role) && status === "verified" && slug;
-
-              return (
-                <div key={m.id} className="flex items-center justify-between gap-3 rounded-md px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    {canOpenWorkspace ? (
-                      <Link href={`/association/${slug}`} className="text-body text-navy font-medium hover:text-petrol underline underline-offset-2 decoration-1">
-                        {m.association_profiles?.name ?? "—"}
-                      </Link>
-                    ) : (
-                      <span className="text-body text-ink font-medium">{m.association_profiles?.name ?? "—"}</span>
-                    )}
-                    {status === "pending_verification" && (
-                      <span className="text-eyebrow px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 uppercase">In attesa</span>
-                    )}
-                    {status === "rejected" && (
-                      <span className="text-eyebrow px-2 py-0.5 rounded-full bg-red-100 text-red-600 uppercase">Non approvata</span>
-                    )}
-                  </div>
-                  <EditableRole membershipId={m.id} currentTitle={m.title} roleFallback={ROLE_LABELS[m.role] ?? m.role} />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
