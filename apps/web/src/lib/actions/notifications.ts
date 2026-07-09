@@ -30,6 +30,30 @@ export async function markAllNotificationsRead() {
   revalidatePath("/");
 }
 
+export async function markOtherNotificationsRead() {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const { data } = await (supabase.from("notifications") as any)
+    .select("id, data")
+    .eq("user_id", ctx.profile.id)
+    .is("read_at", null);
+
+  const idsToMark = (data ?? [])
+    .filter((r: any) => r.data?.link !== "/student/aziende")
+    .map((r: any) => r.id);
+
+  if (idsToMark.length > 0) {
+    await supabase
+      .from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .in("id", idsToMark);
+  }
+
+  revalidatePath("/");
+}
+
 export async function getUnreadCount() {
   const ctx = await getUserContext();
   const supabase = await createServiceClient();

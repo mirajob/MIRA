@@ -241,8 +241,6 @@ export async function dismissRoadmap() {
     .eq("user_id", (ctx.profile as any).id);
 }
 
-import { generatePathwayAnalysis } from "./pathway";
-
 async function updateProfileFromChat(profileId: string, conversation: ChatMessage[]) {
   const recent = conversation.slice(-8);
   const conversationText = recent
@@ -331,22 +329,10 @@ Estrai SOLO info esplicitamente dette. Non inventare. Campi vuoti/null se niente
     updates.availability = newAvail;
   }
 
-  const significantUpdate =
-    data.experiences?.length > 0 ||
-    data.goals?.length > 0 ||
-    data.interests?.length > 0 ||
-    !!data.profile_update;
-
   if (Object.keys(updates).length > 0) {
     await (supabase.from("student_profiles") as any)
       .update(updates)
       .eq("user_id", profileId);
-
-    if (significantUpdate) {
-      generatePathwayAnalysis(profileId).catch((err) =>
-        console.error("Background pathway regeneration failed:", err)
-      );
-    }
   }
 
   // Update association membership roles if mentioned

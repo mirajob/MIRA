@@ -69,8 +69,8 @@ export default async function ApplicationDetailPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-6 space-y-6">
       {/* Back */}
-      <Link href="/student/applications" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors">
-        ← Tutte le candidature
+      <Link href="/student/associazioni" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors">
+        ← Associazioni
       </Link>
 
       {/* Header */}

@@ -4,7 +4,6 @@ import { chatCompletion } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import { generatePathwayAnalysis } from "./pathway";
 import { ensureCardBlocksExist } from "./card-blocks";
 import { EMPTY_ONBOARDING_BLOCKS } from "@/lib/onboarding-defaults";
 import type {
@@ -631,7 +630,6 @@ export async function afterDisponibilitaApproved(history: ChatMessage[]) {
   const fullConversation = [...history, { role: "assistant" as const, content: message }];
   await saveConversation(supabase, profileId, fullConversation);
 
-  generatePathwayAnalysis(profileId).catch((err) => console.error("Background pathway analysis failed:", err));
   revalidatePath("/student");
 
   return { message, phase: "gate" as OnboardingPhase, progressPct: pct };
@@ -1057,7 +1055,6 @@ export async function forceCompleteOnboarding() {
     .update({ onboarding_completed: true, onboarding_completed_at: new Date().toISOString() })
     .eq("id", studentProfileId);
 
-  generatePathwayAnalysis(profileId).catch((err) => console.error("Background pathway analysis failed:", err));
   revalidatePath("/student");
 
   return { success: true };

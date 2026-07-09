@@ -2,8 +2,10 @@ import { getUserContext } from "@/lib/auth";
 import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { JoinByCode } from "@/components/join-by-code";
 import { WORKSPACE_ROLES } from "@/lib/association-roles";
+import { MarkAssociationNotificationsRead } from "./mark-read";
 
 const ROLE_LABELS: Record<string, string> = {
   association_president: "Presidente",
@@ -13,14 +15,15 @@ const ROLE_LABELS: Record<string, string> = {
   association_member: "Membro",
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Bozza",
-  submitted: "Inviata",
-  in_review: "In revisione",
-  interview: "Colloquio",
-  accepted: "Accettata",
-  rejected: "Rifiutata",
-  waitlisted: "Lista d'attesa",
+const STATUS_COLORS: Record<string, string> = {
+  draft: "bg-navy-50 text-ink-tertiary",
+  submitted: "bg-petrol-50 text-petrol-700",
+  in_review: "bg-warning-bg text-warning",
+  interview: "bg-petrol-50 text-petrol-700",
+  accepted: "bg-success-bg text-success",
+  rejected: "bg-error-bg text-error",
+  waitlisted: "bg-navy-50 text-navy",
+  withdrawn: "bg-navy-50 text-ink-tertiary",
 };
 
 export default async function StudentAssociazioniPage() {
@@ -41,7 +44,12 @@ export default async function StudentAssociazioniPage() {
     .eq("status", "open");
 
   const { data: myApplications } = await (supabase.from("applications") as any)
-    .select("id, status, association_id, application_cycle_id, application_cycles(title, status), association_profiles(name, slug)")
+    .select(`
+      id, status, association_id, application_cycle_id, submitted_at,
+      association_profiles(name, slug, logo_url),
+      application_cycles(title, status),
+      interview_invites(id, selected_time, location_or_link, status)
+    `)
     .eq("student_user_id", profileId)
     .order("submitted_at", { ascending: false });
 
@@ -62,22 +70,14 @@ export default async function StudentAssociazioniPage() {
     cyclesByAssoc.set(c.association_id, list);
   }
 
-  // Only track applications to OPEN cycles (ignore old closed/rejected ones)
+  // Only track applications to OPEN cycles for the "already applied" state on each association card
   const appsByAssoc = new Map<string, any>();
   const openCycleIds = new Set((openCycles ?? []).map((c: any) => c.id));
   for (const a of myApplications ?? []) {
-    if (openCycleIds.has(a.application_cycle_id)) {
-      if (!appsByAssoc.has(a.association_id)) {
-        appsByAssoc.set(a.association_id, a);
-      }
+    if (openCycleIds.has(a.application_cycle_id) && !appsByAssoc.has(a.association_id)) {
+      appsByAssoc.set(a.association_id, a);
     }
   }
-
-  // Active/pending applications (for the "Le tue candidature" section)
-  const activeApplications = (myApplications ?? []).filter((a: any) => {
-    const cycleStatus = a.application_cycles?.status;
-    return cycleStatus === "open" || ["submitted", "in_review", "interview", "waitlisted"].includes(a.status);
-  });
 
   const membershipByAssoc = new Map<string, any>();
   for (const m of myMemberships ?? []) {
@@ -85,8 +85,15 @@ export default async function StudentAssociazioniPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-6 space-y-5">
-      <h1 className="font-display text-h2 text-navy">Associazioni</h1>
+    <div className="mx-auto max-w-2xl px-6 py-6 space-y-6">
+      <MarkAssociationNotificationsRead />
+
+      <div>
+        <h1 className="font-display text-h2 text-navy">Associazioni</h1>
+        <p className="mt-1 text-body text-ink-secondary">
+          Le tue candidature e tutte le associazioni su MIRA
+        </p>
+      </div>
 
       <JoinByCode />
 
@@ -100,7 +107,7 @@ export default async function StudentAssociazioniPage() {
 
         return (
           <div className="rounded-lg border border-petrol/30 bg-petrol-50 p-5 space-y-3">
-            <h2 className="font-sans text-h3 text-navy">Prossimi passi</h2>
+            <h2 className="font-sans text-h3 text-navy">Da fare</h2>
 
             {pendingPages.map((m: any) => (
               <div key={m.association_id} className="flex items-center justify-between gap-3 rounded-md bg-white px-4 py-3">
@@ -128,112 +135,169 @@ export default async function StudentAssociazioniPage() {
         );
       })()}
 
-      {activeApplications.length > 0 && (
-        <div className="rounded-lg border border-border bg-white p-5">
-          <h2 className="font-sans text-h3 text-navy mb-3">Le tue candidature</h2>
-          <div className="space-y-2">
-            {activeApplications.map((app: any) => (
-              <div
-                key={app.id}
-                className="flex items-center justify-between rounded-md px-3 py-2"
-              >
-                <span className="text-body text-ink">{app.association_profiles?.name ?? "—"}</span>
-                <span className={`text-body-sm ${app.status === "accepted" ? "text-success" : app.status === "rejected" ? "text-error" : "text-ink-tertiary"}`}>
-                  {STATUS_LABELS[app.status] ?? app.status}
-                </span>
-              </div>
-            ))}
+      {/* Le tue candidature */}
+      <div>
+        <h2 className="font-sans text-h3 text-navy mb-3">Le tue candidature</h2>
+
+        {!myApplications?.length ? (
+          <div className="rounded-lg border border-border bg-white p-6 text-center">
+            <p className="text-body-sm text-ink-secondary">Non hai ancora candidature. Trova un&apos;associazione qui sotto.</p>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="space-y-3">
+            {(myApplications as any[]).map((app) => {
+              const assoc = app.association_profiles as { name: string; slug: string; logo_url: string | null } | null;
+              const cycle = app.application_cycles as { title: string } | null;
+              const interviews = (app.interview_invites ?? []) as Array<{
+                id: string; selected_time: string | null; location_or_link: string | null; status: string;
+              }>;
+              const upcomingInterview = interviews.find((i) => i.selected_time && i.status !== "cancelled");
 
-      <div className="space-y-4">
-        {(associations ?? []).map((assoc: any) => {
-          const cycles = cyclesByAssoc.get(assoc.id) ?? [];
-          const myApp = appsByAssoc.get(assoc.id);
-          const membership = membershipByAssoc.get(assoc.id);
-          const hasOpenCycle = cycles.length > 0;
-
-          return (
-            <div key={assoc.id} className="rounded-lg border border-border bg-white p-5">
-              <div className="flex items-start gap-3">
-                {assoc.logo_url ? (
-                  <img src={assoc.logo_url} alt="" className="h-10 w-10 rounded-md object-cover" />
-                ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-md bg-navy text-white text-label font-semibold shrink-0">
-                    {assoc.name.charAt(0)}
+              return (
+                <Link
+                  key={app.id}
+                  href={`/student/applications/${app.id}`}
+                  className="block rounded-lg border border-border bg-white p-4 hover:border-navy/30 hover:shadow-sm transition-all duration-100"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      {assoc?.logo_url ? (
+                        <img src={assoc.logo_url} alt="" className="h-9 w-9 rounded-md object-cover shrink-0 mt-0.5" />
+                      ) : (
+                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-navy text-white text-label font-semibold shrink-0 mt-0.5">
+                          {assoc?.name?.charAt(0) ?? "?"}
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-sans text-h3 text-navy">{assoc?.name ?? "Associazione"}</p>
+                        <p className="text-body-sm text-ink-tertiary mt-0.5">
+                          {cycle?.title}
+                          {app.submitted_at && ` · Inviata il ${new Date(app.submitted_at).toLocaleDateString("it-IT")}`}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${STATUS_COLORS[app.status] ?? "bg-navy-50 text-navy"}`}>
+                      {APPLICATION_STATUS_LABELS[app.status] ?? app.status}
+                    </span>
                   </div>
-                )}
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-sans text-h3 text-navy">{assoc.name}</h3>
-                    {membership && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-petrol-50 text-petrol-700">
-                        {ROLE_LABELS[membership.role] ?? membership.role}
-                      </span>
+
+                  {upcomingInterview && (
+                    <div className="mt-3 rounded-md bg-petrol-50 px-3 py-2">
+                      <p className="text-xs font-medium text-navy">Colloquio programmato</p>
+                      <p className="text-body-sm text-ink mt-0.5">
+                        {new Date(upcomingInterview.selected_time!).toLocaleDateString("it-IT", {
+                          weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
+                        })}
+                      </p>
+                      {upcomingInterview.location_or_link && (
+                        <p className="text-body-sm text-ink-secondary">{upcomingInterview.location_or_link}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {app.status === "accepted" && (
+                    <div className="mt-3 rounded-md bg-success-bg px-3 py-2">
+                      <p className="text-body-sm text-success font-medium">Congratulazioni! Sei stato accettato.</p>
+                    </div>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Tutte le associazioni */}
+      <div>
+        <h2 className="font-sans text-h3 text-navy mb-3">Tutte le associazioni</h2>
+        <div className="space-y-4">
+          {(associations ?? []).map((assoc: any) => {
+            const cycles = cyclesByAssoc.get(assoc.id) ?? [];
+            const myApp = appsByAssoc.get(assoc.id);
+            const membership = membershipByAssoc.get(assoc.id);
+            const hasOpenCycle = cycles.length > 0;
+
+            return (
+              <div key={assoc.id} className="rounded-lg border border-border bg-white p-5">
+                <div className="flex items-start gap-3">
+                  {assoc.logo_url ? (
+                    <img src={assoc.logo_url} alt="" className="h-10 w-10 rounded-md object-cover" />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-navy text-white text-label font-semibold shrink-0">
+                      {assoc.name.charAt(0)}
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-sans text-h3 text-navy">{assoc.name}</h3>
+                      {membership && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-petrol-50 text-petrol-700">
+                          {ROLE_LABELS[membership.role] ?? membership.role}
+                        </span>
+                      )}
+                    </div>
+                    {assoc.category && (
+                      <p className="text-body-sm text-ink-tertiary">
+                        {assoc.category.charAt(0).toUpperCase() + assoc.category.slice(1).replace("_", " ")}
+                      </p>
                     )}
                   </div>
-                  {assoc.category && (
-                    <p className="text-body-sm text-ink-tertiary">
-                      {assoc.category.charAt(0).toUpperCase() + assoc.category.slice(1).replace("_", " ")}
-                    </p>
+                </div>
+
+                {assoc.short_description && (
+                  <p className="mt-2 text-body-sm text-ink-secondary">{assoc.short_description}</p>
+                )}
+
+                {assoc.sectors?.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {assoc.sectors.map((s: string) => (
+                      <span key={s} className="px-2 py-0.5 rounded-full text-xs font-medium bg-navy-50 text-navy">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="mt-3 flex items-center gap-3">
+                  <Link
+                    href={`/associations/${assoc.slug}`}
+                    className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
+                  >
+                    Vedi pagina
+                  </Link>
+
+                  {membership ? (
+                    <Link
+                      href={`/association/${assoc.slug}`}
+                      className="bg-petrol text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-petrol-700 transition-colors duration-100"
+                    >
+                      Gestisci
+                    </Link>
+                  ) : myApp ? (
+                    <span className="text-body-sm text-ink-secondary">
+                      Candidatura: {APPLICATION_STATUS_LABELS[myApp.status] ?? myApp.status}
+                    </span>
+                  ) : hasOpenCycle ? (
+                    <Link
+                      href={`/associations/${assoc.slug}/apply?cycle=${cycles[0].id}`}
+                      className="bg-navy text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-navy-700 transition-colors duration-100"
+                    >
+                      Candidati
+                    </Link>
+                  ) : (
+                    <span className="text-body-sm text-ink-tertiary">Candidature chiuse</span>
                   )}
                 </div>
               </div>
+            );
+          })}
 
-              {assoc.short_description && (
-                <p className="mt-2 text-body-sm text-ink-secondary">{assoc.short_description}</p>
-              )}
-
-              {assoc.sectors?.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {assoc.sectors.map((s: string) => (
-                    <span key={s} className="px-2 py-0.5 rounded-full text-xs font-medium bg-navy-50 text-navy">
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <div className="mt-3 flex items-center gap-3">
-                <Link
-                  href={`/associations/${assoc.slug}`}
-                  className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
-                >
-                  Vedi pagina
-                </Link>
-
-                {membership ? (
-                  <Link
-                    href={`/association/${assoc.slug}`}
-                    className="bg-petrol text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-petrol-700 transition-colors duration-100"
-                  >
-                    Gestisci
-                  </Link>
-                ) : myApp ? (
-                  <span className="text-body-sm text-ink-secondary">
-                    Candidatura: {STATUS_LABELS[myApp.status] ?? myApp.status}
-                  </span>
-                ) : hasOpenCycle ? (
-                  <Link
-                    href={`/associations/${assoc.slug}/apply?cycle=${cycles[0].id}`}
-                    className="bg-navy text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-navy-700 transition-colors duration-100"
-                  >
-                    Candidati
-                  </Link>
-                ) : (
-                  <span className="text-body-sm text-ink-tertiary">Candidature chiuse</span>
-                )}
-              </div>
+          {!(associations?.length) && (
+            <div className="rounded-lg border border-border bg-white p-8 text-center">
+              <p className="text-body text-ink-secondary">Nessuna associazione disponibile al momento.</p>
             </div>
-          );
-        })}
-
-        {!(associations?.length) && (
-          <div className="rounded-lg border border-border bg-white p-8 text-center">
-            <p className="text-body text-ink-secondary">Nessuna associazione disponibile al momento.</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

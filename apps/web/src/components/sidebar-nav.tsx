@@ -19,9 +19,7 @@ interface SidebarNavProps {
 
 const STUDENT_LINKS = [
   { label: "Profilo", href: "/student" },
-  { label: "Prossimi passi", href: "/student/prossimi-passi" },
   { label: "Associazioni", href: "/student/associazioni" },
-  { label: "Candidature", href: "/student/applications" },
   { label: "Aziende", href: "/student/aziende" },
 ];
 
@@ -54,9 +52,9 @@ export function SidebarNav({ isStudent, isMiraAdmin, memberships, unreadNotifica
         <div className="space-y-1">
           {STUDENT_LINKS.map((link) => {
             const active = isActive(link.href);
-            const isCandidature = link.href === "/student/applications";
+            const isAssociazioni = link.href === "/student/associazioni";
             const isAziende = link.href === "/student/aziende";
-            const badgeCount = isCandidature ? unreadNotifications : isAziende ? unreadAziende : 0;
+            const badgeCount = isAssociazioni ? unreadNotifications : isAziende ? unreadAziende : 0;
             return (
               <Link key={link.href} href={link.href} className={linkClass(active)}>
                 <span>{link.label}</span>
