@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ITALIAN_UNIVERSITY_DOMAINS } from "@mira/domain";
 
 const UNIVERSITIES = [...ITALIAN_UNIVERSITY_DOMAINS].sort((a, b) => a.name.localeCompare(b.name, "it"));
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function UniversityCombobox({ value, onChange, inputClassName }: Props) {
+  const t = useTranslations("UniversityCombobox");
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -48,14 +50,14 @@ export function UniversityCombobox({ value, onChange, inputClassName }: Props) {
         value={query}
         onChange={(e) => { setQuery(e.target.value); onChange(""); setOpen(true); }}
         onFocus={() => setOpen(true)}
-        placeholder="Cerca la tua università..."
+        placeholder={t("placeholder")}
         className={inputClassName}
         autoComplete="off"
       />
       {open && (
         <div className="absolute z-10 mt-1 w-full max-h-64 overflow-y-auto rounded-md border border-border bg-white shadow-lg">
           {filtered.length === 0 ? (
-            <p className="px-4 py-3 text-body-sm text-ink-tertiary">Nessuna università trovata.</p>
+            <p className="px-4 py-3 text-body-sm text-ink-tertiary">{t("noResults")}</p>
           ) : (
             filtered.map((u) => (
               <button

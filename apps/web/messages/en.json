@@ -3,5 +3,133 @@
     "label": "Language",
     "it": "Italiano",
     "en": "English"
+  },
+  "Common": {
+    "login": "Log in",
+    "start": "Get started",
+    "password": "Password",
+    "email": "Email",
+    "signUp": "Sign up",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "studentTab": "Student",
+    "companyTab": "Company",
+    "studentEmailPlaceholder": "name.surname@students.youruni.edu",
+    "authErrors": {
+      "invalid_credentials": "Incorrect email or password.",
+      "user_already_registered": "An account with this email already exists.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "Validation": {
+    "password": {
+      "too_short": "At least 8 characters.",
+      "no_uppercase": "At least one uppercase letter.",
+      "no_number": "At least one number.",
+      "no_special": "At least one special character (e.g. ! ? # -)."
+    },
+    "studentEmail": {
+      "invalid_format": "Invalid email format.",
+      "non_institutional_domain": "Use your institutional university email (e.g. name.surname@students.youruni.edu)."
+    }
+  },
+  "HomePage": {
+    "eyebrow": "Your MiraCard",
+    "heading": "Your résumé tells what you've done. MIRA tells who you are.",
+    "subhead": "Your MiraCard lets you apply to associations and get discovered by companies on the platform. One profile that keeps opening new opportunities.",
+    "ctaStudent": "Sign up as a student",
+    "orgEyebrow": "Are you a company or a university association?",
+    "associationTitle": "Association",
+    "associationBody": "Apply for your association: manage applications, board members, and your MIRA page.",
+    "associationCta": "Apply for your association →",
+    "companyTitle": "Company",
+    "companyBody": "Don't wait for applications. Find the right candidates: describe who you're looking for, MIRA shows you who really fits.",
+    "companyCta": "Register your company →"
+  },
+  "LoginPage": {
+    "heading": "Log in",
+    "emailPlaceholderCompany": "name@company.com",
+    "submitLoading": "Signing in...",
+    "pendingRequest": "Your access request is still awaiting confirmation from the MIRA team. You'll get an email as soon as it's approved.",
+    "wrongAccountType": "This is a {accountType} account. Switch to \"{targetLabel}\" above to sign in.",
+    "accountTypeStudent": "student",
+    "accountTypeCompany": "company"
+  },
+  "SignupPage": {
+    "heading": "Create your account",
+    "fullNameLabel": "Full name",
+    "emailLabel": "Institutional email",
+    "emailHelper": "Use your university email, not a personal one.",
+    "universityLabel": "University",
+    "degreeLevelLabel": "Degree level",
+    "degreeLevelPlaceholder": "Select level",
+    "degreeLevels": {
+      "triennale": "Bachelor's",
+      "magistrale": "Master's",
+      "ciclo_unico": "Single-cycle degree"
+    },
+    "passwordHelper": "At least 8 characters, one uppercase letter, one number, and one special character.",
+    "submitLoading": "Signing up...",
+    "selectUniversityAndDegree": "Select your university and degree level."
+  },
+  "AziendePage": {
+    "backLink": "← Go back",
+    "formHeading": "Register your company",
+    "formIntro": "Fill in your details to request access to MIRA. Our team will review the request and, if approved, send you an email to create your account.",
+    "companyNameLabel": "Company name *",
+    "companyNamePlaceholder": "e.g. McKinsey & Company",
+    "sectorLabel": "Sector *",
+    "sectorPlaceholder": "Select sector",
+    "websiteLabel": "Website",
+    "contactSectionLabel": "Your contact details",
+    "contactNameLabel": "Full name *",
+    "contactEmailLabel": "Company email *",
+    "contactEmailHelper": "If the request is approved, you'll receive the account creation link at this address.",
+    "submitLoading": "Sending...",
+    "submitRequestAccess": "Request access",
+    "errors": {
+      "missing_required_fields": "Fill in all required fields.",
+      "duplicate_pending_request": "You already have a pending request with this email.",
+      "unknown": "Something went wrong. Please try again."
+    },
+    "sectorOverrides": {
+      "Marketing & Comunicazione": "Marketing & Communications",
+      "Altro": "Other"
+    },
+    "landing": {
+      "eyebrow": "For companies",
+      "heading": "Discover the right talent before anyone else, beyond the résumé",
+      "subhead": "A résumé tells you what a student has done. MIRA also shows you who they are, what they're looking for, when they're available, and how well they fit the role.",
+      "ctaPilot": "Join the pilot →",
+      "pilotNote": "Pilot launching September 2026. Free initial access.",
+      "steps": {
+        "step1": {
+          "title": "Describe what you're looking for",
+          "body": "Write in natural language the profile you need: role, skills, sector, attitude, availability, and much more."
+        },
+        "step2": {
+          "title": "MIRA finds the matches",
+          "body": "The system compares your search with student profiles and shows you the most relevant candidates, with an explanation for each."
+        },
+        "step3": {
+          "title": "Contact and interviews",
+          "body": "Send a contact request to the student. If they accept, a private chat opens where you can get to know each other and, if there's mutual interest, arrange an interview."
+        }
+      },
+      "whyHeading": "Why this isn't just another recruiting portal",
+      "comparison": {
+        "recruitingHeader": "Recruiting portals",
+        "miraHeader": "MIRA",
+        "row1": { "left": "You receive applications and résumés to sift through", "right": "No job postings to publish every time." },
+        "row2": { "left": "Information limited to what's stated in the résumé", "right": "Profiles enriched with experience, interests, attitude, availability, and goals" },
+        "row3": { "left": "You don't really know what's behind a candidate", "right": "Define who you want and automatically discover the best-fitting candidates." },
+        "row4": { "left": "The student only updates their profile when job hunting", "right": "Every match comes with an explanation of why it fits" }
+      },
+      "bottomCta": "Register your company"
+    }
+  },
+  "UniversityCombobox": {
+    "placeholder": "Search for your university...",
+    "noResults": "No university found."
   }
 }

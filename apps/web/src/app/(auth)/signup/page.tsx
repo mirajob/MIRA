@@ -4,14 +4,12 @@ import { Suspense, useState } from "react";
 import { createBrowserClient } from "@mira/supabase/client";
 import { validateStudentEmail, validatePassword } from "@mira/domain";
 import { UniversityCombobox } from "@/components/university-combobox";
+import { getAuthErrorKey } from "@/lib/auth-error-messages";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
-const DEGREE_LEVELS = [
-  { value: "triennale", label: "Triennale" },
-  { value: "magistrale", label: "Magistrale" },
-  { value: "ciclo_unico", label: "Ciclo unico" },
-];
+const DEGREE_LEVEL_VALUES = ["triennale", "magistrale", "ciclo_unico"] as const;
 
 export default function SignupPage() {
   return (
@@ -22,6 +20,9 @@ export default function SignupPage() {
 }
 
 function SignupForm() {
+  const t = useTranslations("SignupPage");
+  const c = useTranslations("Common");
+  const v = useTranslations("Validation");
   const searchParams = useSearchParams();
   const rawRedirect = searchParams.get("redirect") ?? "";
   const redirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/api/auth/redirect";
@@ -46,18 +47,18 @@ function SignupForm() {
     if (!isInvite) {
       const emailValidation = validateStudentEmail(email);
       if (!emailValidation.valid) {
-        setError(emailValidation.error);
+        setError(v(`studentEmail.${emailValidation.errorCode}`));
         return;
       }
       if (!university || !degreeLevel) {
-        setError("Seleziona università e livello di studi.");
+        setError(t("selectUniversityAndDegree"));
         return;
       }
     }
 
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.valid) {
-      setError(passwordValidation.error);
+      setError(v(`password.${passwordValidation.errorCode}`));
       return;
     }
 
@@ -78,7 +79,7 @@ function SignupForm() {
     });
 
     if (error) {
-      setError(error.message);
+      setError(c(`authErrors.${getAuthErrorKey(error.message)}`));
       setLoading(false);
       return;
     }
@@ -91,7 +92,7 @@ function SignupForm() {
   return (
     <form onSubmit={handleSubmit} className="mt-8 space-y-6">
       <div className="space-y-4 rounded-lg border border-border bg-white p-6">
-        <h2 className="font-display text-h2 text-navy">Crea il tuo account</h2>
+        <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
 
         {error && (
           <div className="rounded-md bg-error-bg p-3 text-body-sm text-error">
@@ -100,7 +101,7 @@ function SignupForm() {
         )}
 
         <label className="block">
-          <span className="text-label text-navy mb-2 block">Nome e cognome</span>
+          <span className="text-label text-navy mb-2 block">{t("fullNameLabel")}</span>
           <input
             type="text"
             required
@@ -111,38 +112,38 @@ function SignupForm() {
         </label>
 
         <label className="block">
-          <span className="text-label text-navy mb-2 block">Email istituzionale</span>
+          <span className="text-label text-navy mb-2 block">{t("emailLabel")}</span>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className={inputClass}
-            placeholder="nome.cognome@studenti.tuateneo.it"
+            placeholder={c("studentEmailPlaceholder")}
           />
           {!isInvite && (
-            <p className="mt-1 text-body-sm text-ink-tertiary">Usa la tua email universitaria, non una email personale.</p>
+            <p className="mt-1 text-body-sm text-ink-tertiary">{t("emailHelper")}</p>
           )}
         </label>
 
         {!isInvite && (
           <>
             <label className="block">
-              <span className="text-label text-navy mb-2 block">Università</span>
+              <span className="text-label text-navy mb-2 block">{t("universityLabel")}</span>
               <UniversityCombobox value={university} onChange={setUniversity} inputClassName={inputClass} />
             </label>
 
             <label className="block">
-              <span className="text-label text-navy mb-2 block">Livello di studi</span>
+              <span className="text-label text-navy mb-2 block">{t("degreeLevelLabel")}</span>
               <select
                 required
                 value={degreeLevel}
                 onChange={(e) => setDegreeLevel(e.target.value)}
                 className={inputClass}
               >
-                <option value="">Seleziona livello</option>
-                {DEGREE_LEVELS.map((d) => (
-                  <option key={d.value} value={d.value}>{d.label}</option>
+                <option value="">{t("degreeLevelPlaceholder")}</option>
+                {DEGREE_LEVEL_VALUES.map((value) => (
+                  <option key={value} value={value}>{t(`degreeLevels.${value}`)}</option>
                 ))}
               </select>
             </label>
@@ -150,7 +151,7 @@ function SignupForm() {
         )}
 
         <label className="block">
-          <span className="text-label text-navy mb-2 block">Password</span>
+          <span className="text-label text-navy mb-2 block">{c("password")}</span>
           <input
             type="password"
             required
@@ -158,7 +159,7 @@ function SignupForm() {
             onChange={(e) => setPassword(e.target.value)}
             className={inputClass}
           />
-          <p className="mt-1 text-body-sm text-ink-tertiary">Almeno 8 caratteri, una maiuscola, un numero e un carattere speciale.</p>
+          <p className="mt-1 text-body-sm text-ink-tertiary">{t("passwordHelper")}</p>
         </label>
 
         <button
@@ -166,14 +167,14 @@ function SignupForm() {
           disabled={loading}
           className="w-full bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {loading ? "Registrazione..." : "Registrati"}
+          {loading ? t("submitLoading") : c("signUp")}
         </button>
       </div>
 
       <p className="text-center text-body-sm text-ink-secondary">
-        Hai già un account?{" "}
+        {c("alreadyHaveAccount")}{" "}
         <Link href="/login" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2">
-          Accedi
+          {c("login")}
         </Link>
       </p>
     </form>

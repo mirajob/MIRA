@@ -105,30 +105,38 @@ function domainMatches(emailDomain: string, allowedDomain: string): boolean {
   return emailDomain === allowedDomain || emailDomain.endsWith(`.${allowedDomain}`);
 }
 
-export function validatePassword(password: string): { valid: boolean; error: string | null } {
+export type PasswordErrorCode = "too_short" | "no_uppercase" | "no_number" | "no_special";
+export type StudentEmailErrorCode = "invalid_format" | "non_institutional_domain";
+
+export function validatePassword(password: string): {
+  valid: boolean;
+  error: string | null;
+  errorCode: PasswordErrorCode | null;
+} {
   if (password.length < 8) {
-    return { valid: false, error: "Almeno 8 caratteri." };
+    return { valid: false, error: "Almeno 8 caratteri.", errorCode: "too_short" };
   }
   if (!/[A-Z]/.test(password)) {
-    return { valid: false, error: "Almeno una lettera maiuscola." };
+    return { valid: false, error: "Almeno una lettera maiuscola.", errorCode: "no_uppercase" };
   }
   if (!/[0-9]/.test(password)) {
-    return { valid: false, error: "Almeno un numero." };
+    return { valid: false, error: "Almeno un numero.", errorCode: "no_number" };
   }
   if (!/[^A-Za-z0-9]/.test(password)) {
-    return { valid: false, error: "Almeno un carattere speciale (es. ! ? # -)." };
+    return { valid: false, error: "Almeno un carattere speciale (es. ! ? # -).", errorCode: "no_special" };
   }
-  return { valid: true, error: null };
+  return { valid: true, error: null, errorCode: null };
 }
 
 export function validateStudentEmail(email: string): {
   valid: boolean;
   domain: string | null;
   error: string | null;
+  errorCode: StudentEmailErrorCode | null;
 } {
   const parts = email.toLowerCase().trim().split("@");
   if (parts.length !== 2 || !parts[0] || !parts[1]) {
-    return { valid: false, domain: null, error: "Formato email non valido." };
+    return { valid: false, domain: null, error: "Formato email non valido.", errorCode: "invalid_format" };
   }
 
   const domain = parts[1];
@@ -139,8 +147,9 @@ export function validateStudentEmail(email: string): {
       valid: false,
       domain,
       error: "Usa la tua email istituzionale universitaria (es. nome.cognome@studenti.tuateneo.it).",
+      errorCode: "non_institutional_domain",
     };
   }
 
-  return { valid: true, domain, error: null };
+  return { valid: true, domain, error: null, errorCode: null };
 }

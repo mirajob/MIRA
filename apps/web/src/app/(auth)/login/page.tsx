@@ -4,8 +4,10 @@ import { useState, Suspense } from "react";
 import { createBrowserClient } from "@mira/supabase/client";
 import { checkPendingCompanyRequest } from "@/lib/actions/company-register";
 import { checkAccountType } from "@/lib/actions/auth";
+import { getAuthErrorKey } from "@/lib/auth-error-messages";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
   return (
@@ -16,6 +18,8 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
+  const t = useTranslations("LoginPage");
+  const c = useTranslations("Common");
   const searchParams = useSearchParams();
   const [isCompany, setIsCompany] = useState(searchParams.get("type") === "company");
   const [email, setEmail] = useState("");
@@ -38,8 +42,8 @@ function LoginForm() {
       const isPending = await checkPendingCompanyRequest(email);
       setError(
         isPending
-          ? "La tua richiesta di accesso è ancora in attesa di conferma da parte del team MIRA. Riceverai un'email non appena verrà approvata."
-          : error.message
+          ? t("pendingRequest")
+          : c(`authErrors.${getAuthErrorKey(error.message)}`)
       );
       setLoading(false);
       return;
@@ -50,13 +54,13 @@ function LoginForm() {
     const accountType = await checkAccountType(email);
     if (isCompany && accountType === "student") {
       await supabase.auth.signOut();
-      setError("Questo è un account studente. Passa su “Studente” qui sopra per accedere.");
+      setError(t("wrongAccountType", { accountType: t("accountTypeStudent"), targetLabel: c("studentTab") }));
       setLoading(false);
       return;
     }
     if (!isCompany && accountType === "company") {
       await supabase.auth.signOut();
-      setError("Questo è un account azienda. Passa su “Azienda” qui sopra per accedere.");
+      setError(t("wrongAccountType", { accountType: t("accountTypeCompany"), targetLabel: c("companyTab") }));
       setLoading(false);
       return;
     }
@@ -68,7 +72,7 @@ function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="mt-8 space-y-6">
       <div className="space-y-4 rounded-lg border border-border bg-white p-6">
-        <h2 className="font-display text-h2 text-navy">Accedi</h2>
+        <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
 
         <div className="flex rounded-md border border-border p-1 bg-paper" role="tablist">
           <button
@@ -80,7 +84,7 @@ function LoginForm() {
               !isCompany ? "bg-navy text-white" : "text-ink-secondary hover:text-navy"
             }`}
           >
-            Studente
+            {c("studentTab")}
           </button>
           <button
             type="button"
@@ -91,7 +95,7 @@ function LoginForm() {
               isCompany ? "bg-navy text-white" : "text-ink-secondary hover:text-navy"
             }`}
           >
-            Azienda
+            {c("companyTab")}
           </button>
         </div>
 
@@ -102,19 +106,19 @@ function LoginForm() {
         )}
 
         <label className="block">
-          <span className="text-label text-navy mb-2 block">Email</span>
+          <span className="text-label text-navy mb-2 block">{c("email")}</span>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
-            placeholder={isCompany ? "nome@azienda.com" : "nome.cognome@studenti.tuateneo.it"}
+            placeholder={isCompany ? t("emailPlaceholderCompany") : c("studentEmailPlaceholder")}
           />
         </label>
 
         <label className="block">
-          <span className="text-label text-navy mb-2 block">Password</span>
+          <span className="text-label text-navy mb-2 block">{c("password")}</span>
           <input
             type="password"
             required
@@ -129,14 +133,14 @@ function LoginForm() {
           disabled={loading}
           className="w-full bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {loading ? "Accesso in corso..." : "Accedi"}
+          {loading ? t("submitLoading") : c("login")}
         </button>
       </div>
 
       <p className="text-center text-body-sm text-ink-secondary">
-        Non hai un account?{" "}
+        {c("dontHaveAccount")}{" "}
         <Link href={isCompany ? "/aziende" : "/signup"} className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2">
-          Registrati
+          {c("signUp")}
         </Link>
       </p>
     </form>

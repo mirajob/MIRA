@@ -3,5 +3,133 @@
     "label": "Lingua",
     "it": "Italiano",
     "en": "English"
+  },
+  "Common": {
+    "login": "Accedi",
+    "start": "Inizia",
+    "password": "Password",
+    "email": "Email",
+    "signUp": "Registrati",
+    "alreadyHaveAccount": "Hai già un account?",
+    "dontHaveAccount": "Non hai un account?",
+    "studentTab": "Studente",
+    "companyTab": "Azienda",
+    "studentEmailPlaceholder": "nome.cognome@studenti.tuateneo.it",
+    "authErrors": {
+      "invalid_credentials": "Email o password errati.",
+      "user_already_registered": "Esiste già un account con questa email.",
+      "generic": "Si è verificato un errore. Riprova."
+    }
+  },
+  "Validation": {
+    "password": {
+      "too_short": "Almeno 8 caratteri.",
+      "no_uppercase": "Almeno una lettera maiuscola.",
+      "no_number": "Almeno un numero.",
+      "no_special": "Almeno un carattere speciale (es. ! ? # -)."
+    },
+    "studentEmail": {
+      "invalid_format": "Formato email non valido.",
+      "non_institutional_domain": "Usa la tua email istituzionale universitaria (es. nome.cognome@studenti.tuateneo.it)."
+    }
+  },
+  "HomePage": {
+    "eyebrow": "La tua MiraCard",
+    "heading": "Il tuo CV racconta cosa hai fatto. MIRA racconta chi sei.",
+    "subhead": "La tua MiraCard ti permette di candidarti alle associazioni e di essere scoperto dalle aziende presenti sulla piattaforma. Un unico profilo che continua ad aprirti nuove opportunità.",
+    "ctaStudent": "Registrati come studente",
+    "orgEyebrow": "Sei un'azienda o un'associazione?",
+    "associationTitle": "Associazione",
+    "associationBody": "Candida la tua associazione: gestisci candidature, board e la tua pagina su MIRA.",
+    "associationCta": "Candida la tua associazione →",
+    "companyTitle": "Azienda",
+    "companyBody": "Non aspettare candidature. Trova i candidati giusti: descrivi chi cerchi, MIRA ti mostra chi si adatta davvero.",
+    "companyCta": "Registra la tua azienda →"
+  },
+  "LoginPage": {
+    "heading": "Accedi",
+    "emailPlaceholderCompany": "nome@azienda.com",
+    "submitLoading": "Accesso in corso...",
+    "pendingRequest": "La tua richiesta di accesso è ancora in attesa di conferma da parte del team MIRA. Riceverai un'email non appena verrà approvata.",
+    "wrongAccountType": "Questo è un account {accountType}. Passa su \"{targetLabel}\" qui sopra per accedere.",
+    "accountTypeStudent": "studente",
+    "accountTypeCompany": "azienda"
+  },
+  "SignupPage": {
+    "heading": "Crea il tuo account",
+    "fullNameLabel": "Nome e cognome",
+    "emailLabel": "Email istituzionale",
+    "emailHelper": "Usa la tua email universitaria, non una email personale.",
+    "universityLabel": "Università",
+    "degreeLevelLabel": "Livello di studi",
+    "degreeLevelPlaceholder": "Seleziona livello",
+    "degreeLevels": {
+      "triennale": "Triennale",
+      "magistrale": "Magistrale",
+      "ciclo_unico": "Ciclo unico"
+    },
+    "passwordHelper": "Almeno 8 caratteri, una maiuscola, un numero e un carattere speciale.",
+    "submitLoading": "Registrazione...",
+    "selectUniversityAndDegree": "Seleziona università e livello di studi."
+  },
+  "AziendePage": {
+    "backLink": "← Torna indietro",
+    "formHeading": "Registra la tua azienda",
+    "formIntro": "Compila i dati per richiedere l'accesso a MIRA. Il team verificherà la richiesta e, se approvata, riceverai un'email per creare il tuo account.",
+    "companyNameLabel": "Nome azienda *",
+    "companyNamePlaceholder": "Es. McKinsey & Company",
+    "sectorLabel": "Settore *",
+    "sectorPlaceholder": "Seleziona settore",
+    "websiteLabel": "Sito web",
+    "contactSectionLabel": "Il tuo contatto",
+    "contactNameLabel": "Nome e cognome *",
+    "contactEmailLabel": "Email aziendale *",
+    "contactEmailHelper": "Se la richiesta viene approvata, riceverai qui il link per creare il tuo account.",
+    "submitLoading": "Invio in corso...",
+    "submitRequestAccess": "Richiedi accesso",
+    "errors": {
+      "missing_required_fields": "Compila tutti i campi obbligatori.",
+      "duplicate_pending_request": "Hai già una richiesta in attesa con questa email.",
+      "unknown": "Si è verificato un errore. Riprova."
+    },
+    "sectorOverrides": {
+      "Marketing & Comunicazione": "Marketing & Comunicazione",
+      "Altro": "Altro"
+    },
+    "landing": {
+      "eyebrow": "Per le aziende",
+      "heading": "Scopri i talenti giusti prima degli altri, oltre il CV",
+      "subhead": "Un CV racconta ciò che uno studente ha fatto. MIRA ti mostra anche chi è, cosa cerca, quando è disponibile e quanto è adatto al ruolo.",
+      "ctaPilot": "Partecipa al pilot →",
+      "pilotNote": "Pilot in partenza a settembre 2026. Accesso iniziale gratuito.",
+      "steps": {
+        "step1": {
+          "title": "Descrivi cosa cerchi",
+          "body": "Scrivi in linguaggio naturale il profilo che ti serve: ruolo, competenze, settore, attitudine, disponibilità e molto altro."
+        },
+        "step2": {
+          "title": "MIRA trova i match",
+          "body": "Il sistema confronta la tua ricerca con i profili degli studenti e ti mostra i candidati più coerenti, con una spiegazione per ognuno."
+        },
+        "step3": {
+          "title": "Contatti e colloqui",
+          "body": "Invia una richiesta di contatto allo studente. Se accetta, si apre una chat privata in cui potete conoscervi meglio e, se c'è interesse reciproco, organizzare un colloquio."
+        }
+      },
+      "whyHeading": "Perché non è il solito portale di recruiting",
+      "comparison": {
+        "recruitingHeader": "Portali di recruiting",
+        "miraHeader": "MIRA",
+        "row1": { "left": "Ricevi candidature e CV da scremare", "right": "Niente annunci da pubblicare ogni volta." },
+        "row2": { "left": "Informazioni limitate a quanto dichiarato nel CV", "right": "Profili arricchiti con esperienza, interessi, attitudine, disponibilità e obiettivi" },
+        "row3": { "left": "Non sai cosa c'è davvero dentro un candidato", "right": "Definisci chi vuoi e scopri automaticamente i candidati più adatti." },
+        "row4": { "left": "Lo studente aggiorna il profilo solo quando cerca lavoro", "right": "Ogni match è accompagnato da una spiegazione del perché è adatto" }
+      },
+      "bottomCta": "Registra la tua azienda"
+    }
+  },
+  "UniversityCombobox": {
+    "placeholder": "Cerca la tua università...",
+    "noResults": "Nessuna università trovata."
   }
 }

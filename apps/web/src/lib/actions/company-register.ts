@@ -22,7 +22,7 @@ export async function requestCompanyAccess(input: {
   email: string;
 }) {
   if (!input.legalName || !input.contactName || !input.email) {
-    return { error: "Compila tutti i campi obbligatori." };
+    return { error: "Compila tutti i campi obbligatori.", errorCode: "missing_required_fields" as const };
   }
 
   const supabase = await createServiceClient();
@@ -36,7 +36,7 @@ export async function requestCompanyAccess(input: {
     .maybeSingle();
 
   if (existing) {
-    return { error: "Hai già una richiesta in attesa con questa email." };
+    return { error: "Hai già una richiesta in attesa con questa email.", errorCode: "duplicate_pending_request" as const };
   }
 
   const { error } = await supabase.from("company_access_requests").insert({
@@ -47,7 +47,7 @@ export async function requestCompanyAccess(input: {
     email: normalizedEmail,
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: error.message, errorCode: "unknown" as const };
   return { success: true };
 }
 

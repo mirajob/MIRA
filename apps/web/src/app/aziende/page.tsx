@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
+import { useTranslations } from "next-intl";
 import { requestCompanyAccess } from "@/lib/actions/company-register";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -23,6 +24,8 @@ const SECTORS = [
 ];
 
 export default function AziendePage() {
+  const t = useTranslations("AziendePage");
+  const c = useTranslations("Common");
   const [step, setStep] = useState<"landing" | "form">("landing");
   const [legalName, setLegalName] = useState("");
   const [sector, setSector] = useState("");
@@ -44,7 +47,7 @@ export default function AziendePage() {
     const result = await requestCompanyAccess({ legalName, sector, websiteUrl: normalizedUrl, contactName, email });
 
     if (result.error) {
-      setError(result.error);
+      setError(t(`errors.${result.errorCode}`));
       setLoading(false);
       return;
     }
@@ -65,12 +68,12 @@ export default function AziendePage() {
               onClick={() => setStep("landing")}
               className="text-body-sm text-ink-tertiary hover:text-ink mb-6 flex items-center gap-1"
             >
-              ← Torna indietro
+              {t("backLink")}
             </button>
 
-            <h1 className="font-display text-h1 text-navy mb-2">Registra la tua azienda</h1>
+            <h1 className="font-display text-h1 text-navy mb-2">{t("formHeading")}</h1>
             <p className="text-body text-ink-secondary mb-8">
-              Compila i dati per richiedere l&apos;accesso a MIRA. Il team verificherà la richiesta e, se approvata, riceverai un&apos;email per creare il tuo account.
+              {t("formIntro")}
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -79,34 +82,36 @@ export default function AziendePage() {
               )}
 
               <label className="block">
-                <span className="text-label text-navy mb-2 block">Nome azienda *</span>
+                <span className="text-label text-navy mb-2 block">{t("companyNameLabel")}</span>
                 <input
                   type="text"
                   required
                   value={legalName}
                   onChange={(e) => setLegalName(e.target.value)}
-                  placeholder="Es. McKinsey & Company"
+                  placeholder={t("companyNamePlaceholder")}
                   className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
                 />
               </label>
 
               <label className="block">
-                <span className="text-label text-navy mb-2 block">Settore *</span>
+                <span className="text-label text-navy mb-2 block">{t("sectorLabel")}</span>
                 <select
                   required
                   value={sector}
                   onChange={(e) => setSector(e.target.value)}
                   className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
                 >
-                  <option value="">Seleziona settore</option>
+                  <option value="">{t("sectorPlaceholder")}</option>
                   {SECTORS.map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                    <option key={s} value={s}>
+                      {t.has(`sectorOverrides.${s}`) ? t(`sectorOverrides.${s}`) : s}
+                    </option>
                   ))}
                 </select>
               </label>
 
               <label className="block">
-                <span className="text-label text-navy mb-2 block">Sito web</span>
+                <span className="text-label text-navy mb-2 block">{t("websiteLabel")}</span>
                 <input
                   type="text"
                   value={websiteUrl}
@@ -117,11 +122,11 @@ export default function AziendePage() {
               </label>
 
               <div className="border-t border-border pt-5">
-                <p className="text-label text-ink-secondary mb-4">Il tuo contatto</p>
+                <p className="text-label text-ink-secondary mb-4">{t("contactSectionLabel")}</p>
 
                 <div className="space-y-4">
                   <label className="block">
-                    <span className="text-label text-navy mb-2 block">Nome e cognome *</span>
+                    <span className="text-label text-navy mb-2 block">{t("contactNameLabel")}</span>
                     <input
                       type="text"
                       required
@@ -132,7 +137,7 @@ export default function AziendePage() {
                   </label>
 
                   <label className="block">
-                    <span className="text-label text-navy mb-2 block">Email aziendale *</span>
+                    <span className="text-label text-navy mb-2 block">{t("contactEmailLabel")}</span>
                     <input
                       type="email"
                       required
@@ -140,7 +145,7 @@ export default function AziendePage() {
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
                     />
-                    <p className="mt-1 text-body-sm text-ink-tertiary">Se la richiesta viene approvata, riceverai qui il link per creare il tuo account.</p>
+                    <p className="mt-1 text-body-sm text-ink-tertiary">{t("contactEmailHelper")}</p>
                   </label>
                 </div>
               </div>
@@ -150,13 +155,13 @@ export default function AziendePage() {
                 disabled={loading}
                 className="w-full bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {loading ? "Invio in corso..." : "Richiedi accesso"}
+                {loading ? t("submitLoading") : t("submitRequestAccess")}
               </button>
 
               <p className="text-center text-body-sm text-ink-secondary">
-                Hai già un account?{" "}
+                {c("alreadyHaveAccount")}{" "}
                 <Link href="/login?type=company" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
-                  Accedi
+                  {c("login")}
                 </Link>
               </p>
             </form>
@@ -166,53 +171,50 @@ export default function AziendePage() {
     );
   }
 
+  const steps = [
+    { n: "01", title: t("landing.steps.step1.title"), body: t("landing.steps.step1.body") },
+    { n: "02", title: t("landing.steps.step2.title"), body: t("landing.steps.step2.body") },
+    { n: "03", title: t("landing.steps.step3.title"), body: t("landing.steps.step3.body") },
+  ];
+
+  const comparisonRows = [
+    { left: t("landing.comparison.row1.left"), right: t("landing.comparison.row1.right") },
+    { left: t("landing.comparison.row2.left"), right: t("landing.comparison.row2.right") },
+    { left: t("landing.comparison.row3.left"), right: t("landing.comparison.row3.right") },
+    { left: t("landing.comparison.row4.left"), right: t("landing.comparison.row4.right") },
+  ];
+
   return (
     <div className="min-h-screen bg-paper">
       <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
         <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
         <Link href="/login?type=company" className="text-body-sm text-ink-secondary hover:text-navy transition-colors">
-          Accedi
+          {c("login")}
         </Link>
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-16">
         {/* Hero */}
         <div className="mb-16">
-          <p className="text-eyebrow text-petrol uppercase tracking-wider mb-4">Per le aziende</p>
+          <p className="text-eyebrow text-petrol uppercase tracking-wider mb-4">{t("landing.eyebrow")}</p>
           <h1 className="font-display text-display-lg text-navy mb-6 max-w-2xl">
-            Scopri i talenti giusti prima degli altri, oltre il CV
+            {t("landing.heading")}
           </h1>
           <p className="text-body-lg text-ink-secondary max-w-xl mb-8">
-            Un CV racconta ciò che uno studente ha fatto. MIRA ti mostra anche chi è, cosa cerca, quando è disponibile e quanto è adatto al ruolo.
+            {t("landing.subhead")}
           </p>
           <button
             onClick={() => setStep("form")}
             className="bg-navy text-white px-8 py-4 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100"
           >
-            Partecipa al pilot →
+            {t("landing.ctaPilot")}
           </button>
-          <p className="mt-3 text-body-sm text-ink-tertiary">Pilot in partenza a settembre 2026. Accesso iniziale gratuito.</p>
+          <p className="mt-3 text-body-sm text-ink-tertiary">{t("landing.pilotNote")}</p>
         </div>
 
         {/* How it works */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          {[
-            {
-              n: "01",
-              title: "Descrivi cosa cerchi",
-              body: "Scrivi in linguaggio naturale il profilo che ti serve: ruolo, competenze, settore, attitudine, disponibilità e molto altro.",
-            },
-            {
-              n: "02",
-              title: "MIRA trova i match",
-              body: "Il sistema confronta la tua ricerca con i profili degli studenti e ti mostra i candidati più coerenti, con una spiegazione per ognuno.",
-            },
-            {
-              n: "03",
-              title: "Contatti e colloqui",
-              body: "Invia una richiesta di contatto allo studente. Se accetta, si apre una chat privata in cui potete conoscervi meglio e, se c'è interesse reciproco, organizzare un colloquio.",
-            },
-          ].map((item) => (
+          {steps.map((item) => (
             <div key={item.n} className="rounded-lg border border-border bg-white p-6">
               <p className="text-eyebrow text-petrol uppercase tracking-wider mb-3">{item.n}</p>
               <h3 className="font-display text-h3 text-navy mb-2">{item.title}</h3>
@@ -223,19 +225,14 @@ export default function AziendePage() {
 
         {/* Why MIRA */}
         <div className="rounded-lg border border-border bg-white p-8 mb-16">
-          <h2 className="font-display text-h2 text-navy mb-6">Perché non è il solito portale di recruiting</h2>
+          <h2 className="font-display text-h2 text-navy mb-6">{t("landing.whyHeading")}</h2>
           <div className="grid grid-cols-2 gap-x-6">
-            <p className="text-label text-ink-secondary pb-3 border-b border-border">Portali di recruiting</p>
-            <p className="text-label text-navy pb-3 border-b border-border">MIRA</p>
-            {[
-              ["Ricevi candidature e CV da scremare", "Niente annunci da pubblicare ogni volta."],
-              ["Informazioni limitate a quanto dichiarato nel CV", "Profili arricchiti con esperienza, interessi, attitudine, disponibilità e obiettivi"],
-              ["Non sai cosa c'è davvero dentro un candidato", "Definisci chi vuoi e scopri automaticamente i candidati più adatti."],
-              ["Lo studente aggiorna il profilo solo quando cerca lavoro", "Ogni match è accompagnato da una spiegazione del perché è adatto"],
-            ].map(([left, right]) => (
-              <Fragment key={left}>
-                <p className="text-body text-ink-secondary py-4 border-b border-border/60">{left}</p>
-                <p className="text-body font-medium text-navy py-4 border-b border-border/60">{right}</p>
+            <p className="text-label text-ink-secondary pb-3 border-b border-border">{t("landing.comparison.recruitingHeader")}</p>
+            <p className="text-label text-navy pb-3 border-b border-border">{t("landing.comparison.miraHeader")}</p>
+            {comparisonRows.map((row) => (
+              <Fragment key={row.left}>
+                <p className="text-body text-ink-secondary py-4 border-b border-border/60">{row.left}</p>
+                <p className="text-body font-medium text-navy py-4 border-b border-border/60">{row.right}</p>
               </Fragment>
             ))}
           </div>
@@ -247,7 +244,7 @@ export default function AziendePage() {
             onClick={() => setStep("form")}
             className="bg-navy text-white px-8 py-4 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100"
           >
-            Registra la tua azienda
+            {t("landing.bottomCta")}
           </button>
         </div>
       </main>
