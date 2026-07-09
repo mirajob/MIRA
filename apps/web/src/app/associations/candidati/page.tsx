@@ -79,7 +79,7 @@ export default function CandidatiAssociazionePage() {
           <p className="text-eyebrow text-petrol uppercase tracking-wider mb-3">Per le associazioni</p>
           <h1 className="font-display text-h1 text-navy mb-2">Candida la tua associazione</h1>
           <p className="text-body text-ink-secondary mb-8">
-            Compila i dati della tua associazione e crea il tuo account da presidente. Il MIRA admin verificherà la richiesta entro 24-48 ore — riceverai una email con l&apos;esito. Nel frattempo potrai già iniziare a costruire il tuo profilo studente.
+            Compila i dati della tua associazione e crea il tuo account da presidente. La tua richiesta sarà verificata entro 24h. Riceverai una mail di conferma. Nel frattempo potrai già iniziare a costruire il tuo profilo studente.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { createBrowserClient } from "@mira/supabase/client";
 import { setupCompanyProfile } from "@/lib/actions/company-register";
 import { useRouter } from "next/navigation";
@@ -216,18 +216,18 @@ export default function AziendePage() {
         <div className="mb-16">
           <p className="text-eyebrow text-petrol uppercase tracking-wider mb-4">Per le aziende</p>
           <h1 className="font-display text-display-lg text-navy mb-6 max-w-2xl">
-            Trova i talenti Bocconi prima che aggiornino il CV
+            Scopri i talenti giusti prima degli altri, oltre il CV
           </h1>
           <p className="text-body-lg text-ink-secondary max-w-xl mb-8">
-            MIRA costruisce profili profondi degli studenti attraverso conversazioni AI — esperienze, interessi, attitudini, obiettivi. Tu descrivi cosa cerchi, MIRA ti mostra chi si adatta davvero al ruolo.
+            Un CV racconta ciò che uno studente ha fatto. MIRA ti mostra anche chi è, cosa cerca, quando è disponibile e quanto è adatto al ruolo.
           </p>
           <button
             onClick={() => setStep("form")}
             className="bg-navy text-white px-8 py-4 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100"
           >
-            Richiedi accesso al pilot →
+            Partecipa al pilot →
           </button>
-          <p className="mt-3 text-body-sm text-ink-tertiary">Gratuito fino a settembre 2026. Attivazione entro 24h.</p>
+          <p className="mt-3 text-body-sm text-ink-tertiary">Pilot in partenza a settembre 2026. Accesso iniziale gratuito.</p>
         </div>
 
         {/* How it works */}
@@ -236,17 +236,17 @@ export default function AziendePage() {
             {
               n: "01",
               title: "Descrivi cosa cerchi",
-              body: "Scrivi in linguaggio naturale il profilo che ti serve: ruolo, competenze, settore, attitudine, disponibilità. Non serve una scheda rigida.",
+              body: "Scrivi in linguaggio naturale il profilo che ti serve: ruolo, competenze, settore, attitudine, disponibilità e molto altro.",
             },
             {
               n: "02",
               title: "MIRA trova i match",
-              body: "L'AI confronta la tua ricerca con i profili degli studenti onboardati e ti mostra i candidati più coerenti, con una spiegazione per ognuno.",
+              body: "Il sistema confronta la tua ricerca con i profili degli studenti e ti mostra i candidati più coerenti, con una spiegazione per ognuno.",
             },
             {
               n: "03",
               title: "Contatti e colloqui",
-              body: "Invia una richiesta di contatto allo studente. Se accetta, si apre una chat diretta in cui puoi proporre un colloquio.",
+              body: "Invia una richiesta di contatto allo studente. Se accetta, si apre una chat privata in cui potete conoscervi meglio e, se c'è interesse reciproco, organizzare un colloquio.",
             },
           ].map((item) => (
             <div key={item.n} className="rounded-lg border border-border bg-white p-6">
@@ -259,38 +259,21 @@ export default function AziendePage() {
 
         {/* Why MIRA */}
         <div className="rounded-lg border border-border bg-white p-8 mb-16">
-          <h2 className="font-display text-h2 text-navy mb-6">Perché è diverso da JobGate</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <p className="text-label text-ink-secondary mb-3">JobGate e LinkedIn</p>
-              <ul className="space-y-2">
-                {[
-                  "Ricevi CV auto-dichiarati da scremare",
-                  "Stessa logica del 2005",
-                  "Non sai cosa c'è davvero dentro un candidato",
-                  "Lo studente aggiorna il profilo solo quando cerca lavoro",
-                ].map((t) => (
-                  <li key={t} className="flex items-start gap-2 text-body text-ink-secondary">
-                    <span className="text-ink-tertiary mt-0.5">—</span>{t}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="text-label text-navy mb-3">MIRA</p>
-              <ul className="space-y-2">
-                {[
-                  "Cerchi tu tra profili già costruiti e strutturati",
-                  "Dati raccolti via AI: esperienze, interessi, attitudini",
-                  "Spiegazione del perché ogni candidato è adatto",
-                  "Gli studenti si profilano anche quando non cercano lavoro",
-                ].map((t) => (
-                  <li key={t} className="flex items-start gap-2 text-body text-ink">
-                    <span className="text-petrol mt-0.5">✓</span>{t}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <h2 className="font-display text-h2 text-navy mb-6">Perché non è il solito portale di recruiting</h2>
+          <div className="grid grid-cols-2 gap-x-6">
+            <p className="text-label text-ink-secondary pb-3 border-b border-border">Portali di recruiting</p>
+            <p className="text-label text-navy pb-3 border-b border-border">MIRA</p>
+            {[
+              ["Ricevi candidature e CV da scremare", "Niente annunci da pubblicare ogni volta."],
+              ["Informazioni limitate a quanto dichiarato nel CV", "Profili arricchiti con esperienza, interessi, attitudine, disponibilità e obiettivi"],
+              ["Non sai cosa c'è davvero dentro un candidato", "Definisci chi vuoi e scopri automaticamente i candidati più adatti."],
+              ["Lo studente aggiorna il profilo solo quando cerca lavoro", "Ogni match è accompagnato da una spiegazione del perché è adatto"],
+            ].map(([left, right]) => (
+              <Fragment key={left}>
+                <p className="text-body text-ink-secondary py-4 border-b border-border/60">{left}</p>
+                <p className="text-body font-medium text-navy py-4 border-b border-border/60">{right}</p>
+              </Fragment>
+            ))}
           </div>
         </div>
 

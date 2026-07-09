@@ -24,20 +24,20 @@ export default async function HomePage() {
         </div>
       </header>
 
-      <main className="flex flex-col items-center justify-center px-6 py-28">
-        <p className="text-eyebrow text-navy/60 mb-4 uppercase">
-          La tua MiraCard
+      <main className="px-6 lg:px-12 py-20 max-w-3xl">
+        <p className="text-eyebrow text-navy font-semibold uppercase mb-5">
+          La tua <span className="underline decoration-2 underline-offset-2">MiraCard</span>
         </p>
-        <h1 className="font-display text-display-xl text-navy text-center max-w-3xl">
-          Non un altro CV. Un profilo che si costruisce parlando.
+        <h1 className="font-display text-display-xl text-navy">
+          Il tuo CV racconta cosa hai fatto. MIRA racconta chi sei.
         </h1>
-        <p className="mt-6 text-body-lg text-ink-secondary text-center max-w-2xl">
-          Carichi il libretto, rispondi a MIRA in chat: nasce la tua MiraCard — esperienze, competenze e percorso, basati su evidenze reali. Zero form da compilare.
+        <p className="mt-6 text-body-lg text-ink-secondary max-w-2xl">
+          La tua <strong className="text-navy underline decoration-2 underline-offset-2">MiraCard</strong> ti permette di candidarti alle associazioni e di essere scoperto dalle aziende presenti sulla piattaforma. Un unico profilo che continua ad aprirti nuove opportunità.
         </p>
         <div className="mt-10">
           <Link
             href="/signup"
-            className="bg-navy text-white px-8 py-4 rounded-md text-body hover:bg-navy-700 transition-colors duration-100"
+            className="text-label text-navy uppercase tracking-wide underline decoration-2 underline-offset-4 hover:text-petrol transition-colors duration-100"
           >
             Registrati come studente
           </Link>
@@ -45,35 +45,34 @@ export default async function HomePage() {
       </main>
 
       <section className="border-t border-border px-6 lg:px-12 py-16">
-        <div className="mx-auto max-w-4xl">
-          <p className="text-eyebrow text-navy/60 uppercase text-center mb-10">
-            Sei un&apos;azienda o un&apos;associazione?
-          </p>
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div className="rounded-lg border border-border bg-white p-8 text-center">
-              <h2 className="font-display text-h2 text-navy mb-2">Associazione</h2>
-              <p className="text-body text-ink-secondary mb-6">
-                Candida la tua associazione: gestisci candidature, board e la tua pagina su MIRA.
-              </p>
-              <Link
-                href="/associations/candidati"
-                className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
-              >
-                Candida la tua associazione →
-              </Link>
-            </div>
-            <div className="rounded-lg border border-border bg-white p-8 text-center">
-              <h2 className="font-display text-h2 text-navy mb-2">Azienda</h2>
-              <p className="text-body text-ink-secondary mb-6">
-                Non c&apos;è neanche bisogno di una parola. Descrivi chi cerchi, MIRA ti mostra chi si adatta davvero.
-              </p>
-              <Link
-                href="/aziende"
-                className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
-              >
-                Registra la tua azienda →
-              </Link>
-            </div>
+        <div className="max-w-3xl space-y-14">
+          <div>
+            <h2 className="font-display text-h1 text-navy mb-3">Associazione</h2>
+            <p className="text-body-lg text-ink-secondary mb-6 max-w-2xl">
+              Candida la tua associazione: gestisci candidature, board e la tua pagina su MIRA.
+            </p>
+            <Link
+              href="/associations/candidati"
+              className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
+            >
+              Candida la tua associazione →
+            </Link>
+          </div>
+
+          <div>
+            <h2 className="font-display text-h1 text-navy mb-3">Azienda</h2>
+            <p className="text-body font-medium text-navy mb-2">
+              Non aspettare candidature. Trova i candidati giusti.
+            </p>
+            <p className="text-body-lg text-ink-secondary mb-6 max-w-2xl">
+              Descrivi il profilo che cerchi e lascia che MIRA ti mostri gli studenti più in linea con la tua ricerca.
+            </p>
+            <Link
+              href="/aziende"
+              className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
+            >
+              Registra la tua azienda →
+            </Link>
           </div>
         </div>
       </section>
