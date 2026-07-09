@@ -1,14 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { createBrowserClient } from "@mira/supabase/client";
 import { validateStudentEmail } from "@mira/domain";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
+  );
+}
+
+function SignupForm() {
+  const searchParams = useSearchParams();
+  const rawRedirect = searchParams.get("redirect") ?? "";
+  const redirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/api/auth/redirect";
+  // Invite-driven signups (e.g. a company admin accepting an invite) are
+  // validated by their invitation token, not by student email domain.
+  const source = searchParams.get("source");
+  const isInvite = redirect.startsWith("/invite/");
+
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -18,10 +34,12 @@ export default function SignupPage() {
     e.preventDefault();
     setError(null);
 
-    const emailValidation = validateStudentEmail(email);
-    if (!emailValidation.valid) {
-      setError(emailValidation.error);
-      return;
+    if (!isInvite) {
+      const emailValidation = validateStudentEmail(email);
+      if (!emailValidation.valid) {
+        setError(emailValidation.error);
+        return;
+      }
     }
 
     setLoading(true);
@@ -31,7 +49,7 @@ export default function SignupPage() {
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: { full_name: fullName, ...(source ? { signup_source: source } : {}) },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
@@ -42,7 +60,7 @@ export default function SignupPage() {
       return;
     }
 
-    router.push("/api/auth/redirect");
+    router.push(redirect);
   }
 
   return (

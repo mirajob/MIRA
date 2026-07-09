@@ -1,23 +1,18 @@
-import { createServerClient } from "@mira/supabase/server";
-import { redirect } from "next/navigation";
-import { signOut } from "@/lib/actions/auth";
 import Link from "next/link";
 
-export default async function PendingPage() {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+interface Props {
+  searchParams: Promise<{ email?: string }>;
+}
 
-  if (!user) redirect("/login");
+export default async function PendingPage({ searchParams }: Props) {
+  const { email } = await searchParams;
 
   return (
     <div className="min-h-screen bg-paper flex flex-col">
-      <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
-        <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
-        <form action={signOut}>
-          <button type="submit" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors duration-100">
-            Esci
-          </button>
-        </form>
+      <header className="px-6 py-4 border-b border-border bg-white">
+        <Link href="/">
+          <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
+        </Link>
       </header>
 
       <div className="flex-1 flex items-center justify-center px-6">
@@ -29,9 +24,14 @@ export default async function PendingPage() {
             </svg>
           </div>
 
-          <h1 className="font-display text-h1 text-navy mb-3">Richiesta in attesa</h1>
+          <h1 className="font-display text-h1 text-navy mb-3">Richiesta inviata</h1>
           <p className="text-body text-ink-secondary mb-6">
-            Abbiamo ricevuto la tua richiesta di accesso. La verificheremo entro 24 ore e riceverai una email quando il tuo account sarà attivo.
+            {email ? (
+              <>Abbiamo ricevuto la richiesta di accesso per <strong className="text-navy">{email}</strong>.</>
+            ) : (
+              "Abbiamo ricevuto la tua richiesta di accesso."
+            )}{" "}
+            Il team MIRA la esaminerà a breve.
           </p>
 
           <div className="rounded-lg border border-border bg-white p-6 text-left mb-6">
@@ -39,9 +39,9 @@ export default async function PendingPage() {
             <ol className="space-y-3">
               {[
                 "Verifichiamo i dati della tua azienda",
-                "Attiviamo il tuo account",
-                "Ricevi una email di conferma",
-                "Accedi e inizia a cercare candidati",
+                "Se approvata, ricevi un'email con il link per creare il tuo account",
+                "Imposti la password e accedi",
+                "Inizi a cercare candidati",
               ].map((step, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-navy text-white text-xs flex items-center justify-center font-medium">
@@ -54,7 +54,10 @@ export default async function PendingPage() {
           </div>
 
           <p className="text-body-sm text-ink-tertiary">
-            Per domande, rispondi all&apos;email di conferma che riceverai.
+            Hai già un account?{" "}
+            <Link href="/login?type=company" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
+              Accedi
+            </Link>
           </p>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { ApproveRejectButtons } from "./approve-reject-buttons";
+import { AccessRequestButtons } from "./access-request-buttons";
 import { InvitationForm } from "./invitation-form";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -11,6 +12,13 @@ export default async function AdminCompaniesPage() {
   if (!ctx.isMiraAdmin) redirect("/student");
 
   const supabase = await createServiceClient();
+
+  const { data: accessRequests, error: accessRequestsErr } = await (supabase.from("company_access_requests") as any)
+    .select("*")
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+
+  if (accessRequestsErr) console.error("admin access requests query error:", accessRequestsErr);
 
   const { data: companies, error: companiesErr } = await (supabase.from("company_profiles") as any)
     .select("*")
@@ -99,6 +107,53 @@ export default async function AdminCompaniesPage() {
       <section>
         <InvitationForm />
       </section>
+
+      {(accessRequests?.length ?? 0) > 0 && (
+        <section>
+          <h2 className="font-display text-h2 text-navy mb-4">Richieste di accesso ({accessRequests.length})</h2>
+          <div className="rounded-lg border border-amber-200 bg-white overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-amber-50">
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Azienda</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Contatto</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Sito</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Data</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Azioni</th>
+                </tr>
+              </thead>
+              <tbody>
+                {accessRequests.map((r: any) => (
+                  <tr key={r.id} className="border-b border-border last:border-0 hover:bg-paper transition-colors">
+                    <td className="px-4 py-3">
+                      <p className="text-body font-medium text-navy">{r.legal_name}</p>
+                      <p className="text-body-sm text-ink-secondary">{r.sector ?? "—"}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-body-sm text-ink">{r.contact_name}</p>
+                      <p className="text-body-sm text-ink-tertiary">{r.email}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      {r.website_url ? (
+                        <a href={r.website_url} target="_blank" rel="noopener noreferrer"
+                          className="text-body-sm text-petrol underline underline-offset-2 decoration-1">
+                          {r.website_url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                        </a>
+                      ) : <span className="text-body-sm text-ink-tertiary">—</span>}
+                    </td>
+                    <td className="px-4 py-3 text-body-sm text-ink-tertiary">
+                      {new Date(r.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" })}
+                    </td>
+                    <td className="px-4 py-3">
+                      <AccessRequestButtons requestId={r.id} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       {pending.length > 0 && (
         <section>

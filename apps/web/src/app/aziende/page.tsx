@@ -1,8 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import { createBrowserClient } from "@mira/supabase/client";
-import { setupCompanyProfile } from "@/lib/actions/company-register";
+import { requestCompanyAccess } from "@/lib/actions/company-register";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -30,7 +29,6 @@ export default function AziendePage() {
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -40,40 +38,18 @@ export default function AziendePage() {
     setError(null);
     setLoading(true);
 
-    const supabase = createBrowserClient();
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: contactName, signup_source: "company" } },
-    });
-
-    if (signUpError) {
-      setError(signUpError.message);
-      setLoading(false);
-      return;
-    }
-
-    const authUserId = data.user?.id;
-    if (!authUserId) {
-      setError("Errore durante la registrazione. Riprova.");
-      setLoading(false);
-      return;
-    }
-
     const normalizedUrl = websiteUrl
       ? websiteUrl.startsWith("http") ? websiteUrl : `https://${websiteUrl}`
       : "";
-    const result = await setupCompanyProfile({ legalName, sector, websiteUrl: normalizedUrl, contactName });
+    const result = await requestCompanyAccess({ legalName, sector, websiteUrl: normalizedUrl, contactName, email });
 
     if (result.error) {
-      // Sign out so the orphaned auth user doesn't block a retry
-      await supabase.auth.signOut();
-      setError(result.error + " Riprova con la stessa email.");
+      setError(result.error);
       setLoading(false);
       return;
     }
 
-    router.push("/aziende/pending");
+    router.push(`/aziende/pending?email=${encodeURIComponent(email)}`);
   }
 
   if (step === "form") {
@@ -94,7 +70,7 @@ export default function AziendePage() {
 
             <h1 className="font-display text-h1 text-navy mb-2">Registra la tua azienda</h1>
             <p className="text-body text-ink-secondary mb-8">
-              Compila i dati per richiedere l&apos;accesso a MIRA. Il tuo account verrà attivato entro 24 ore.
+              Compila i dati per richiedere l&apos;accesso a MIRA. Il team verificherà la richiesta e, se approvata, riceverai un&apos;email per creare il tuo account.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -141,7 +117,7 @@ export default function AziendePage() {
               </label>
 
               <div className="border-t border-border pt-5">
-                <p className="text-label text-ink-secondary mb-4">I tuoi dati di accesso</p>
+                <p className="text-label text-ink-secondary mb-4">Il tuo contatto</p>
 
                 <div className="space-y-4">
                   <label className="block">
@@ -164,19 +140,7 @@ export default function AziendePage() {
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
                     />
-                  </label>
-
-                  <label className="block">
-                    <span className="text-label text-navy mb-2 block">Password *</span>
-                    <input
-                      type="password"
-                      required
-                      minLength={8}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
-                    />
-                    <p className="mt-1 text-body-sm text-ink-tertiary">Minimo 8 caratteri</p>
+                    <p className="mt-1 text-body-sm text-ink-tertiary">Se la richiesta viene approvata, riceverai qui il link per creare il tuo account.</p>
                   </label>
                 </div>
               </div>
@@ -186,12 +150,12 @@ export default function AziendePage() {
                 disabled={loading}
                 className="w-full bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {loading ? "Registrazione in corso..." : "Richiedi accesso"}
+                {loading ? "Invio in corso..." : "Richiedi accesso"}
               </button>
 
               <p className="text-center text-body-sm text-ink-secondary">
                 Hai già un account?{" "}
-                <Link href="/login" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
+                <Link href="/login?type=company" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
                   Accedi
                 </Link>
               </p>
@@ -206,7 +170,7 @@ export default function AziendePage() {
     <div className="min-h-screen bg-paper">
       <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
         <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
-        <Link href="/login" className="text-body-sm text-ink-secondary hover:text-navy transition-colors">
+        <Link href="/login?type=company" className="text-body-sm text-ink-secondary hover:text-navy transition-colors">
           Accedi
         </Link>
       </header>
@@ -285,9 +249,6 @@ export default function AziendePage() {
           >
             Registra la tua azienda
           </button>
-          <p className="mt-3 text-body-sm text-ink-tertiary">
-            Pilot gratuito · ~1.000 studenti Bocconi onboardati a settembre
-          </p>
         </div>
       </main>
     </div>

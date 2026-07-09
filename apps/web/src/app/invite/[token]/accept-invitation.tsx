@@ -9,9 +9,10 @@ interface Props {
   token: string;
   invitedEmail: string;
   currentEmail: string | null;
+  invitationType: string;
 }
 
-export function AcceptInvitation({ token, invitedEmail, currentEmail }: Props) {
+export function AcceptInvitation({ token, invitedEmail, currentEmail, invitationType }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -48,6 +49,10 @@ export function AcceptInvitation({ token, invitedEmail, currentEmail }: Props) {
   }
 
   if (!currentEmail) {
+    const source = invitationType === "company_admin" ? "company" : null;
+    const signupParams = new URLSearchParams({ redirect: `/invite/${token}`, email: invitedEmail });
+    if (source) signupParams.set("source", source);
+
     return (
       <div className="space-y-4 pt-2">
         <p className="text-body-sm text-ink-secondary">
@@ -63,7 +68,7 @@ export function AcceptInvitation({ token, invitedEmail, currentEmail }: Props) {
             Accedi
           </Link>
           <Link
-            href={`/signup?redirect=/invite/${token}`}
+            href={`/signup?${signupParams.toString()}`}
             className="flex-1 bg-cream text-navy px-6 py-3 rounded-md text-label text-center border border-border hover:border-border-strong transition-colors duration-100"
           >
             Crea un account

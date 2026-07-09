@@ -205,6 +205,42 @@ export async function sendCompanyInvitationEmail({
   return { success: true };
 }
 
+export async function sendCompanyRejectionEmail({
+  email,
+  companyName,
+  reason,
+}: {
+  email: string;
+  companyName: string;
+  reason?: string | null;
+}) {
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    subject: `Aggiornamento sulla richiesta di ${companyName}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
+        <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 24px; margin-bottom: 32px;" />
+        <h2 style="color: #0a1628; font-size: 20px; margin-bottom: 8px;">Richiesta non approvata</h2>
+        <p style="color: #4a5568; font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
+          La richiesta di accesso per <strong>${companyName}</strong> non è stata approvata in questo momento.
+        </p>
+        ${reason ? `<div style="background: #f7f8fa; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; color: #1a202c; font-size: 14px;">${reason}</div>` : ""}
+        <p style="color: #718096; font-size: 13px;">Per domande, rispondi a questa email.</p>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
+        <p style="color: #a0aec0; font-size: 12px;">MIRA — University Talent Platform</p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error("Resend company rejection error:", error);
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
 export async function sendAssociationDecisionEmail({
   email,
   associationName,

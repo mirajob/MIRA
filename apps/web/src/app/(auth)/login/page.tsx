@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from "react";
 import { createBrowserClient } from "@mira/supabase/client";
+import { checkPendingCompanyRequest } from "@/lib/actions/company-register";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -14,12 +15,13 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
+  const searchParams = useSearchParams();
+  const [isCompany, setIsCompany] = useState(searchParams.get("type") === "company");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const rawRedirect = searchParams.get("redirect") ?? "";
   const redirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/api/auth/redirect";
 
@@ -32,7 +34,12 @@ function LoginForm() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setError(error.message);
+      const isPending = await checkPendingCompanyRequest(email);
+      setError(
+        isPending
+          ? "La tua richiesta di accesso è ancora in attesa di conferma da parte del team MIRA. Riceverai un'email non appena verrà approvata."
+          : error.message
+      );
       setLoading(false);
       return;
     }
@@ -44,7 +51,16 @@ function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="mt-8 space-y-6">
       <div className="space-y-4 rounded-lg border border-border bg-white p-6">
-        <h2 className="font-display text-h2 text-navy">Accedi</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-h2 text-navy">Accedi</h2>
+          <button
+            type="button"
+            onClick={() => setIsCompany((v) => !v)}
+            className="text-label text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
+          >
+            {isCompany ? "Sono uno studente" : "Sono un'azienda"}
+          </button>
+        </div>
 
         {error && (
           <div className="rounded-md bg-error-bg p-3 text-body-sm text-error">
@@ -60,7 +76,7 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
-            placeholder="nome@studbocconi.it"
+            placeholder={isCompany ? "nome@azienda.com" : "nome@studbocconi.it"}
           />
         </label>
 
@@ -86,7 +102,7 @@ function LoginForm() {
 
       <p className="text-center text-body-sm text-ink-secondary">
         Non hai un account?{" "}
-        <Link href="/signup" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2">
+        <Link href={isCompany ? "/aziende" : "/signup"} className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2">
           Registrati
         </Link>
       </p>

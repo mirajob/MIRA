@@ -1,8 +1,8 @@
 "use server";
 
-import { createServiceClient, createServerClient } from "@mira/supabase/server";
+import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
-import { sendCompanyInvitationEmail } from "@/lib/email";
+import { sendCompanyInvitationEmail, sendCompanyRejectionEmail } from "@/lib/email";
 import { INVITATION_EXPIRY_DAYS } from "@mira/domain";
 import { revalidatePath } from "next/cache";
 
@@ -14,104 +14,157 @@ function generateToken() {
   return Array.from(array, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function toSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 60);
-}
-
-async function uniqueSlug(supabase: any, base: string): Promise<string> {
-  let slug = base;
-  let i = 2;
-  while (true) {
-    const { data } = await supabase
-      .from("company_profiles")
-      .select("id")
-      .eq("slug", slug)
-      .maybeSingle();
-    if (!data) return slug;
-    slug = `${base}-${i++}`;
-  }
-}
-
-async function waitForProfile(supabase: any, authUserId: string): Promise<string | null> {
-  for (let i = 0; i < 8; i++) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("auth_user_id", authUserId)
-      .maybeSingle();
-    if (data?.id) return data.id as string;
-    await new Promise((r) => setTimeout(r, 300));
-  }
-  return null;
-}
-
-export async function setupCompanyProfile(input: {
+export async function requestCompanyAccess(input: {
   legalName: string;
   sector: string;
   websiteUrl: string;
   contactName: string;
+  email: string;
 }) {
-  // Read auth from session — never trust client-supplied user IDs
-  const serverClient = await createServerClient();
-  const { data: { user } } = await serverClient.auth.getUser();
-  if (!user) return { error: "Sessione non valida. Riprova." };
+  if (!input.legalName || !input.contactName || !input.email) {
+    return { error: "Compila tutti i campi obbligatori." };
+  }
+
+  const supabase = await createServiceClient();
+  const normalizedEmail = input.email.trim().toLowerCase();
+
+  const { data: existing } = await supabase
+    .from("company_access_requests")
+    .select("id")
+    .eq("email", normalizedEmail)
+    .eq("status", "pending")
+    .maybeSingle();
+
+  if (existing) {
+    return { error: "Hai già una richiesta in attesa con questa email." };
+  }
+
+  const { error } = await supabase.from("company_access_requests").insert({
+    legal_name: input.legalName,
+    sector: input.sector || null,
+    website_url: input.websiteUrl || null,
+    contact_name: input.contactName,
+    email: normalizedEmail,
+  });
+
+  if (error) return { error: error.message };
+  return { success: true };
+}
+
+export async function approveCompanyAccessRequest(requestId: string) {
+  const ctx = await getUserContext();
+  if (!ctx.isMiraAdmin) return { error: "Non autorizzato." };
 
   const supabase = await createServiceClient();
 
-  const profileId = await waitForProfile(supabase, user.id);
-  if (!profileId) return { error: "Profilo non trovato dopo la registrazione. Riprova." };
+  const { data: request } = await supabase
+    .from("company_access_requests")
+    .select("*")
+    .eq("id", requestId)
+    .eq("status", "pending")
+    .maybeSingle();
 
-  // Update full_name on profile (trigger may not have it if signup happened via client)
-  if (input.contactName) {
-    await supabase
-      .from("profiles")
-      .update({ full_name: input.contactName })
-      .eq("id", profileId);
-  }
+  if (!request) return { error: "Richiesta non trovata." };
 
-  const baseSlug = toSlug(input.legalName) || "azienda";
-  const slug = await uniqueSlug(supabase, baseSlug);
+  const token = generateToken();
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + INVITATION_EXPIRY_DAYS);
 
-  const { data: company, error: companyErr } = await supabase
-    .from("company_profiles")
-    .insert({
-      created_by_user_id: profileId,
-      legal_name: input.legalName,
-      display_name: input.legalName,
-      slug,
-      sector: input.sector || null,
-      website_url: input.websiteUrl || null,
-      verification_status: "pending_verification",
+  const { error: inviteError } = await supabase.from("invitations").insert({
+    invitation_type: "company_admin",
+    invited_email: request.email,
+    invited_email_domain: request.email.split("@")[1],
+    invitation_token: token,
+    invited_by_user_id: ctx.profile.id,
+    invited_role: "admin",
+    expires_at: expiresAt.toISOString(),
+    metadata: {
+      company_name: request.legal_name,
+      sector: request.sector,
+      website: request.website_url,
+      contact_name: request.contact_name,
+    },
+  });
+
+  if (inviteError) return { error: inviteError.message };
+
+  await supabase
+    .from("company_access_requests")
+    .update({ status: "approved", reviewed_by_user_id: ctx.profile.id, reviewed_at: new Date().toISOString() })
+    .eq("id", requestId);
+
+  await supabase.from("audit_logs").insert({
+    actor_user_id: ctx.profile.id,
+    action: "company_access_request_approved",
+    entity_type: "company_access_request",
+    entity_id: requestId,
+    metadata: { email: request.email, legal_name: request.legal_name },
+  });
+
+  const inviteUrl = `https://mirajob.cloud/invite/${token}`;
+  const emailResult = await sendCompanyInvitationEmail({
+    email: request.email,
+    companyName: request.legal_name,
+    inviteUrl,
+    note: null,
+  });
+
+  revalidatePath("/admin/companies");
+  return { success: true, emailError: emailResult.error };
+}
+
+export async function rejectCompanyAccessRequest(requestId: string, reason: string) {
+  const ctx = await getUserContext();
+  if (!ctx.isMiraAdmin) return { error: "Non autorizzato." };
+
+  const supabase = await createServiceClient();
+
+  const { data: request } = await supabase
+    .from("company_access_requests")
+    .select("*")
+    .eq("id", requestId)
+    .eq("status", "pending")
+    .maybeSingle();
+
+  if (!request) return { error: "Richiesta non trovata." };
+
+  await supabase
+    .from("company_access_requests")
+    .update({
+      status: "rejected",
+      rejected_reason: reason || null,
+      reviewed_by_user_id: ctx.profile.id,
+      reviewed_at: new Date().toISOString(),
     })
-    .select("id, slug")
-    .single();
+    .eq("id", requestId);
 
-  if (companyErr) {
-    console.error("company_profiles insert error:", companyErr);
-    await supabase.auth.admin.deleteUser(user.id).catch(() => {});
-    return { error: "Errore nella creazione del profilo aziendale." };
-  }
-
-  await supabase.from("company_memberships").insert({
-    company_id: (company as any).id,
-    user_id: profileId,
-    role: "admin",
-    status: "active",
-    joined_at: new Date().toISOString(),
+  await supabase.from("audit_logs").insert({
+    actor_user_id: ctx.profile.id,
+    action: "company_access_request_rejected",
+    entity_type: "company_access_request",
+    entity_id: requestId,
+    metadata: { email: request.email, legal_name: request.legal_name, reason },
   });
 
-  await supabase.from("global_role_assignments").insert({
-    user_id: profileId,
-    role: "company_user",
+  const emailResult = await sendCompanyRejectionEmail({
+    email: request.email,
+    companyName: request.legal_name,
+    reason: reason || null,
   });
 
-  return { success: true, slug: (company as any).slug as string };
+  revalidatePath("/admin/companies");
+  return { success: true, emailError: emailResult.error };
+}
+
+export async function checkPendingCompanyRequest(email: string) {
+  const supabase = await createServiceClient();
+  const { data } = await supabase
+    .from("company_access_requests")
+    .select("id")
+    .eq("email", email.trim().toLowerCase())
+    .eq("status", "pending")
+    .maybeSingle();
+  return !!data;
 }
 
 export async function approveCompany(companyId: string) {

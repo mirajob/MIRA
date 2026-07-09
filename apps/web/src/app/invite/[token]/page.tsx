@@ -115,6 +115,7 @@ export default async function InvitePage({ params }: Props) {
             token={token}
             invitedEmail={invitation.invited_email}
             currentEmail={user?.email ?? null}
+            invitationType={invitation.invitation_type}
           />
         </div>
       </div>
