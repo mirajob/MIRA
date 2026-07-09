@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
 import type { CardBlockStatus, CardBlockType } from "@mira/types";
@@ -38,6 +39,8 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
   readOnly,
   onApproved,
 }: ListBlockProps<T>) {
+  const t = useTranslations("CardBlocks");
+  const c = useTranslations("Common");
   const [items, setItems] = useState<T[]>(initialItems);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -81,14 +84,14 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
           <div key={item.id} className="rounded-md border border-border p-4 space-y-3">
             <div className="flex items-center justify-between">
               {item.verified && (
-                <span className="text-xs px-2 py-0.5 rounded bg-success-bg text-success font-medium">Verificata</span>
+                <span className="text-xs px-2 py-0.5 rounded bg-success-bg text-success font-medium">{t("verified")}</span>
               )}
               {!readOnly && (
                 <button
                   onClick={() => removeItem(index)}
                   className="text-xs text-ink-tertiary hover:text-error transition-colors ml-auto"
                 >
-                  Rimuovi
+                  {t("remove")}
                 </button>
               )}
             </div>
@@ -136,7 +139,7 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
             onClick={() => setExpanded((e) => !e)}
             className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
           >
-            {expanded ? "Mostra meno" : `Mostra tutti (${items.length})`}
+            {expanded ? t("showLess") : t("showAll", { count: items.length })}
           </button>
         )}
         {!readOnly && (
@@ -145,7 +148,7 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
               onClick={addItem}
               className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
             >
-              + Aggiungi
+              {t("addItem")}
             </button>
             {dirty && (
               <button
@@ -153,7 +156,7 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
                 disabled={saving}
                 className="text-body-sm font-medium text-white bg-petrol rounded-md px-4 py-2 hover:bg-petrol-700 transition-colors disabled:opacity-50"
               >
-                {saving ? "Salvataggio..." : "Salva"}
+                {saving ? c("saving") : c("save")}
               </button>
             )}
           </div>
@@ -181,6 +184,7 @@ export function ListView<T extends { id: string }>({
   emptyLabel: string;
   collapseAt?: number;
 }) {
+  const t = useTranslations("CardBlocks");
   const [expanded, setExpanded] = useState(false);
   const visibleItems = expanded ? items : items.slice(0, collapseAt);
 
@@ -201,7 +205,7 @@ export function ListView<T extends { id: string }>({
           onClick={() => setExpanded((e) => !e)}
           className="mt-2 text-xs text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
         >
-          {expanded ? "Mostra meno" : `Mostra tutti (${items.length})`}
+          {expanded ? t("showLess") : t("showAll", { count: items.length })}
         </button>
       )}
     </div>

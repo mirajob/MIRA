@@ -1,14 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ListBlock, ListView, type ListFieldConfig } from "./list-block";
 import type { CardBlockStatus, EsperienzaItem } from "@mira/types";
-
-const fields: ListFieldConfig<EsperienzaItem>[] = [
-  { key: "titolo", label: "Titolo / ruolo", placeholder: "es. Analista M&A" },
-  { key: "organizzazione", label: "Organizzazione", placeholder: "es. Nome azienda o associazione" },
-  { key: "periodo", label: "Periodo", placeholder: "es. giugno 2024 – presente" },
-  { key: "descrizione", label: "Cosa hai fatto concretamente", type: "textarea", placeholder: "2-3 righe su cosa hai fatto tu" },
-];
 
 export function EsperienzeBlock({
   items,
@@ -19,15 +13,22 @@ export function EsperienzeBlock({
   status: CardBlockStatus;
   onApproved?: () => void;
 }) {
+  const t = useTranslations("CardBlocks");
+  const fields: ListFieldConfig<EsperienzaItem>[] = [
+    { key: "titolo", label: t("esperienze.titoloLabel"), placeholder: t("esperienze.titoloPlaceholder") },
+    { key: "organizzazione", label: t("esperienze.organizzazioneLabel"), placeholder: t("esperienze.organizzazionePlaceholder") },
+    { key: "periodo", label: t("esperienze.periodoLabel"), placeholder: t("esperienze.periodoPlaceholder") },
+    { key: "descrizione", label: t("esperienze.descrizioneLabel"), type: "textarea", placeholder: t("esperienze.descrizionePlaceholder") },
+  ];
   return (
     <ListBlock
       blockType="esperienze"
-      title="Esperienze"
+      title={t("titles.esperienze")}
       items={items}
       status={status}
       onApproved={onApproved}
       fields={fields}
-      emptyLabel="Nessuna esperienza ancora. Aggiungine una."
+      emptyLabel={t("esperienze.emptyAdd")}
       emptyItem={(): EsperienzaItem => ({
         id: crypto.randomUUID(),
         titolo: "",
@@ -49,11 +50,12 @@ export function EsperienzeBlock({
  * ("Functions cannot be passed directly to Client Components").
  */
 export function EsperienzeView({ items }: { items: EsperienzaItem[] }) {
+  const t = useTranslations("CardBlocks");
   return (
     <ListView
-      title="Esperienze"
+      title={t("titles.esperienze")}
       items={items}
-      emptyLabel="Nessuna esperienza ancora."
+      emptyLabel={t("esperienze.emptyView")}
       renderItem={(it) => (
         <div>
           <p className="text-body-sm font-medium text-ink">{it.titolo || it.organizzazione}</p>

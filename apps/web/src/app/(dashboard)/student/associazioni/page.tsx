@@ -2,18 +2,11 @@ import { getUserContext } from "@/lib/auth";
 import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { JoinByCode } from "@/components/join-by-code";
 import { WORKSPACE_ROLES } from "@/lib/association-roles";
 import { MarkAssociationNotificationsRead } from "./mark-read";
-
-const ROLE_LABELS: Record<string, string> = {
-  association_president: "Presidente",
-  association_admin: "Admin",
-  association_reviewer: "Reviewer",
-  association_interviewer: "Interviewer",
-  association_member: "Membro",
-};
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-navy-50 text-ink-tertiary",
@@ -29,6 +22,11 @@ const STATUS_COLORS: Record<string, string> = {
 export default async function StudentAssociazioniPage() {
   const ctx = await getUserContext();
   if (!ctx.isStudent) redirect("/api/auth/redirect");
+
+  const t = await getTranslations("Associazioni");
+  const c = await getTranslations("Common");
+  const locale = await getLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const supabase = await createServerClient();
@@ -89,9 +87,9 @@ export default async function StudentAssociazioniPage() {
       <MarkAssociationNotificationsRead />
 
       <div>
-        <h1 className="font-display text-h2 text-navy">Associazioni</h1>
+        <h1 className="font-display text-h2 text-navy">{t("pageTitle")}</h1>
         <p className="mt-1 text-body text-ink-secondary">
-          Le tue candidature e tutte le associazioni su MIRA
+          {t("pageSubtitle")}
         </p>
       </div>
 
@@ -107,18 +105,21 @@ export default async function StudentAssociazioniPage() {
 
         return (
           <div className="rounded-lg border border-petrol/30 bg-petrol-50 p-5 space-y-3">
-            <h2 className="font-sans text-h3 text-navy">Da fare</h2>
+            <h2 className="font-sans text-h3 text-navy">{t("todoHeading")}</h2>
 
             {pendingPages.map((m: any) => (
               <div key={m.association_id} className="flex items-center justify-between gap-3 rounded-md bg-white px-4 py-3">
                 <span className="text-body text-ink">
-                  La pagina di <strong className="text-navy">{m.association_profiles.name}</strong> non è ancora pubblica
+                  {t.rich("pageNotPublic", {
+                    name: m.association_profiles.name,
+                    strong: (chunks) => <strong className="text-navy">{chunks}</strong>,
+                  })}
                 </span>
                 <Link
                   href={`/association/${m.association_profiles.slug}/public-page`}
                   className="flex-shrink-0 bg-navy text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-navy-700 transition-colors duration-100"
                 >
-                  Completala →
+                  {t("completePageCta")}
                 </Link>
               </div>
             ))}
@@ -128,7 +129,7 @@ export default async function StudentAssociazioniPage() {
                 href="/student/onboarding"
                 className="block rounded-md bg-white px-4 py-3 text-body-sm text-petrol-700 hover:bg-petrol-100/50 transition-colors"
               >
-                Completa il tuo profilo MiraCard (~5 minuti) →
+                {t("completeProfileCta")}
               </Link>
             )}
           </div>
@@ -137,11 +138,11 @@ export default async function StudentAssociazioniPage() {
 
       {/* Le tue candidature */}
       <div>
-        <h2 className="font-sans text-h3 text-navy mb-3">Le tue candidature</h2>
+        <h2 className="font-sans text-h3 text-navy mb-3">{t("myApplicationsHeading")}</h2>
 
         {!myApplications?.length ? (
           <div className="rounded-lg border border-border bg-white p-6 text-center">
-            <p className="text-body-sm text-ink-secondary">Non hai ancora candidature. Trova un&apos;associazione qui sotto.</p>
+            <p className="text-body-sm text-ink-secondary">{t("noApplications")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -169,10 +170,10 @@ export default async function StudentAssociazioniPage() {
                         </div>
                       )}
                       <div>
-                        <p className="font-sans text-h3 text-navy">{assoc?.name ?? "Associazione"}</p>
+                        <p className="font-sans text-h3 text-navy">{assoc?.name ?? c("associationFallback")}</p>
                         <p className="text-body-sm text-ink-tertiary mt-0.5">
                           {cycle?.title}
-                          {app.submitted_at && ` · Inviata il ${new Date(app.submitted_at).toLocaleDateString("it-IT")}`}
+                          {app.submitted_at && c("submittedOn", { date: new Date(app.submitted_at).toLocaleDateString(dateLocale) })}
                         </p>
                       </div>
                     </div>
@@ -183,9 +184,9 @@ export default async function StudentAssociazioniPage() {
 
                   {upcomingInterview && (
                     <div className="mt-3 rounded-md bg-petrol-50 px-3 py-2">
-                      <p className="text-xs font-medium text-navy">Colloquio programmato</p>
+                      <p className="text-xs font-medium text-navy">{t("interviewScheduled")}</p>
                       <p className="text-body-sm text-ink mt-0.5">
-                        {new Date(upcomingInterview.selected_time!).toLocaleDateString("it-IT", {
+                        {new Date(upcomingInterview.selected_time!).toLocaleDateString(dateLocale, {
                           weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
                         })}
                       </p>
@@ -197,7 +198,7 @@ export default async function StudentAssociazioniPage() {
 
                   {app.status === "accepted" && (
                     <div className="mt-3 rounded-md bg-success-bg px-3 py-2">
-                      <p className="text-body-sm text-success font-medium">Congratulazioni! Sei stato accettato.</p>
+                      <p className="text-body-sm text-success font-medium">{t("congratsAccepted")}</p>
                     </div>
                   )}
                 </Link>
@@ -209,7 +210,7 @@ export default async function StudentAssociazioniPage() {
 
       {/* Tutte le associazioni */}
       <div>
-        <h2 className="font-sans text-h3 text-navy mb-3">Tutte le associazioni</h2>
+        <h2 className="font-sans text-h3 text-navy mb-3">{t("allAssociationsHeading")}</h2>
         <div className="space-y-4">
           {(associations ?? []).map((assoc: any) => {
             const cycles = cyclesByAssoc.get(assoc.id) ?? [];
@@ -232,7 +233,7 @@ export default async function StudentAssociazioniPage() {
                       <h3 className="font-sans text-h3 text-navy">{assoc.name}</h3>
                       {membership && (
                         <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-petrol-50 text-petrol-700">
-                          {ROLE_LABELS[membership.role] ?? membership.role}
+                          {c.has(`boardRoles.${membership.role}`) ? c(`boardRoles.${membership.role}`) : membership.role}
                         </span>
                       )}
                     </div>
@@ -263,7 +264,7 @@ export default async function StudentAssociazioniPage() {
                     href={`/associations/${assoc.slug}`}
                     className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
                   >
-                    Vedi pagina
+                    {t("viewPage")}
                   </Link>
 
                   {membership ? (
@@ -271,21 +272,21 @@ export default async function StudentAssociazioniPage() {
                       href={`/association/${assoc.slug}`}
                       className="bg-petrol text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-petrol-700 transition-colors duration-100"
                     >
-                      Gestisci
+                      {t("manage")}
                     </Link>
                   ) : myApp ? (
                     <span className="text-body-sm text-ink-secondary">
-                      Candidatura: {APPLICATION_STATUS_LABELS[myApp.status] ?? myApp.status}
+                      {t("applicationStatus", { status: APPLICATION_STATUS_LABELS[myApp.status] ?? myApp.status })}
                     </span>
                   ) : hasOpenCycle ? (
                     <Link
                       href={`/associations/${assoc.slug}/apply?cycle=${cycles[0].id}`}
                       className="bg-navy text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-navy-700 transition-colors duration-100"
                     >
-                      Candidati
+                      {t("applyNow")}
                     </Link>
                   ) : (
-                    <span className="text-body-sm text-ink-tertiary">Candidature chiuse</span>
+                    <span className="text-body-sm text-ink-tertiary">{t("applicationsClosed")}</span>
                   )}
                 </div>
               </div>
@@ -294,7 +295,7 @@ export default async function StudentAssociazioniPage() {
 
           {!(associations?.length) && (
             <div className="rounded-lg border border-border bg-white p-8 text-center">
-              <p className="text-body text-ink-secondary">Nessuna associazione disponibile al momento.</p>
+              <p className="text-body text-ink-secondary">{t("noAssociationsAvailable")}</p>
             </div>
           )}
         </div>

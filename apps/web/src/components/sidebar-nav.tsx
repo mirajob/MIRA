@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface SidebarNavProps {
   isStudent: boolean;
@@ -18,20 +19,13 @@ interface SidebarNavProps {
 }
 
 const STUDENT_LINKS = [
-  { label: "Profilo", href: "/student" },
-  { label: "Associazioni", href: "/student/associazioni" },
-  { label: "Aziende", href: "/student/aziende" },
-];
-
-const ROLE_LABELS: Record<string, string> = {
-  association_president: "Presidente",
-  association_admin: "Admin",
-  association_reviewer: "Reviewer",
-  association_interviewer: "Interviewer",
-  association_member: "Membro",
-};
+  { labelKey: "profile", href: "/student" },
+  { labelKey: "associations", href: "/student/associazioni" },
+  { labelKey: "companies", href: "/student/aziende" },
+] as const;
 
 export function SidebarNav({ isStudent, isMiraAdmin, memberships, unreadNotifications = 0, unreadAziende = 0 }: SidebarNavProps) {
+  const t = useTranslations("SidebarNav");
   const pathname = usePathname();
   const inAdminMode = pathname.startsWith("/admin");
 
@@ -57,7 +51,7 @@ export function SidebarNav({ isStudent, isMiraAdmin, memberships, unreadNotifica
             const badgeCount = isAssociazioni ? unreadNotifications : isAziende ? unreadAziende : 0;
             return (
               <Link key={link.href} href={link.href} className={linkClass(active)}>
-                <span>{link.label}</span>
+                <span>{t(link.labelKey)}</span>
                 {badgeCount > 0 && (
                   <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-error text-white text-[9px] font-bold px-1">
                     {badgeCount > 9 ? "9+" : badgeCount}
@@ -72,7 +66,7 @@ export function SidebarNav({ isStudent, isMiraAdmin, memberships, unreadNotifica
       {/* Association workspaces */}
       {memberships.length > 0 && (
         <div className="space-y-1">
-          <p className="text-[10px] text-ink-tertiary uppercase px-3 mb-1">Associazioni</p>
+          <p className="text-[10px] text-ink-tertiary uppercase px-3 mb-1">{t("workspacesHeader")}</p>
           {memberships.map((m) => {
             if (!m.association_profiles) return null;
             const href = `/association/${m.association_profiles.slug}`;
@@ -96,7 +90,7 @@ export function SidebarNav({ isStudent, isMiraAdmin, memberships, unreadNotifica
       {/* Admin */}
       {isMiraAdmin && (
         <div className="space-y-1">
-          <p className="text-[10px] text-ink-tertiary uppercase px-3 mb-1">Admin</p>
+          <p className="text-[10px] text-ink-tertiary uppercase px-3 mb-1">{t("adminHeader")}</p>
           <Link href="/admin" className={linkClass(inAdminMode)}>
             MIRA Admin
           </Link>

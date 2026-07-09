@@ -1,22 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { ListBlock, type ListFieldConfig } from "./list-block";
 import type { CardBlockStatus, CompetenzaItem } from "@mira/types";
-
-const fields: ListFieldConfig<CompetenzaItem>[] = [
-  { key: "testo", label: "Competenza (una riga)", type: "textarea", placeholder: "es. Sa leggere e interpretare un bilancio" },
-  {
-    key: "tipo",
-    label: "Tipo",
-    type: "select",
-    options: [
-      { value: "teorica", label: "Teorica" },
-      { value: "applicata", label: "Applicata" },
-    ],
-  },
-  { key: "evidenza_ref", label: "Evidenza (esame o esperienza collegata)", placeholder: "es. Financial Accounting" },
-];
 
 export function CompetenzeBlock({
   items,
@@ -27,15 +14,29 @@ export function CompetenzeBlock({
   status: CardBlockStatus;
   onApproved?: () => void;
 }) {
+  const t = useTranslations("CardBlocks");
+  const fields: ListFieldConfig<CompetenzaItem>[] = [
+    { key: "testo", label: t("competenze.testoLabel"), type: "textarea", placeholder: t("competenze.testoPlaceholder") },
+    {
+      key: "tipo",
+      label: t("competenze.tipoLabel"),
+      type: "select",
+      options: [
+        { value: "teorica", label: t("competenze.tipoTeorica") },
+        { value: "applicata", label: t("competenze.tipoApplicata") },
+      ],
+    },
+    { key: "evidenza_ref", label: t("competenze.evidenzaLabel"), placeholder: t("competenze.evidenzaPlaceholder") },
+  ];
   return (
     <ListBlock
       blockType="competenze"
-      title="Competenze"
+      title={t("titles.competenze")}
       items={items}
       status={status}
       onApproved={onApproved}
       fields={fields}
-      emptyLabel="Nessuna competenza ancora. Ogni competenza deve avere un'evidenza collegata."
+      emptyLabel={t("competenze.emptyAdd")}
       emptyItem={(): CompetenzaItem => ({
         id: crypto.randomUUID(),
         testo: "",
@@ -64,14 +65,15 @@ function CompetenzaRow({ it }: { it: CompetenzaItem }) {
  * di default, come gli esami nell'Header: da sole occupano troppo spazio per il loro peso.
  */
 export function CompetenzeView({ items }: { items: CompetenzaItem[] }) {
+  const t = useTranslations("CardBlocks");
   const [expanded, setExpanded] = useState(false);
   const applicate = items.filter((it) => it.tipo !== "teorica");
   const teoriche = items.filter((it) => it.tipo === "teorica");
 
   return (
     <div className="p-5">
-      <p className="text-eyebrow text-navy/60 uppercase mb-2">Competenze</p>
-      {items.length === 0 && <p className="text-body-sm text-ink-tertiary italic">Nessuna competenza ancora.</p>}
+      <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.competenze")}</p>
+      {items.length === 0 && <p className="text-body-sm text-ink-tertiary italic">{t("competenze.emptyView")}</p>}
 
       {applicate.length > 0 && (
         <div className="space-y-2">
@@ -89,7 +91,7 @@ export function CompetenzeView({ items }: { items: CompetenzaItem[] }) {
             className="flex items-center gap-1.5 text-xs text-petrol hover:text-petrol-700 transition-colors"
           >
             <span>{expanded ? "▾" : "▸"}</span>
-            <span>Competenze accademiche ({teoriche.length})</span>
+            <span>{t("competenze.academicSkills", { count: teoriche.length })}</span>
           </button>
           {expanded && (
             <div className="mt-2 space-y-1">

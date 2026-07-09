@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
 import type { CardBlockStatus, DisponibilitaProseContent } from "@mira/types";
@@ -14,6 +15,8 @@ export function DisponibilitaBlock({
   status: CardBlockStatus;
   onApproved?: () => void;
 }) {
+  const t = useTranslations("CardBlocks");
+  const c = useTranslations("Common");
   const [form, setForm] = useState(proseContent);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -36,15 +39,15 @@ export function DisponibilitaBlock({
   }
 
   const fields: Array<{ key: keyof DisponibilitaProseContent; label: string; placeholder: string }> = [
-    { key: "cosa_cerca", label: "Cosa cerca", placeholder: "es. stage curriculare, part-time, non in cerca..." },
-    { key: "ambito", label: "Ambito", placeholder: "es. venture capital, marketing..." },
-    { key: "periodo", label: "Periodo", placeholder: "es. da settembre 2026, da giugno ad agosto..." },
-    { key: "dove", label: "Dove", placeholder: "es. Milano, full remote..." },
+    { key: "cosa_cerca", label: t("disponibilita.cosaCercaLabel"), placeholder: t("disponibilita.cosaCercaPlaceholder") },
+    { key: "ambito", label: t("disponibilita.ambitoLabel"), placeholder: t("disponibilita.ambitoPlaceholder") },
+    { key: "periodo", label: t("disponibilita.periodoLabel"), placeholder: t("disponibilita.periodoPlaceholder") },
+    { key: "dove", label: t("disponibilita.doveLabel"), placeholder: t("disponibilita.dovePlaceholder") },
   ];
 
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
-      <CardBlockHeader title="Disponibilità" status={status} blockType="disponibilita" onApproved={onApproved} />
+      <CardBlockHeader title={t("titles.disponibilita")} status={status} blockType="disponibilita" onApproved={onApproved} />
       <div className="p-5 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           {fields.map(({ key, label, placeholder }) => (
@@ -66,7 +69,7 @@ export function DisponibilitaBlock({
             disabled={saving}
             className="text-body-sm font-medium text-white bg-petrol rounded-md px-4 py-2 hover:bg-petrol-700 transition-colors disabled:opacity-50"
           >
-            {saving ? "Salvataggio..." : "Salva"}
+            {saving ? c("saving") : c("save")}
           </button>
         )}
       </div>
@@ -76,10 +79,11 @@ export function DisponibilitaBlock({
 
 /** Resa di sola lettura, riusata dal Profilo (default) e dalla vista associazione/azienda. */
 export function DisponibilitaView({ data }: { data: DisponibilitaProseContent }) {
+  const t = useTranslations("CardBlocks");
   const pills = [data.cosa_cerca, data.ambito, data.periodo, data.dove].filter(Boolean) as string[];
   return (
     <div className="p-5">
-      <p className="text-eyebrow text-navy/60 uppercase mb-2">Disponibilità</p>
+      <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.disponibilita")}</p>
       {pills.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">
           {pills.map((p, i) => (
@@ -89,7 +93,7 @@ export function DisponibilitaView({ data }: { data: DisponibilitaProseContent })
           ))}
         </div>
       ) : (
-        <p className="text-body-sm text-ink-tertiary italic">Non ancora indicata.</p>
+        <p className="text-body-sm text-ink-tertiary italic">{t("disponibilita.notSpecified")}</p>
       )}
     </div>
   );

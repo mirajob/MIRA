@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { signOut } from "@/lib/actions/auth";
 
 interface UserNavProps {
@@ -8,6 +9,8 @@ interface UserNavProps {
 }
 
 export function UserNav({ fullName, email }: UserNavProps) {
+  const t = useTranslations("UserNav");
+  const c = useTranslations("Common");
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -16,7 +19,7 @@ export function UserNav({ fullName, email }: UserNavProps) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium text-navy truncate">
-            {fullName ?? "Utente"}
+            {fullName ?? t("userFallback")}
           </p>
           <p className="text-[10px] text-ink-tertiary truncate">{email}</p>
         </div>
@@ -26,7 +29,7 @@ export function UserNav({ fullName, email }: UserNavProps) {
           type="submit"
           className="text-xs text-ink-secondary hover:text-error transition-colors duration-100"
         >
-          Esci
+          {c("signOut")}
         </button>
       </form>
     </div>

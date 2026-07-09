@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { approveCardBlock } from "@/lib/actions/card-blocks";
 import type { CardBlockStatus, CardBlockType } from "@mira/types";
 
@@ -19,6 +20,7 @@ export function CardBlockHeader({
   /** Onboarding only: reagisce a un Conferma riuscito (es. per far avanzare la fase). Sul Profilo resta undefined. */
   onApproved?: () => void;
 }) {
+  const t = useTranslations("CardBlocks");
   const [pending, startTransition] = useTransition();
   const [localStatus, setLocalStatus] = useState(status);
 
@@ -43,17 +45,17 @@ export function CardBlockHeader({
       <h2 className="font-sans text-h3 text-navy">{title}</h2>
       <div className="flex items-center gap-3">
         {localStatus === "approved" && (
-          <span className="text-xs px-2 py-0.5 rounded bg-success-bg text-success font-medium">Approvato</span>
+          <span className="text-xs px-2 py-0.5 rounded bg-success-bg text-success font-medium">{t("approved")}</span>
         )}
         {localStatus === "draft" && (
           <>
-            <span className="text-xs px-2 py-0.5 rounded bg-warning-bg text-warning font-medium">Da confermare</span>
+            <span className="text-xs px-2 py-0.5 rounded bg-warning-bg text-warning font-medium">{t("pendingConfirmation")}</span>
             <button
               onClick={handleApprove}
               disabled={pending}
               className="text-xs font-medium text-white bg-petrol rounded-md px-3 py-1.5 hover:bg-petrol-700 transition-colors disabled:opacity-50"
             >
-              Conferma
+              {t("confirm")}
             </button>
           </>
         )}

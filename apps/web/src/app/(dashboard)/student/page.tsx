@@ -2,6 +2,7 @@ import { getUserContext } from "@/lib/auth";
 import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { RoadmapBanner } from "@/components/roadmap-banner";
 import { ensureCardBlocksExist } from "@/lib/actions/card-blocks";
 import { EditableSection } from "@/components/card/editable-section";
@@ -90,16 +91,19 @@ export default async function StudentHomePage() {
   const pianoData = pianoCarriera?.prose_content as PianoCarrieraProseContent | undefined;
   const hasInteressiOPiano = interessiTesto || pianoData?.testo;
 
+  const t = await getTranslations("StudentHome");
+  const cardT = await getTranslations("CardBlocks");
+
   return (
     <div className="mx-auto max-w-2xl px-6 py-6 space-y-5">
-      <h1 className="font-display text-h2 text-navy">Ciao{name ? `, ${name}` : ""}</h1>
+      <h1 className="font-display text-h2 text-navy">{t("greeting")}{name ? `, ${name}` : ""}</h1>
 
       {faseBIncomplete && (
         <Link
           href="/student/onboarding"
           className="block rounded-lg border border-petrol/30 bg-petrol-50 px-4 py-3 text-body-sm text-petrol-700 hover:bg-petrol-100 transition-colors"
         >
-          Completa la tua card: mancano competenze, lingue, interessi, come ti descrivi e piano di carriera (~5 minuti) →
+          {t("completeCardCta")}
         </Link>
       )}
 
@@ -155,7 +159,7 @@ export default async function StudentHomePage() {
           <EditableSection
             view={
               <div className="p-5">
-                <p className="text-eyebrow text-navy/60 uppercase mb-2">Lingue</p>
+                <p className="text-eyebrow text-navy/60 uppercase mb-2">{cardT("titles.lingue")}</p>
                 {lingueItems.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {lingueItems.map((it) => (
@@ -165,7 +169,7 @@ export default async function StudentHomePage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-body-sm text-ink-tertiary italic">Nessuna lingua ancora.</p>
+                  <p className="text-body-sm text-ink-tertiary italic">{cardT("lingue.emptyView")}</p>
                 )}
               </div>
             }
@@ -175,16 +179,16 @@ export default async function StudentHomePage() {
 
         {autodescrizione && (
           <EditableSection
-            view={<ProseView title="Come si descrive" testo={autodescrizioneTesto} serif />}
+            view={<ProseView title={cardT("titles.autodescrizione")} testo={autodescrizioneTesto} serif />}
             edit={
               <ProseBlock
                 blockType="autodescrizione"
-                title="Come si descrive"
+                title={cardT("titles.autodescrizione")}
                 testo={autodescrizioneTesto}
                 status={autodescrizione.status}
                 serif
-                intro="Scritto con le tue parole — modificalo pure, ed è la parte più personale della card."
-                placeholder="Racconta chi sei, con parole tue..."
+                intro={t("autodescrizioneIntro")}
+                placeholder={cardT("autodescrizionePlaceholder")}
               />
             }
           />
@@ -194,29 +198,29 @@ export default async function StudentHomePage() {
           <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
             {pianoCarriera && (
               <EditableSection
-                view={<ProseView title="Piano di carriera" testo={pianoData?.testo ?? null} stato={pianoData?.stato} />}
+                view={<ProseView title={cardT("titles.pianoCarriera")} testo={pianoData?.testo ?? null} stato={pianoData?.stato} />}
                 edit={
                   <ProseBlock
                     blockType="piano_carriera"
-                    title="Piano di carriera"
+                    title={cardT("titles.pianoCarriera")}
                     testo={pianoData?.testo ?? null}
                     stato={pianoData?.stato}
                     status={pianoCarriera.status}
-                    placeholder="Come ti vedi nei prossimi 1-2 anni?"
+                    placeholder={cardT("pianoCarrieraPlaceholder")}
                   />
                 }
               />
             )}
             {interessi && (
               <EditableSection
-                view={<ProseView title="Interessi" testo={interessiTesto} />}
+                view={<ProseView title={cardT("titles.interessi")} testo={interessiTesto} />}
                 edit={
                   <ProseBlock
                     blockType="interessi"
-                    title="Interessi"
+                    title={cardT("titles.interessi")}
                     testo={interessiTesto}
                     status={interessi.status}
-                    placeholder="I tuoi interessi professionali e personali..."
+                    placeholder={cardT("interessiPlaceholder")}
                   />
                 }
               />

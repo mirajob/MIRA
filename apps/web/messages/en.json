@@ -10,6 +10,13 @@
     "password": "Password",
     "email": "Email",
     "signUp": "Sign up",
+    "signOut": "Log out",
+    "save": "Save",
+    "saving": "Saving...",
+    "send": "Send",
+    "messagePlaceholder": "Write a message...",
+    "associationFallback": "Association",
+    "submittedOn": " · Submitted on {date}",
     "alreadyHaveAccount": "Already have an account?",
     "dontHaveAccount": "Don't have an account?",
     "studentTab": "Student",
@@ -19,6 +26,13 @@
       "invalid_credentials": "Incorrect email or password.",
       "user_already_registered": "An account with this email already exists.",
       "generic": "Something went wrong. Please try again."
+    },
+    "boardRoles": {
+      "association_president": "President",
+      "association_admin": "Admin",
+      "association_reviewer": "Reviewer",
+      "association_interviewer": "Interviewer",
+      "association_member": "Member"
     }
   },
   "Validation": {
@@ -131,5 +145,252 @@
   "UniversityCombobox": {
     "placeholder": "Search for your university...",
     "noResults": "No university found."
+  },
+  "SidebarNav": {
+    "profile": "Profile",
+    "associations": "Associations",
+    "companies": "Companies",
+    "workspacesHeader": "Associations",
+    "adminHeader": "Admin"
+  },
+  "UserNav": {
+    "userFallback": "User"
+  },
+  "StudentHome": {
+    "greeting": "Hi",
+    "completeCardCta": "Complete your card: skills, languages, interests, self-description, and career plan are missing (~5 minutes) →",
+    "autodescrizioneIntro": "Written in your own words — feel free to edit it, it's the most personal part of the card."
+  },
+  "CardBlocks": {
+    "titles": {
+      "header": "Header",
+      "disponibilita": "Availability",
+      "esperienze": "Experience",
+      "formazione": "Education",
+      "competenze": "Skills",
+      "lingue": "Languages",
+      "autodescrizione": "How they describe themselves",
+      "interessi": "Interests",
+      "pianoCarriera": "Career plan"
+    },
+    "approved": "Approved",
+    "pendingConfirmation": "Pending confirmation",
+    "confirm": "Confirm",
+    "edit": "Edit",
+    "done": "Done",
+    "remove": "Remove",
+    "verified": "Verified",
+    "showLess": "Show less",
+    "showAll": "Show all ({count})",
+    "addItem": "+ Add",
+    "autodescrizionePlaceholder": "Tell us who you are, in your own words...",
+    "pianoCarrieraPlaceholder": "How do you see yourself in the next 1-2 years?",
+    "interessiPlaceholder": "Your professional and personal interests...",
+    "header": {
+      "levelLabels": {
+        "triennale": "Bachelor's",
+        "magistrale": "Master's",
+        "ciclo_unico": "Single-cycle degree",
+        "phd": "PhD"
+      },
+      "universitaLabel": "University",
+      "corsoLabel": "Degree course",
+      "livelloLabel": "Level",
+      "annoLabel": "Year",
+      "annoInizioLabel": "Start year",
+      "annoInizioPlaceholder": "e.g. 2023",
+      "laureaPrevistaLabel": "Expected graduation",
+      "laureaPrevistaPlaceholder": "e.g. 2026",
+      "mediaLabel": "GPA",
+      "mediaCambioNote": "Only changes by re-uploading your transcript",
+      "esami": "Exams ({count})",
+      "cfuSuffix": " · {cfu} credits",
+      "examVerified": "verified",
+      "formazionePrecedenteTitle": "Previous education (Bachelor's)",
+      "formazionePrecedenteUniversitaPlaceholder": "University",
+      "formazionePrecedenteCorsoPlaceholder": "Course",
+      "formazionePrecedenteVotoPlaceholder": "Degree grade",
+      "formazionePrecedenteTesiPlaceholder": "Thesis topic (optional)",
+      "visibilitaTitle": "GPA visibility",
+      "visibilitaAssociazioni": "University associations",
+      "visibilitaAziende": "Companies",
+      "annoOrdinal": "Year {n}",
+      "mediaNotShared": "GPA not shared",
+      "previousDegreeSummaryPrefix": "Bachelor's:"
+    },
+    "disponibilita": {
+      "cosaCercaLabel": "Looking for",
+      "cosaCercaPlaceholder": "e.g. curricular internship, part-time, not looking...",
+      "ambitoLabel": "Sector",
+      "ambitoPlaceholder": "e.g. venture capital, marketing...",
+      "periodoLabel": "Period",
+      "periodoPlaceholder": "e.g. from September 2026, from June to August...",
+      "doveLabel": "Where",
+      "dovePlaceholder": "e.g. Milan, full remote...",
+      "notSpecified": "Not specified yet."
+    },
+    "esperienze": {
+      "titoloLabel": "Title / role",
+      "titoloPlaceholder": "e.g. M&A Analyst",
+      "organizzazioneLabel": "Organization",
+      "organizzazionePlaceholder": "e.g. company or association name",
+      "periodoLabel": "Period",
+      "periodoPlaceholder": "e.g. June 2024 – present",
+      "descrizioneLabel": "What you actually did",
+      "descrizionePlaceholder": "2-3 lines on what you did",
+      "emptyAdd": "No experience yet. Add one.",
+      "emptyView": "No experience yet."
+    },
+    "competenze": {
+      "testoLabel": "Skill (one line)",
+      "testoPlaceholder": "e.g. Can read and interpret a balance sheet",
+      "tipoLabel": "Type",
+      "tipoTeorica": "Theoretical",
+      "tipoApplicata": "Applied",
+      "evidenzaLabel": "Evidence (related exam or experience)",
+      "evidenzaPlaceholder": "e.g. Financial Accounting",
+      "emptyAdd": "No skills yet. Every skill needs linked evidence.",
+      "emptyView": "No skills yet.",
+      "academicSkills": "Academic skills ({count})"
+    },
+    "lingue": {
+      "linguaLabel": "Language",
+      "linguaPlaceholder": "e.g. English",
+      "livelloLabel": "Level",
+      "livelloPlaceholder": "e.g. C1",
+      "certificazioneLabel": "Certification (optional)",
+      "certificazionePlaceholder": "e.g. IELTS 7.5",
+      "emptyAdd": "No languages yet. Add one.",
+      "emptyView": "No languages yet."
+    },
+    "prose": {
+      "statoLabels": {
+        "direzione_chiara": "Clear direction",
+        "ipotesi": "A few hypotheses",
+        "esplorazione": "Still exploring"
+      },
+      "notSpecified": "Not specified yet."
+    }
+  },
+  "RoadmapBanner": {
+    "heading": "Your MIRA profile is ready! Here's what's coming next:",
+    "orientamento": {
+      "title": "Personalized orientation",
+      "body": "MIRA analyzes your academic path, interests, and experience to show you which careers, master's programs, and paths really fit you — not generic advice, but suggestions based on real evidence from your profile."
+    },
+    "simulazioni": {
+      "title": "Job simulations",
+      "body": "Realistic exercises that mimic real work tasks — analyzing a startup like a VC analyst, solving a consulting case, evaluating a balance sheet. They help show how you think and create concrete evidence in your profile."
+    },
+    "matching": {
+      "title": "Company matching",
+      "body": "Companies will be able to search for students based on real evidence — your path, simulations, projects. You control what you show and to whom. Initially your profile will be anonymous."
+    },
+    "crescita": {
+      "title": "A profile that grows",
+      "body": "Every interaction with MIRA — chats, simulations, applications, projects — enriches your profile. You don't have to fill anything in: the profile builds itself."
+    },
+    "closing": "Stay on MIRA — the more you interact, the stronger your profile becomes.",
+    "dismiss": "Got it"
+  },
+  "JoinByCode": {
+    "prompt": "Are you on an association's board? Enter the invite code",
+    "expandedTitle": "Join the board with an invite code",
+    "placeholder": "e.g. BSIC-A7K2",
+    "submit": "Join",
+    "success": "You've joined {name}!"
+  },
+  "Associazioni": {
+    "pageTitle": "Associations",
+    "pageSubtitle": "Your applications and all associations on MIRA",
+    "todoHeading": "To do",
+    "pageNotPublic": "<strong>{name}</strong>'s page isn't public yet",
+    "completePageCta": "Complete it →",
+    "completeProfileCta": "Complete your MiraCard profile (~5 minutes) →",
+    "myApplicationsHeading": "Your applications",
+    "noApplications": "You don't have any applications yet. Find an association below.",
+    "allAssociationsHeading": "All associations",
+    "interviewScheduled": "Interview scheduled",
+    "congratsAccepted": "Congratulations! You've been accepted.",
+    "viewPage": "View page",
+    "manage": "Manage",
+    "applicationStatus": "Application: {status}",
+    "applyNow": "Apply",
+    "applicationsClosed": "Applications closed",
+    "noAssociationsAvailable": "No associations available at the moment."
+  },
+  "Applications": {
+    "backLink": "← Associations",
+    "roleLabel": " · Role: {role}",
+    "congratsAcceptedIn": "Congratulations! You've been accepted at {name}.",
+    "manageFromAssociazioni": "You can manage your activity in the association from the Associations section.",
+    "interviewHeading": "Interview",
+    "updatesHeading": "Updates",
+    "answersHeading": "Your answers",
+    "whoIsHeading": "Who is {name}",
+    "viewPublicPage": "View public page →"
+  },
+  "AziendeStudent": {
+    "tabRequests": "Requests",
+    "tabChats": "Chat ({count})",
+    "noRequestsTitle": "No contact requests received.",
+    "noRequestsBody": "Companies will reach out once they find your profile interesting.",
+    "statusPending": "Pending",
+    "statusAccepted": "Accepted",
+    "statusRejected": "Rejected",
+    "roleProposedLabel": "Proposed role",
+    "messageLabel": "Message",
+    "reject": "Decline",
+    "acceptAndChat": "Accept and chat",
+    "openChat": "Open chat →",
+    "noChatsTitle": "No active chats.",
+    "noChatsBody": "Accept a request to open a chat with a company.",
+    "selectChat": "Select a chat",
+    "companyFallback": "Company",
+    "interviewInviteLabel": "Interview invite",
+    "declineInterview": "Can't make it",
+    "acceptInterview": "Accept",
+    "interviewAccepted": "✓ You accepted",
+    "interviewDeclined": "✗ You declined",
+    "sending": "Sending...",
+    "contactsShared": "Contacts shared ✓",
+    "shareContacts": "Share your contacts",
+    "acceptDialogTitle": "Accept the request",
+    "acceptDialogBody": "A chat with {name} will open. You stay anonymous: you can share your contacts now or at any time later, from the chat.",
+    "nameLabelOptional": "Name (optional)",
+    "emailLabelOptional": "Email (optional)",
+    "phoneLabelOptional": "Phone (optional)",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "Your email",
+    "phonePlaceholder": "+1 555 …",
+    "cancel": "Cancel",
+    "shareAndAccept": "Share and accept",
+    "acceptStayAnonymous": "Accept, stay anonymous",
+    "shareDialogTitle": "Share your contacts",
+    "shareDialogBody": "Choose what to share with the company. You can share just one field, and do it again later to add more.",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "phoneLabel": "Phone",
+    "share": "Share"
+  },
+  "OnboardingCardPanel": {
+    "title": "Your MIRA card"
+  },
+  "OnboardingChatUI": {
+    "completeProfile": "Complete profile",
+    "cardLoadErrorTitle": "I couldn't load your card.",
+    "reloadPage": "Reload the page",
+    "uploadTranscript": "Upload transcript",
+    "skip": "Skip",
+    "completeNow": "Complete now (5 min)",
+    "later": "Later",
+    "uploadCV": "Upload résumé",
+    "useButtonsPlaceholder": "Use the buttons above...",
+    "unknownError": "unknown error",
+    "transcriptReadError": "I couldn't read the file — {error}. You can try again or skip.",
+    "cvReadError": "I couldn't read your résumé well, but that's okay.",
+    "applicationUnlocked": "Application unlocked! Redirecting...",
+    "errorWithMessage": "An error occurred: {message}",
+    "unexpectedLoadError": "Unexpected error while loading the card."
   }
 }

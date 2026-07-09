@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { createBrowserClient } from "@mira/supabase/client";
 import {
   respondToContactRequest,
@@ -18,6 +19,10 @@ interface Props {
 }
 
 export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
+  const t = useTranslations("AziendeStudent");
+  const c = useTranslations("Common");
+  const locale = useLocale();
+  const timeLocale = locale === "it" ? "it-IT" : "en-US";
   const [requests, setRequests] = useState<any[]>(initialRequests);
   const [chats, setChats] = useState<any[]>(initialChats);
   const [activeTab, setActiveTab] = useState<"requests" | "chats">("requests");
@@ -119,7 +124,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
   }
 
   const pendingRequests = requests.filter((r) => r.status === "pending");
-  const companyName = (c: any) => c.company_profiles?.display_name ?? c.company_profiles?.legal_name ?? "Azienda";
+  const companyName = (c: any) => c.company_profiles?.display_name ?? c.company_profiles?.legal_name ?? t("companyFallback");
 
   return (
     <div className="px-6 py-8 space-y-6">
@@ -129,13 +134,13 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
           onClick={() => setActiveTab("requests")}
           className={`px-4 py-2.5 text-body-sm font-medium border-b-2 transition-colors ${activeTab === "requests" ? "border-navy text-navy" : "border-transparent text-ink-secondary hover:text-navy"}`}
         >
-          Richieste {pendingRequests.length > 0 && <span className="ml-1.5 bg-navy text-white text-xs rounded-full px-1.5 py-0.5">{pendingRequests.length}</span>}
+          {t("tabRequests")} {pendingRequests.length > 0 && <span className="ml-1.5 bg-navy text-white text-xs rounded-full px-1.5 py-0.5">{pendingRequests.length}</span>}
         </button>
         <button
           onClick={() => setActiveTab("chats")}
           className={`px-4 py-2.5 text-body-sm font-medium border-b-2 transition-colors ${activeTab === "chats" ? "border-navy text-navy" : "border-transparent text-ink-secondary hover:text-navy"}`}
         >
-          Chat ({chats.length})
+          {t("tabChats", { count: chats.length })}
         </button>
       </div>
 
@@ -144,8 +149,8 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
         <div className="max-w-3xl mx-auto space-y-3">
           {requests.length === 0 ? (
             <div className="rounded-lg border border-border bg-white p-8 text-center">
-              <p className="text-body text-ink-secondary">Nessuna richiesta di contatto ricevuta.</p>
-              <p className="text-body-sm text-ink-tertiary mt-1">Le aziende ti contatteranno quando troveranno il tuo profilo interessante.</p>
+              <p className="text-body text-ink-secondary">{t("noRequestsTitle")}</p>
+              <p className="text-body-sm text-ink-tertiary mt-1">{t("noRequestsBody")}</p>
             </div>
           ) : requests.map((req: any) => {
             const company = req.company_profiles;
@@ -165,17 +170,17 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                       </div>
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${req.status === "pending" ? "bg-amber-100 text-amber-700" : req.status === "accepted" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-600"}`}>
-                      {req.status === "pending" ? "In attesa" : req.status === "accepted" ? "Accettata" : "Rifiutata"}
+                      {req.status === "pending" ? t("statusPending") : req.status === "accepted" ? t("statusAccepted") : t("statusRejected")}
                     </span>
                   </div>
 
                   <div className="mb-3">
-                    <p className="text-body-sm text-ink-tertiary mb-0.5">Ruolo proposto</p>
+                    <p className="text-body-sm text-ink-tertiary mb-0.5">{t("roleProposedLabel")}</p>
                     <p className="text-body font-medium text-navy">{req.role_title}</p>
                   </div>
 
                   <div className="mb-4">
-                    <p className="text-body-sm text-ink-tertiary mb-0.5">Messaggio</p>
+                    <p className="text-body-sm text-ink-tertiary mb-0.5">{t("messageLabel")}</p>
                     <p className="text-body text-ink">{req.message}</p>
                   </div>
 
@@ -193,14 +198,14 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                         disabled={loading}
                         className="flex-1 px-4 py-2.5 rounded-md border border-border text-body-sm text-ink hover:border-border-strong transition-colors duration-100 disabled:opacity-40"
                       >
-                        Rifiuta
+                        {t("reject")}
                       </button>
                       <button
                         onClick={() => { setAcceptDialog({ requestId: req.id, companyName: companyName(req) }); setContactName(""); setContactEmail(""); setContactPhone(""); }}
                         disabled={loading}
                         className="flex-1 px-4 py-2.5 rounded-md bg-navy text-white text-body-sm hover:bg-navy-700 transition-colors duration-100 disabled:opacity-40"
                       >
-                        Accetta e chatta
+                        {t("acceptAndChat")}
                       </button>
                     </div>
                   )}
@@ -212,7 +217,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                         onClick={() => { setActiveTab("chats"); setActiveChatId(reqChat.id); }}
                         className="text-body-sm text-petrol underline underline-offset-2 decoration-1 mt-2"
                       >
-                        Apri chat →
+                        {t("openChat")}
                       </button>
                     );
                   })()}
@@ -227,8 +232,8 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
       {activeTab === "chats" && chats.length === 0 && (
         <div className="max-w-3xl mx-auto">
           <div className="rounded-lg border border-border bg-white p-8 text-center">
-            <p className="text-body text-ink-secondary">Nessuna chat attiva.</p>
-            <p className="text-body-sm text-ink-tertiary mt-1">Accetta una richiesta per aprire una chat con un&apos;azienda.</p>
+            <p className="text-body text-ink-secondary">{t("noChatsTitle")}</p>
+            <p className="text-body-sm text-ink-tertiary mt-1">{t("noChatsBody")}</p>
           </div>
         </div>
       )}
@@ -237,7 +242,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
           {/* Chat list */}
           <div className="w-72 shrink-0 border border-border rounded-lg bg-white overflow-hidden flex flex-col">
             {chats.map((c: any) => {
-                  const cName = c.company_profiles?.display_name ?? c.company_profiles?.legal_name ?? "Azienda";
+                  const cName = c.company_profiles?.display_name ?? c.company_profiles?.legal_name ?? t("companyFallback");
                   return (
                     <button
                       key={c.id}
@@ -255,7 +260,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
               <div className="flex-1 border border-border rounded-lg bg-white flex flex-col overflow-hidden">
                 {!activeChatId ? (
                   <div className="flex-1 flex items-center justify-center">
-                    <p className="text-body-sm text-ink-tertiary">Seleziona una chat</p>
+                    <p className="text-body-sm text-ink-tertiary">{t("selectChat")}</p>
                   </div>
                 ) : (
                   <>
@@ -263,7 +268,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                     <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between">
                       <div>
                         <p className="text-body font-medium text-navy">
-                          {chatData?.chat ? (chats.find((c) => c.id === activeChatId)?.company_profiles?.display_name ?? "Azienda") : "..."}
+                          {chatData?.chat ? (chats.find((c) => c.id === activeChatId)?.company_profiles?.display_name ?? t("companyFallback")) : "..."}
                         </p>
                         <p className="text-body-sm text-ink-secondary">{chatData?.chat?.company_contact_requests?.role_title}</p>
                       </div>
@@ -277,7 +282,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                               : "text-petrol border border-petrol/30 hover:bg-petrol hover:text-white"
                           }`}
                         >
-                          {chatData.chat.student_identity_revealed ? "Contatti condivisi ✓" : "Condividi i tuoi contatti"}
+                          {chatData.chat.student_identity_revealed ? t("contactsShared") : t("shareContacts")}
                         </button>
                       )}
                     </div>
@@ -295,7 +300,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                               : "bg-paper border border-border text-ink"
                             }`}>
                               {msg.message_type === "interview_invite" && (
-                                <p className="text-eyebrow text-petrol uppercase mb-1">Invito a colloquio</p>
+                                <p className="text-eyebrow text-petrol uppercase mb-1">{t("interviewInviteLabel")}</p>
                               )}
                               <p className="text-body whitespace-pre-wrap">{msg.content}</p>
                               {msg.message_type === "interview_invite" && !msg.metadata?.response && (
@@ -304,23 +309,23 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                                     onClick={() => respondToInterviewInvite(activeChatId!, msg.id, false)}
                                     className="text-body-sm px-3 py-1.5 rounded border border-border hover:border-border-strong transition-colors"
                                   >
-                                    Non posso
+                                    {t("declineInterview")}
                                   </button>
                                   <button
                                     onClick={() => respondToInterviewInvite(activeChatId!, msg.id, true)}
                                     className="text-body-sm px-3 py-1.5 rounded bg-navy text-white hover:bg-navy-700 transition-colors"
                                   >
-                                    Accetto
+                                    {t("acceptInterview")}
                                   </button>
                                 </div>
                               )}
                               {msg.message_type === "interview_invite" && msg.metadata?.response && (
                                 <p className="text-body-sm mt-2 text-ink-secondary">
-                                  {msg.metadata.response === "accepted" ? "✓ Hai accettato" : "✗ Hai rifiutato"}
+                                  {msg.metadata.response === "accepted" ? t("interviewAccepted") : t("interviewDeclined")}
                                 </p>
                               )}
                               <p className={`text-xs mt-1 ${isStudent && !isSpecial ? "text-white/60" : "text-ink-tertiary"}`}>
-                                {new Date(msg.created_at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}
+                                {new Date(msg.created_at).toLocaleTimeString(timeLocale, { hour: "2-digit", minute: "2-digit" })}
                               </p>
                             </div>
                           </div>
@@ -329,7 +334,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                       {loading && (
                         <div className="flex justify-end">
                           <div className="bg-navy text-white rounded-lg px-4 py-3">
-                            <p className="text-body-sm opacity-70">Invio...</p>
+                            <p className="text-body-sm opacity-70">{t("sending")}</p>
                           </div>
                         </div>
                       )}
@@ -344,7 +349,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                           value={input}
                           onChange={(e) => setInput(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                          placeholder="Scrivi un messaggio..."
+                          placeholder={c("messagePlaceholder")}
                           disabled={loading}
                           className="flex-1 px-4 py-2.5 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200 disabled:opacity-50"
                         />
@@ -353,7 +358,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                           disabled={loading || !input.trim()}
                           className="bg-navy text-white px-5 py-2.5 rounded-md text-label hover:bg-navy-700 transition-colors duration-100 disabled:opacity-40"
                         >
-                          Invia
+                          {c("send")}
                         </button>
                       </div>
                     </div>
@@ -367,38 +372,38 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
       {acceptDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-lg border border-border w-full max-w-sm p-6 shadow-xl">
-            <h2 className="font-display text-h2 text-navy mb-2">Accetta la richiesta</h2>
+            <h2 className="font-display text-h2 text-navy mb-2">{t("acceptDialogTitle")}</h2>
             <p className="text-body-sm text-ink-secondary mb-5">
-              Si aprirà una chat con <strong>{acceptDialog.companyName}</strong>. Resti anonimo: puoi condividere i tuoi contatti ora oppure in qualsiasi momento più avanti, dalla chat.
+              {t("acceptDialogBody", { name: acceptDialog.companyName })}
             </p>
             <div className="space-y-4 mb-5">
               <label className="block">
-                <span className="text-label text-navy mb-2 block">Nome (opzionale)</span>
+                <span className="text-label text-navy mb-2 block">{t("nameLabelOptional")}</span>
                 <input type="text" value={contactName} onChange={(e) => setContactName(e.target.value)}
-                  placeholder="Il tuo nome"
+                  placeholder={t("namePlaceholder")}
                   className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20" />
               </label>
               <label className="block">
-                <span className="text-label text-navy mb-2 block">Email (opzionale)</span>
+                <span className="text-label text-navy mb-2 block">{t("emailLabelOptional")}</span>
                 <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
-                  placeholder="La tua email"
+                  placeholder={t("emailPlaceholder")}
                   className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20" />
               </label>
               <label className="block">
-                <span className="text-label text-navy mb-2 block">Telefono (opzionale)</span>
+                <span className="text-label text-navy mb-2 block">{t("phoneLabelOptional")}</span>
                 <input type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)}
-                  placeholder="+39 333 …"
+                  placeholder={t("phonePlaceholder")}
                   className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20" />
               </label>
             </div>
             <div className="flex gap-3">
               <button onClick={() => setAcceptDialog(null)}
                 className="flex-1 px-4 py-3 rounded-md border border-border text-body text-ink hover:border-border-strong transition-colors duration-100">
-                Annulla
+                {t("cancel")}
               </button>
               <button onClick={handleAccept} disabled={loading}
                 className="flex-1 bg-navy text-white px-4 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100 disabled:opacity-40">
-                {loading ? "..." : (contactName || contactEmail || contactPhone) ? "Condividi e accetta" : "Accetta, resta anonimo"}
+                {loading ? "..." : (contactName || contactEmail || contactPhone) ? t("shareAndAccept") : t("acceptStayAnonymous")}
               </button>
             </div>
           </div>
@@ -409,38 +414,38 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
       {shareDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-lg border border-border w-full max-w-sm p-6 shadow-xl">
-            <h2 className="font-display text-h2 text-navy mb-2">Condividi i tuoi contatti</h2>
+            <h2 className="font-display text-h2 text-navy mb-2">{t("shareDialogTitle")}</h2>
             <p className="text-body-sm text-ink-secondary mb-5">
-              Scegli cosa condividere con l&apos;azienda. Puoi condividere anche un solo campo, e farlo di nuovo più avanti per aggiungerne altri.
+              {t("shareDialogBody")}
             </p>
             <div className="space-y-4 mb-5">
               <label className="block">
-                <span className="text-label text-navy mb-2 block">Nome</span>
+                <span className="text-label text-navy mb-2 block">{t("nameLabel")}</span>
                 <input type="text" value={shareName} onChange={(e) => setShareName(e.target.value)}
-                  placeholder="Il tuo nome"
+                  placeholder={t("namePlaceholder")}
                   className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20" />
               </label>
               <label className="block">
-                <span className="text-label text-navy mb-2 block">Email</span>
+                <span className="text-label text-navy mb-2 block">{t("emailLabel")}</span>
                 <input type="email" value={shareEmail} onChange={(e) => setShareEmail(e.target.value)}
-                  placeholder="La tua email"
+                  placeholder={t("emailPlaceholder")}
                   className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20" />
               </label>
               <label className="block">
-                <span className="text-label text-navy mb-2 block">Telefono</span>
+                <span className="text-label text-navy mb-2 block">{t("phoneLabel")}</span>
                 <input type="tel" value={sharePhone} onChange={(e) => setSharePhone(e.target.value)}
-                  placeholder="+39 333 …"
+                  placeholder={t("phonePlaceholder")}
                   className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20" />
               </label>
             </div>
             <div className="flex gap-3">
               <button onClick={() => setShareDialog(false)}
                 className="flex-1 px-4 py-3 rounded-md border border-border text-body text-ink hover:border-border-strong transition-colors duration-100">
-                Annulla
+                {t("cancel")}
               </button>
               <button onClick={handleShareContact} disabled={loading || !(shareName.trim() || shareEmail.trim() || sharePhone.trim())}
                 className="flex-1 bg-navy text-white px-4 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100 disabled:opacity-40">
-                {loading ? "..." : "Condividi"}
+                {loading ? "..." : t("share")}
               </button>
             </div>
           </div>

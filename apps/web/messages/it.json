@@ -10,6 +10,13 @@
     "password": "Password",
     "email": "Email",
     "signUp": "Registrati",
+    "signOut": "Esci",
+    "save": "Salva",
+    "saving": "Salvataggio...",
+    "send": "Invia",
+    "messagePlaceholder": "Scrivi un messaggio...",
+    "associationFallback": "Associazione",
+    "submittedOn": " · Inviata il {date}",
     "alreadyHaveAccount": "Hai già un account?",
     "dontHaveAccount": "Non hai un account?",
     "studentTab": "Studente",
@@ -19,6 +26,13 @@
       "invalid_credentials": "Email o password errati.",
       "user_already_registered": "Esiste già un account con questa email.",
       "generic": "Si è verificato un errore. Riprova."
+    },
+    "boardRoles": {
+      "association_president": "Presidente",
+      "association_admin": "Admin",
+      "association_reviewer": "Reviewer",
+      "association_interviewer": "Interviewer",
+      "association_member": "Membro"
     }
   },
   "Validation": {
@@ -131,5 +145,252 @@
   "UniversityCombobox": {
     "placeholder": "Cerca la tua università...",
     "noResults": "Nessuna università trovata."
+  },
+  "SidebarNav": {
+    "profile": "Profilo",
+    "associations": "Associazioni",
+    "companies": "Aziende",
+    "workspacesHeader": "Associazioni",
+    "adminHeader": "Admin"
+  },
+  "UserNav": {
+    "userFallback": "Utente"
+  },
+  "StudentHome": {
+    "greeting": "Ciao",
+    "completeCardCta": "Completa la tua card: mancano competenze, lingue, interessi, come ti descrivi e piano di carriera (~5 minuti) →",
+    "autodescrizioneIntro": "Scritto con le tue parole — modificalo pure, ed è la parte più personale della card."
+  },
+  "CardBlocks": {
+    "titles": {
+      "header": "Header",
+      "disponibilita": "Disponibilità",
+      "esperienze": "Esperienze",
+      "formazione": "Formazione",
+      "competenze": "Competenze",
+      "lingue": "Lingue",
+      "autodescrizione": "Come si descrive",
+      "interessi": "Interessi",
+      "pianoCarriera": "Piano di carriera"
+    },
+    "approved": "Approvato",
+    "pendingConfirmation": "Da confermare",
+    "confirm": "Conferma",
+    "edit": "Modifica",
+    "done": "Fatto",
+    "remove": "Rimuovi",
+    "verified": "Verificata",
+    "showLess": "Mostra meno",
+    "showAll": "Mostra tutti ({count})",
+    "addItem": "+ Aggiungi",
+    "autodescrizionePlaceholder": "Racconta chi sei, con parole tue...",
+    "pianoCarrieraPlaceholder": "Come ti vedi nei prossimi 1-2 anni?",
+    "interessiPlaceholder": "I tuoi interessi professionali e personali...",
+    "header": {
+      "levelLabels": {
+        "triennale": "Triennale (Bachelor)",
+        "magistrale": "Magistrale (Master)",
+        "ciclo_unico": "Ciclo unico",
+        "phd": "PhD"
+      },
+      "universitaLabel": "Università",
+      "corsoLabel": "Corso di laurea",
+      "livelloLabel": "Livello",
+      "annoLabel": "Anno",
+      "annoInizioLabel": "Anno di inizio",
+      "annoInizioPlaceholder": "es. 2023",
+      "laureaPrevistaLabel": "Laurea prevista",
+      "laureaPrevistaPlaceholder": "es. 2026",
+      "mediaLabel": "Media ponderata",
+      "mediaCambioNote": "Cambia solo ricaricando il libretto",
+      "esami": "Esami ({count})",
+      "cfuSuffix": " · {cfu} CFU",
+      "examVerified": "verificata",
+      "formazionePrecedenteTitle": "Formazione precedente (triennale)",
+      "formazionePrecedenteUniversitaPlaceholder": "Università",
+      "formazionePrecedenteCorsoPlaceholder": "Corso",
+      "formazionePrecedenteVotoPlaceholder": "Voto di laurea",
+      "formazionePrecedenteTesiPlaceholder": "Tema tesi (opzionale)",
+      "visibilitaTitle": "Visibilità media voti",
+      "visibilitaAssociazioni": "Associazioni universitarie",
+      "visibilitaAziende": "Aziende",
+      "annoOrdinal": "{n}° anno",
+      "mediaNotShared": "media non condivisa",
+      "previousDegreeSummaryPrefix": "Triennale:"
+    },
+    "disponibilita": {
+      "cosaCercaLabel": "Cosa cerca",
+      "cosaCercaPlaceholder": "es. stage curriculare, part-time, non in cerca...",
+      "ambitoLabel": "Ambito",
+      "ambitoPlaceholder": "es. venture capital, marketing...",
+      "periodoLabel": "Periodo",
+      "periodoPlaceholder": "es. da settembre 2026, da giugno ad agosto...",
+      "doveLabel": "Dove",
+      "dovePlaceholder": "es. Milano, full remote...",
+      "notSpecified": "Non ancora indicata."
+    },
+    "esperienze": {
+      "titoloLabel": "Titolo / ruolo",
+      "titoloPlaceholder": "es. Analista M&A",
+      "organizzazioneLabel": "Organizzazione",
+      "organizzazionePlaceholder": "es. Nome azienda o associazione",
+      "periodoLabel": "Periodo",
+      "periodoPlaceholder": "es. giugno 2024 – presente",
+      "descrizioneLabel": "Cosa hai fatto concretamente",
+      "descrizionePlaceholder": "2-3 righe su cosa hai fatto tu",
+      "emptyAdd": "Nessuna esperienza ancora. Aggiungine una.",
+      "emptyView": "Nessuna esperienza ancora."
+    },
+    "competenze": {
+      "testoLabel": "Competenza (una riga)",
+      "testoPlaceholder": "es. Sa leggere e interpretare un bilancio",
+      "tipoLabel": "Tipo",
+      "tipoTeorica": "Teorica",
+      "tipoApplicata": "Applicata",
+      "evidenzaLabel": "Evidenza (esame o esperienza collegata)",
+      "evidenzaPlaceholder": "es. Financial Accounting",
+      "emptyAdd": "Nessuna competenza ancora. Ogni competenza deve avere un'evidenza collegata.",
+      "emptyView": "Nessuna competenza ancora.",
+      "academicSkills": "Competenze accademiche ({count})"
+    },
+    "lingue": {
+      "linguaLabel": "Lingua",
+      "linguaPlaceholder": "es. Inglese",
+      "livelloLabel": "Livello",
+      "livelloPlaceholder": "es. C1",
+      "certificazioneLabel": "Certificazione (opzionale)",
+      "certificazionePlaceholder": "es. IELTS 7.5",
+      "emptyAdd": "Nessuna lingua ancora. Aggiungine una.",
+      "emptyView": "Nessuna lingua ancora."
+    },
+    "prose": {
+      "statoLabels": {
+        "direzione_chiara": "Direzione chiara",
+        "ipotesi": "Alcune ipotesi",
+        "esplorazione": "In esplorazione"
+      },
+      "notSpecified": "Non ancora indicato."
+    }
+  },
+  "RoadmapBanner": {
+    "heading": "Il tuo profilo MIRA è pronto! Ecco cosa sta arrivando:",
+    "orientamento": {
+      "title": "Orientamento personalizzato",
+      "body": "MIRA analizza il tuo percorso accademico, i tuoi interessi e le tue esperienze per mostrarti quali carriere, magistrali e percorsi fanno davvero per te — non consigli generici, ma suggerimenti basati su evidenze reali del tuo profilo."
+    },
+    "simulazioni": {
+      "title": "Simulazioni di lavoro",
+      "body": "Esercizi realistici che imitano task di lavoro veri — analizzare una startup come un analyst VC, risolvere un caso di consulting, valutare un bilancio. Servono a capire come ragioni e a creare evidenze concrete nel tuo profilo."
+    },
+    "matching": {
+      "title": "Matching con aziende",
+      "body": "Le aziende potranno cercare studenti per evidenze reali — il tuo percorso, le simulazioni, i progetti. Tu controlli cosa mostri e a chi. Inizialmente il tuo profilo sarà anonimo."
+    },
+    "crescita": {
+      "title": "Profilo che cresce",
+      "body": "Ogni interazione con MIRA — chat, simulazioni, candidature, progetti — arricchisce il tuo profilo. Non devi compilare nulla: il profilo si costruisce da solo."
+    },
+    "closing": "Resta su MIRA — più interagisci, più il tuo profilo diventa forte.",
+    "dismiss": "Ho capito"
+  },
+  "JoinByCode": {
+    "prompt": "Sei nel board di un'associazione? Inserisci il codice invito",
+    "expandedTitle": "Entra nel board con codice invito",
+    "placeholder": "es. BSIC-A7K2",
+    "submit": "Entra",
+    "success": "Sei entrato in {name}!"
+  },
+  "Associazioni": {
+    "pageTitle": "Associazioni",
+    "pageSubtitle": "Le tue candidature e tutte le associazioni su MIRA",
+    "todoHeading": "Da fare",
+    "pageNotPublic": "La pagina di <strong>{name}</strong> non è ancora pubblica",
+    "completePageCta": "Completala →",
+    "completeProfileCta": "Completa il tuo profilo MiraCard (~5 minuti) →",
+    "myApplicationsHeading": "Le tue candidature",
+    "noApplications": "Non hai ancora candidature. Trova un'associazione qui sotto.",
+    "allAssociationsHeading": "Tutte le associazioni",
+    "interviewScheduled": "Colloquio programmato",
+    "congratsAccepted": "Congratulazioni! Sei stato accettato.",
+    "viewPage": "Vedi pagina",
+    "manage": "Gestisci",
+    "applicationStatus": "Candidatura: {status}",
+    "applyNow": "Candidati",
+    "applicationsClosed": "Candidature chiuse",
+    "noAssociationsAvailable": "Nessuna associazione disponibile al momento."
+  },
+  "Applications": {
+    "backLink": "← Associazioni",
+    "roleLabel": " · Ruolo: {role}",
+    "congratsAcceptedIn": "Congratulazioni! Sei stato accettato in {name}.",
+    "manageFromAssociazioni": "Puoi gestire la tua attività nell'associazione dalla sezione Associazioni.",
+    "interviewHeading": "Colloquio",
+    "updatesHeading": "Aggiornamenti",
+    "answersHeading": "Le tue risposte",
+    "whoIsHeading": "Chi è {name}",
+    "viewPublicPage": "Vedi pagina pubblica →"
+  },
+  "AziendeStudent": {
+    "tabRequests": "Richieste",
+    "tabChats": "Chat ({count})",
+    "noRequestsTitle": "Nessuna richiesta di contatto ricevuta.",
+    "noRequestsBody": "Le aziende ti contatteranno quando troveranno il tuo profilo interessante.",
+    "statusPending": "In attesa",
+    "statusAccepted": "Accettata",
+    "statusRejected": "Rifiutata",
+    "roleProposedLabel": "Ruolo proposto",
+    "messageLabel": "Messaggio",
+    "reject": "Rifiuta",
+    "acceptAndChat": "Accetta e chatta",
+    "openChat": "Apri chat →",
+    "noChatsTitle": "Nessuna chat attiva.",
+    "noChatsBody": "Accetta una richiesta per aprire una chat con un'azienda.",
+    "selectChat": "Seleziona una chat",
+    "companyFallback": "Azienda",
+    "interviewInviteLabel": "Invito a colloquio",
+    "declineInterview": "Non posso",
+    "acceptInterview": "Accetto",
+    "interviewAccepted": "✓ Hai accettato",
+    "interviewDeclined": "✗ Hai rifiutato",
+    "sending": "Invio...",
+    "contactsShared": "Contatti condivisi ✓",
+    "shareContacts": "Condividi i tuoi contatti",
+    "acceptDialogTitle": "Accetta la richiesta",
+    "acceptDialogBody": "Si aprirà una chat con {name}. Resti anonimo: puoi condividere i tuoi contatti ora oppure in qualsiasi momento più avanti, dalla chat.",
+    "nameLabelOptional": "Nome (opzionale)",
+    "emailLabelOptional": "Email (opzionale)",
+    "phoneLabelOptional": "Telefono (opzionale)",
+    "namePlaceholder": "Il tuo nome",
+    "emailPlaceholder": "La tua email",
+    "phonePlaceholder": "+39 333 …",
+    "cancel": "Annulla",
+    "shareAndAccept": "Condividi e accetta",
+    "acceptStayAnonymous": "Accetta, resta anonimo",
+    "shareDialogTitle": "Condividi i tuoi contatti",
+    "shareDialogBody": "Scegli cosa condividere con l'azienda. Puoi condividere anche un solo campo, e farlo di nuovo più avanti per aggiungerne altri.",
+    "nameLabel": "Nome",
+    "emailLabel": "Email",
+    "phoneLabel": "Telefono",
+    "share": "Condividi"
+  },
+  "OnboardingCardPanel": {
+    "title": "La tua MIRA card"
+  },
+  "OnboardingChatUI": {
+    "completeProfile": "Completa profilo",
+    "cardLoadErrorTitle": "Non sono riuscito a caricare la tua card.",
+    "reloadPage": "Ricarica la pagina",
+    "uploadTranscript": "Carica libretto",
+    "skip": "Salta",
+    "completeNow": "Completa ora (5 min)",
+    "later": "Più tardi",
+    "uploadCV": "Carica CV",
+    "useButtonsPlaceholder": "Usa i pulsanti qui sopra...",
+    "unknownError": "errore sconosciuto",
+    "transcriptReadError": "Non sono riuscito a leggere il file — {error}. Puoi riprovare o saltare.",
+    "cvReadError": "Non sono riuscito a leggere bene il CV, ma va bene lo stesso.",
+    "applicationUnlocked": "Candidatura sbloccata! Reindirizzamento...",
+    "errorWithMessage": "Si è verificato un errore: {message}",
+    "unexpectedLoadError": "Errore imprevisto nel caricamento della card."
   }
 }

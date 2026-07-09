@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { HeaderBlock } from "@/components/card/header-block";
 import { DisponibilitaBlock } from "@/components/card/disponibilita-block";
 import { EsperienzeBlock } from "@/components/card/esperienze-block";
@@ -29,16 +30,16 @@ const BLOCK_ORDER: CardBlockType[] = [
   "piano_carriera",
 ];
 
-const BLOCK_TITLES: Record<CardBlockType, string> = {
-  header: "Header",
-  disponibilita: "Disponibilità",
-  esperienze: "Esperienze",
-  formazione: "Formazione",
-  competenze: "Competenze",
-  lingue: "Lingue",
-  autodescrizione: "Come si descrive",
-  interessi: "Interessi",
-  piano_carriera: "Piano di carriera",
+const BLOCK_TITLE_KEYS: Record<CardBlockType, string> = {
+  header: "header",
+  disponibilita: "disponibilita",
+  esperienze: "esperienze",
+  formazione: "formazione",
+  competenze: "competenze",
+  lingue: "lingue",
+  autodescrizione: "autodescrizione",
+  interessi: "interessi",
+  piano_carriera: "pianoCarriera",
 };
 
 /** A quale blocco corrisponde la domanda che MIRA sta facendo in questo momento in chat. */
@@ -57,16 +58,18 @@ const PHASE_TO_BLOCK: Partial<Record<OnboardingPhase, CardBlockType>> = {
   piano_carriera: "piano_carriera",
 };
 
-function CollapsedRow({ title }: { title: string }) {
+function CollapsedRow({ title, approvedLabel }: { title: string; approvedLabel: string }) {
   return (
     <div className="rounded-lg border border-border bg-white px-5 py-3 flex items-center justify-between">
       <p className="text-eyebrow text-navy/60 uppercase">{title}</p>
-      <span className="text-xs px-2 py-0.5 rounded bg-success-bg text-success font-medium">Approvato</span>
+      <span className="text-xs px-2 py-0.5 rounded bg-success-bg text-success font-medium">{approvedLabel}</span>
     </div>
   );
 }
 
 export function OnboardingCardPanel({ blocks, phase, onApproved }: OnboardingCardPanelProps) {
+  const t = useTranslations("CardBlocks");
+  const panelT = useTranslations("OnboardingCardPanel");
   const approvedCount = BLOCK_ORDER.filter((key) => blocks[key].status === "approved").length;
   const progressPct = Math.round((approvedCount / BLOCK_ORDER.length) * 100);
   const activeBlock = PHASE_TO_BLOCK[phase];
@@ -74,7 +77,7 @@ export function OnboardingCardPanel({ blocks, phase, onApproved }: OnboardingCar
   return (
     <div className="flex flex-col h-full">
       <div className="px-5 py-3 border-b border-border flex items-center gap-3 shrink-0">
-        <p className="text-eyebrow text-navy/60 uppercase whitespace-nowrap">La tua MIRA card</p>
+        <p className="text-eyebrow text-navy/60 uppercase whitespace-nowrap">{panelT("title")}</p>
         <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
           <div
             className="h-full bg-petrol rounded-full transition-all duration-500"
@@ -94,7 +97,7 @@ export function OnboardingCardPanel({ blocks, phase, onApproved }: OnboardingCar
           if (!isActive && block.status !== "approved") return null;
 
           if (!isActive && block.status === "approved") {
-            return <CollapsedRow key={blockType} title={BLOCK_TITLES[blockType]} />;
+            return <CollapsedRow key={blockType} title={t(`titles.${BLOCK_TITLE_KEYS[blockType]}`)} approvedLabel={t("approved")} />;
           }
 
           switch (blockType) {
@@ -150,11 +153,11 @@ export function OnboardingCardPanel({ blocks, phase, onApproved }: OnboardingCar
                 <ProseBlock
                   key={blockType}
                   blockType="autodescrizione"
-                  title="Come si descrive"
+                  title={t("titles.autodescrizione")}
                   testo={blocks.autodescrizione.data.testo}
                   status={blocks.autodescrizione.status}
                   serif
-                  placeholder="Racconta chi sei, con parole tue..."
+                  placeholder={t("autodescrizionePlaceholder")}
                   onApproved={() => onApproved("autodescrizione")}
                 />
               );
@@ -163,10 +166,10 @@ export function OnboardingCardPanel({ blocks, phase, onApproved }: OnboardingCar
                 <ProseBlock
                   key={blockType}
                   blockType="interessi"
-                  title="Interessi"
+                  title={t("titles.interessi")}
                   testo={blocks.interessi.data.testo}
                   status={blocks.interessi.status}
-                  placeholder="I tuoi interessi professionali e personali..."
+                  placeholder={t("interessiPlaceholder")}
                   onApproved={() => onApproved("interessi")}
                 />
               );
@@ -175,11 +178,11 @@ export function OnboardingCardPanel({ blocks, phase, onApproved }: OnboardingCar
                 <ProseBlock
                   key={blockType}
                   blockType="piano_carriera"
-                  title="Piano di carriera"
+                  title={t("titles.pianoCarriera")}
                   testo={blocks.piano_carriera.data.testo}
                   stato={blocks.piano_carriera.data.stato}
                   status={blocks.piano_carriera.status}
-                  placeholder="Come ti vedi nei prossimi 1-2 anni?"
+                  placeholder={t("pianoCarrieraPlaceholder")}
                   onApproved={() => onApproved("piano_carriera")}
                 />
               );

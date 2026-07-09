@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   loadOnboardingState,
   startOnboarding,
@@ -43,6 +44,9 @@ const FASE_B_PHASES: OnboardingPhase[] = ["competenze", "lingue", "interessi", "
 const GATED_PHASES: OnboardingPhase[] = ["transcript", "cv", "gate", "chiusura"];
 
 export function OnboardingChat({ userName }: { userName: string }) {
+  const t = useTranslations("OnboardingChatUI");
+  const c = useTranslations("Common");
+  const panelT = useTranslations("OnboardingCardPanel");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [phase, setPhase] = useState<OnboardingPhase>("welcome");
   const [blocks, setBlocks] = useState<OnboardingBlocksState>(EMPTY_ONBOARDING_BLOCKS);
@@ -98,7 +102,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
         }
       } catch (err) {
         console.error("[MIRA] onboarding init failed:", err);
-        setLoadError(err instanceof Error ? err.message : "Errore imprevisto nel caricamento della card.");
+        setLoadError(err instanceof Error ? err.message : t("unexpectedLoadError"));
       }
       setLoading(false);
     }
@@ -197,8 +201,8 @@ export function OnboardingChat({ userName }: { userName: string }) {
       console.error("[MIRA] handleSend failed:", err);
       appendAssistant(
         err instanceof Error
-          ? `Si è verificato un errore: ${err.message}`
-          : "Si è verificato un errore imprevisto. Riprova."
+          ? t("errorWithMessage", { message: err.message })
+          : c("authErrors.generic")
       );
     } finally {
       setLoading(false);
@@ -215,8 +219,8 @@ export function OnboardingChat({ userName }: { userName: string }) {
       console.error("[MIRA] handleBlockApproved failed:", err);
       appendAssistant(
         err instanceof Error
-          ? `Si è verificato un errore: ${err.message}`
-          : "Si è verificato un errore imprevisto. Riprova."
+          ? t("errorWithMessage", { message: err.message })
+          : c("authErrors.generic")
       );
     }
     await resyncBlocks();
@@ -293,7 +297,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
     const result = await uploadTranscript(formData);
 
     if (result.error || !result.parsed) {
-      appendAssistant(`Non sono riuscito a leggere il file — ${result.error ?? "errore sconosciuto"}. Puoi riprovare o saltare.`);
+      appendAssistant(t("transcriptReadError", { error: result.error ?? t("unknownError") }));
       setMessages((prev) => prev.filter((m) => m.content !== "[Ho caricato il mio libretto]"));
       setUploading(false);
       if (transcriptFileRef.current) transcriptFileRef.current.value = "";
@@ -332,7 +336,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
     formData.append("file", file);
     const result = await uploadCV(formData);
     if (result.error) {
-      appendAssistant("Non sono riuscito a leggere bene il CV, ma va bene lo stesso.");
+      appendAssistant(t("cvReadError"));
     }
 
     const reaction = await reactToCV(historyWithMarker);
@@ -385,13 +389,13 @@ export function OnboardingChat({ userName }: { userName: string }) {
                 disabled={isWorking}
                 className="text-body-sm text-ink-secondary hover:text-navy border border-border rounded-md px-3 py-1.5 hover:border-border-strong transition-colors duration-100 disabled:opacity-40"
               >
-                Completa profilo
+                {t("completeProfile")}
               </button>
             )}
             <span className="text-body-sm text-ink-secondary">{userName}</span>
             <form action={signOut}>
               <button type="submit" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors duration-100">
-                Esci
+                {c("signOut")}
               </button>
             </form>
           </div>
@@ -400,13 +404,13 @@ export function OnboardingChat({ userName }: { userName: string }) {
         <div className="flex-1 overflow-y-auto space-y-4 px-6 py-4 min-h-0">
           {loadError && (
             <div className="rounded-lg border border-error/30 bg-error-bg px-4 py-3">
-              <p className="text-body-sm font-medium text-error">Non sono riuscito a caricare la tua card.</p>
+              <p className="text-body-sm font-medium text-error">{t("cardLoadErrorTitle")}</p>
               <p className="text-body-sm text-error/80 mt-1">{loadError}</p>
               <button
                 onClick={() => window.location.reload()}
                 className="mt-2 text-xs font-medium text-error underline underline-offset-2"
               >
-                Ricarica la pagina
+                {t("reloadPage")}
               </button>
             </div>
           )}
@@ -458,7 +462,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
             onClick={() => setCardOpenMobile((o) => !o)}
             className="w-full px-6 py-2 text-body-sm text-petrol flex items-center justify-between"
           >
-            <span>La tua MIRA card</span>
+            <span>{panelT("title")}</span>
             <span>{cardOpenMobile ? "▾" : "▸"}</span>
           </button>
           {cardOpenMobile && <div className="max-h-[45vh] overflow-y-auto border-t border-border">{cardPanel}</div>}
@@ -474,14 +478,14 @@ export function OnboardingChat({ userName }: { userName: string }) {
                   disabled={isWorking}
                   className="text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
                 >
-                  Carica libretto
+                  {t("uploadTranscript")}
                 </button>
                 <button
                   onClick={handleSkipTranscript}
                   disabled={isWorking}
                   className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
                 >
-                  Salta
+                  {t("skip")}
                 </button>
               </div>
             )}
@@ -492,14 +496,14 @@ export function OnboardingChat({ userName }: { userName: string }) {
                   disabled={isWorking}
                   className="text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
                 >
-                  Completa ora (5 min)
+                  {t("completeNow")}
                 </button>
                 <button
                   onClick={handleContinueLater}
                   disabled={isWorking}
                   className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
                 >
-                  Più tardi
+                  {t("later")}
                 </button>
               </div>
             )}
@@ -511,14 +515,14 @@ export function OnboardingChat({ userName }: { userName: string }) {
                   disabled={isWorking}
                   className="text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
                 >
-                  Carica CV
+                  {t("uploadCV")}
                 </button>
                 <button
                   onClick={handleSkipCV}
                   disabled={isWorking}
                   className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
                 >
-                  Salta
+                  {t("skip")}
                 </button>
               </div>
             )}
@@ -529,7 +533,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                placeholder={GATED_PHASES.includes(phase) ? "Usa i pulsanti qui sopra..." : "Scrivi un messaggio..."}
+                placeholder={GATED_PHASES.includes(phase) ? t("useButtonsPlaceholder") : c("messagePlaceholder")}
                 disabled={isWorking || GATED_PHASES.includes(phase)}
                 className="flex-1 px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200 disabled:opacity-50"
               />
@@ -538,14 +542,14 @@ export function OnboardingChat({ userName }: { userName: string }) {
                 disabled={isWorking || !input.trim() || GATED_PHASES.includes(phase)}
                 className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
               >
-                Invia
+                {c("send")}
               </button>
             </div>
           </div>
         ) : (
           <div className="border-t border-border px-6 py-3 shrink-0">
             <div className="rounded-md bg-success-bg p-4 text-center">
-              <p className="text-body font-medium text-success">Candidatura sbloccata! Reindirizzamento...</p>
+              <p className="text-body font-medium text-success">{t("applicationUnlocked")}</p>
             </div>
           </div>
         )}

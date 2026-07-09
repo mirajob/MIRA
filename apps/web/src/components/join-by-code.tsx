@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export function JoinByCode() {
+  const t = useTranslations("JoinByCode");
   const [code, setCode] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,7 +31,7 @@ export function JoinByCode() {
     } else if (data.redirect) {
       router.push(data.redirect);
     } else {
-      setSuccess(`Sei entrato in ${data.associationName}!`);
+      setSuccess(t("success", { name: data.associationName }));
       setCode("");
       setTimeout(() => router.refresh(), 1000);
     }
@@ -43,14 +45,14 @@ export function JoinByCode() {
         onClick={() => setExpanded(true)}
         className="text-body-sm text-petrol hover:text-petrol-700 underline underline-offset-2 decoration-1"
       >
-        Sei nel board di un'associazione? Inserisci il codice invito
+        {t("prompt")}
       </button>
     );
   }
 
   return (
     <div className="rounded-lg border border-border bg-white p-4">
-      <p className="text-label text-navy mb-2 text-xs">Entra nel board con codice invito</p>
+      <p className="text-label text-navy mb-2 text-xs">{t("expandedTitle")}</p>
 
       {error && <p className="text-body-sm text-error mb-2">{error}</p>}
       {success && <p className="text-body-sm text-success mb-2">{success}</p>}
@@ -61,7 +63,7 @@ export function JoinByCode() {
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           onKeyDown={(e) => e.key === "Enter" && handleJoin()}
-          placeholder="es. BSIC-A7K2"
+          placeholder={t("placeholder")}
           className="flex-1 px-3 py-2 rounded-md bg-paper border border-border text-body-sm text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol uppercase"
         />
         <button
@@ -69,7 +71,7 @@ export function JoinByCode() {
           disabled={loading || !code.trim()}
           className="bg-navy text-white px-4 py-2 rounded-md text-body-sm hover:bg-navy-700 disabled:opacity-40"
         >
-          {loading ? "..." : "Entra"}
+          {loading ? "..." : t("submit")}
         </button>
       </div>
     </div>

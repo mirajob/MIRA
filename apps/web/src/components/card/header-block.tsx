@@ -1,16 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { updateCardBlockProseContent, updateHeaderVisibility } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
 import type { CardBlockStatus, FormazioneItem, HeaderProseContent, HeaderVisibility } from "@mira/types";
 
-const LEVEL_LABELS: Record<string, string> = {
-  triennale: "Triennale (Bachelor)",
-  magistrale: "Magistrale (Master)",
-  ciclo_unico: "Ciclo unico",
-  phd: "PhD",
-};
+const LEVEL_KEYS = ["triennale", "magistrale", "ciclo_unico", "phd"] as const;
 
 export function HeaderBlock({
   proseContent,
@@ -26,6 +22,8 @@ export function HeaderBlock({
   formazioneItems: FormazioneItem[];
   onApproved?: () => void;
 }) {
+  const t = useTranslations("CardBlocks");
+  const c = useTranslations("Common");
   const [form, setForm] = useState(proseContent);
   const [vis, setVis] = useState<HeaderVisibility>(
     visibility?.media_voti ? visibility : { media_voti: { associazioni: false, aziende: false } }
@@ -80,7 +78,7 @@ export function HeaderBlock({
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
       <CardBlockHeader
-        title="Header"
+        title={t("titles.header")}
         status={status}
         blockType="header"
         alsoApprove={["formazione"]}
@@ -89,7 +87,7 @@ export function HeaderBlock({
       <div className="p-5 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="text-ink-tertiary text-body-sm">Università</label>
+            <label className="text-ink-tertiary text-body-sm">{t("header.universitaLabel")}</label>
             <input
               type="text"
               value={form.universita ?? ""}
@@ -98,7 +96,7 @@ export function HeaderBlock({
             />
           </div>
           <div>
-            <label className="text-ink-tertiary text-body-sm">Corso di laurea</label>
+            <label className="text-ink-tertiary text-body-sm">{t("header.corsoLabel")}</label>
             <input
               type="text"
               value={form.corso ?? ""}
@@ -107,20 +105,20 @@ export function HeaderBlock({
             />
           </div>
           <div>
-            <label className="text-ink-tertiary text-body-sm">Livello</label>
+            <label className="text-ink-tertiary text-body-sm">{t("header.livelloLabel")}</label>
             <select
               value={form.livello ?? ""}
               onChange={(e) => update("livello", e.target.value)}
               className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
             >
               <option value="">—</option>
-              {Object.entries(LEVEL_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
+              {LEVEL_KEYS.map((value) => (
+                <option key={value} value={value}>{t(`header.levelLabels.${value}`)}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="text-ink-tertiary text-body-sm">Anno</label>
+            <label className="text-ink-tertiary text-body-sm">{t("header.annoLabel")}</label>
             <input
               type="number"
               value={form.anno ?? ""}
@@ -129,28 +127,28 @@ export function HeaderBlock({
             />
           </div>
           <div>
-            <label className="text-ink-tertiary text-body-sm">Anno di inizio</label>
+            <label className="text-ink-tertiary text-body-sm">{t("header.annoInizioLabel")}</label>
             <input
               type="number"
-              placeholder="es. 2023"
+              placeholder={t("header.annoInizioPlaceholder")}
               value={form.anno_inizio ?? ""}
               onChange={(e) => update("anno_inizio", e.target.value ? Number(e.target.value) : null)}
               className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
             />
           </div>
           <div>
-            <label className="text-ink-tertiary text-body-sm">Laurea prevista</label>
+            <label className="text-ink-tertiary text-body-sm">{t("header.laureaPrevistaLabel")}</label>
             <input
               type="number"
-              placeholder="es. 2026"
+              placeholder={t("header.laureaPrevistaPlaceholder")}
               value={form.laurea_anno ?? ""}
               onChange={(e) => update("laurea_anno", e.target.value ? Number(e.target.value) : null)}
               className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
             />
           </div>
           <div>
-            <label className="text-ink-tertiary text-body-sm">Media ponderata</label>
-            <p className="mt-1 px-3 py-2 text-body-sm text-ink-secondary" title="Cambia solo ricaricando il libretto">
+            <label className="text-ink-tertiary text-body-sm">{t("header.mediaLabel")}</label>
+            <p className="mt-1 px-3 py-2 text-body-sm text-ink-secondary" title={t("header.mediaCambioNote")}>
               {form.media_voti ? `${Number(form.media_voti).toFixed(1)}/30` : "—"}
             </p>
           </div>
@@ -164,7 +162,7 @@ export function HeaderBlock({
               className="flex items-center gap-2 text-body-sm font-medium text-ink hover:text-petrol transition-colors"
             >
               <span>{esamiExpanded ? "▾" : "▸"}</span>
-              <span>Esami ({formazioneItems.length})</span>
+              <span>{t("header.esami", { count: formazioneItems.length })}</span>
             </button>
             {esamiExpanded && (
               <div className="mt-3 space-y-1">
@@ -173,8 +171,8 @@ export function HeaderBlock({
                     <span className="text-ink truncate">{it.esame}</span>
                     <span className="text-ink-secondary whitespace-nowrap">
                       {it.voto ?? "—"}
-                      {it.cfu != null && <span className="text-xs text-ink-tertiary"> · {it.cfu} CFU</span>}
-                      <span className="ml-2 text-xs text-success font-medium">verificata</span>
+                      {it.cfu != null && <span className="text-xs text-ink-tertiary">{t("header.cfuSuffix", { cfu: it.cfu })}</span>}
+                      <span className="ml-2 text-xs text-success font-medium">{t("header.examVerified")}</span>
                     </span>
                   </div>
                 ))}
@@ -185,32 +183,32 @@ export function HeaderBlock({
 
         {(form.livello === "magistrale" || form.formazione_precedente) && (
           <div className="border-t border-border pt-4 space-y-3">
-            <p className="text-body-sm font-medium text-ink">Formazione precedente (triennale)</p>
+            <p className="text-body-sm font-medium text-ink">{t("header.formazionePrecedenteTitle")}</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <input
                 type="text"
-                placeholder="Università"
+                placeholder={t("header.formazionePrecedenteUniversitaPlaceholder")}
                 value={form.formazione_precedente?.universita ?? ""}
                 onChange={(e) => updateFP("universita", e.target.value)}
                 className="px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
               />
               <input
                 type="text"
-                placeholder="Corso"
+                placeholder={t("header.formazionePrecedenteCorsoPlaceholder")}
                 value={form.formazione_precedente?.corso ?? ""}
                 onChange={(e) => updateFP("corso", e.target.value)}
                 className="px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
               />
               <input
                 type="text"
-                placeholder="Voto di laurea"
+                placeholder={t("header.formazionePrecedenteVotoPlaceholder")}
                 value={form.formazione_precedente?.voto_laurea ?? ""}
                 onChange={(e) => updateFP("voto_laurea", e.target.value)}
                 className="px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
               />
               <input
                 type="text"
-                placeholder="Tema tesi (opzionale)"
+                placeholder={t("header.formazionePrecedenteTesiPlaceholder")}
                 value={form.formazione_precedente?.tema_tesi ?? ""}
                 onChange={(e) => updateFP("tema_tesi", e.target.value)}
                 className="px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
@@ -225,14 +223,14 @@ export function HeaderBlock({
             disabled={saving}
             className="text-body-sm font-medium text-white bg-petrol rounded-md px-4 py-2 hover:bg-petrol-700 transition-colors disabled:opacity-50"
           >
-            {saving ? "Salvataggio..." : "Salva"}
+            {saving ? c("saving") : c("save")}
           </button>
         )}
 
         <div className="border-t border-border pt-4 space-y-3">
-          <p className="text-body-sm font-medium text-ink">Visibilità media voti</p>
+          <p className="text-body-sm font-medium text-ink">{t("header.visibilitaTitle")}</p>
           <label className="flex items-center justify-between gap-4 cursor-pointer">
-            <span className="text-body-sm text-ink-secondary">Associazioni universitarie</span>
+            <span className="text-body-sm text-ink-secondary">{t("header.visibilitaAssociazioni")}</span>
             <button
               type="button"
               role="switch"
@@ -250,7 +248,7 @@ export function HeaderBlock({
             </button>
           </label>
           <label className="flex items-center justify-between gap-4 cursor-pointer">
-            <span className="text-body-sm text-ink-secondary">Aziende</span>
+            <span className="text-body-sm text-ink-secondary">{t("header.visibilitaAziende")}</span>
             <button
               type="button"
               role="switch"
@@ -287,19 +285,20 @@ export function HeaderView({
   formazioneItems: FormazioneItem[];
   showMedia?: boolean;
 }) {
+  const t = useTranslations("CardBlocks");
   const [esamiExpanded, setEsamiExpanded] = useState(false);
   const fp = data.formazione_precedente;
 
   return (
     <div className="p-5">
-      <p className="text-eyebrow text-navy/60 uppercase mb-2">Header</p>
+      <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.header")}</p>
       <div className="flex flex-wrap items-baseline gap-x-2">
         {data.corso && <span className="text-body font-medium text-ink">{data.corso}</span>}
         {data.universita && <span className="text-body-sm text-ink-tertiary">— {data.universita}</span>}
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-ink-secondary">
-        {data.livello && <span>{LEVEL_LABELS[data.livello] ?? data.livello}</span>}
-        {data.anno && <span>{data.anno}° anno</span>}
+        {data.livello && <span>{t.has(`header.levelLabels.${data.livello}`) ? t(`header.levelLabels.${data.livello}`) : data.livello}</span>}
+        {data.anno && <span>{t("header.annoOrdinal", { n: data.anno })}</span>}
         {(data.anno_inizio || data.laurea_anno) && (
           <span>{data.anno_inizio ?? "—"}–{data.laurea_anno ?? "—"}</span>
         )}
@@ -307,13 +306,13 @@ export function HeaderView({
           (showMedia ? (
             <span className="font-medium text-ink">{Number(data.media_voti).toFixed(1)}/30</span>
           ) : (
-            <span className="italic text-ink-tertiary text-xs">media non condivisa</span>
+            <span className="italic text-ink-tertiary text-xs">{t("header.mediaNotShared")}</span>
           ))}
       </div>
 
       {fp && (fp.corso || fp.universita) && (
         <p className="mt-2 text-xs text-ink-tertiary">
-          Triennale: {fp.corso ?? "—"}{fp.universita ? ` — ${fp.universita}` : ""}{fp.voto_laurea ? ` (${fp.voto_laurea})` : ""}
+          {t("header.previousDegreeSummaryPrefix")} {fp.corso ?? "—"}{fp.universita ? ` — ${fp.universita}` : ""}{fp.voto_laurea ? ` (${fp.voto_laurea})` : ""}
         </p>
       )}
 
@@ -325,7 +324,7 @@ export function HeaderView({
             className="flex items-center gap-1.5 text-xs text-petrol hover:text-petrol-700 transition-colors"
           >
             <span>{esamiExpanded ? "▾" : "▸"}</span>
-            <span>Esami ({formazioneItems.length})</span>
+            <span>{t("header.esami", { count: formazioneItems.length })}</span>
           </button>
           {esamiExpanded && (
             <div className="mt-2 space-y-1">
@@ -335,7 +334,7 @@ export function HeaderView({
                   {showMedia && (
                     <span className="text-ink-secondary whitespace-nowrap">
                       {it.voto ?? "—"}
-                      {it.cfu != null && <span className="text-xs text-ink-tertiary"> · {it.cfu} CFU</span>}
+                      {it.cfu != null && <span className="text-xs text-ink-tertiary">{t("header.cfuSuffix", { cfu: it.cfu })}</span>}
                     </span>
                   )}
                 </div>

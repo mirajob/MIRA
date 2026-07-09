@@ -1,13 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ListBlock, type ListFieldConfig } from "./list-block";
 import type { CardBlockStatus, LinguaItem } from "@mira/types";
-
-const fields: ListFieldConfig<LinguaItem>[] = [
-  { key: "lingua", label: "Lingua", placeholder: "es. Inglese" },
-  { key: "livello", label: "Livello", placeholder: "es. C1" },
-  { key: "certificazione", label: "Certificazione (opzionale)", placeholder: "es. IELTS 7.5" },
-];
 
 export function LingueBlock({
   items,
@@ -18,15 +13,21 @@ export function LingueBlock({
   status: CardBlockStatus;
   onApproved?: () => void;
 }) {
+  const t = useTranslations("CardBlocks");
+  const fields: ListFieldConfig<LinguaItem>[] = [
+    { key: "lingua", label: t("lingue.linguaLabel"), placeholder: t("lingue.linguaPlaceholder") },
+    { key: "livello", label: t("lingue.livelloLabel"), placeholder: t("lingue.livelloPlaceholder") },
+    { key: "certificazione", label: t("lingue.certificazioneLabel"), placeholder: t("lingue.certificazionePlaceholder") },
+  ];
   return (
     <ListBlock
       blockType="lingue"
-      title="Lingue"
+      title={t("titles.lingue")}
       items={items}
       status={status}
       onApproved={onApproved}
       fields={fields}
-      emptyLabel="Nessuna lingua ancora. Aggiungine una."
+      emptyLabel={t("lingue.emptyAdd")}
       emptyItem={(): LinguaItem => ({
         id: crypto.randomUUID(),
         lingua: "",

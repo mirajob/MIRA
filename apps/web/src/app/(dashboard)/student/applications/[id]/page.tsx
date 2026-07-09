@@ -2,6 +2,7 @@ import { getUserContext } from "@/lib/auth";
 import { createServerClient } from "@mira/supabase/server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 
 interface Props {
@@ -66,11 +67,16 @@ export default async function ApplicationDetailPage({ params }: Props) {
 
   const selectedRole = (application.selected_role_preferences as string[] | null)?.[0];
 
+  const t = await getTranslations("Applications");
+  const c = await getTranslations("Common");
+  const locale = await getLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
+
   return (
     <div className="mx-auto max-w-2xl px-6 py-6 space-y-6">
       {/* Back */}
       <Link href="/student/associazioni" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors">
-        ← Associazioni
+        {t("backLink")}
       </Link>
 
       {/* Header */}
@@ -83,11 +89,11 @@ export default async function ApplicationDetailPage({ params }: Props) {
           </div>
         )}
         <div className="flex-1">
-          <h1 className="font-display text-h2 text-navy">{assoc?.name ?? "Associazione"}</h1>
+          <h1 className="font-display text-h2 text-navy">{assoc?.name ?? c("associationFallback")}</h1>
           <p className="text-body-sm text-ink-tertiary mt-0.5">
             {cycle?.title}
-            {selectedRole && selectedRole !== "generica" && ` · Ruolo: ${selectedRole}`}
-            {application.submitted_at && ` · Inviata il ${new Date(application.submitted_at).toLocaleDateString("it-IT")}`}
+            {selectedRole && selectedRole !== "generica" && t("roleLabel", { role: selectedRole })}
+            {application.submitted_at && c("submittedOn", { date: new Date(application.submitted_at).toLocaleDateString(dateLocale) })}
           </p>
         </div>
         <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium shrink-0 ${STATUS_COLORS[application.status] ?? "bg-navy-50 text-navy"}`}>
@@ -98,9 +104,9 @@ export default async function ApplicationDetailPage({ params }: Props) {
       {/* Accepted message */}
       {application.status === "accepted" && (
         <div className="rounded-lg border border-success bg-success-bg p-5">
-          <p className="font-medium text-success">Congratulazioni! Sei stato accettato in {assoc?.name}.</p>
+          <p className="font-medium text-success">{t("congratsAcceptedIn", { name: assoc?.name ?? "" })}</p>
           <p className="text-body-sm text-success/80 mt-1">
-            Puoi gestire la tua attività nell&apos;associazione dalla sezione Associazioni.
+            {t("manageFromAssociazioni")}
           </p>
         </div>
       )}
@@ -108,10 +114,10 @@ export default async function ApplicationDetailPage({ params }: Props) {
       {/* Interview info */}
       {activeInterview && (
         <div className="rounded-lg border border-petrol-200 bg-petrol-50 p-5 space-y-2">
-          <p className="font-sans text-h3 text-navy">Colloquio</p>
+          <p className="font-sans text-h3 text-navy">{t("interviewHeading")}</p>
           {activeInterview.selected_time && (
             <p className="text-body-sm text-ink">
-              {new Date(activeInterview.selected_time).toLocaleDateString("it-IT", {
+              {new Date(activeInterview.selected_time).toLocaleDateString(dateLocale, {
                 weekday: "long", day: "numeric", month: "long",
                 year: "numeric", hour: "2-digit", minute: "2-digit",
               })}
@@ -129,7 +135,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
       {/* Timeline */}
       {events.length > 0 && (
         <div className="rounded-lg border border-border bg-white p-5">
-          <h2 className="font-sans text-h3 text-navy mb-4">Aggiornamenti</h2>
+          <h2 className="font-sans text-h3 text-navy mb-4">{t("updatesHeading")}</h2>
           <div className="relative">
             <div className="absolute left-2 top-0 bottom-0 w-px bg-border" />
             <div className="space-y-5 pl-8">
@@ -142,7 +148,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
                     {APPLICATION_STATUS_LABELS[ev.new_status] ?? ev.new_status}
                   </p>
                   <p className="text-xs text-ink-tertiary mt-0.5">
-                    {new Date(ev.created_at).toLocaleDateString("it-IT", {
+                    {new Date(ev.created_at).toLocaleDateString(dateLocale, {
                       day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
                     })}
                   </p>
@@ -159,7 +165,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
       {/* Application answers */}
       {answers.length > 0 && (
         <div className="rounded-lg border border-border bg-white p-5">
-          <h2 className="font-sans text-h3 text-navy mb-4">Le tue risposte</h2>
+          <h2 className="font-sans text-h3 text-navy mb-4">{t("answersHeading")}</h2>
           <div className="space-y-4">
             {answers.map((a) => (
               <div key={a.id}>
@@ -176,13 +182,13 @@ export default async function ApplicationDetailPage({ params }: Props) {
       {/* Association description */}
       {assoc?.short_description && (
         <div className="rounded-lg border border-border bg-white p-5">
-          <h2 className="font-sans text-h3 text-navy mb-2">Chi è {assoc.name}</h2>
+          <h2 className="font-sans text-h3 text-navy mb-2">{t("whoIsHeading", { name: assoc.name })}</h2>
           <p className="text-body-sm text-ink-secondary">{assoc.short_description}</p>
           <Link
             href={`/associations/${assoc.slug}`}
             className="mt-3 inline-block text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
           >
-            Vedi pagina pubblica →
+            {t("viewPublicPage")}
           </Link>
         </div>
       )}

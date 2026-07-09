@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
 import type { CardBlockStatus, PianoCarrieraStato } from "@mira/types";
 
-const STATO_LABELS: Record<PianoCarrieraStato, string> = {
-  direzione_chiara: "Direzione chiara",
-  ipotesi: "Alcune ipotesi",
-  esplorazione: "In esplorazione",
-};
+const STATO_KEYS: PianoCarrieraStato[] = ["direzione_chiara", "ipotesi", "esplorazione"];
 
 interface ProseBlockProps {
   blockType: "autodescrizione" | "interessi" | "piano_carriera";
@@ -24,6 +21,8 @@ interface ProseBlockProps {
 }
 
 export function ProseBlock({ blockType, title, testo, status, serif, stato, intro, placeholder, onApproved }: ProseBlockProps) {
+  const t = useTranslations("CardBlocks");
+  const c = useTranslations("Common");
   const [text, setText] = useState(testo ?? "");
   const [statoValue, setStatoValue] = useState<PianoCarrieraStato | undefined>(stato ?? "esplorazione");
   const [dirty, setDirty] = useState(false);
@@ -53,7 +52,7 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
         {intro && <p className="text-body-sm text-ink-secondary italic">{intro}</p>}
         {blockType === "piano_carriera" && (
           <div className="flex flex-wrap gap-2">
-            {(Object.keys(STATO_LABELS) as PianoCarrieraStato[]).map((s) => (
+            {STATO_KEYS.map((s) => (
               <button
                 key={s}
                 type="button"
@@ -65,7 +64,7 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
                   statoValue === s ? "bg-petrol text-white border-petrol" : "border-border text-ink-secondary"
                 }`}
               >
-                {STATO_LABELS[s]}
+                {t(`prose.statoLabels.${s}`)}
               </button>
             ))}
           </div>
@@ -88,7 +87,7 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
             disabled={saving}
             className="text-body-sm font-medium text-white bg-petrol rounded-md px-4 py-2 hover:bg-petrol-700 transition-colors disabled:opacity-50"
           >
-            {saving ? "Salvataggio..." : "Salva"}
+            {saving ? c("saving") : c("save")}
           </button>
         )}
       </div>
@@ -108,18 +107,19 @@ export function ProseView({
   stato?: PianoCarrieraStato;
   serif?: boolean;
 }) {
+  const t = useTranslations("CardBlocks");
   return (
     <div className="p-5">
       <p className="text-eyebrow text-navy/60 uppercase mb-2">{title}</p>
       {stato && (
         <span className="inline-block mb-2 text-xs px-2 py-0.5 rounded-full border border-border text-ink-secondary">
-          {STATO_LABELS[stato]}
+          {t(`prose.statoLabels.${stato}`)}
         </span>
       )}
       {testo ? (
         <p className={`text-body-sm text-ink ${serif ? "font-display italic" : ""}`}>{testo}</p>
       ) : (
-        <p className="text-body-sm text-ink-tertiary italic">Non ancora indicato.</p>
+        <p className="text-body-sm text-ink-tertiary italic">{t("prose.notSpecified")}</p>
       )}
     </div>
   );

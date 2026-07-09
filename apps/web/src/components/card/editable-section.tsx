@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 /**
  * Mostra `view` (sola lettura) di default, con un link "Modifica" che passa a `edit`
@@ -10,6 +11,7 @@ import { useRouter } from "next/navigation";
  * router.refresh() qui basta a far vedere subito il dato aggiornato nella vista.
  */
 export function EditableSection({ view, edit }: { view: React.ReactNode; edit: React.ReactNode }) {
+  const t = useTranslations("CardBlocks");
   const [editing, setEditing] = useState(false);
   const router = useRouter();
 
@@ -25,7 +27,7 @@ export function EditableSection({ view, edit }: { view: React.ReactNode; edit: R
             }}
             className="text-body-sm font-medium text-petrol hover:text-petrol-700 transition-colors"
           >
-            Fatto
+            {t("done")}
           </button>
         </div>
       </div>
@@ -39,7 +41,7 @@ export function EditableSection({ view, edit }: { view: React.ReactNode; edit: R
         onClick={() => setEditing(true)}
         className="absolute top-4 right-5 text-xs font-medium text-ink-tertiary hover:text-petrol transition-colors"
       >
-        Modifica
+        {t("edit")}
       </button>
     </div>
   );
