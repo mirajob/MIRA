@@ -82,9 +82,11 @@ export async function submitApplication(cycleId: string, formData: FormData) {
     visible_to_candidate: true,
   });
 
-  // Trigger AI evaluation in background (don't await — let it run async)
-  evaluateCandidate(application.id).catch((err) =>
-    console.error("Background AI evaluation failed:", err)
+  // Awaited (not fire-and-forget): a serverless function can be frozen the
+  // moment this action returns, which would silently kill an un-awaited
+  // background call before the AI evaluation ever completes.
+  await evaluateCandidate(application.id).catch((err) =>
+    console.error("AI evaluation failed:", err)
   );
 
   revalidatePath("/student");

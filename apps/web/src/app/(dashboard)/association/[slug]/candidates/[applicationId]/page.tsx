@@ -2,6 +2,7 @@ import { createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { CandidateActions } from "./candidate-actions";
+import { RegenerateEvaluationButton } from "./regenerate-evaluation-button";
 import { CandidateCard } from "@/components/card-view/candidate-card";
 
 interface Props {
@@ -180,9 +181,7 @@ export default async function CandidateDetailPage({ params }: Props) {
           <h3 className="font-sans text-h3 text-navy">Per questa candidatura</h3>
 
           {!aiEval ? (
-            <div className="rounded-lg border border-border bg-white p-5">
-              <p className="text-body-sm text-ink-secondary">La valutazione AI è in elaborazione o non ancora disponibile.</p>
-            </div>
+            <RegenerateEvaluationButton applicationId={applicationId} />
           ) : (() => {
             const ev = (aiEval.evaluation_json ?? aiEval) as {
               rilevanza?: Array<{ claim: string; evidenza: string }>;

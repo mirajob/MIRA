@@ -139,13 +139,17 @@ export async function evaluateCandidate(applicationId: string) {
   const supabase = await createServiceClient();
 
   const { data: application } = await (supabase.from("applications") as any)
-    .select("id, association_id, student_user_id, selected_role_preferences, application_answers(answer_text, application_questions(question_text, question_type))")
+    .select("id, association_id, application_cycle_id, student_user_id, selected_role_preferences, application_answers(answer_text, application_questions(question_text, question_type))")
     .eq("id", applicationId)
     .single();
 
   if (!application) return { error: "Candidatura non trovata" };
 
-  if (!ctx.isMiraAdmin) {
+  // Callable either by the system right after the applicant submits (the
+  // applicant is obviously not a board member of the association they're
+  // applying to), or later by a board member retrying a missing evaluation.
+  const isApplicant = application.student_user_id === ctx.profile.id;
+  if (!isApplicant && !ctx.isMiraAdmin) {
     const { data: membership } = await supabase
       .from("association_memberships")
       .select("role")
@@ -178,8 +182,7 @@ export async function evaluateCandidate(applicationId: string) {
 
   const { data: cycle } = await (supabase.from("application_cycles") as any)
     .select("title, description, available_roles, evaluation_criteria")
-    .eq("association_id", application.association_id)
-    .eq("status", "open")
+    .eq("id", application.application_cycle_id)
     .maybeSingle();
 
   const answers = (application.application_answers ?? [])

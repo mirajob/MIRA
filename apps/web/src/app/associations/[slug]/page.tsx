@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createServerClient, createServiceClient } from "@mira/supabase/server";
+import { createServerClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
@@ -26,46 +26,10 @@ export default async function AssociationPublicPage({ params }: Props) {
     .eq("status", "open")
     .order("closes_at", { ascending: true });
 
-  const serviceClient = await createServiceClient();
-
-  const { data: allMemberships } = await (serviceClient.from("association_memberships") as any)
-    .select("user_id, role, title")
-    .eq("association_id", (association as any).id)
-    .eq("status", "active")
-    .order("created_at");
-
-  const memberUserIds = (allMemberships ?? []).map((m: any) => m.user_id).filter(Boolean);
-  const { data: memberProfiles } = memberUserIds.length > 0
-    ? await (serviceClient.from("profiles") as any)
-        .select("id, full_name, avatar_url")
-        .in("id", memberUserIds)
-    : { data: [] };
-
-  const profMap = new Map<string, any>();
-  for (const p of (memberProfiles ?? [])) {
-    profMap.set(p.id, p);
-  }
-
-  const allPublicMembers = (allMemberships ?? []).map((m: any) => ({
-    ...m,
-    profiles: profMap.get(m.user_id) ?? { full_name: null, avatar_url: null },
-  }));
-
-  const WORKSPACE_ROLES = ["association_president", "association_admin", "association_reviewer", "association_interviewer"];
-  const ROLE_LABELS: Record<string, string> = {
-    association_president: "Presidente",
-    association_admin: "Admin",
-    association_reviewer: "Reviewer",
-    association_interviewer: "Interviewer",
-    association_member: "Membro",
-  };
-
-  const publicBoard = allPublicMembers.filter((m: any) => WORKSPACE_ROLES.includes(m.role));
-  const publicMembers = allPublicMembers.filter((m: any) => !WORKSPACE_ROLES.includes(m.role));
-
-  // Check if logged-in user is a member
+  // Check if logged-in user is on the board (board membership is only used to
+  // gate dashboard access — it's never shown publicly).
   const { data: { user } } = await supabase.auth.getUser();
-  let isMember = false;
+  let isBoardMember = false;
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -80,7 +44,7 @@ export default async function AssociationPublicPage({ params }: Props) {
         .eq("user_id", pid)
         .eq("status", "active")
         .maybeSingle();
-      isMember = !!membership;
+      isBoardMember = !!membership;
     }
   }
 
@@ -153,62 +117,10 @@ export default async function AssociationPublicPage({ params }: Props) {
           )}
         </div>
 
-        {/* Members */}
-        {(publicBoard.length > 0 || publicMembers.length > 0) && (
-          <div className="mb-10 space-y-6">
-            <h2 className="font-display text-h2 text-navy">I membri</h2>
-
-            {publicBoard.length > 0 && (
-              <div>
-                <h3 className="text-label text-ink-secondary mb-3">Board</h3>
-                <div className="flex flex-wrap gap-3">
-                  {publicBoard.map((m: any, i: number) => {
-                    const name = m.profiles?.full_name;
-                    if (!name) return null;
-                    return (
-                      <div key={i} className="inline-flex items-center gap-3 rounded-lg border border-border bg-white px-4 py-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy text-white text-xs font-semibold">
-                          {name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="text-body-sm font-medium text-navy">{name}</p>
-                          <p className="text-xs text-ink-secondary">{m.title ?? ROLE_LABELS[m.role] ?? "Board"}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {publicMembers.length > 0 && (
-              <div>
-                <h3 className="text-label text-ink-secondary mb-3">
-                  Membri ({publicMembers.length})
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {publicMembers.filter((m: any) => m.profiles?.full_name).map((m: any, i: number) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-border bg-white text-body-sm text-ink"
-                    >
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ink-tertiary/20 text-ink text-eyebrow font-semibold text-[10px]">
-                        {m.profiles.full_name.charAt(0).toUpperCase()}
-                      </span>
-                      {m.profiles.full_name}
-                      {m.title && <span className="text-ink-tertiary">· {m.title}</span>}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Open cycles */}
-        {isMember ? (
+        {isBoardMember ? (
           <div className="rounded-lg border-2 border-petrol/30 bg-petrol-50 p-6 text-center">
-            <p className="text-body text-ink mb-3">Fai parte di questa associazione.</p>
+            <p className="text-body text-ink mb-3">Fai parte del board di questa associazione.</p>
             <Link
               href={`/association/${slug}`}
               className="inline-block bg-petrol text-white px-6 py-3 rounded-md text-label hover:bg-petrol-700 transition-colors duration-100"

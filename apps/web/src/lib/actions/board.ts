@@ -249,7 +249,7 @@ export async function generateInviteCode(associationId: string) {
   return { success: true, code };
 }
 
-export async function joinWithCode(code: string, memberType: "board" | "member", roleTitle: string) {
+export async function joinWithCode(code: string, roleTitle: string) {
   const ctx = await getUserContext();
   const supabase = await createServiceClient();
   const profileId = (ctx.profile as any).id as string;
@@ -267,9 +267,7 @@ export async function joinWithCode(code: string, memberType: "board" | "member",
     .eq("user_id", profileId)
     .maybeSingle();
 
-  if (existing) return { error: "Sei già membro di questa associazione" };
-
-  const status = memberType === "board" ? "pending_approval" : "active";
+  if (existing) return { error: "Hai già una richiesta o sei già nel board di questa associazione" };
 
   await (supabase.from("association_memberships") as any).insert({
     association_id: association.id,
@@ -277,11 +275,11 @@ export async function joinWithCode(code: string, memberType: "board" | "member",
     role: "association_member",
     title: roleTitle || null,
     permissions: {},
-    status,
-    joined_at: status === "active" ? new Date().toISOString() : null,
+    status: "pending_approval",
+    joined_at: null,
   });
 
-  return { success: true, associationName: association.name, slug: association.slug, pendingApproval: memberType === "board" };
+  return { success: true, associationName: association.name, slug: association.slug };
 }
 
 export async function approveBoardMember(associationId: string, membershipId: string) {

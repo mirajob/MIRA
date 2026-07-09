@@ -43,14 +43,14 @@ export function JoinByCode() {
         onClick={() => setExpanded(true)}
         className="text-body-sm text-petrol hover:text-petrol-700 underline underline-offset-2 decoration-1"
       >
-        Hai un codice invito? Entra in un'associazione
+        Sei nel board di un'associazione? Inserisci il codice invito
       </button>
     );
   }
 
   return (
     <div className="rounded-lg border border-border bg-white p-4">
-      <p className="text-label text-navy mb-2 text-xs">Entra con codice invito</p>
+      <p className="text-label text-navy mb-2 text-xs">Entra nel board con codice invito</p>
 
       {error && <p className="text-body-sm text-error mb-2">{error}</p>}
       {success && <p className="text-body-sm text-success mb-2">{success}</p>}

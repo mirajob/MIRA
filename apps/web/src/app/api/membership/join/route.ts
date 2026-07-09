@@ -29,10 +29,10 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (existing) {
-    return NextResponse.json({ error: "Sei già membro di questa associazione" });
+    return NextResponse.json({ error: "Hai già una richiesta o sei già nel board di questa associazione" });
   }
 
-  // Redirect to join page for member/board choice
+  // Redirect to the board-request page
   return NextResponse.json({
     redirect: `/join/${code}`,
   });
