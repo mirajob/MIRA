@@ -129,6 +129,26 @@ export function HeaderBlock({
             />
           </div>
           <div>
+            <label className="text-ink-tertiary text-body-sm">Anno di inizio</label>
+            <input
+              type="number"
+              placeholder="es. 2023"
+              value={form.anno_inizio ?? ""}
+              onChange={(e) => update("anno_inizio", e.target.value ? Number(e.target.value) : null)}
+              className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
+            />
+          </div>
+          <div>
+            <label className="text-ink-tertiary text-body-sm">Laurea prevista</label>
+            <input
+              type="number"
+              placeholder="es. 2026"
+              value={form.laurea_anno ?? ""}
+              onChange={(e) => update("laurea_anno", e.target.value ? Number(e.target.value) : null)}
+              className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
+            />
+          </div>
+          <div>
             <label className="text-ink-tertiary text-body-sm">Media ponderata</label>
             <p className="mt-1 px-3 py-2 text-body-sm text-ink-secondary" title="Cambia solo ricaricando il libretto">
               {form.media_voti ? `${Number(form.media_voti).toFixed(1)}/30` : "—"}
@@ -280,6 +300,9 @@ export function HeaderView({
       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-ink-secondary">
         {data.livello && <span>{LEVEL_LABELS[data.livello] ?? data.livello}</span>}
         {data.anno && <span>{data.anno}° anno</span>}
+        {(data.anno_inizio || data.laurea_anno) && (
+          <span>{data.anno_inizio ?? "—"}–{data.laurea_anno ?? "—"}</span>
+        )}
         {data.media_voti != null &&
           (showMedia ? (
             <span className="font-medium text-ink">{Number(data.media_voti).toFixed(1)}/30</span>

@@ -8,10 +8,11 @@ export const EMPTY_ONBOARDING_BLOCKS: OnboardingBlocksState = {
   header: {
     status: "empty",
     data: {
-      universita: "Università Bocconi",
+      universita: null,
       corso: null,
       livello: null,
       anno: null,
+      anno_inizio: null,
       laurea_anno: null,
       media_voti: null,
       formazione_precedente: null,

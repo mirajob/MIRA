@@ -151,6 +151,8 @@ const REQUIRED_HEADER_FIELDS: Array<{ key: keyof HeaderProseContent; label: stri
   { key: "corso", label: "il corso di laurea" },
   { key: "livello", label: "il livello di studi" },
   { key: "anno", label: "l'anno che frequenti" },
+  { key: "anno_inizio", label: "l'anno di inizio del corso" },
+  { key: "laurea_anno", label: "l'anno di laurea previsto" },
 ];
 
 function missingHeaderFields(data: HeaderProseContent, transcriptSkipped: boolean): string[] {
@@ -221,14 +223,26 @@ export async function loadOnboardingState(): Promise<OnboardingState> {
   };
 }
 
+const LIVELLO_LABELS: Record<string, string> = {
+  triennale: "la triennale",
+  magistrale: "la magistrale",
+  ciclo_unico: "il ciclo unico",
+};
+
 export async function startOnboarding(firstName: string): Promise<{ message: string }> {
-  const { supabase, profileId } = await getOnboardingContext();
+  const { supabase, profileId, blocks } = await getOnboardingContext();
 
-  const message = `Ciao ${firstName}! Io sono MIRA.
+  const intro = `Ciao ${firstName}! Io sono MIRA.
 
-Costruiamo insieme la tua MIRA card: ti serve ora per candidarti alle associazioni, ed è il profilo con cui le aziende potranno trovarti e contattarti direttamente quando sarai compatibile con quello che stanno cercando. Più è fatta bene, più lavora per te.
+Costruiamo insieme la tua MIRA card: ti serve ora per candidarti alle associazioni, ed è il profilo con cui le aziende potranno trovarti e contattarti direttamente quando sarai compatibile con quello che stanno cercando. Più è fatta bene, più lavora per te.`;
 
-Partiamo dalle basi: studi triennale, magistrale o ciclo unico?`;
+  // Se in registrazione ha già indicato il livello, lo confermiamo invece di richiederlo da zero.
+  const knownLivello = blocks.header.data.livello;
+  const closing = knownLivello
+    ? `Dalla registrazione risulta che stai facendo ${LIVELLO_LABELS[knownLivello] ?? knownLivello}. Confermi?`
+    : `Partiamo dalle basi: studi triennale, magistrale o ciclo unico?`;
+
+  const message = `${intro}\n\n${closing}`;
 
   await saveConversation(supabase, profileId, [{ role: "assistant", content: message }]);
   return { message };
@@ -249,8 +263,11 @@ export async function submitLivello(history: ChatMessage[], userMessage: string)
   const { supabase, profileId, studentProfileId, blocks } = await getOnboardingContext();
   const conversation = [...history, { role: "user" as const, content: userMessage }];
 
+  const knownLivello = blocks.header.data.livello as string | null;
   const data = await extractJSON(
-    `Estrai il livello di studi dal messaggio: {"degree_level":"triennale|magistrale|ciclo_unico"}. Se non è chiaro, null. Rispondi solo JSON.`,
+    knownLivello
+      ? `Livello di studi già indicato in registrazione: "${knownLivello}". Se il messaggio lo conferma (es. "sì", "esatto", "confermo", "corretto"), usa questo valore. Se lo corregge esplicitamente con un livello diverso, usa quello nuovo. Estrai: {"degree_level":"triennale|magistrale|ciclo_unico"}. Se non è chiaro, null. Rispondi solo JSON.`
+      : `Estrai il livello di studi dal messaggio: {"degree_level":"triennale|magistrale|ciclo_unico"}. Se non è chiaro, null. Rispondi solo JSON.`,
     userMessage
   );
   const livello = data.degree_level as string | null;
@@ -367,7 +384,7 @@ export async function submitHeaderGap(history: ChatMessage[], userMessage: strin
   const transcriptSkipped = conversation.some((m) => m.content === "[Libretto saltato]");
 
   const data = await extractJSON(
-    `Estrai dal messaggio ciò che manca sul percorso accademico: {"universita":"nome università, o null","corso":"nome corso, o null","livello":"triennale|magistrale|ciclo_unico, o null","anno":0}. Se un campo non emerge, null. Rispondi solo JSON.`,
+    `Estrai dal messaggio ciò che manca sul percorso accademico: {"universita":"nome università, o null","corso":"nome corso, o null","livello":"triennale|magistrale|ciclo_unico, o null","anno":0,"anno_inizio":"anno di immatricolazione a questo corso, es. 2023, o null","laurea_anno":"anno di laurea previsto, es. 2026, o null"}. Se un campo non emerge, null. Rispondi solo JSON.`,
     userMessage
   );
 
@@ -377,11 +394,13 @@ export async function submitHeaderGap(history: ChatMessage[], userMessage: strin
     corso: blocks.header.data.corso || data.corso || null,
     livello: blocks.header.data.livello || data.livello || null,
     anno: blocks.header.data.anno || data.anno || null,
+    anno_inizio: blocks.header.data.anno_inizio || data.anno_inizio || null,
+    laurea_anno: blocks.header.data.laurea_anno || data.laurea_anno || null,
   };
 
   // LEGACY-WRITE(card-rework): rimuovere in Step 5/6.
   const { error: legacyError } = await (supabase.from("student_profiles") as any)
-    .update({ degree_program: headerData.corso, current_year: headerData.anno })
+    .update({ degree_program: headerData.corso, current_year: headerData.anno, graduation_year: headerData.laurea_anno })
     .eq("id", studentProfileId);
   if (legacyError) console.error("[MIRA] submitHeaderGap legacy student_profiles write failed:", legacyError);
 
@@ -1020,7 +1039,7 @@ export async function forceCompleteOnboarding() {
   const { studentProfileId, supabase, profileId } = await getOnboardingContext();
 
   const placeholders: Record<string, unknown> = {
-    header: { corso: "[test] Corso placeholder", livello: "triennale", anno: 1, laurea_anno: null, media_voti: null },
+    header: { corso: "[test] Corso placeholder", livello: "triennale", anno: 1, anno_inizio: null, laurea_anno: null, media_voti: null },
     formazione: { items: [] },
     esperienze: { items: [{ id: crypto.randomUUID(), titolo: "[test] Esperienza placeholder", ruolo: "", organizzazione: "", periodo: "", descrizione: "[test] descrizione placeholder", verified: false, origin: "onboarding" }] },
     disponibilita: { cosa_cerca: "[test] stage", da_quando: "[test] subito", dove: "[test] Milano", vincoli: null },

@@ -2,11 +2,10 @@
 
 import { Suspense, useState } from "react";
 import { createBrowserClient } from "@mira/supabase/client";
-import { validateStudentEmail, validatePassword, ITALIAN_UNIVERSITY_DOMAINS } from "@mira/domain";
+import { validateStudentEmail, validatePassword } from "@mira/domain";
+import { UniversityCombobox } from "@/components/university-combobox";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-
-const UNIVERSITIES = [...ITALIAN_UNIVERSITY_DOMAINS].sort((a, b) => a.name.localeCompare(b.name, "it"));
 
 const DEGREE_LEVELS = [
   { value: "triennale", label: "Triennale" },
@@ -130,17 +129,7 @@ function SignupForm() {
           <>
             <label className="block">
               <span className="text-label text-navy mb-2 block">Università</span>
-              <select
-                required
-                value={university}
-                onChange={(e) => setUniversity(e.target.value)}
-                className={inputClass}
-              >
-                <option value="">Seleziona università</option>
-                {UNIVERSITIES.map((u) => (
-                  <option key={u.domain} value={u.name}>{u.name}</option>
-                ))}
-              </select>
+              <UniversityCombobox value={university} onChange={setUniversity} inputClassName={inputClass} />
             </label>
 
             <label className="block">

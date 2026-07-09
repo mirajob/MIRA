@@ -28,6 +28,9 @@ export interface HeaderProseContent {
   corso: string | null;
   livello: string | null;
   anno: number | null;
+  /** Anno di immatricolazione al corso attuale. */
+  anno_inizio: number | null;
+  /** Anno di laurea previsto/atteso. */
   laurea_anno: number | null;
   media_voti: number | null;
   /** Solo per magistrale: la triennale fatta prima, raccolta come contesto. */

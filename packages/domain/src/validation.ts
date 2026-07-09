@@ -94,6 +94,7 @@ export const ITALIAN_UNIVERSITY_DOMAINS: Array<{ name: string; domain: string }>
   { name: "Università Politecnica delle Marche (Ancona)", domain: "univpm.it" },
   { name: "Università degli Studi di Teramo", domain: "unite.it" },
   { name: "Università LUM Jean Monnet (Bari)", domain: "lum.it" },
+  { name: "LIUC - Università Cattaneo (Castellanza)", domain: "liuc.it" },
   { name: "Scuola IMT Alti Studi Lucca", domain: "imtlucca.it" },
   { name: "Gran Sasso Science Institute (GSSI)", domain: "gssi.it" },
 ];

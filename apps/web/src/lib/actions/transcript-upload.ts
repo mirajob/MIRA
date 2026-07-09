@@ -156,10 +156,11 @@ export async function uploadTranscript(formData: FormData) {
     const { data: headerUpdatedRows, error: headerWriteError } = await (supabase.from("card_blocks") as any)
       .update({
         prose_content: {
-          universita: existingHeader.universita ?? parsed.university_name ?? "Università Bocconi",
+          universita: existingHeader.universita ?? parsed.university_name ?? null,
           corso: existingHeader.corso ?? parsed.degree_program ?? null,
           livello: existingHeader.livello ?? parsed.degree_level ?? null,
           anno: existingHeader.anno ?? null,
+          anno_inizio: existingHeader.anno_inizio ?? null,
           laurea_anno: existingHeader.laurea_anno ?? null,
           media_voti: parsed.weighted_average,
           formazione_precedente: existingHeader.formazione_precedente ?? null,

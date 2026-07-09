@@ -48,7 +48,7 @@ async function getStudentProfileId(): Promise<string> {
 // Missing this caused a client-side crash for any account created after the Step 1
 // backfill (rows made only by this function, never touched by the backfill migration).
 const DEFAULT_PROSE_CONTENT: Record<CardBlockType, unknown> = {
-  header: { universita: "Università Bocconi", corso: null, livello: null, anno: null, laurea_anno: null, media_voti: null },
+  header: { universita: null, corso: null, livello: null, anno: null, anno_inizio: null, laurea_anno: null, media_voti: null },
   disponibilita: { cosa_cerca: null, ambito: null, periodo: null, dove: null },
   esperienze: { items: [] },
   formazione: { items: [] },
@@ -62,13 +62,29 @@ const DEFAULT_PROSE_CONTENT: Record<CardBlockType, unknown> = {
 /** Idempotent: creates any of the 9 rows missing for a student (e.g. accounts created after the Step 1 backfill). */
 export async function ensureCardBlocksExist(studentProfileId: string) {
   const supabase = await createServiceClient();
+
+  // Prefill università/livello from what the student picked at signup, instead
+  // of leaving the header block blank until onboarding chat re-asks for it.
+  const { data: studentProfile } = await (supabase.from("student_profiles") as any)
+    .select("university, degree_level")
+    .eq("id", studentProfileId)
+    .maybeSingle();
+
+  const headerDefault = {
+    ...(DEFAULT_PROSE_CONTENT.header as Record<string, unknown>),
+    universita: studentProfile?.university && studentProfile.university !== "Non specificata"
+      ? studentProfile.university
+      : null,
+    livello: studentProfile?.degree_level ?? null,
+  };
+
   // Ogni riga deve avere lo STESSO insieme di chiavi: upsert() invia l'array come un unico
   // batch e PostgREST può fallire (o comportarsi in modo incoerente) se gli oggetti hanno
   // chiavi diverse tra loro — mai rendere `visibility` condizionale al block_type per questo.
   const rows = ALL_BLOCK_TYPES.map((block_type) => ({
     student_profile_id: studentProfileId,
     block_type,
-    prose_content: DEFAULT_PROSE_CONTENT[block_type],
+    prose_content: block_type === "header" ? headerDefault : DEFAULT_PROSE_CONTENT[block_type],
     visibility:
       block_type === "header" ? { media_voti: { associazioni: false, aziende: false } } : {},
   }));
@@ -120,7 +136,7 @@ function applyVerifiedDropRule(
 
 /**
  * Updates a card block's prose_content. Never accepts writes for `formazione` (transcript-only,
- * read-only in this step). For `header`, only corso/livello/anno/laurea_anno are writable here —
+ * read-only in this step). For `header`, only corso/livello/anno/anno_inizio/laurea_anno are writable here —
  * media_voti is transcript-verified and always preserved from the existing row.
  *
  * structured_data resync for free-text blocks is best-effort and non-blocking: prose_content is
@@ -152,6 +168,7 @@ export async function updateCardBlockProseContent(
       corso: incoming.corso ?? existing.corso ?? null,
       livello: incoming.livello ?? existing.livello ?? null,
       anno: incoming.anno ?? existing.anno ?? null,
+      anno_inizio: incoming.anno_inizio ?? existing.anno_inizio ?? null,
       laurea_anno: incoming.laurea_anno ?? existing.laurea_anno ?? null,
       media_voti: existing.media_voti ?? null, // transcript-only, never writable here
       formazione_precedente: incoming.formazione_precedente ?? existing.formazione_precedente ?? null,
