@@ -247,15 +247,22 @@
     },
     "competenze": {
       "testoLabel": "Competenza (una riga)",
-      "testoPlaceholder": "es. Sa leggere e interpretare un bilancio",
-      "tipoLabel": "Tipo",
-      "tipoTeorica": "Teorica",
-      "tipoApplicata": "Applicata",
+      "testoPlaceholder": "es. Financial statement analysis",
       "evidenzaLabel": "Evidenza (esame o esperienza collegata)",
       "evidenzaPlaceholder": "es. Financial Accounting",
-      "emptyAdd": "Nessuna competenza ancora. Ogni competenza deve avere un'evidenza collegata.",
       "emptyView": "Nessuna competenza ancora.",
-      "academicSkills": "Competenze accademiche ({count})"
+      "academicSkills": "Competenze accademiche ({count})",
+      "softHeading": "Soft skill",
+      "softPlaceholder": "Emergono dalle domande sulle tue esperienze durante l'onboarding — puoi comunque modificarle qui.",
+      "hardHeading": "Hard skill",
+      "hardEmpty": "Nessuna hard skill ancora.",
+      "academicHeading": "Competenze accademiche",
+      "academicEmpty": "Nessuna competenza accademica ancora.",
+      "livelloLabels": {
+        "beginner": "Base",
+        "intermediate": "Intermedio",
+        "advanced": "Avanzato"
+      }
     },
     "lingue": {
       "linguaLabel": "Lingua",
@@ -268,11 +275,6 @@
       "emptyView": "Nessuna lingua ancora."
     },
     "prose": {
-      "statoLabels": {
-        "direzione_chiara": "Direzione chiara",
-        "ipotesi": "Alcune ipotesi",
-        "esplorazione": "In esplorazione"
-      },
       "notSpecified": "Non ancora indicato."
     }
   },
@@ -993,8 +995,11 @@
     "disponibilitaQuestion": "Cosa cerchi (uno stage, un part-time, un progetto...) e da quando sei disponibile?",
     "disponibilitaDone": "Segnato — controlla il blocco Disponibilità. Confermalo per sbloccare la candidatura.",
     "afterDisponibilitaApproved": "Candidatura sbloccata. La tua card è al {pct}%: puoi già candidarti alle associazioni su MIRA. Oppure completiamo le ultime sezioni — competenze, interessi, come ti descrivi, piano di carriera — in circa 5 minuti: le associazioni vedono un profilo molto più forte.",
-    "startFaseBMessage": "Completiamo insieme le ultime sezioni: 5 minuti e la tua card è finita.\n\nDai tuoi esami e dalle tue esperienze ti propongo queste competenze:\n{listText}\n\nConfermale a destra quando vanno bene.",
+    "startFaseBMessage": "Completiamo insieme le ultime sezioni: qualche minuto e la tua card è finita.\n\nDai tuoi voti ti propongo già queste competenze accademiche:\n{listText}\n\nOra dimmi: quali strumenti, software o metodologie hai usato nelle esperienze di cui mi hai parlato?",
     "noCompetenzeDraft": "(nessuna bozza — puoi aggiungerne dal Profilo dopo)",
+    "softSkillQuestionOneFallback": "C'è stato un momento, in una delle tue esperienze, in cui hai dovuto gestire un imprevisto o un disaccordo nel gruppo? Cosa hai fatto?",
+    "softSkillQuestionTwo": "Un'ultima cosa: quando non hai indicazioni chiare su come procedere, preferisci decidere tu la direzione da prendere o cercare un confronto con qualcuno prima di muoverti?",
+    "competenzeSequenceDone": "Ecco le competenze — dai un'occhiata a destra e confermale quando vanno bene.",
     "errorSaveCompetenzeProposed": "Impossibile salvare le competenze proposte — riprova.",
     "errorCompetenzeRowNotFound": "Riga Competenze non trovata per questo studente — riprova.",
     "errorSaveCompetenze": "Impossibile salvare le competenze — riprova.",
@@ -1003,8 +1008,8 @@
     "lingueQuestion": "Che lingue conosci, e a che livello? (Se il tuo corso è in inglese, indicalo pure insieme alle altre.)",
     "interessiQuestion": "Cosa ti interessa a livello professionale — settori, ruoli, tipi di lavoro?",
     "autodescrizioneQuestion": "Raccontami un progetto di cui vai fiero: che ruolo hai preso?",
-    "pianoCarrieraMagistrale": "Come ti vedi nei prossimi 1-2 anni dopo la magistrale? Hai una direzione professionale precisa, qualche ipotesi, o stai ancora esplorando?",
-    "pianoCarrieraOther": "Come ti vedi nei prossimi 1-2 anni? Magistrale, un periodo di exchange, il primo lavoro in un ambito preciso — hai una direzione chiara, qualche ipotesi, o stai ancora esplorando?",
+    "pianoCarrieraMagistrale": "Un'ultima cosa: come ti vedi nei prossimi 1-2 anni dopo la magistrale? Puoi dirmi quello che vuoi — un lavoro in un ambito preciso, la voglia di continuare a studiare o specializzarti, un periodo di pausa, o semplicemente che non hai ancora deciso e stai esplorando le opzioni: va bene qualsiasi risposta.",
+    "pianoCarrieraOther": "Un'ultima cosa: come ti vedi nei prossimi 1-2 anni? Puoi dirmi quello che vuoi — una magistrale, un periodo di exchange, un lavoro in un ambito preciso, o semplicemente che non hai ancora deciso e stai esplorando le opzioni: va bene qualsiasi risposta.",
     "resumeFaseBMessage": "Bentornato! Completiamo insieme le ultime sezioni della tua card.\n\n{question}",
     "resumeFallbackQuestion": "Continuiamo?",
     "lingueDone": "Segnate — controlla il blocco Lingue. Confermalo quando va bene.",

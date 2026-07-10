@@ -84,7 +84,7 @@ export default async function StudentHomePage() {
   const faseBIncomplete = faseBBlocks.some((b) => b?.status !== "approved");
 
   const esperienzeItems = (esperienze?.prose_content as EsperienzeProseContent | undefined)?.items ?? [];
-  const competenzeItems = (competenze?.prose_content as CompetenzeProseContent | undefined)?.items ?? [];
+  const competenzeData = (competenze?.prose_content as CompetenzeProseContent | undefined) ?? { items: [], soft_skills_testo: null };
   const lingueItems = (lingue?.prose_content as LingueProseContent | undefined)?.items ?? [];
   const autodescrizioneTesto = (autodescrizione?.prose_content as AutodescrizioneProseContent | undefined)?.testo ?? null;
   const interessiTesto = (interessi?.prose_content as InteressiProseContent | undefined)?.testo ?? null;
@@ -150,8 +150,8 @@ export default async function StudentHomePage() {
 
         {competenze && (
           <EditableSection
-            view={<CompetenzeView items={competenzeItems} />}
-            edit={<CompetenzeBlock items={competenzeItems} status={competenze.status} />}
+            view={<CompetenzeView data={competenzeData} />}
+            edit={<CompetenzeBlock data={competenzeData} status={competenze.status} />}
           />
         )}
 

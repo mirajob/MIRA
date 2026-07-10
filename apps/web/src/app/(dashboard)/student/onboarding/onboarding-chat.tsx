@@ -21,6 +21,7 @@ import {
   forceCompleteOnboarding,
   startFaseB,
   resumeFaseB,
+  submitCompetenzeRisposta,
   submitCompetenzeAggiunta,
   afterCompetenzeApproved,
   submitLingue,
@@ -56,6 +57,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
   const [expIndex, setExpIndex] = useState(0);
   const [expTotal, setExpTotal] = useState(1);
   const [interessiSubIndex, setInteressiSubIndex] = useState<0 | 1>(0);
+  const [competenzeSubIndex, setCompetenzeSubIndex] = useState(0);
   const [autoSubIndex, setAutoSubIndex] = useState(0);
   const [complete, setComplete] = useState(false);
   const [cardOpenMobile, setCardOpenMobile] = useState(false);
@@ -98,6 +100,10 @@ export function OnboardingChat({ userName }: { userName: string }) {
             // non si ricostruisce la posizione esatta nel sotto-ciclo del CV.
             setExpIndex(0);
             setExpTotal(1);
+          } else if (state.phase === "competenze") {
+            // Stesso principio: non si ricostruisce la posizione esatta nella mini-intervista
+            // hard/soft skill — si tratta come già conclusa, si passa alla chat libera per aggiungere.
+            setCompetenzeSubIndex(3);
           }
         }
       } catch (err) {
@@ -169,9 +175,19 @@ export function OnboardingChat({ userName }: { userName: string }) {
         appendAssistant(result.message);
         await resyncBlocks();
       } else if (phase === "competenze") {
-        const result = await submitCompetenzeAggiunta(history, userMessage);
-        appendAssistant(result.message);
-        await resyncBlocks();
+        if (competenzeSubIndex < 3) {
+          const result = await submitCompetenzeRisposta(history, userMessage, competenzeSubIndex);
+          appendAssistant(result.message);
+          if (result.done) {
+            await resyncBlocks();
+          } else {
+            setCompetenzeSubIndex((i) => i + 1);
+          }
+        } else {
+          const result = await submitCompetenzeAggiunta(history, userMessage);
+          appendAssistant(result.message);
+          await resyncBlocks();
+        }
       } else if (phase === "lingue") {
         const result = await submitLingue(history, userMessage);
         appendAssistant(result.message);

@@ -247,15 +247,22 @@
     },
     "competenze": {
       "testoLabel": "Skill (one line)",
-      "testoPlaceholder": "e.g. Can read and interpret a balance sheet",
-      "tipoLabel": "Type",
-      "tipoTeorica": "Theoretical",
-      "tipoApplicata": "Applied",
+      "testoPlaceholder": "e.g. Financial statement analysis",
       "evidenzaLabel": "Evidence (related exam or experience)",
       "evidenzaPlaceholder": "e.g. Financial Accounting",
-      "emptyAdd": "No skills yet. Every skill needs linked evidence.",
       "emptyView": "No skills yet.",
-      "academicSkills": "Academic skills ({count})"
+      "academicSkills": "Academic skills ({count})",
+      "softHeading": "Soft skills",
+      "softPlaceholder": "Emerges from the questions about your experiences during onboarding — you can still edit it here.",
+      "hardHeading": "Hard skills",
+      "hardEmpty": "No hard skills yet.",
+      "academicHeading": "Academic skills",
+      "academicEmpty": "No academic skills yet.",
+      "livelloLabels": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      }
     },
     "lingue": {
       "linguaLabel": "Language",
@@ -268,11 +275,6 @@
       "emptyView": "No languages yet."
     },
     "prose": {
-      "statoLabels": {
-        "direzione_chiara": "Clear direction",
-        "ipotesi": "A few hypotheses",
-        "esplorazione": "Still exploring"
-      },
       "notSpecified": "Not specified yet."
     }
   },
@@ -993,8 +995,11 @@
     "disponibilitaQuestion": "What are you looking for (an internship, part-time, a project...) and from when are you available?",
     "disponibilitaDone": "Noted — check the Availability block. Confirm it to unlock applications.",
     "afterDisponibilitaApproved": "Applications unlocked. Your card is at {pct}%: you can already apply to associations on MIRA. Or we can finish the last sections — skills, interests, how you describe yourself, career plan — in about 5 minutes: associations see a much stronger profile.",
-    "startFaseBMessage": "Let's finish the last sections together: 5 minutes and your card is done.\n\nFrom your exams and experiences, here are the skills I'd suggest:\n{listText}\n\nConfirm them on the right when they look good.",
+    "startFaseBMessage": "Let's finish the last sections together: a few minutes and your card is done.\n\nFrom your grades, here are the academic skills I'd already suggest:\n{listText}\n\nNow tell me: what tools, software, or methods did you use in the experiences you told me about?",
     "noCompetenzeDraft": "(no draft — you can add some from your Profile later)",
+    "softSkillQuestionOneFallback": "Was there a moment, in one of your experiences, where you had to handle something unexpected or a disagreement within the group? What did you do?",
+    "softSkillQuestionTwo": "One last thing: when you don't have clear direction on how to proceed, do you prefer to decide the direction yourself or look for input from someone else before moving forward?",
+    "competenzeSequenceDone": "Here are your skills — take a look on the right and confirm them when they look good.",
     "errorSaveCompetenzeProposed": "Couldn't save the suggested skills — try again.",
     "errorCompetenzeRowNotFound": "Skills row not found for this student — try again.",
     "errorSaveCompetenze": "Couldn't save the skills — try again.",
@@ -1003,8 +1008,8 @@
     "lingueQuestion": "What languages do you know, and at what level? (If your program is in English, mention that too alongside the others.)",
     "interessiQuestion": "What interests you professionally — sectors, roles, types of work?",
     "autodescrizioneQuestion": "Tell me about a project you're proud of: what role did you take?",
-    "pianoCarrieraMagistrale": "How do you see yourself in the next 1-2 years after your master's? Do you have a clear professional direction, a few ideas, or are you still exploring?",
-    "pianoCarrieraOther": "How do you see yourself in the next 1-2 years? A master's, an exchange period, your first job in a specific field — do you have a clear direction, a few ideas, or are you still exploring?",
+    "pianoCarrieraMagistrale": "One last thing: how do you see yourself in the next 1-2 years after your master's? Tell me whatever fits — a job in a specific field, wanting to keep studying or specializing further, taking a break, or simply not having decided yet and still weighing your options: any answer is fine.",
+    "pianoCarrieraOther": "One last thing: how do you see yourself in the next 1-2 years? Tell me whatever fits — a master's, an exchange period, a job in a specific field, or simply not having decided yet and still weighing your options: any answer is fine.",
     "resumeFaseBMessage": "Welcome back! Let's finish the last sections of your card together.\n\n{question}",
     "resumeFallbackQuestion": "Shall we continue?",
     "lingueDone": "Noted — check the Languages block. Confirm it when it looks good.",

@@ -18,6 +18,7 @@ import type {
   DisponibilitaProseContent,
   CompetenzaItem,
   CompetenzeProseContent,
+  HardSkillLivello,
   LinguaItem,
   LingueProseContent,
   InteressiProseContent,
@@ -606,7 +607,7 @@ export async function submitEsperienzaRisposta(
     [
       {
         role: "system",
-        content: `Dalla conversazione, estrai le esperienze raccontate dallo studente. Per ognuna scrivi una descrizione di 2-3 righe di cosa ha fatto concretamente — fatti, non aggettivi di carattere. La MIRA card è sempre in inglese: scrivi "titolo" e "descrizione" in inglese anche se la conversazione è in italiano (non tradurre invece "organizzazione" se è un nome proprio, es. il nome di un'azienda). Rispondi SOLO in JSON: {"items":[{"titolo":"","organizzazione":"","periodo":"","descrizione":""}]}`,
+        content: `Dalla conversazione, estrai le esperienze raccontate dallo studente. Per ognuna scrivi una descrizione di 2-3 righe di cosa ha fatto concretamente — fatti, non aggettivi di carattere. STILE OBBLIGATORIO: come un CV professionale — frasi che iniziano direttamente con un verbo al passato, senza soggetto (es. "Built a...", "Led a team of...", "Analyzed..."), MAI "I built..." né "He/she built...". La MIRA card è sempre in inglese: scrivi "titolo" e "descrizione" in inglese anche se la conversazione è in italiano (non tradurre invece "organizzazione" se è un nome proprio, es. il nome di un'azienda). Rispondi SOLO in JSON: {"items":[{"titolo":"","organizzazione":"","periodo":"","descrizione":""}]}`,
       },
       { role: "user", content: recentText },
     ],
@@ -742,49 +743,52 @@ export async function afterDisponibilitaApproved(history: ChatMessage[]) {
 // solo adattata a non chiamare più approveCardBlock da sola (fatto dal pannello).
 // ---------------------------------------------------------------------------
 
-/** Distingue esplicitamente esperienza (cosa hai fatto) da competenza (cosa hai imparato/sai fare) —
- * senza questo l'AI tende a ricopiare la descrizione dell'esperienza come se fosse una competenza. */
-const COMPETENZE_EXTRACTION_PROMPT = `Proponi competenze concrete, una per riga, derivate dai fatti elencati (esami o esperienze reali, mai inventate).
+/** Cluster gli esami per area tematica e propone una academic skill per area dove lo studente
+ * è andato bene — a differenza del vecchio "una per esame", scala con le aree (poche) non con
+ * il numero di esami, quindi non satura il budget di token con tanti esami. */
+const ACADEMIC_SKILLS_PATTERN_PROMPT = `Ti do la lista di tutti gli esami sostenuti con il voto. Raggruppa gli esami per area tematica affine (es. quantitativo/statistica, finance, diritto, marketing, informatica...) e proponi UNA competenza accademica per ciascuna area in cui lo studente è andato bene (voti alti, o comunque un pattern chiaro rispetto alla sua media) — non una per ogni singolo esame, e non per aree con pochi esami o voti medio-bassi.
 
-DIFFERENZA FONDAMENTALE (non confonderla mai):
-- Un'ESPERIENZA è un'attività che lo studente ha fatto (un progetto, un programma, un'iniziativa) — è già scritta nei fatti sotto, non va ripetuta.
-- Una COMPETENZA è un'abilità trasferibile che lo studente ha imparato o dimostrato facendo quella cosa — MAI una parafrasi o un riassunto dell'esperienza stessa.
+Ogni competenza ha un'evidenza BREVE: il nome dell'area tematica (es. "Quantitative finance"), MAI un elenco di esami o il testo completo. Vietati aggettivi vaghi tipo "conoscenza della materia" — sii specifico (es. "Corporate valuation techniques", non "financial knowledge"). La MIRA card è sempre in inglese: scrivi "testo" ed "evidenza_ref" in inglese anche se i nomi degli esami sono in italiano. Rispondi SOLO in JSON: {"items":[{"testo":"","evidenza_ref":""}]}`;
 
-Esempio SBAGLIATO (vietato): esperienza "Ha costruito una piattaforma AI-first per l'orientamento professionale, usando Claude Code, Vercel, Supabase" → competenza "Sviluppo di una piattaforma AI-first per l'orientamento professionale" (è solo una copia del fatto, non un'abilità).
-Esempio CORRETTO per la stessa esperienza → competenze come "Uso di strumenti di sviluppo AI-assisted (Claude Code, Vercel, Supabase)" oppure "Capacità di portare avanti un progetto in autonomia dall'idea al prodotto funzionante".
+/** Estrae hard skill (strumenti/tecnologie/metodologie) da una risposta libera, con livello stimato
+ * dal modo in cui lo studente ne parla — mai un menu vuoto da riempire da zero. */
+const HARD_SKILLS_EXTRACTION_PROMPT = `Lo studente ha appena risposto a una domanda su quali strumenti/tecnologie/metodologie ha usato nelle sue esperienze. Estrai le hard skill concrete menzionate — mai skill generiche non nominate esplicitamente. Per ognuna stima un "livello" ("beginner"|"intermediate"|"advanced") dal modo in cui ne parla (es. "ho solo provato" = beginner, "lo uso da anni professionalmente"/"ho guidato lo sviluppo" = advanced) — se non è chiaro, "intermediate". Evidenza BREVE: il nome dell'esperienza a cui si riferisce, mai il testo completo. STILE: come una voce di CV, breve, senza soggetto (es. "Excel financial modeling", "Python for data analysis"), mai una frase completa. La MIRA card è sempre in inglese: scrivi "testo" ed "evidenza_ref" in inglese anche se la risposta è in italiano. Rispondi SOLO in JSON: {"items":[{"testo":"","livello":"beginner|intermediate|advanced","evidenza_ref":""}]}`;
 
-Per ogni esame proponi al massimo una competenza teorica (quella più specifica e rilevante — mai generica tipo "conoscenza della materia"). Per ogni esperienza proponi 1-2 competenze applicate concrete. Ogni competenza indica se è "teorica" o "applicata" e a quale esame/esperienza fa riferimento (evidenza) — mai una competenza senza un'evidenza reale nei fatti forniti. Vietati aggettivi di carattere. La MIRA card è sempre in inglese: scrivi "testo" ed "evidenza_ref" in inglese anche se i fatti forniti sono in italiano. Rispondi SOLO in JSON: {"items":[{"testo":"","tipo":"teorica|applicata","evidenza_ref":""}]}`;
+function parseLivello(raw: unknown): HardSkillLivello | null {
+  return raw === "beginner" || raw === "intermediate" || raw === "advanced" ? raw : null;
+}
 
+/** Apre la Fase B: propone le academic skill (silenziose, nessuna domanda) e subito dopo fa
+ * la prima vera domanda (hard skill) — l'inizio della sequenza gestita da submitCompetenzeRisposta. */
 export async function startFaseB() {
-  const { supabase, profileId, blocks } = await getOnboardingContext();
+  const { supabase, profileId, studentProfileId, blocks } = await getOnboardingContext();
   const t = await getTranslations("OnboardingEngine");
 
-  const contextLines = [
-    ...blocks.formazione.data.items.map((i) => `Esame: ${i.esame} (voto ${i.voto ?? "idoneo"})`),
-    ...blocks.esperienze.data.items.map((i) => `Esperienza: ${i.titolo || i.organizzazione} — ${i.descrizione}`),
-  ].join("\n");
+  const examContextLines = blocks.formazione.data.items
+    .map((i) => `${i.esame}: ${i.voto ?? "idoneo"}`)
+    .join("\n");
 
   const extracted = await chatCompletion(
     [
-      { role: "system", content: COMPETENZE_EXTRACTION_PROMPT },
-      { role: "user", content: contextLines || "Nessun esame o esperienza disponibile." },
+      { role: "system", content: ACADEMIC_SKILLS_PATTERN_PROMPT },
+      { role: "user", content: examContextLines || "Nessun esame disponibile." },
     ],
-    { temperature: 0.3, maxTokens: 700, jsonMode: true }
+    { temperature: 0.3, maxTokens: 600, jsonMode: true }
   );
 
   const parsed = JSON.parse(extracted);
   const items: CompetenzaItem[] = (parsed.items ?? []).map((it: any) => ({
     id: crypto.randomUUID(),
     testo: it.testo ?? "",
-    tipo: it.tipo === "applicata" ? "applicata" : it.tipo === "teorica" ? "teorica" : null,
+    categoria: "academic" as const,
+    livello: null,
     evidenza_ref: it.evidenza_ref ?? null,
     verified: false,
     origin: "onboarding",
   }));
 
-  const { studentProfileId } = await getOnboardingContext();
   const { data: updatedRows, error } = await (supabase.from("card_blocks") as any)
-    .update({ prose_content: { items }, status: "draft" })
+    .update({ prose_content: { items, soft_skills_testo: null }, status: "draft" })
     .eq("student_profile_id", studentProfileId)
     .eq("block_type", "competenze")
     .select("id");
@@ -797,16 +801,128 @@ export async function startFaseB() {
     throw new Error(t("errorCompetenzeRowNotFound"));
   }
 
-  const listText = items.map((i) => `• ${i.testo}${i.evidenza_ref ? ` (${i.tipo ?? "—"} — ${i.evidenza_ref})` : ""}`).join("\n");
+  const listText = items.map((i) => `• ${i.testo}`).join("\n");
   const message = t("startFaseBMessage", { listText: listText || t("noCompetenzeDraft") });
 
   await saveFaseBConversation(supabase, profileId, [{ role: "assistant", content: message }]);
 
-  return { message, phase: "competenze" as OnboardingPhase, competenze: { status: "draft" as CardBlockStatus, data: { items } } };
+  return {
+    message,
+    phase: "competenze" as OnboardingPhase,
+    competenze: { status: "draft" as CardBlockStatus, data: { items, soft_skills_testo: null } },
+    done: false,
+  };
 }
 
 /**
- * Fase "competenze": MIRA propone le competenze e lo studente può solo Confermare dal
+ * Sequenza a 3 turni dentro la fase "competenze", stesso schema di submitAutodescrizioneRisposta:
+ * subIndex 0 = risposta alla domanda hard skill → estrae le hard skill e fa la prima domanda
+ * soft skill (generata dall'AI, ancorata a un'esperienza reale, stile comportamentale/STAR).
+ * subIndex 1 = risposta alla prima domanda soft → fa la seconda (scelta forzata, statica).
+ * subIndex 2 = risposta alla seconda domanda soft → sintetizza le due risposte in un paragrafo
+ * breve in prima persona (mai tag/etichette), salvato in soft_skills_testo.
+ */
+export async function submitCompetenzeRisposta(history: ChatMessage[], userMessage: string, subIndex: number) {
+  const { supabase, profileId, studentProfileId, blocks } = await getOnboardingContext();
+  const t = await getTranslations("OnboardingEngine");
+  const locale = await getLocale();
+  const conversation = [...history, { role: "user" as const, content: userMessage }];
+
+  if (subIndex === 0) {
+    const esperienzeContext = blocks.esperienze.data.items
+      .map((i) => `${i.titolo || i.organizzazione}: ${i.descrizione}`)
+      .join("\n");
+
+    const extracted = await chatCompletion(
+      [
+        { role: "system", content: HARD_SKILLS_EXTRACTION_PROMPT },
+        { role: "user", content: `Esperienze dello studente:\n${esperienzeContext || "nessuna"}\n\nRisposta sugli strumenti usati: "${userMessage}"` },
+      ],
+      { temperature: 0.3, maxTokens: 400, jsonMode: true }
+    );
+    const parsed = JSON.parse(extracted);
+    const hardItems: CompetenzaItem[] = (parsed.items ?? []).map((it: any) => ({
+      id: crypto.randomUUID(),
+      testo: it.testo ?? "",
+      categoria: "hard" as const,
+      livello: parseLivello(it.livello),
+      evidenza_ref: it.evidenza_ref ?? null,
+      verified: false,
+      origin: "onboarding",
+    }));
+    const items = [...blocks.competenze.data.items, ...hardItems];
+
+    await (supabase.from("card_blocks") as any)
+      .update({ prose_content: { items, soft_skills_testo: blocks.competenze.data.soft_skills_testo ?? null }, status: "draft" })
+      .eq("student_profile_id", studentProfileId)
+      .eq("block_type", "competenze");
+
+    const languageInstruction = locale === "it" ? "Scrivi in italiano." : "Write in English.";
+    const esperienzeList = blocks.esperienze.data.items
+      .map((i) => `- ${i.titolo || i.organizzazione}: ${i.descrizione}`)
+      .join("\n") || "nessuna esperienza disponibile";
+    const question = await chatCompletion(
+      [
+        {
+          role: "system",
+          content: `Sei MIRA. Scegli UNA delle esperienze reali dello studente elencate sotto (quella più ricca di dinamiche di gruppo, pressione o responsabilità) e scrivi UNA domanda comportamentale breve e naturale, in stile metodo STAR, che chieda di un episodio concreto vissuto in quell'esperienza (es. un conflitto gestito, una decisione sotto pressione, un momento di leadership). Non nominare "metodo STAR" né spiegare cosa stai facendo. Una sola domanda, colloquiale, come la farebbe un amico curioso — non un elenco di opzioni, non un interrogatorio. Rispondi SOLO con la domanda. ${languageInstruction}`,
+        },
+        { role: "user", content: esperienzeList },
+      ],
+      { temperature: 0.6, maxTokens: 150 }
+    );
+
+    const message = question.trim() || t("softSkillQuestionOneFallback");
+    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+    await saveFaseBConversation(supabase, profileId, fullConversation);
+    return { message, phase: "competenze" as OnboardingPhase, done: false };
+  }
+
+  if (subIndex === 1) {
+    const message = t("softSkillQuestionTwo");
+    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+    await saveFaseBConversation(supabase, profileId, fullConversation);
+    return { message, phase: "competenze" as OnboardingPhase, done: false };
+  }
+
+  // subIndex 2 (ultimo turno): sintetizza le due risposte soft-skill in un paragrafo in prima persona.
+  const recentText = conversation
+    .slice(-4)
+    .map((m) => `${m.role === "user" ? "Studente" : "MIRA"}: ${m.content}`)
+    .join("\n");
+
+  const synthesized = await chatCompletion(
+    [
+      {
+        role: "system",
+        content: `Dalle ultime due domande/risposte, scrivi un paragrafo breve (2-3 frasi) in PRIMA PERSONA che descrive lo stile di lavoro e le soft skill dello studente — solo ciò che emerge davvero dalle risposte, mai aggettivi generici scollegati (niente "team player" buttato lì senza motivo). La MIRA card è sempre in inglese: scrivi "testo" in inglese (prima persona: "I...") anche se lo studente ha risposto in italiano. Rispondi SOLO in JSON: {"testo":""}`,
+      },
+      { role: "user", content: recentText },
+    ],
+    { temperature: 0.4, maxTokens: 300, jsonMode: true }
+  );
+  const { testo } = JSON.parse(synthesized) as { testo: string };
+
+  const items = blocks.competenze.data.items;
+  await (supabase.from("card_blocks") as any)
+    .update({ prose_content: { items, soft_skills_testo: testo }, status: "draft" })
+    .eq("student_profile_id", studentProfileId)
+    .eq("block_type", "competenze");
+
+  const message = t("competenzeSequenceDone");
+  const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+  await saveFaseBConversation(supabase, profileId, fullConversation);
+
+  return {
+    message,
+    phase: "competenze" as OnboardingPhase,
+    done: true,
+    competenze: { status: "draft" as CardBlockStatus, data: { items, soft_skills_testo: testo } },
+  };
+}
+
+/**
+ * Fase "competenze", dopo la fine della sequenza a 3 turni: lo studente può solo Confermare dal
  * pannello — ma può anche scrivere in chat per aggiungerne altre. Senza questa funzione
  * quel messaggio cadeva nel vuoto senza risposta (nessun ramo lo intercettava).
  */
@@ -824,7 +940,7 @@ export async function submitCompetenzeAggiunta(history: ChatMessage[], userMessa
     [
       {
         role: "system",
-        content: `${COMPETENZE_EXTRACTION_PROMPT}\n\nLo studente ha scritto un messaggio in chat per aggiungere competenze — collegale ai fatti elencati sotto (mai inventare un'evidenza). Se menziona un esame o un'esperienza non presente nella lista, ignora quella competenza (senza evidenza reale non entra in card).`,
+        content: `Lo studente ha scritto un messaggio in chat per aggiungere competenze — collegale ai fatti elencati sotto (esami o esperienze reali, mai inventare un'evidenza). Se menziona un esame o un'esperienza non presente nella lista, ignora quella competenza (senza evidenza reale non entra in card). Categorizza ciascuna come "hard" (strumenti/tecnologie/metodologie da un'esperienza) o "academic" (da un esame) — mai altre categorie. Per le hard skill stima un "livello" ("beginner"|"intermediate"|"advanced"), null per le academic. Evidenza BREVE (nome esame o esperienza, mai il testo completo). STILE CV per "testo": breve, senza soggetto. La MIRA card è sempre in inglese: scrivi "testo" ed "evidenza_ref" in inglese anche se il messaggio è in italiano. Rispondi SOLO in JSON: {"items":[{"testo":"","categoria":"hard|academic","livello":"beginner|intermediate|advanced|null","evidenza_ref":""}]}`,
       },
       { role: "user", content: `Fatti disponibili:\n${contextLines || "nessuno"}\n\nMessaggio studente: "${userMessage}"` },
     ],
@@ -835,7 +951,8 @@ export async function submitCompetenzeAggiunta(history: ChatMessage[], userMessa
   const newItems: CompetenzaItem[] = (parsed.items ?? []).map((it: any) => ({
     id: crypto.randomUUID(),
     testo: it.testo ?? "",
-    tipo: it.tipo === "applicata" ? "applicata" : it.tipo === "teorica" ? "teorica" : null,
+    categoria: it.categoria === "academic" ? "academic" as const : "hard" as const,
+    livello: parseLivello(it.livello),
     evidenza_ref: it.evidenza_ref ?? null,
     verified: false,
     origin: "onboarding",
@@ -844,7 +961,7 @@ export async function submitCompetenzeAggiunta(history: ChatMessage[], userMessa
   const items = [...blocks.competenze.data.items, ...newItems];
 
   const { data: updatedRows, error } = await (supabase.from("card_blocks") as any)
-    .update({ prose_content: { items }, status: "draft" })
+    .update({ prose_content: { items, soft_skills_testo: blocks.competenze.data.soft_skills_testo ?? null }, status: "draft" })
     .eq("student_profile_id", studentProfileId)
     .eq("block_type", "competenze")
     .select("id");
@@ -864,7 +981,11 @@ export async function submitCompetenzeAggiunta(history: ChatMessage[], userMessa
   const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
   await saveFaseBConversation(supabase, profileId, fullConversation);
 
-  return { message, phase: "competenze" as OnboardingPhase, competenze: { status: "draft" as CardBlockStatus, data: { items } } };
+  return {
+    message,
+    phase: "competenze" as OnboardingPhase,
+    competenze: { status: "draft" as CardBlockStatus, data: { items, soft_skills_testo: blocks.competenze.data.soft_skills_testo ?? null } },
+  };
 }
 
 const RESUME_FASE_B_QUESTION_KEYS: Partial<Record<OnboardingPhase, string>> = {
@@ -980,7 +1101,7 @@ export async function submitInteressi(history: ChatMessage[], userMessage: strin
     [
       {
         role: "system",
-        content: `Scrivi una prosa breve (2-3 frasi) che unisce interessi professionali e personali dello studente, in terza persona, solo fatti/temi concreti. La MIRA card è sempre in inglese: scrivi "testo" in inglese anche se lo studente ha risposto in italiano. Rispondi SOLO in JSON: {"testo":""}`,
+        content: `Scrivi una prosa breve (2-3 frasi) che unisce interessi professionali e personali dello studente, in PRIMA PERSONA (es. "I'm drawn to...", "I enjoy..."), solo fatti/temi concreti. La MIRA card è sempre in inglese: scrivi "testo" in inglese (prima persona) anche se lo studente ha risposto in italiano. Rispondi SOLO in JSON: {"testo":""}`,
       },
       { role: "user", content: recentText },
     ],
@@ -1085,7 +1206,7 @@ export async function submitPianoCarriera(history: ChatMessage[], userMessage: s
   const conversation = [...history, { role: "user" as const, content: userMessage }];
 
   const data = await extractJSON(
-    `Estrai dal messaggio: {"stato":"direzione_chiara|ipotesi|esplorazione","testo":""}. "stato" è direzione_chiara SOLO se lo studente indica un settore/ruolo definito in modo esplicito e sicuro; ipotesi se menziona 2-3 direzioni in valutazione; esplorazione se non ha ancora idea o è vago. Non forzare mai direzione_chiara per default. "testo" va sempre valorizzato (riformula il messaggio se serve, non lasciarlo vuoto) e scritto in inglese anche se il messaggio è in italiano — la MIRA card è sempre in inglese. Rispondi solo JSON.`,
+    `Estrai dal messaggio: {"stato":"direzione_chiara|ipotesi|esplorazione","testo":""}. "stato" è direzione_chiara SOLO se lo studente indica un settore/ruolo definito in modo esplicito e sicuro; ipotesi se menziona 2-3 direzioni in valutazione; esplorazione se non ha ancora idea o è vago. Non forzare mai direzione_chiara per default — "stato" è un dato solo interno, non va mai citato esplicitamente dentro "testo". "testo" va sempre valorizzato (riformula il messaggio in PRIMA PERSONA se serve, non lasciarlo vuoto) e scritto in inglese anche se il messaggio è in italiano — la MIRA card è sempre in inglese. Rispondi solo JSON.`,
     userMessage
   );
 

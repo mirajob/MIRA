@@ -85,17 +85,34 @@ export interface FormazioneProseContent {
   items: FormazioneItem[];
 }
 
+export type CompetenzaCategoria = "hard" | "academic";
+export type HardSkillLivello = "beginner" | "intermediate" | "advanced";
+
 export interface CompetenzaItem {
   id: string;
   testo: string;
-  tipo: "teorica" | "applicata" | null;
+  /** Sostituisce `tipo` (deprecato) — "hard" = strumenti/tecnologie, "academic" = da pattern sui voti. */
+  categoria?: CompetenzaCategoria;
+  /** Solo per le hard skill; null per le academic. */
+  livello?: HardSkillLivello | null;
   evidenza_ref: string | null;
   verified: boolean;
   origin: ItemOrigin;
+  /** @deprecated pre-redesign — righe vecchie hanno questo invece di `categoria`, mai scritto da codice nuovo. */
+  tipo?: "teorica" | "applicata" | null;
 }
 
 export interface CompetenzeProseContent {
+  /** Solo hard + academic — le soft skill sono in `soft_skills_testo`, non itemizzate. */
   items: CompetenzaItem[];
+  /** Paragrafo breve in prima persona, sintetizzato dalle domande soft-skill — mai a tag. */
+  soft_skills_testo: string | null;
+}
+
+/** Righe pre-redesign hanno `tipo` ma non `categoria` — normalizza in lettura, nessuna migrazione DB necessaria (prose_content è jsonb). */
+export function getCompetenzaCategoria(item: CompetenzaItem): CompetenzaCategoria {
+  if (item.categoria) return item.categoria;
+  return item.tipo === "teorica" ? "academic" : "hard";
 }
 
 export interface LinguaItem {

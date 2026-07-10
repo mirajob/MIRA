@@ -9,7 +9,7 @@ import type {
   DisponibilitaProseContent,
   FormazioneItem,
   EsperienzaItem,
-  CompetenzaItem,
+  CompetenzeProseContent,
   LinguaItem,
   InteressiProseContent,
   AutodescrizioneProseContent,
@@ -21,7 +21,7 @@ interface CandidateCardProps {
   disponibilita?: { data: DisponibilitaProseContent };
   esperienze?: { data: { items: EsperienzaItem[] } };
   formazione?: { data: { items: FormazioneItem[] } };
-  competenze?: { data: { items: CompetenzaItem[] } };
+  competenze?: { data: CompetenzeProseContent };
   lingue?: { data: { items: LinguaItem[] } };
   interessi?: { data: InteressiProseContent };
   autodescrizione?: { data: AutodescrizioneProseContent };
@@ -65,8 +65,8 @@ export function CandidateCard(props: CandidateCardProps) {
         <EsperienzeView items={props.esperienze.data.items} />
       )}
 
-      {props.competenze && props.competenze.data.items.length > 0 && (
-        <CompetenzeView items={props.competenze.data.items} />
+      {props.competenze && (props.competenze.data.items.length > 0 || props.competenze.data.soft_skills_testo) && (
+        <CompetenzeView data={props.competenze.data} />
       )}
 
       {props.lingue && props.lingue.data.items.length > 0 && (

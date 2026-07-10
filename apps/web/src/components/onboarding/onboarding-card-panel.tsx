@@ -134,7 +134,7 @@ export function OnboardingCardPanel({ blocks, phase, onApproved }: OnboardingCar
               return (
                 <CompetenzeBlock
                   key={blockType}
-                  items={blocks.competenze.data.items}
+                  data={blocks.competenze.data}
                   status={blocks.competenze.status}
                   onApproved={() => onApproved("competenze")}
                 />

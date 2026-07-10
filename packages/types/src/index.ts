@@ -26,6 +26,8 @@ export type {
   EsperienzeProseContent,
   FormazioneItem,
   FormazioneProseContent,
+  CompetenzaCategoria,
+  HardSkillLivello,
   CompetenzaItem,
   CompetenzeProseContent,
   LinguaItem,
@@ -37,3 +39,4 @@ export type {
   ProseContentByBlockType,
   CardBlock,
 } from "./card-blocks";
+export { getCompetenzaCategoria } from "./card-blocks";

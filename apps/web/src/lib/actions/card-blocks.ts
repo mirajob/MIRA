@@ -52,7 +52,7 @@ const DEFAULT_PROSE_CONTENT: Record<CardBlockType, unknown> = {
   disponibilita: { cosa_cerca: null, ambito: null, periodo: null, dove: null },
   esperienze: { items: [] },
   formazione: { items: [] },
-  competenze: { items: [] },
+  competenze: { items: [], soft_skills_testo: null },
   lingue: { items: [] },
   autodescrizione: { testo: null },
   interessi: { testo: null },

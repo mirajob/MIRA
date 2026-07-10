@@ -6,8 +6,6 @@ import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
 import type { CardBlockStatus, PianoCarrieraStato } from "@mira/types";
 
-const STATO_KEYS: PianoCarrieraStato[] = ["direzione_chiara", "ipotesi", "esplorazione"];
-
 interface ProseBlockProps {
   blockType: "autodescrizione" | "interessi" | "piano_carriera";
   title: string;
@@ -50,25 +48,6 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
       <CardBlockHeader title={title} status={status} blockType={blockType} onApproved={onApproved} />
       <div className="p-5 space-y-3">
         {intro && <p className="text-body-sm text-ink-secondary italic">{intro}</p>}
-        {blockType === "piano_carriera" && (
-          <div className="flex flex-wrap gap-2">
-            {STATO_KEYS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => {
-                  setStatoValue(s);
-                  setDirty(true);
-                }}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                  statoValue === s ? "bg-petrol text-white border-petrol" : "border-border text-ink-secondary"
-                }`}
-              >
-                {t(`prose.statoLabels.${s}`)}
-              </button>
-            ))}
-          </div>
-        )}
         <textarea
           value={text}
           placeholder={placeholder}
@@ -95,11 +74,14 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
   );
 }
 
-/** Resa di sola lettura, riusata dal Profilo (default) e dalla vista associazione/azienda. */
+/**
+ * Resa di sola lettura, riusata dal Profilo (default) e dalla vista associazione/azienda.
+ * `stato` (piano_carriera) non è più mostrato come categoria separata — resta solo un dato
+ * interno, il concetto (magistrale/lavoro/esplorazione) vive dentro il testo stesso.
+ */
 export function ProseView({
   title,
   testo,
-  stato,
   serif,
 }: {
   title: string;
@@ -111,11 +93,6 @@ export function ProseView({
   return (
     <div className="p-5">
       <p className="text-eyebrow text-navy/60 uppercase mb-2">{title}</p>
-      {stato && (
-        <span className="inline-block mb-2 text-xs px-2 py-0.5 rounded-full border border-border text-ink-secondary">
-          {t(`prose.statoLabels.${stato}`)}
-        </span>
-      )}
       {testo ? (
         <p className={`text-body-sm text-ink ${serif ? "font-display italic" : ""}`}>{testo}</p>
       ) : (
