@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { CandidateCard } from "@/components/card-view/candidate-card";
 import { ContactButton } from "./contact-button";
+import { getTranslations } from "next-intl/server";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -17,6 +18,7 @@ export default async function CompanyCandidateCardPage({ params, searchParams }:
   const { searchId } = await searchParams;
   const { company } = await getCompanyContext(slug);
   const supabase = await createServiceClient();
+  const t = await getTranslations("CompanyCandidateCard");
 
   const { data: codeRow } = await (supabase.from("company_candidate_codes") as any)
     .select("student_profile_id")
@@ -62,9 +64,9 @@ export default async function CompanyCandidateCardPage({ params, searchParams }:
             href={searchId ? `/company/${slug}/search?searchId=${searchId}` : `/company/${slug}/search`}
             className="text-body-sm text-ink-tertiary hover:text-navy transition-colors"
           >
-            ← Torna alla ricerca
+            {t("backToSearch")}
           </Link>
-          <h1 className="font-display text-h1 text-navy mt-2">Candidato {code}</h1>
+          <h1 className="font-display text-h1 text-navy mt-2">{t("candidateHeading", { code })}</h1>
           <p className="text-body-sm text-ink-tertiary">
             {student.degree_program ?? "—"} {student.degree_level ? `· ${student.degree_level}` : ""}
           </p>

@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { approveAssociation, rejectAssociation } from "@/lib/actions/association-register";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export function ApproveRejectButtons({ associationId, status }: { associationId: string; status: string }) {
+  const t = useTranslations("AdminAssociations");
+  const c = useTranslations("Common");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -16,7 +19,7 @@ export function ApproveRejectButtons({ associationId, status }: { associationId:
   }
 
   async function handleReject() {
-    const reason = window.prompt("Motivo del rifiuto (opzionale):");
+    const reason = window.prompt(t("rejectReasonPrompt"));
     setLoading(true);
     await rejectAssociation(associationId, reason ?? "");
     router.refresh();
@@ -31,14 +34,14 @@ export function ApproveRejectButtons({ associationId, status }: { associationId:
           disabled={loading}
           className="text-body-sm text-success font-medium hover:underline disabled:opacity-40"
         >
-          Approva
+          {c("approve")}
         </button>
         <button
           onClick={handleReject}
           disabled={loading}
           className="text-body-sm text-error hover:underline disabled:opacity-40"
         >
-          Rifiuta
+          {c("reject")}
         </button>
       </div>
     );

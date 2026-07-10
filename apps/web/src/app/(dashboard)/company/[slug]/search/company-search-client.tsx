@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import {
   createCompanySearch,
   loadSearchMessages,
@@ -24,11 +25,11 @@ interface ChatMessage {
   candidates?: CandidateMatch[];
 }
 
-const DIMENSION_LABEL: Record<CandidateMatch["dimension"], string> = {
-  competenze: "Match su competenze",
-  disponibilita: "Match su disponibilità",
-  entrambe: "Match forte",
-};
+interface Props {
+  slug: string;
+  initialSearches: SearchThread[];
+  initialActiveId?: string;
+}
 
 const DIMENSION_CLASS: Record<CandidateMatch["dimension"], string> = {
   competenze: "bg-petrol-50 text-petrol-700",
@@ -36,13 +37,16 @@ const DIMENSION_CLASS: Record<CandidateMatch["dimension"], string> = {
   entrambe: "bg-emerald-100 text-emerald-700",
 };
 
-interface Props {
-  slug: string;
-  initialSearches: SearchThread[];
-  initialActiveId?: string;
-}
-
 export function CompanySearchClient({ slug, initialSearches, initialActiveId }: Props) {
+  const t = useTranslations("CompanySearch");
+  const c = useTranslations("Common");
+  const locale = useLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
+  const DIMENSION_LABEL: Record<CandidateMatch["dimension"], string> = {
+    competenze: t("dimensionCompetenze"),
+    disponibilita: t("dimensionDisponibilita"),
+    entrambe: t("dimensionEntrambe"),
+  };
   const [searches, setSearches] = useState<SearchThread[]>(initialSearches);
   const [activeId, setActiveId] = useState<string | null>(
     (initialActiveId && initialSearches.some((s) => s.id === initialActiveId))
@@ -133,12 +137,12 @@ export function CompanySearchClient({ slug, initialSearches, initialActiveId }: 
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-            Nuova ricerca
+            {t("newSearch")}
           </button>
         </div>
         <div className="flex-1 overflow-y-auto min-h-0">
           {searches.length === 0 ? (
-            <p className="text-body-sm text-ink-tertiary text-center py-6 px-3">Nessuna ricerca. Inizia con una nuova.</p>
+            <p className="text-body-sm text-ink-tertiary text-center py-6 px-3">{t("noSearches")}</p>
           ) : searches.map((s) => (
             <div
               key={s.id}
@@ -163,7 +167,7 @@ export function CompanySearchClient({ slug, initialSearches, initialActiveId }: 
                   <>
                     <p className="text-body-sm font-medium truncate">{s.title}</p>
                     <p className="text-xs text-ink-tertiary">
-                      {new Date(s.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short" })}
+                      {new Date(s.created_at).toLocaleDateString(dateLocale, { day: "numeric", month: "short" })}
                     </p>
                   </>
                 )}
@@ -205,12 +209,12 @@ export function CompanySearchClient({ slug, initialSearches, initialActiveId }: 
         {!activeId ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <p className="text-body text-ink-secondary mb-4">Inizia una nuova ricerca di talenti</p>
+              <p className="text-body text-ink-secondary mb-4">{t("startNewSearch")}</p>
               <button
                 onClick={handleNewSearch}
                 className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
               >
-                Nuova ricerca
+                {t("newSearch")}
               </button>
             </div>
           </div>
@@ -221,7 +225,7 @@ export function CompanySearchClient({ slug, initialSearches, initialActiveId }: 
                 <div className="flex justify-start">
                   <div className="max-w-[80%] rounded-lg border border-border bg-white px-4 py-3">
                     <p className="text-eyebrow text-petrol uppercase mb-1">MIRA</p>
-                    <p className="text-body text-ink">Descrivi il profilo che stai cercando — ruolo, competenze, settore, attitudine, disponibilità. Posso anche fare domande per capire meglio cosa ti serve.</p>
+                    <p className="text-body text-ink">{t("assistantIntro")}</p>
                   </div>
                 </div>
               )}
@@ -249,13 +253,13 @@ export function CompanySearchClient({ slug, initialSearches, initialActiveId }: 
                                 href={`/company/${slug}/candidates/${c.code}?searchId=${activeId}`}
                                 className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
                               >
-                                Guarda la MiraCard
+                                {t("viewMiraCard")}
                               </Link>
                               <button
                                 onClick={() => setContactCode(c.code)}
                                 className="text-body-sm text-navy font-medium hover:underline"
                               >
-                                Contatta
+                                {t("contact")}
                               </button>
                             </div>
                           </div>
@@ -290,7 +294,7 @@ export function CompanySearchClient({ slug, initialSearches, initialActiveId }: 
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                  placeholder="Descrivi il profilo che cerchi..."
+                  placeholder={t("searchPlaceholder")}
                   disabled={loading}
                   className="flex-1 px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200 disabled:opacity-50"
                 />
@@ -299,7 +303,7 @@ export function CompanySearchClient({ slug, initialSearches, initialActiveId }: 
                   disabled={loading || !input.trim()}
                   className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
                 >
-                  Invia
+                  {c("send")}
                 </button>
               </div>
             </div>

@@ -3,17 +3,18 @@
 import { useState } from "react";
 import { deleteAssociationAccount } from "@/lib/actions/admin-delete";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export function DeleteAssociationButton({ associationId, name }: { associationId: string; name: string }) {
+  const t = useTranslations("AdminAssociations");
   const [loading, setLoading] = useState(false);
   const [deleted, setDeleted] = useState(false);
   const router = useRouter();
 
   async function handleClick() {
-    const confirmation = window.prompt(
-      `Questa azione elimina definitivamente "${name}" e tutti i suoi dati (candidature, board, cicli, ecc). Non è reversibile.\n\nScrivi ELIMINA per confermare.`
-    );
-    if (confirmation !== "ELIMINA") return;
+    const confirmWord = t("deleteConfirmWord");
+    const confirmation = window.prompt(t("deleteConfirmPrompt", { name, word: confirmWord }));
+    if (confirmation !== confirmWord) return;
 
     setLoading(true);
     const result = await deleteAssociationAccount(associationId);
@@ -26,7 +27,7 @@ export function DeleteAssociationButton({ associationId, name }: { associationId
     router.refresh();
   }
 
-  if (deleted) return <span className="text-xs text-ink-tertiary">Eliminata</span>;
+  if (deleted) return <span className="text-xs text-ink-tertiary">{t("deletedLabel")}</span>;
 
   return (
     <button
@@ -34,7 +35,7 @@ export function DeleteAssociationButton({ associationId, name }: { associationId
       disabled={loading}
       className="text-body-sm text-error hover:underline disabled:opacity-40"
     >
-      {loading ? "Eliminazione..." : "Elimina"}
+      {loading ? t("deleting") : t("deleteButton")}
     </button>
   );
 }

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export function CopyLink({ url }: { url: string }) {
+  const t = useTranslations("AdminUsers");
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -18,7 +20,7 @@ export function CopyLink({ url }: { url: string }) {
         onClick={handleCopy}
         className="flex-shrink-0 text-body-sm font-medium text-petrol hover:text-petrol-700 transition-colors"
       >
-        {copied ? "Copiato!" : "Copia"}
+        {copied ? t("copied") : t("copy")}
       </button>
     </div>
   );

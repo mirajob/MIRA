@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { approveCompany, rejectCompany } from "@/lib/actions/company-register";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export function ApproveRejectButtons({ companyId, status }: { companyId: string; status: string }) {
+  const t = useTranslations("AdminCompanies");
+  const c = useTranslations("Common");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -16,7 +19,7 @@ export function ApproveRejectButtons({ companyId, status }: { companyId: string;
   }
 
   async function handleReject() {
-    const reason = window.prompt("Motivo del rifiuto (opzionale):");
+    const reason = window.prompt(t("rejectReasonPrompt"));
     setLoading(true);
     await rejectCompany(companyId, reason ?? "");
     router.refresh();
@@ -30,7 +33,7 @@ export function ApproveRejectButtons({ companyId, status }: { companyId: string;
         disabled={loading}
         className="text-body-sm text-error hover:underline disabled:opacity-40"
       >
-        Sospendi
+        {t("suspend")}
       </button>
     );
   }
@@ -43,14 +46,14 @@ export function ApproveRejectButtons({ companyId, status }: { companyId: string;
           disabled={loading}
           className="text-body-sm text-success font-medium hover:underline disabled:opacity-40"
         >
-          Approva
+          {c("approve")}
         </button>
         <button
           onClick={handleReject}
           disabled={loading}
           className="text-body-sm text-error hover:underline disabled:opacity-40"
         >
-          Rifiuta
+          {c("reject")}
         </button>
       </div>
     );

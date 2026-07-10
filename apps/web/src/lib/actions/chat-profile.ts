@@ -3,6 +3,7 @@
 import { chatCompletion } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
+import { getLocale } from "next-intl/server";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -40,7 +41,7 @@ async function buildFullContext(profileId: string) {
   return { student, courses, memberships, associations, openCycles };
 }
 
-function buildSystemPrompt(ctx: Awaited<ReturnType<typeof buildFullContext>>): string {
+function buildSystemPrompt(ctx: Awaited<ReturnType<typeof buildFullContext>>, locale: string): string {
   const { student, courses, memberships, associations, openCycles } = ctx;
   const ts = student?.transcript_summary;
 
@@ -153,7 +154,8 @@ REGOLE:
 - Se chiede delle associazioni, SAI in quali è e con che ruolo. NON suggerire di candidarsi ad associazioni in cui è già membro.
 - UNA domanda alla volta. Reagisci prima, poi chiedi.
 - Come un amico intelligente. Diretto, genuino. Non generico.
-- NON ripresentarti. NON dire "Grazie per aver condiviso!" NON fare elenchi.`;
+- NON ripresentarti. NON dire "Grazie per aver condiviso!" NON fare elenchi.
+- LINGUA: rispondi sempre in ${locale === "it" ? "italiano" : "inglese (English)"}, indipendentemente dalla lingua in cui scrive lo studente — segue la lingua dell'interfaccia, non quella del messaggio.`;
 }
 
 export async function sendProfileMessage(
@@ -165,7 +167,8 @@ export async function sendProfileMessage(
   const supabase = await createServiceClient();
 
   const fullCtx = await buildFullContext(profileId);
-  const systemPrompt = buildSystemPrompt(fullCtx);
+  const locale = await getLocale();
+  const systemPrompt = buildSystemPrompt(fullCtx, locale);
 
   const updatedHistory = [
     ...conversationHistory,

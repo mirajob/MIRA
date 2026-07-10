@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ApproveRejectButtons } from "./approve-reject-buttons";
 import { AccessRequestButtons } from "./access-request-buttons";
 import { InvitationForm } from "./invitation-form";
+import { getLocale, getTranslations } from "next-intl/server";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -11,6 +12,9 @@ export default async function AdminCompaniesPage() {
   const ctx = await getUserContext();
   if (!ctx.isMiraAdmin) redirect("/student");
 
+  const t = await getTranslations("AdminCompanies");
+  const locale = await getLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
   const supabase = await createServiceClient();
 
   const { data: accessRequests, error: accessRequestsErr } = await (supabase.from("company_access_requests") as any)
@@ -43,11 +47,11 @@ export default async function AdminCompaniesPage() {
   const others = (companies ?? []).filter((c: any) => !["pending_verification", "verified"].includes(c.verification_status));
 
   const statusLabel: Record<string, string> = {
-    pending_verification: "In attesa",
-    verified: "Attiva",
-    rejected: "Rifiutata",
-    suspended: "Sospesa",
-    invited: "Invitata",
+    pending_verification: t("statusPendingVerification"),
+    verified: t("statusVerified"),
+    rejected: t("statusRejected"),
+    suspended: t("statusSuspended"),
+    invited: t("statusInvited"),
   };
 
   const statusClass: Record<string, string> = {
@@ -85,7 +89,7 @@ export default async function AdminCompaniesPage() {
           </span>
         </td>
         <td className="px-4 py-3 text-body-sm text-ink-tertiary">
-          {new Date(company.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" })}
+          {new Date(company.created_at).toLocaleDateString(dateLocale, { day: "numeric", month: "short", year: "numeric" })}
         </td>
         <td className="px-4 py-3">
           <ApproveRejectButtons
@@ -100,8 +104,8 @@ export default async function AdminCompaniesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-h1 text-navy">Aziende</h1>
-        <p className="mt-1 text-body text-ink-secondary">Gestisci le aziende registrate su MIRA</p>
+        <h1 className="font-display text-h1 text-navy">{t("heading")}</h1>
+        <p className="mt-1 text-body text-ink-secondary">{t("subhead")}</p>
       </div>
 
       <section>
@@ -110,16 +114,16 @@ export default async function AdminCompaniesPage() {
 
       {(accessRequests?.length ?? 0) > 0 && (
         <section>
-          <h2 className="font-display text-h2 text-navy mb-4">Richieste di accesso ({accessRequests.length})</h2>
+          <h2 className="font-display text-h2 text-navy mb-4">{t("accessRequestsHeading", { count: accessRequests.length })}</h2>
           <div className="rounded-lg border border-amber-200 bg-white overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-amber-50">
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Azienda</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Contatto</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Sito</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Data</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Azioni</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableCompany")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableContact")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableWebsite")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableDate")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableActions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -142,7 +146,7 @@ export default async function AdminCompaniesPage() {
                       ) : <span className="text-body-sm text-ink-tertiary">—</span>}
                     </td>
                     <td className="px-4 py-3 text-body-sm text-ink-tertiary">
-                      {new Date(r.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" })}
+                      {new Date(r.created_at).toLocaleDateString(dateLocale, { day: "numeric", month: "short", year: "numeric" })}
                     </td>
                     <td className="px-4 py-3">
                       <AccessRequestButtons requestId={r.id} />
@@ -157,17 +161,17 @@ export default async function AdminCompaniesPage() {
 
       {pending.length > 0 && (
         <section>
-          <h2 className="font-display text-h2 text-navy mb-4">In attesa di approvazione ({pending.length})</h2>
+          <h2 className="font-display text-h2 text-navy mb-4">{t("pendingApprovalHeading", { count: pending.length })}</h2>
           <div className="rounded-lg border border-amber-200 bg-white overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-amber-50">
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Azienda</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Contatto</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Sito</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Stato</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Data</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Azioni</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableCompany")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableContact")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableWebsite")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableStatus")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableDate")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableActions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -180,17 +184,17 @@ export default async function AdminCompaniesPage() {
 
       {active.length > 0 && (
         <section>
-          <h2 className="font-display text-h2 text-navy mb-4">Aziende attive ({active.length})</h2>
+          <h2 className="font-display text-h2 text-navy mb-4">{t("activeCompaniesHeading", { count: active.length })}</h2>
           <div className="rounded-lg border border-border bg-white overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Azienda</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Contatto</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Sito</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Stato</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Data</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Azioni</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableCompany")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableContact")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableWebsite")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableStatus")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableDate")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableActions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -203,17 +207,17 @@ export default async function AdminCompaniesPage() {
 
       {others.length > 0 && (
         <section>
-          <h2 className="font-display text-h2 text-navy mb-4">Altre ({others.length})</h2>
+          <h2 className="font-display text-h2 text-navy mb-4">{t("othersHeading", { count: others.length })}</h2>
           <div className="rounded-lg border border-border bg-white overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Azienda</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Contatto</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Sito</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Stato</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Data</th>
-                  <th className="px-4 py-3 text-left text-label text-ink-secondary">Azioni</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableCompany")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableContact")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableWebsite")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableStatus")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableDate")}</th>
+                  <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableActions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -226,7 +230,7 @@ export default async function AdminCompaniesPage() {
 
       {!companies?.length && (
         <div className="rounded-lg border border-border bg-white p-8 text-center">
-          <p className="text-body text-ink-secondary">Nessuna azienda registrata ancora.</p>
+          <p className="text-body text-ink-secondary">{t("noCompanies")}</p>
         </div>
       )}
     </div>

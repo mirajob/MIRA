@@ -1,13 +1,7 @@
 import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-
-const adminNav = [
-  { label: "Associazioni", href: "/admin/associations" },
-  { label: "Aziende", href: "/admin/companies" },
-  { label: "Utenti", href: "/admin/users" },
-  { label: "Team", href: "/admin/team" },
-];
+import { getTranslations } from "next-intl/server";
 
 export default async function AdminLayout({
   children,
@@ -19,6 +13,14 @@ export default async function AdminLayout({
   if (!ctx.isMiraAdmin) {
     redirect("/student");
   }
+
+  const t = await getTranslations("AdminNav");
+  const adminNav = [
+    { label: t("associationsLink"), href: "/admin/associations" },
+    { label: t("companiesLink"), href: "/admin/companies" },
+    { label: t("usersLink"), href: "/admin/users" },
+    { label: t("teamLink"), href: "/admin/team" },
+  ];
 
   return (
     <div>

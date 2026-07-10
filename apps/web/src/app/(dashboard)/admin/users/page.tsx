@@ -3,11 +3,15 @@ import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { CopyLink } from "./copy-link";
 import { DeleteUserButton } from "./delete-user-button";
+import { getLocale, getTranslations } from "next-intl/server";
 
 export default async function AdminUsersPage() {
   const ctx = await getUserContext();
   if (!ctx.isMiraAdmin) redirect("/student");
 
+  const t = await getTranslations("AdminUsers");
+  const locale = await getLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
   const supabase = await createServiceClient();
 
   const { data: profiles, error } = await supabase
@@ -21,35 +25,35 @@ export default async function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-h1 text-navy">Utenti</h1>
+        <h1 className="font-display text-h1 text-navy">{t("heading")}</h1>
         <p className="mt-1 text-body text-ink-secondary">
-          Tutti gli utenti registrati su MIRA
+          {t("subhead")}
         </p>
       </div>
 
       <div className="rounded-lg border border-border bg-white p-5">
-        <p className="text-label text-navy mb-1">Link di iscrizione generale</p>
+        <p className="text-label text-navy mb-1">{t("signupLinkLabel")}</p>
         <p className="text-body-sm text-ink-secondary mb-3">
-          Condividi questo link per far registrare nuovi studenti su MIRA (richiede un'email istituzionale universitaria).
+          {t("signupLinkIntro")}
         </p>
         <CopyLink url="https://mirajob.cloud/signup" />
       </div>
 
       {!profiles?.length ? (
         <div className="rounded-lg border border-border bg-white p-8 text-center">
-          <p className="text-body text-ink-secondary">Nessun utente registrato</p>
+          <p className="text-body text-ink-secondary">{t("noUsers")}</p>
         </div>
       ) : (
         <div className="rounded-lg border border-border bg-white overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Nome</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Email</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Ruoli</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Corso</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Registrato</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Azioni</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableName")}</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableEmail")}</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableRoles")}</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableCourse")}</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableRegistered")}</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableActions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -80,7 +84,7 @@ export default async function AdminUsersPage() {
                       {(student?.degree_program as string) ?? "—"}
                     </td>
                     <td className="py-4 px-4 text-body-sm text-ink-secondary">
-                      {new Date(p.created_at).toLocaleDateString("it-IT")}
+                      {new Date(p.created_at).toLocaleDateString(dateLocale)}
                     </td>
                     <td className="py-4 px-4">
                       <DeleteUserButton profileId={p.id} name={p.full_name ?? p.email} />

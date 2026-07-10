@@ -3,17 +3,18 @@
 import { useState } from "react";
 import { deleteUserAccount } from "@/lib/actions/admin-delete";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export function DeleteUserButton({ profileId, name }: { profileId: string; name: string }) {
+  const t = useTranslations("AdminUsers");
   const [loading, setLoading] = useState(false);
   const [deleted, setDeleted] = useState(false);
   const router = useRouter();
 
   async function handleClick() {
-    const confirmation = window.prompt(
-      `Questa azione elimina definitivamente l'account di "${name}" e tutti i suoi dati (candidature, associazioni, chat, ecc). Non è reversibile.\n\nScrivi ELIMINA per confermare.`
-    );
-    if (confirmation !== "ELIMINA") return;
+    const confirmWord = t("deleteConfirmWord");
+    const confirmation = window.prompt(t("deleteConfirmPrompt", { name, word: confirmWord }));
+    if (confirmation !== confirmWord) return;
 
     setLoading(true);
     const result = await deleteUserAccount(profileId);
@@ -26,7 +27,7 @@ export function DeleteUserButton({ profileId, name }: { profileId: string; name:
     router.refresh();
   }
 
-  if (deleted) return <span className="text-xs text-ink-tertiary">Eliminato</span>;
+  if (deleted) return <span className="text-xs text-ink-tertiary">{t("deletedLabel")}</span>;
 
   return (
     <button
@@ -34,7 +35,7 @@ export function DeleteUserButton({ profileId, name }: { profileId: string; name:
       disabled={loading}
       className="text-body-sm text-error hover:underline disabled:opacity-40"
     >
-      {loading ? "Eliminazione..." : "Elimina"}
+      {loading ? t("deleting") : t("deleteButton")}
     </button>
   );
 }

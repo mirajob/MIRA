@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 interface Props {
   searchParams: Promise<{ email?: string }>;
@@ -6,6 +7,8 @@ interface Props {
 
 export default async function PendingPage({ searchParams }: Props) {
   const { email } = await searchParams;
+  const t = await getTranslations("PendingPage");
+  const c = await getTranslations("Common");
 
   return (
     <div className="min-h-screen bg-paper flex flex-col">
@@ -24,24 +27,24 @@ export default async function PendingPage({ searchParams }: Props) {
             </svg>
           </div>
 
-          <h1 className="font-display text-h1 text-navy mb-3">Richiesta inviata</h1>
+          <h1 className="font-display text-h1 text-navy mb-3">{t("heading")}</h1>
           <p className="text-body text-ink-secondary mb-6">
             {email ? (
-              <>Abbiamo ricevuto la richiesta di accesso per <strong className="text-navy">{email}</strong>.</>
+              t.rich("bodyWithEmail", { email, strong: (chunks) => <strong className="text-navy">{chunks}</strong> })
             ) : (
-              "Abbiamo ricevuto la tua richiesta di accesso."
-            )}{" "}
-            Il team MIRA la esaminerà a breve.
+              t("bodyWithoutEmail")
+            )}
+            {t("bodySuffix")}
           </p>
 
           <div className="rounded-lg border border-border bg-white p-6 text-left mb-6">
-            <p className="text-label text-navy mb-3">Cosa succede ora</p>
+            <p className="text-label text-navy mb-3">{t("whatHappensNow")}</p>
             <ol className="space-y-3">
               {[
-                "Verifichiamo i dati della tua azienda",
-                "Se approvata, ricevi un'email con il link per creare il tuo account",
-                "Imposti la password e accedi",
-                "Inizi a cercare candidati",
+                t("step1"),
+                t("step2"),
+                t("step3"),
+                t("step4"),
               ].map((step, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-navy text-white text-xs flex items-center justify-center font-medium">
@@ -54,9 +57,9 @@ export default async function PendingPage({ searchParams }: Props) {
           </div>
 
           <p className="text-body-sm text-ink-tertiary">
-            Hai già un account?{" "}
+            {c("alreadyHaveAccount")}{" "}
             <Link href="/login?type=company" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
-              Accedi
+              {c("login")}
             </Link>
           </p>
         </div>

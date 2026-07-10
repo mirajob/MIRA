@@ -3,6 +3,7 @@ import { signOut } from "@/lib/actions/auth";
 import { getUnreadCount } from "@/lib/actions/notifications";
 import { NotificationBell } from "@/components/notification-bell";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -15,11 +16,13 @@ export default async function CompanyLayout({ children, params }: Props) {
   const { slug } = await params;
   const { profile, company } = await getCompanyContext(slug);
   const unreadNotifications = await getUnreadCount();
+  const t = await getTranslations("CompanyLayout");
+  const c = await getTranslations("Common");
 
   const nav = [
-    { href: `/company/${slug}`, label: "Cerca talenti" },
-    { href: `/company/${slug}/contacts`, label: "Contatti" },
-    { href: `/company/${slug}/profile`, label: "Profilo" },
+    { href: `/company/${slug}`, label: t("searchNav") },
+    { href: `/company/${slug}/contacts`, label: t("contactsNav") },
+    { href: `/company/${slug}/profile`, label: t("profileNav") },
   ];
 
   return (
@@ -36,7 +39,7 @@ export default async function CompanyLayout({ children, params }: Props) {
             <span className="text-body-sm text-ink-secondary">{(profile as any).full_name}</span>
             <form action={signOut}>
               <button type="submit" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors duration-100">
-                Esci
+                {c("signOut")}
               </button>
             </form>
           </div>

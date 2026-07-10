@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { sendContactRequest } from "@/lib/actions/company-contacts";
+import { useTranslations } from "next-intl";
 
 interface Props {
   slug: string;
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export function ContactRequestModal({ slug, code, onClose }: Props) {
+  const t = useTranslations("ContactRequestModal");
+  const c = useTranslations("Common");
   const [roleTitle, setRoleTitle] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,13 +44,13 @@ export function ContactRequestModal({ slug, code, onClose }: Props) {
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <p className="text-body font-medium text-ink">Richiesta inviata!</p>
-            <p className="text-body-sm text-ink-secondary mt-1">Lo studente riceverà una notifica.</p>
+            <p className="text-body font-medium text-ink">{t("sentTitle")}</p>
+            <p className="text-body-sm text-ink-secondary mt-1">{t("sentBody")}</p>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-display text-h2 text-navy">Contatta candidato</h2>
+              <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
               <button onClick={onClose} className="text-ink-tertiary hover:text-ink">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -56,7 +59,7 @@ export function ContactRequestModal({ slug, code, onClose }: Props) {
             </div>
 
             <p className="text-body-sm text-ink-secondary mb-5">
-              Lo studente vedrà il nome della tua azienda e il messaggio. Potrà accettare o rifiutare.
+              {t("intro")}
             </p>
 
             {error && (
@@ -65,25 +68,25 @@ export function ContactRequestModal({ slug, code, onClose }: Props) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <label className="block">
-                <span className="text-label text-navy mb-2 block">Ruolo proposto *</span>
+                <span className="text-label text-navy mb-2 block">{t("roleLabel")}</span>
                 <input
                   type="text"
                   required
                   value={roleTitle}
                   onChange={(e) => setRoleTitle(e.target.value)}
-                  placeholder="Es. Stage Analyst, Junior Consultant…"
+                  placeholder={t("rolePlaceholder")}
                   className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
                 />
               </label>
 
               <label className="block">
-                <span className="text-label text-navy mb-2 block">Messaggio *</span>
+                <span className="text-label text-navy mb-2 block">{t("messageLabel")}</span>
                 <textarea
                   required
                   rows={4}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Presentati brevemente e spiega perché stai contattando questo candidato…"
+                  placeholder={t("messagePlaceholder")}
                   className="w-full px-4 py-3 rounded-md border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200 resize-none"
                 />
               </label>
@@ -94,14 +97,14 @@ export function ContactRequestModal({ slug, code, onClose }: Props) {
                   onClick={onClose}
                   className="flex-1 px-4 py-3 rounded-md border border-border text-body text-ink hover:border-border-strong transition-colors duration-100"
                 >
-                  Annulla
+                  {c("cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
                   className="flex-1 bg-navy text-white px-4 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
                 >
-                  {loading ? "Invio..." : "Invia richiesta"}
+                  {loading ? t("sendingLoading") : t("sendRequest")}
                 </button>
               </div>
             </form>

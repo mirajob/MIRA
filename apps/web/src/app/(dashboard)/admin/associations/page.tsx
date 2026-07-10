@@ -4,15 +4,9 @@ import { redirect } from "next/navigation";
 import { InvitationForm } from "./invitation-form";
 import { ApproveRejectButtons } from "./approve-reject-buttons";
 import { DeleteAssociationButton } from "./delete-association-button";
+import { getLocale, getTranslations } from "next-intl/server";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-const STATUS_LABEL: Record<string, string> = {
-  pending_verification: "In attesa",
-  verified: "Attiva",
-  rejected: "Rifiutata",
-  suspended: "Sospesa",
-};
 
 const STATUS_CLASS: Record<string, string> = {
   pending_verification: "bg-amber-100 text-amber-700",
@@ -21,7 +15,7 @@ const STATUS_CLASS: Record<string, string> = {
   suspended: "bg-red-100 text-red-600",
 };
 
-function AssociationRow({ assoc, president }: { assoc: any; president: any }) {
+function AssociationRow({ assoc, president, t, statusLabel, dateLocale }: { assoc: any; president: any; t: any; statusLabel: Record<string, string>; dateLocale: string }) {
   return (
     <tr className="border-b border-border last:border-0 hover:bg-paper transition-colors">
       <td className="px-4 py-3">
@@ -35,11 +29,11 @@ function AssociationRow({ assoc, president }: { assoc: any; president: any }) {
       <td className="px-4 py-3 text-body text-ink">{assoc.category ?? "—"}</td>
       <td className="px-4 py-3">
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_CLASS[assoc.verification_status] ?? "bg-gray-100 text-gray-600"}`}>
-          {STATUS_LABEL[assoc.verification_status] ?? assoc.verification_status}
+          {statusLabel[assoc.verification_status] ?? assoc.verification_status}
         </span>
       </td>
       <td className="px-4 py-3 text-body-sm text-ink-tertiary">
-        {new Date(assoc.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" })}
+        {new Date(assoc.created_at).toLocaleDateString(dateLocale, { day: "numeric", month: "short", year: "numeric" })}
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
@@ -51,23 +45,23 @@ function AssociationRow({ assoc, president }: { assoc: any; president: any }) {
   );
 }
 
-function AssociationTable({ rows, presidentByAssociation }: { rows: any[]; presidentByAssociation: Record<string, any> }) {
+function AssociationTable({ rows, presidentByAssociation, t, statusLabel, dateLocale }: { rows: any[]; presidentByAssociation: Record<string, any>; t: any; statusLabel: Record<string, string>; dateLocale: string }) {
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
       <table className="w-full">
         <thead>
           <tr className="border-b border-border">
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">Associazione</th>
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">Presidente</th>
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">Categoria</th>
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">Stato</th>
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">Data</th>
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">Azioni</th>
+            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableAssociation")}</th>
+            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tablePresident")}</th>
+            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableCategory")}</th>
+            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableStatus")}</th>
+            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableDate")}</th>
+            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableActions")}</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((assoc) => (
-            <AssociationRow key={assoc.id} assoc={assoc} president={presidentByAssociation[assoc.id]} />
+            <AssociationRow key={assoc.id} assoc={assoc} president={presidentByAssociation[assoc.id]} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
           ))}
         </tbody>
       </table>
@@ -79,6 +73,15 @@ export default async function AdminAssociationsPage() {
   const ctx = await getUserContext();
   if (!ctx.isMiraAdmin) redirect("/student");
 
+  const t = await getTranslations("AdminAssociations");
+  const locale = await getLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
+  const statusLabel: Record<string, string> = {
+    pending_verification: t("statusPendingVerification"),
+    verified: t("statusVerified"),
+    rejected: t("statusRejected"),
+    suspended: t("statusSuspended"),
+  };
   const supabase = await createServiceClient();
 
   const { data: associations, error: associationsErr } = await (supabase.from("association_profiles") as any)
@@ -108,9 +111,9 @@ export default async function AdminAssociationsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-h1 text-navy">Associazioni</h1>
+        <h1 className="font-display text-h1 text-navy">{t("heading")}</h1>
         <p className="mt-1 text-body text-ink-secondary">
-          Candidature in attesa, inviti diretti e associazioni attive su MIRA
+          {t("subhead")}
         </p>
       </div>
 
@@ -120,26 +123,26 @@ export default async function AdminAssociationsPage() {
 
       {pending.length > 0 && (
         <section>
-          <h2 className="font-display text-h2 text-navy mb-4">In attesa di approvazione ({pending.length})</h2>
-          <AssociationTable rows={pending} presidentByAssociation={presidentByAssociation} />
+          <h2 className="font-display text-h2 text-navy mb-4">{t("pendingApprovalHeading", { count: pending.length })}</h2>
+          <AssociationTable rows={pending} presidentByAssociation={presidentByAssociation} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
         </section>
       )}
 
       <section>
-        <h2 className="font-display text-h2 text-navy mb-4">Associazioni attive ({active.length})</h2>
+        <h2 className="font-display text-h2 text-navy mb-4">{t("activeHeading", { count: active.length })}</h2>
         {active.length > 0 ? (
-          <AssociationTable rows={active} presidentByAssociation={presidentByAssociation} />
+          <AssociationTable rows={active} presidentByAssociation={presidentByAssociation} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
         ) : (
           <div className="rounded-lg border border-border bg-white p-8 text-center">
-            <p className="text-body text-ink-secondary">Nessuna associazione attiva ancora.</p>
+            <p className="text-body text-ink-secondary">{t("noActiveAssociations")}</p>
           </div>
         )}
       </section>
 
       {others.length > 0 && (
         <section>
-          <h2 className="font-display text-h2 text-navy mb-4">Altre ({others.length})</h2>
-          <AssociationTable rows={others} presidentByAssociation={presidentByAssociation} />
+          <h2 className="font-display text-h2 text-navy mb-4">{t("othersHeading", { count: others.length })}</h2>
+          <AssociationTable rows={others} presidentByAssociation={presidentByAssociation} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
         </section>
       )}
     </div>

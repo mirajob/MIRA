@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { approveCompanyAccessRequest, rejectCompanyAccessRequest } from "@/lib/actions/company-register";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export function AccessRequestButtons({ requestId }: { requestId: string }) {
+  const t = useTranslations("AdminCompanies");
+  const c = useTranslations("Common");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -17,7 +20,7 @@ export function AccessRequestButtons({ requestId }: { requestId: string }) {
   }
 
   async function handleReject() {
-    const reason = window.prompt("Motivo del rifiuto (opzionale):");
+    const reason = window.prompt(t("rejectReasonPrompt"));
     if (reason === null) return;
     setLoading(true);
     const result = await rejectCompanyAccessRequest(requestId, reason);
@@ -33,14 +36,14 @@ export function AccessRequestButtons({ requestId }: { requestId: string }) {
         disabled={loading}
         className="text-body-sm text-success font-medium hover:underline disabled:opacity-40"
       >
-        Approva
+        {c("approve")}
       </button>
       <button
         onClick={handleReject}
         disabled={loading}
         className="text-body-sm text-error hover:underline disabled:opacity-40"
       >
-        Rifiuta
+        {c("reject")}
       </button>
     </div>
   );
