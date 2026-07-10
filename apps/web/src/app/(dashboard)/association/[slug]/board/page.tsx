@@ -2,6 +2,7 @@
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { InviteCodeSection } from "./invite-code-section";
 import { PendingBoardRequests } from "./pending-board-requests";
 import { MemberActions } from "./member-actions";
@@ -22,6 +23,8 @@ export default async function BoardPage({ params }: Props) {
   const supabase = await createServiceClient();
   const ctx = await getUserContext();
   const currentUserId = (ctx.profile as any).id as string;
+  const t = await getTranslations("Board");
+  const c = await getTranslations("Common");
 
   const { data: association } = await (supabase.from("association_profiles") as any)
     .select("id, name, slug, invite_code")
@@ -94,8 +97,8 @@ export default async function BoardPage({ params }: Props) {
               currentTitle={m.title}
             />
           )}
-          {isPresident && <span className="text-xs text-ink-tertiary">Presidente</span>}
-          {isSelf && !isPresident && <span className="text-xs text-ink-tertiary">Tu</span>}
+          {isPresident && <span className="text-xs text-ink-tertiary">{c("boardRoles.association_president")}</span>}
+          {isSelf && !isPresident && <span className="text-xs text-ink-tertiary">{t("selfBadge")}</span>}
         </td>
       </tr>
     );
@@ -104,9 +107,9 @@ export default async function BoardPage({ params }: Props) {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="font-display text-h2 text-navy">Board</h2>
+        <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
         <p className="mt-1 text-body text-ink-secondary">
-          Gestisci il board e i codici invito
+          {t("subhead")}
         </p>
       </div>
 
@@ -124,19 +127,19 @@ export default async function BoardPage({ params }: Props) {
       )}
 
       <div>
-        <h3 className="font-sans text-h3 text-navy mb-3">Board ({boardMembers.length})</h3>
+        <h3 className="font-sans text-h3 text-navy mb-3">{t("boardCount", { count: boardMembers.length })}</h3>
         {boardMembers.length === 0 ? (
           <div className="rounded-lg border border-border bg-white p-6 text-center">
-            <p className="text-body text-ink-secondary">Nessun membro nel board</p>
+            <p className="text-body text-ink-secondary">{t("noMembers")}</p>
           </div>
         ) : (
           <div className="rounded-lg border border-border bg-white overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Membro</th>
-                  <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Ruolo</th>
-                  <th className="text-right text-eyebrow text-navy/60 uppercase py-3 px-4">Azioni</th>
+                  <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaderMember")}</th>
+                  <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaderRole")}</th>
+                  <th className="text-right text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaderActions")}</th>
                 </tr>
               </thead>
               <tbody>

@@ -2,6 +2,7 @@
 import { createServerClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { PublicHeader } from "@/components/public-header";
 
 interface Props {
@@ -11,6 +12,9 @@ interface Props {
 export default async function AssociationPublicPage({ params }: Props) {
   const { slug } = await params;
   const supabase = await createServerClient();
+  const t = await getTranslations("AssociationPublicPage");
+  const locale = await getLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
 
   const { data: association } = await (supabase.from("association_profiles") as any)
     .select("*")
@@ -104,7 +108,7 @@ export default async function AssociationPublicPage({ params }: Props) {
               rel="noopener noreferrer"
               className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2 text-body"
             >
-              Sito web
+              {t("websiteLink")}
             </a>
           )}
           {association.contact_email && (
@@ -112,7 +116,7 @@ export default async function AssociationPublicPage({ params }: Props) {
               href={`mailto:${association.contact_email}`}
               className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2 text-body"
             >
-              Contatto
+              {t("contactLink")}
             </a>
           )}
         </div>
@@ -120,17 +124,17 @@ export default async function AssociationPublicPage({ params }: Props) {
         {/* Open cycles */}
         {isBoardMember ? (
           <div className="rounded-lg border-2 border-petrol/30 bg-petrol-50 p-6 text-center">
-            <p className="text-body text-ink mb-3">Fai parte del board di questa associazione.</p>
+            <p className="text-body text-ink mb-3">{t("boardMemberBanner")}</p>
             <Link
               href={`/association/${slug}`}
               className="inline-block bg-petrol text-white px-6 py-3 rounded-md text-label hover:bg-petrol-700 transition-colors duration-100"
             >
-              Gestisci associazione
+              {t("manageCta")}
             </Link>
           </div>
         ) : openCycles && openCycles.length > 0 ? (
           <div className="space-y-4">
-            <h2 className="font-display text-h2 text-navy">Candidature aperte</h2>
+            <h2 className="font-display text-h2 text-navy">{t("openCyclesHeading")}</h2>
             {openCycles.map((cycle: any) => {
               const notYetOpen = cycle.opens_at && new Date(cycle.opens_at) > new Date();
               return (
@@ -141,20 +145,20 @@ export default async function AssociationPublicPage({ params }: Props) {
                   )}
                   {notYetOpen ? (
                     <p className="mt-2 text-body-sm text-ink-tertiary">
-                      Apre il {new Date(cycle.opens_at).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}
+                      {t("opensOn", { date: new Date(cycle.opens_at).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" }) })}
                     </p>
                   ) : (
                     <>
                       {cycle.closes_at && (
                         <p className="mt-2 text-body-sm text-ink-tertiary">
-                          Scadenza: {new Date(cycle.closes_at).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}
+                          {t("closesOn", { date: new Date(cycle.closes_at).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" }) })}
                         </p>
                       )}
                       <Link
                         href={`/associations/${slug}/apply?cycle=${cycle.id}`}
                         className="mt-4 inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100"
                       >
-                        Candidati
+                        {t("applyCta")}
                       </Link>
                     </>
                   )}
@@ -165,7 +169,7 @@ export default async function AssociationPublicPage({ params }: Props) {
         ) : (
           <div className="rounded-lg border border-border bg-white p-8 text-center">
             <p className="text-body text-ink-secondary">
-              Nessuna candidatura aperta al momento.
+              {t("noCyclesOpen")}
             </p>
           </div>
         )}

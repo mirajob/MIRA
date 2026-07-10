@@ -1,6 +1,7 @@
 import { createServerClient, createServiceClient } from "@mira/supabase/server";
 import { notFound, redirect } from "next/navigation";
 import { getUser } from "@/lib/auth";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ApplicationForm } from "./application-form";
 import Link from "next/link";
 
@@ -14,6 +15,9 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   const { cycle: cycleId } = await searchParams;
   const user = await getUser();
   const supabase = await createServerClient();
+  const t = await getTranslations("ApplyPage");
+  const locale = await getLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
 
   const { data: association } = await supabase
     .from("association_profiles")
@@ -72,15 +76,15 @@ export default async function ApplyPage({ params, searchParams }: Props) {
         <div className="max-w-md text-center space-y-4 px-4">
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
           <h1 className="font-display text-h1 text-navy mt-8">
-            {notYetOpen ? "Candidature non ancora aperte" : "Candidature chiuse"}
+            {notYetOpen ? t("notYetOpenHeading") : t("closedHeading")}
           </h1>
           <p className="text-body text-ink-secondary">
             {notYetOpen
-              ? `Le candidature per ${association.name} apriranno il ${new Date((cycle as any).opens_at).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}.`
-              : `${association.name} non ha cicli di candidatura aperti al momento.`}
+              ? t("opensOnBody", { name: association.name, date: new Date((cycle as any).opens_at).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" }) })
+              : t("noCyclesBody", { name: association.name })}
           </p>
           <Link href={`/associations/${slug}`} className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
-            Torna alla pagina dell&apos;associazione
+            {t("backToAssociationPage")}
           </Link>
         </div>
       </div>
@@ -107,12 +111,12 @@ export default async function ApplyPage({ params, searchParams }: Props) {
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="max-w-md text-center space-y-4 px-4">
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
-          <h1 className="font-display text-h1 text-navy mt-8">Candidatura inviata</h1>
+          <h1 className="font-display text-h1 text-navy mt-8">{t("alreadyAppliedHeading")}</h1>
           <p className="text-body text-ink-secondary">
-            Hai già inviato la tua candidatura per questo ciclo.
+            {t("alreadyAppliedBody")}
           </p>
           <Link href="/student" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
-            Vai alla dashboard
+            {t("goToDashboard")}
           </Link>
         </div>
       </div>
@@ -128,7 +132,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
       </header>
 
       <main className="mx-auto max-w-reading px-6 py-12">
-        <p className="text-eyebrow text-navy/60 uppercase mb-2">Candidatura</p>
+        <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("eyebrow")}</p>
         <h1 className="font-display text-display-md text-navy">{association.name}</h1>
         <p className="mt-1 text-body text-ink-secondary">{cycle.title}</p>
         {(cycle as any).description && (
@@ -136,13 +140,13 @@ export default async function ApplyPage({ params, searchParams }: Props) {
         )}
         {cycle.closes_at && (
           <p className="mt-2 text-body-sm text-ink-tertiary">
-            Scadenza: {new Date(cycle.closes_at).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}
+            {t("closesOn", { date: new Date(cycle.closes_at).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" }) })}
           </p>
         )}
 
         {positions.length > 0 && (
           <div className="mt-6">
-            <h2 className="text-label text-navy mb-3">Posizioni aperte</h2>
+            <h2 className="text-label text-navy mb-3">{t("positionsHeading")}</h2>
             <div className="space-y-2">
               {positions.map((p, i) => (
                 <div key={i} className="rounded-md border border-border bg-white px-4 py-3">

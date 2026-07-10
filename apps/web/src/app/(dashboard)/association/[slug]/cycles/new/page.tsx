@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { sendCycleMessage, createCycleFromChat } from "@/lib/actions/chat-cycle";
 
 interface Message {
@@ -9,13 +10,13 @@ interface Message {
   content: string;
 }
 
-const INITIAL_MESSAGE = `Creiamo insieme il nuovo ciclo di candidatura! Come vuoi chiamarlo? (es. "Recruiting Fall 2026")`;
-
 export default function NewCyclePage() {
+  const t = useTranslations("NewCycleWizard");
+  const c = useTranslations("Common");
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: INITIAL_MESSAGE },
+    { role: "assistant", content: t("initialMessage") },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -77,16 +78,16 @@ export default function NewCyclePage() {
 
   function displayContent(content: string) {
     if (content.includes("CICLO_PRONTO")) {
-      return content.split("CICLO_PRONTO")[0].trim() || "Perfetto! Sto creando il ciclo...";
+      return content.split("CICLO_PRONTO")[0].trim() || t("readyFallback");
     }
     return content;
   }
 
   return (
     <div className="mx-auto max-w-reading">
-      <h2 className="font-display text-h2 text-navy mb-4">Nuovo ciclo di candidatura</h2>
+      <h2 className="font-display text-h2 text-navy mb-4">{t("heading")}</h2>
       <p className="text-body-sm text-ink-secondary mb-6">
-        MIRA ti guida nella creazione del ciclo. Rispondi alle domande una alla volta.
+        {t("subhead")}
       </p>
 
       {error && (
@@ -119,7 +120,7 @@ export default function NewCyclePage() {
             <div className="flex justify-start">
               <div className="bg-paper rounded-lg px-4 py-2.5">
                 {creating ? (
-                  <p className="text-body-sm text-petrol">Creazione ciclo in corso...</p>
+                  <p className="text-body-sm text-petrol">{t("creating")}</p>
                 ) : (
                   <div className="flex gap-1">
                     <span className="w-1.5 h-1.5 bg-navy-200 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -142,7 +143,7 @@ export default function NewCyclePage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-              placeholder="Rispondi a MIRA..."
+              placeholder={t("inputPlaceholder")}
               disabled={loading || creating}
               className="flex-1 px-3 py-2 rounded-md bg-paper border border-border text-body-sm text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol transition-colors duration-200 disabled:opacity-50"
             />
@@ -151,7 +152,7 @@ export default function NewCyclePage() {
               disabled={loading || creating || !input.trim()}
               className="bg-navy text-white px-4 py-2 rounded-md text-body-sm hover:bg-navy-700 transition-colors duration-100 disabled:opacity-40"
             >
-              Invia
+              {c("send")}
             </button>
           </div>
         </div>

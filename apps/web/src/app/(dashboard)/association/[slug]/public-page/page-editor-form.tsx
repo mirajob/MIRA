@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { updateAssociationProfile, publishAssociationPage } from "@/lib/actions/associations";
 import { ASSOCIATION_CATEGORIES } from "@mira/domain";
 
@@ -19,6 +20,8 @@ interface AssociationData {
 }
 
 export function PageEditorForm({ association }: { association: AssociationData }) {
+  const t = useTranslations("PublicPageEditor");
+  const c = useTranslations("Common");
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -32,7 +35,7 @@ export function PageEditorForm({ association }: { association: AssociationData }
     if (res.error) {
       setMessage({ type: "error", text: res.error });
     } else {
-      setMessage({ type: "success", text: "Salvato" });
+      setMessage({ type: "success", text: t("saved") });
     }
     setSaving(false);
   }
@@ -44,7 +47,7 @@ export function PageEditorForm({ association }: { association: AssociationData }
     if (res.error) {
       setMessage({ type: "error", text: res.error });
     } else {
-      setMessage({ type: "success", text: "Pagina pubblicata!" });
+      setMessage({ type: "success", text: t("published") });
     }
     setPublishing(false);
   }
@@ -72,7 +75,7 @@ export function PageEditorForm({ association }: { association: AssociationData }
 
         {/* Logo */}
         <div>
-          <span className="text-label text-navy mb-3 block">Logo</span>
+          <span className="text-label text-navy mb-3 block">{t("logoLabel")}</span>
           <div className="flex items-center gap-4">
             <div
               className="h-16 w-16 rounded-xl overflow-hidden border border-border bg-navy-50 flex items-center justify-center shrink-0 cursor-pointer"
@@ -90,9 +93,9 @@ export function PageEditorForm({ association }: { association: AssociationData }
                 onClick={() => fileInputRef.current?.click()}
                 className="text-body-sm text-petrol hover:text-petrol-700 underline underline-offset-2 decoration-1"
               >
-                {logoPreview ? "Cambia logo" : "Carica logo"}
+                {logoPreview ? t("changeLogo") : t("uploadLogo")}
               </button>
-              <p className="text-body-sm text-ink-tertiary mt-0.5">PNG, JPG — max 2MB. Se non caricato, viene usata la lettera iniziale.</p>
+              <p className="text-body-sm text-ink-tertiary mt-0.5">{t("logoHelper")}</p>
               <input
                 ref={fileInputRef}
                 name="logo"
@@ -107,14 +110,14 @@ export function PageEditorForm({ association }: { association: AssociationData }
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="text-label text-navy mb-2 block">Nome associazione</span>
+            <span className="text-label text-navy mb-2 block">{t("nameLabel")}</span>
             <input name="name" type="text" defaultValue={association.name} className={inputClass} />
           </label>
 
           <label className="block">
-            <span className="text-label text-navy mb-2 block">Categoria</span>
+            <span className="text-label text-navy mb-2 block">{t("categoryLabel")}</span>
             <select name="category" defaultValue={association.category ?? ""} className={inputClass}>
-              <option value="">Seleziona</option>
+              <option value="">{t("categoryPlaceholder")}</option>
               {ASSOCIATION_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat.charAt(0).toUpperCase() + cat.slice(1).replace("_", " ")}
@@ -124,29 +127,29 @@ export function PageEditorForm({ association }: { association: AssociationData }
           </label>
 
           <label className="block">
-            <span className="text-label text-navy mb-2 block">Sito web</span>
+            <span className="text-label text-navy mb-2 block">{t("websiteLabel")}</span>
             <input name="websiteUrl" type="url" defaultValue={association.website_url ?? ""} placeholder="https://..." className={inputClass} />
           </label>
 
           <label className="block">
-            <span className="text-label text-navy mb-2 block">Email di contatto</span>
+            <span className="text-label text-navy mb-2 block">{t("contactEmailLabel")}</span>
             <input name="contactEmail" type="email" defaultValue={association.contact_email ?? ""} className={inputClass} />
           </label>
 
           <label className="block sm:col-span-2">
-            <span className="text-label text-navy mb-2 block">Settori (separati da virgola)</span>
-            <input name="sectors" type="text" defaultValue={association.sectors?.join(", ") ?? ""} placeholder="es. Finance, Consulting, Tech" className={inputClass} />
+            <span className="text-label text-navy mb-2 block">{t("sectorsLabel")}</span>
+            <input name="sectors" type="text" defaultValue={association.sectors?.join(", ") ?? ""} placeholder={t("sectorsPlaceholder")} className={inputClass} />
           </label>
         </div>
 
         <label className="block">
-          <span className="text-label text-navy mb-2 block">Descrizione breve</span>
-          <textarea name="shortDescription" rows={2} defaultValue={association.short_description ?? ""} placeholder="Una frase che descrive l'associazione..." className={`${inputClass} resize-none`} />
+          <span className="text-label text-navy mb-2 block">{t("shortDescriptionLabel")}</span>
+          <textarea name="shortDescription" rows={2} defaultValue={association.short_description ?? ""} placeholder={t("shortDescriptionPlaceholder")} className={`${inputClass} resize-none`} />
         </label>
 
         <label className="block">
-          <span className="text-label text-navy mb-2 block">Descrizione completa</span>
-          <textarea name="longDescription" rows={8} defaultValue={association.long_description ?? ""} placeholder="Descrizione dettagliata, mission, attività, team..." className={`${inputClass} resize-y`} />
+          <span className="text-label text-navy mb-2 block">{t("longDescriptionLabel")}</span>
+          <textarea name="longDescription" rows={8} defaultValue={association.long_description ?? ""} placeholder={t("longDescriptionPlaceholder")} className={`${inputClass} resize-y`} />
         </label>
 
         <div className="flex items-center gap-3 pt-2">
@@ -155,7 +158,7 @@ export function PageEditorForm({ association }: { association: AssociationData }
             disabled={saving}
             className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
           >
-            {saving ? "Salvataggio..." : "Salva modifiche"}
+            {saving ? c("saving") : t("saveChanges")}
           </button>
 
           {association.public_page_status !== "published" && (
@@ -165,7 +168,7 @@ export function PageEditorForm({ association }: { association: AssociationData }
               disabled={publishing}
               className="bg-cream text-navy px-6 py-3 rounded-md text-label border border-border hover:border-border-strong transition-colors duration-100 disabled:opacity-40"
             >
-              {publishing ? "Pubblicazione..." : "Pubblica pagina"}
+              {publishing ? t("publishing") : t("publishPage")}
             </button>
           )}
 
@@ -175,7 +178,7 @@ export function PageEditorForm({ association }: { association: AssociationData }
               target="_blank"
               className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
             >
-              Vedi pagina pubblica →
+              {t("viewPublicPage")}
             </a>
           )}
         </div>

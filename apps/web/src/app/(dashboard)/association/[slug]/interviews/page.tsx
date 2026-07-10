@@ -2,6 +2,7 @@
 import { createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -10,6 +11,9 @@ interface Props {
 export default async function InterviewsPage({ params }: Props) {
   const { slug } = await params;
   const supabase = await createServiceClient();
+  const t = await getTranslations("InterviewsPage");
+  const locale = await getLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
 
   const { data: association } = await (supabase.from("association_profiles") as any)
     .select("id")
@@ -53,16 +57,16 @@ export default async function InterviewsPage({ params }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-display text-h2 text-navy">Colloqui</h2>
+        <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
         <p className="mt-1 text-body text-ink-secondary">
-          {(interviewApps ?? []).length} candidati in fase colloquio
+          {t("countLabel", { count: (interviewApps ?? []).length })}
         </p>
       </div>
 
       {!(interviewApps ?? []).length ? (
         <div className="rounded-lg border border-border bg-white p-8 text-center">
           <p className="text-body text-ink-secondary">
-            Nessun colloquio in programma. Convoca i candidati dalla pagina di dettaglio.
+            {t("noInterviews")}
           </p>
         </div>
       ) : (
@@ -70,9 +74,9 @@ export default async function InterviewsPage({ params }: Props) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Candidato</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Ciclo</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Convocato il</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaderCandidate")}</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaderCycle")}</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaderScheduledOn")}</th>
               </tr>
             </thead>
             <tbody>
@@ -98,9 +102,9 @@ export default async function InterviewsPage({ params }: Props) {
                     </td>
                     <td className="py-4 px-4 text-body-sm text-ink-secondary">
                       {interviewInfo?.created_at
-                        ? new Date(interviewInfo.created_at).toLocaleDateString("it-IT")
+                        ? new Date(interviewInfo.created_at).toLocaleDateString(dateLocale)
                         : app.last_status_change_at
-                          ? new Date(app.last_status_change_at).toLocaleDateString("it-IT")
+                          ? new Date(app.last_status_change_at).toLocaleDateString(dateLocale)
                           : "—"}
                     </td>
                   </tr>

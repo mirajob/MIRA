@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { generateInviteCode } from "@/lib/actions/board";
 
 export function InviteCodeSection({
@@ -12,6 +13,7 @@ export function InviteCodeSection({
   currentCode: string | null;
   slug: string;
 }) {
+  const t = useTranslations("InviteCodeSection");
   const [code, setCode] = useState(currentCode);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -34,9 +36,9 @@ export function InviteCodeSection({
 
   return (
     <div className="rounded-lg border border-border bg-white p-6">
-      <h3 className="font-sans text-h3 text-navy mb-2">Link invito</h3>
+      <h3 className="font-sans text-h3 text-navy mb-2">{t("heading")}</h3>
       <p className="text-body-sm text-ink-secondary mb-4">
-        Condividi questo link per invitare nuovi membri. Chi lo usa potrà scegliere se unirsi come membro o candidarsi al board.
+        {t("description")}
       </p>
 
       {code ? (
@@ -48,14 +50,14 @@ export function InviteCodeSection({
             onClick={handleCopy}
             className="bg-petrol text-white px-5 py-3 rounded-md text-label hover:bg-petrol-700 active:scale-[0.98] transition-colors duration-100 whitespace-nowrap"
           >
-            {copied ? "Copiato!" : "Copia link"}
+            {copied ? t("copied") : t("copyLink")}
           </button>
           <button
             onClick={handleGenerate}
             disabled={loading}
             className="text-body-sm text-ink-secondary hover:text-navy underline underline-offset-2 transition-colors duration-100 disabled:opacity-40"
           >
-            {loading ? "Generazione..." : "Rigenera codice"}
+            {loading ? t("regenerating") : t("regenerateCode")}
           </button>
         </div>
       ) : (
@@ -64,7 +66,7 @@ export function InviteCodeSection({
           disabled={loading}
           className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
         >
-          {loading ? "Generazione..." : "Genera link invito"}
+          {loading ? t("regenerating") : t("generateLink")}
         </button>
       )}
     </div>

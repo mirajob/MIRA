@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { submitApplication } from "@/lib/actions/applications";
 import { useRouter } from "next/navigation";
 
@@ -16,6 +17,7 @@ interface Question {
 const inputClass = "w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200";
 
 export function ApplicationForm({ cycleId, positions, questions, slug }: { cycleId: string; positions?: string[]; questions: Question[]; slug: string }) {
+  const t = useTranslations("ApplicationForm");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -47,7 +49,7 @@ export function ApplicationForm({ cycleId, positions, questions, slug }: { cycle
       case "dropdown":
         return (
           <select name={name} required={q.required} className={inputClass}>
-            <option value="">Seleziona</option>
+            <option value="">{t("selectPlaceholder")}</option>
             {q.options.map((opt) => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
@@ -79,10 +81,10 @@ export function ApplicationForm({ cycleId, positions, questions, slug }: { cycle
         );
 
       case "availability":
-        return <input name={name} type="text" required={q.required} placeholder="es. 10-15 ore/settimana" className={inputClass} />;
+        return <input name={name} type="text" required={q.required} placeholder={t("availabilityPlaceholder")} className={inputClass} />;
 
       case "role_preference":
-        return <input name={name} type="text" required={q.required} placeholder="es. Analyst, Marketing" className={inputClass} />;
+        return <input name={name} type="text" required={q.required} placeholder={t("rolePreferencePlaceholder")} className={inputClass} />;
 
       default:
         return <input name={name} type="text" required={q.required} className={inputClass} />;
@@ -99,14 +101,14 @@ export function ApplicationForm({ cycleId, positions, questions, slug }: { cycle
         <div className="rounded-lg border border-border bg-white p-6">
           <label className="block">
             <span className="text-label text-navy mb-2 block">
-              Per quale posizione ti candidi? <span className="text-error">*</span>
+              {t("positionQuestionLabel")} <span className="text-error">*</span>
             </span>
             <select name="selected_position" required className={inputClass}>
-              <option value="">Seleziona una posizione</option>
+              <option value="">{t("selectPosition")}</option>
               {positions.map((p) => (
                 <option key={p} value={p}>{p}</option>
               ))}
-              <option value="generica">Candidatura generica</option>
+              <option value="generica">{t("genericApplication")}</option>
             </select>
           </label>
         </div>
@@ -115,7 +117,7 @@ export function ApplicationForm({ cycleId, positions, questions, slug }: { cycle
       {questions.length === 0 ? (
         <div className="rounded-lg border border-border bg-white p-6">
           <p className="text-body text-ink-secondary">
-            Nessuna domanda aggiuntiva per questa candidatura.
+            {t("noQuestions")}
           </p>
         </div>
       ) : (
@@ -138,8 +140,7 @@ export function ApplicationForm({ cycleId, positions, questions, slug }: { cycle
         <label className="flex items-start gap-3">
           <input type="checkbox" required className="mt-1 h-4 w-4 rounded border-border text-petrol focus:ring-petrol" />
           <span className="text-body-sm text-ink-secondary">
-            Acconsento al trattamento dei miei dati personali ai fini della valutazione della mia candidatura.
-            I miei dati saranno visibili solo ai membri autorizzati dell&apos;associazione.
+            {t("consentText")}
           </span>
         </label>
       </div>
@@ -149,7 +150,7 @@ export function ApplicationForm({ cycleId, positions, questions, slug }: { cycle
         disabled={loading}
         className="w-full bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
       >
-        {loading ? "Invio candidatura..." : "Invia candidatura"}
+        {loading ? t("submitLoading") : t("submit")}
       </button>
     </form>
   );

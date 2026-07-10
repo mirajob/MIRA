@@ -2,6 +2,7 @@
 import { createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 
 interface Props {
@@ -23,6 +24,9 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const { cycle: cycleFilter } = await searchParams;
   const supabase = await createServiceClient();
+  const t = await getTranslations("CandidatesList");
+  const locale = await getLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
 
   const { data: association } = await (supabase.from("association_profiles") as any)
     .select("id")
@@ -66,9 +70,9 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display text-h2 text-navy">Candidati</h2>
+          <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
           <p className="mt-1 text-body text-ink-secondary">
-            {applications?.length ?? 0} candidature{effectiveFilter ? "" : " (cicli aperti)"}
+            {t("countLabel", { count: applications?.length ?? 0 })}{effectiveFilter ? "" : t("openCyclesSuffix")}
           </p>
         </div>
         {(cycles?.length ?? 0) > 1 && (
@@ -86,7 +90,7 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
               href={`/association/${slug}/candidates?cycle=all`}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${cycleFilter === "all" ? "bg-navy text-white" : "border border-border text-ink-tertiary hover:text-navy"}`}
             >
-              Tutti
+              {t("allFilter")}
             </Link>
           </div>
         )}
@@ -94,18 +98,18 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
 
       {!applications?.length ? (
         <div className="rounded-lg border border-border bg-white p-8 text-center">
-          <p className="text-body text-ink-secondary">Nessuna candidatura ancora ricevuta</p>
+          <p className="text-body text-ink-secondary">{t("noApplications")}</p>
         </div>
       ) : (
         <div className="rounded-lg border border-border bg-white overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Candidato</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Posizione</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Stato</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Valutazione</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">Data</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaders.candidate")}</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaders.position")}</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaders.status")}</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaders.evaluation")}</th>
+                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaders.date")}</th>
               </tr>
             </thead>
             <tbody>
@@ -126,7 +130,7 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
                       </Link>
                     </td>
                     <td className="py-4 px-4 text-body-sm text-ink">
-                      {app.selected_role_preferences?.[0] || "Generica"}
+                      {app.selected_role_preferences?.[0] || t("genericPosition")}
                     </td>
                     <td className="py-4 px-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium ${STATUS_COLORS[app.status] ?? "bg-navy-50 text-navy"}`}>
@@ -136,14 +140,14 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
                     <td className="py-4 px-4 text-body-sm text-ink">
                       {aiEval ? (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-eyebrow font-medium uppercase bg-petrol-50 text-petrol-700">
-                          Valutata
+                          {t("evaluated")}
                         </span>
                       ) : (
                         <span className="text-ink-tertiary">—</span>
                       )}
                     </td>
                     <td className="py-4 px-4 text-body-sm text-ink-secondary">
-                      {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString("it-IT") : "—"}
+                      {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString(dateLocale) : "—"}
                     </td>
                   </tr>
                 );

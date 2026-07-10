@@ -1,26 +1,29 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { changeCandidateStatus, addCandidateNote } from "@/lib/actions/candidates";
 import { generateEmailDraft, sendInterviewEmail, sendStatusEmail } from "@/lib/actions/interview";
 
-const PIPELINE_FLOW: Record<string, Array<{ value: string; label: string; style: string }>> = {
-  submitted: [
-    { value: "in_review", label: "Valuta", style: "border border-border text-navy hover:bg-navy-50" },
-    { value: "rejected", label: "Rifiuta", style: "border border-error text-error hover:bg-error-bg" },
-  ],
-  in_review: [
-    { value: "interview", label: "Convoca colloquio", style: "border border-petrol text-petrol hover:bg-petrol-50" },
-    { value: "accepted", label: "Accetta", style: "bg-navy text-white hover:bg-navy-700" },
-    { value: "rejected", label: "Rifiuta", style: "border border-error text-error hover:bg-error-bg" },
-  ],
-  interview: [
-    { value: "accepted", label: "Accetta", style: "bg-navy text-white hover:bg-navy-700" },
-    { value: "rejected", label: "Rifiuta", style: "border border-error text-error hover:bg-error-bg" },
-  ],
-  accepted: [],
-  rejected: [],
-};
+function getPipelineFlow(t: ReturnType<typeof useTranslations>): Record<string, Array<{ value: string; label: string; style: string }>> {
+  return {
+    submitted: [
+      { value: "in_review", label: t("pipeline.evaluate"), style: "border border-border text-navy hover:bg-navy-50" },
+      { value: "rejected", label: t("pipeline.reject"), style: "border border-error text-error hover:bg-error-bg" },
+    ],
+    in_review: [
+      { value: "interview", label: t("pipeline.scheduleInterview"), style: "border border-petrol text-petrol hover:bg-petrol-50" },
+      { value: "accepted", label: t("pipeline.accept"), style: "bg-navy text-white hover:bg-navy-700" },
+      { value: "rejected", label: t("pipeline.reject"), style: "border border-error text-error hover:bg-error-bg" },
+    ],
+    interview: [
+      { value: "accepted", label: t("pipeline.accept"), style: "bg-navy text-white hover:bg-navy-700" },
+      { value: "rejected", label: t("pipeline.reject"), style: "border border-error text-error hover:bg-error-bg" },
+    ],
+    accepted: [],
+    rejected: [],
+  };
+}
 
 export function CandidateActions({
   applicationId,
@@ -35,6 +38,8 @@ export function CandidateActions({
   candidateName?: string;
   associationName?: string;
 }) {
+  const t = useTranslations("CandidateActions");
+  const c = useTranslations("Common");
   const [status, setStatus] = useState(currentStatus);
   const [showNote, setShowNote] = useState(false);
   const [showComposer, setShowComposer] = useState(false);
@@ -45,12 +50,13 @@ export function CandidateActions({
   const [generatingMsg, setGeneratingMsg] = useState(false);
   const [emailSent, setEmailSent] = useState<string | null>(null);
 
+  const PIPELINE_FLOW = getPipelineFlow(t);
   const nextSteps = PIPELINE_FLOW[status] ?? [];
 
   const ACTION_LABELS: Record<string, string> = {
-    interview: "Invito a colloquio",
-    accepted: "Comunicazione accettazione",
-    rejected: "Comunicazione rifiuto",
+    interview: t("emailType.interview"),
+    accepted: t("emailType.accepted"),
+    rejected: t("emailType.rejected"),
   };
 
   async function handleStatusChange(newStatus: string) {
@@ -115,7 +121,7 @@ export function CandidateActions({
 
       {emailSent && (
         <div className="w-full max-w-md rounded-md bg-success-bg px-4 py-2 text-body-sm text-success">
-          {emailSent} — email inviata a {candidateEmail}
+          {emailSent}{t("emailSentSuffix", { email: candidateEmail ?? "" })}
         </div>
       )}
 
@@ -125,10 +131,10 @@ export function CandidateActions({
         }`}>
           <p className="text-label text-navy">{ACTION_LABELS[composerAction]}</p>
           <p className="text-xs text-ink-secondary">
-            Modifica il messaggio prima di inviarlo. L'email sarà inviata da MIRA a nome tuo.
+            {t("editBeforeSending")}
           </p>
           {generatingMsg ? (
-            <div className="px-3 py-4 text-body-sm text-ink-tertiary text-center">MIRA sta scrivendo una bozza...</div>
+            <div className="px-3 py-4 text-body-sm text-ink-tertiary text-center">{t("generatingDraft")}</div>
           ) : (
             <textarea
               value={emailMessage}
@@ -138,7 +144,7 @@ export function CandidateActions({
             />
           )}
           {candidateEmail && (
-            <p className="text-xs text-ink-tertiary">A: {candidateEmail}</p>
+            <p className="text-xs text-ink-tertiary">{t("toPrefix", { email: candidateEmail })}</p>
           )}
           <div className="flex gap-2">
             <button
@@ -148,13 +154,13 @@ export function CandidateActions({
                 composerAction === "rejected" ? "bg-error hover:bg-error/80" : "bg-petrol hover:bg-petrol-700"
               }`}
             >
-              {loading ? "Invio..." : "Invia email"}
+              {loading ? t("sendEmailLoading") : t("sendEmail")}
             </button>
             <button
               onClick={() => setShowComposer(false)}
               className="px-3 py-2 text-body-sm text-ink-secondary hover:text-navy"
             >
-              Annulla
+              {c("cancel")}
             </button>
           </div>
         </div>
@@ -166,7 +172,7 @@ export function CandidateActions({
             type="text"
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
-            placeholder="Scrivi una nota..."
+            placeholder={t("notePlaceholder")}
             className="flex-1 px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:border-petrol"
             onKeyDown={(e) => e.key === "Enter" && handleAddNote()}
           />
@@ -175,7 +181,7 @@ export function CandidateActions({
             disabled={loading}
             className="px-3 py-2 bg-navy text-white rounded-md text-label hover:bg-navy-700 disabled:opacity-40"
           >
-            Salva
+            {c("save")}
           </button>
         </div>
       ) : (
@@ -183,7 +189,7 @@ export function CandidateActions({
           onClick={() => setShowNote(true)}
           className="text-body-sm text-petrol hover:text-petrol-700 transition-colors duration-100"
         >
-          + Aggiungi nota
+          {t("addNote")}
         </button>
       )}
     </div>

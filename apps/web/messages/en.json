@@ -14,6 +14,8 @@
     "save": "Save",
     "saving": "Saving...",
     "send": "Send",
+    "cancel": "Cancel",
+    "remove": "Remove",
     "messagePlaceholder": "Write a message...",
     "associationFallback": "Association",
     "submittedOn": " · Submitted on {date}",
@@ -392,5 +394,315 @@
     "applicationUnlocked": "Application unlocked! Redirecting...",
     "errorWithMessage": "An error occurred: {message}",
     "unexpectedLoadError": "Unexpected error while loading the card."
+  },
+  "PublicHeader": {
+    "associationsLink": "Associations",
+    "dashboard": "Dashboard"
+  },
+  "MembershipCard": {
+    "activityPlaceholder": "Describe your activities...",
+    "saving": "Saving..."
+  },
+  "AssociationsListing": {
+    "eyebrow": "Associations",
+    "heading": "Associations on MIRA",
+    "subhead": "Discover the university associations active on MIRA and apply directly from their page.",
+    "presidentCta": "Are you the president of an association? →",
+    "emptyState": "No associations published yet. Check back soon, or <link>apply with yours</link>."
+  },
+  "AssociationPublicPage": {
+    "websiteLink": "Website",
+    "contactLink": "Contact",
+    "boardMemberBanner": "You're part of this association's board.",
+    "manageCta": "Manage association",
+    "openCyclesHeading": "Open applications",
+    "opensOn": "Opens on {date}",
+    "closesOn": "Deadline: {date}",
+    "applyCta": "Apply",
+    "noCyclesOpen": "No applications open at the moment."
+  },
+  "ApplyPage": {
+    "notYetOpenHeading": "Applications not open yet",
+    "closedHeading": "Applications closed",
+    "opensOnBody": "Applications for {name} will open on {date}.",
+    "noCyclesBody": "{name} has no open application cycles at the moment.",
+    "backToAssociationPage": "Back to the association's page",
+    "alreadyAppliedHeading": "Application submitted",
+    "alreadyAppliedBody": "You've already submitted your application for this cycle.",
+    "goToDashboard": "Go to dashboard",
+    "eyebrow": "Application",
+    "positionsHeading": "Open positions",
+    "closesOn": "Deadline: {date}"
+  },
+  "ApplicationForm": {
+    "selectPlaceholder": "Select",
+    "selectPosition": "Select a position",
+    "positionQuestionLabel": "Which position are you applying for?",
+    "genericApplication": "Generic application",
+    "noQuestions": "No additional questions for this application.",
+    "consentText": "I consent to the processing of my personal data for the purpose of evaluating my application. My data will only be visible to authorized members of the association.",
+    "availabilityPlaceholder": "e.g. 10-15 hours/week",
+    "rolePreferencePlaceholder": "e.g. Analyst, Marketing",
+    "submitLoading": "Submitting application...",
+    "submit": "Submit application"
+  },
+  "CandidatiPage": {
+    "registrationErrorGeneric": "Error during registration. Please try again.",
+    "retrySameEmail": " Try again with the same email.",
+    "eyebrow": "For associations",
+    "heading": "Apply for your association",
+    "intro": "Fill in your association's details and create your president account. Your request will be verified within 24h. You'll receive a confirmation email. Meanwhile, you can already start building your student profile.",
+    "associationNameLabel": "Association name *",
+    "associationNamePlaceholder": "e.g. BSIC, Bocconi Finance Club...",
+    "categoryLabel": "Category *",
+    "categoryPlaceholder": "Select category",
+    "websiteLabel": "Website",
+    "websitePlaceholder": "bsic.it",
+    "descriptionLabel": "Short description",
+    "descriptionPlaceholder": "What the association does, in a couple of lines...",
+    "credentialsSectionLabel": "Your login details (president)",
+    "fullNameLabel": "Full name *",
+    "emailLabel": "Email *",
+    "passwordLabel": "Password *",
+    "passwordHelper": "At least 8 characters, one uppercase letter, one number, and one special character.",
+    "submitLoading": "Sending...",
+    "submit": "Submit application"
+  },
+  "InAttesaPage": {
+    "heading": "Application pending",
+    "body": "We've received your association's application. The MIRA admin will review it within 24-48 hours and you'll receive an email with the outcome.",
+    "meanwhileLabel": "Meanwhile",
+    "meanwhileBody": "Start building your student profile on MIRA — your MiraCard. You don't need to wait for the association's approval to do this.",
+    "buildProfileCta": "Build your profile →",
+    "whatNowLabel": "What happens now",
+    "steps": {
+      "step1": "We verify your association's details",
+      "step2": "We activate the association's page",
+      "step3": "You receive a confirmation email",
+      "step4": "You log in and start managing applications and the board"
+    },
+    "footer": "For questions, reply to the confirmation email you'll receive."
+  },
+  "AssociationLayout": {
+    "onboardingBanner": "Before continuing, complete your MiraCard profile (~5 minutes) →",
+    "navCicli": "Cycles",
+    "navCandidati": "Candidates",
+    "navColloqui": "Interviews",
+    "navMembri": "Members",
+    "navPaginaPubblica": "Public page"
+  },
+  "Board": {
+    "heading": "Board",
+    "subhead": "Manage the board and invite codes",
+    "boardCount": "Board ({count})",
+    "noMembers": "No board members yet",
+    "tableHeaderMember": "Member",
+    "tableHeaderRole": "Role",
+    "tableHeaderActions": "Actions",
+    "selfBadge": "You"
+  },
+  "InviteCodeSection": {
+    "heading": "Invite link",
+    "description": "Share this link to invite new members. Whoever uses it can choose to join as a member or apply for the board.",
+    "copied": "Copied!",
+    "copyLink": "Copy link",
+    "regenerating": "Generating...",
+    "regenerateCode": "Regenerate code",
+    "generateLink": "Generate invite link"
+  },
+  "PendingBoardRequests": {
+    "heading": "Pending board requests ({count})",
+    "approve": "Approve",
+    "reject": "Reject"
+  },
+  "MemberActions": {
+    "removed": "Removed",
+    "rolePlaceholder": "Role...",
+    "ok": "OK",
+    "roleButton": "Role",
+    "confirmRemove": "Are you sure?",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "Cycles": {
+    "heading": "Application cycles",
+    "subhead": "Manage your selection cycles",
+    "newCycle": "+ New cycle",
+    "noCycles": "No cycles created yet",
+    "questionsCount": "{count} questions",
+    "applicationsCount": "{count} applications",
+    "closesOn": "Closes: {date}",
+    "edit": "Edit",
+    "details": "Details",
+    "history": "History ({count} closed cycles)",
+    "statusLabels": {
+      "open": "Open",
+      "draft": "Draft",
+      "closed": "Closed"
+    }
+  },
+  "NewCycleWizard": {
+    "initialMessage": "Let's create the new application cycle together! What do you want to call it? (e.g. \"Recruiting Fall 2026\")",
+    "readyFallback": "Perfect! Creating the cycle...",
+    "heading": "New application cycle",
+    "subhead": "MIRA will guide you through creating the cycle. Answer the questions one at a time.",
+    "creating": "Creating cycle...",
+    "inputPlaceholder": "Reply to MIRA..."
+  },
+  "CycleStatusButton": {
+    "open": "Open",
+    "confirmQuestion": "Are you sure?",
+    "confirm": "Confirm",
+    "close": "Close"
+  },
+  "CycleDetail": {
+    "closedBadge": "CLOSED",
+    "openedOn": "Opened: {date}",
+    "closedOn": "Closed: {date}",
+    "positionsHeading": "Positions",
+    "requirementsPrefix": "Requirements: {requirements}",
+    "questionsHeading": "Questions",
+    "customQuestionsHeading": "Custom questions",
+    "customQuestionsSubhead": "These questions will be shown to candidates during their application."
+  },
+  "CycleEditor": {
+    "fallbackTitle": "Cycle",
+    "openBadge": "OPEN",
+    "titleLabel": "Title",
+    "descriptionLabel": "Description (visible to candidates)",
+    "descriptionPlaceholder": "What candidates should know...",
+    "opensLabel": "Opens",
+    "closesLabel": "Closes",
+    "aiCriteriaLabel": "General requirements for AI evaluation",
+    "aiCriteriaHelper": "Describe the ideal candidate: interests, skills, attitude, year of study, useful experience. MIRA will use these criteria to evaluate all candidates and suggest the best-fitting position. Not visible to candidates.",
+    "aiCriteriaPlaceholder": "e.g. We're looking for second- or third-year students interested in finance and markets. We prefer profiles with leadership experience, demonstrated curiosity, and availability of at least 6 hours a week.",
+    "positionsLabel": "Open positions",
+    "addPosition": "+ Add",
+    "noPositions": "Generic application (no specific position)",
+    "positionNamePlaceholder": "Position name",
+    "positionDescriptionPlaceholder": "Description (visible to candidates)",
+    "saveChanges": "Save changes",
+    "saved": "Saved"
+  },
+  "QuestionBuilder": {
+    "questionTypes": {
+      "short_text": "Short text",
+      "long_text": "Long text",
+      "multiple_choice": "Multiple choice",
+      "checkboxes": "Checkboxes",
+      "dropdown": "Dropdown",
+      "rating_scale": "Rating scale",
+      "role_preference": "Role preference",
+      "availability": "Availability",
+      "file_upload": "File upload"
+    },
+    "noQuestions": "No questions created yet",
+    "delete": "Delete",
+    "newQuestionHeading": "New question",
+    "questionTextLabel": "Question text *",
+    "questionTextPlaceholder": "e.g. Why do you want to join our association?",
+    "typeLabel": "Type *",
+    "requiredLabel": "Required",
+    "optionsLabel": "Options (one per line)",
+    "optionsPlaceholder": "Option 1\nOption 2\nOption 3",
+    "helperTextLabel": "Helper text (optional)",
+    "helperTextPlaceholder": "Hint for the candidate...",
+    "addLoading": "Adding...",
+    "addQuestion": "Add question",
+    "addQuestionToggle": "+ Add question"
+  },
+  "CandidatesList": {
+    "heading": "Candidates",
+    "countLabel": "{count} applications",
+    "openCyclesSuffix": " (open cycles)",
+    "allFilter": "All",
+    "noApplications": "No applications received yet",
+    "tableHeaders": {
+      "candidate": "Candidate",
+      "position": "Position",
+      "status": "Status",
+      "evaluation": "Evaluation",
+      "date": "Date"
+    },
+    "genericPosition": "Generic",
+    "evaluated": "Evaluated"
+  },
+  "CandidateDetail": {
+    "fallbackName": "Candidate",
+    "applyingFor": "Applying for: {role}",
+    "yearOrdinal": "Year {n}",
+    "viewTranscript": "View transcript",
+    "viewCV": "View résumé",
+    "answersHeading": "Application answers",
+    "miraCardHeading": "MIRA Card",
+    "forThisApplicationHeading": "For this application",
+    "whyRelevant": "Why they're relevant",
+    "noEvidence": "Not enough evidence on this cycle's criteria.",
+    "whatWeDontKnow": "What we don't know",
+    "interviewQuestions": "Ask at the interview",
+    "statusHeading": "Status",
+    "historyHeading": "History",
+    "systemFallback": "System",
+    "notesHeading": "Internal notes",
+    "noNotes": "No notes"
+  },
+  "CandidateActions": {
+    "pipeline": {
+      "evaluate": "Evaluate",
+      "reject": "Reject",
+      "scheduleInterview": "Schedule interview",
+      "accept": "Accept"
+    },
+    "emailType": {
+      "interview": "Interview invite",
+      "accepted": "Acceptance communication",
+      "rejected": "Rejection communication"
+    },
+    "emailSentSuffix": " — email sent to {email}",
+    "editBeforeSending": "Edit the message before sending it. The email will be sent by MIRA on your behalf.",
+    "generatingDraft": "MIRA is writing a draft...",
+    "toPrefix": "To: {email}",
+    "sendEmailLoading": "Sending...",
+    "sendEmail": "Send email",
+    "notePlaceholder": "Write a note...",
+    "addNote": "+ Add note"
+  },
+  "RegenerateEvaluationButton": {
+    "notAvailable": "The AI evaluation isn't available yet.",
+    "generating": "Generating...",
+    "generate": "Generate evaluation"
+  },
+  "InterviewsPage": {
+    "heading": "Interviews",
+    "countLabel": "{count} candidates in interview stage",
+    "noInterviews": "No interviews scheduled. Schedule candidates from their detail page.",
+    "tableHeaderCandidate": "Candidate",
+    "tableHeaderCycle": "Cycle",
+    "tableHeaderScheduledOn": "Scheduled on"
+  },
+  "PublicPageEditor": {
+    "heading": "Public page",
+    "subhead": "Edit the information visible on the association's public page",
+    "saved": "Saved",
+    "published": "Page published!",
+    "logoLabel": "Logo",
+    "changeLogo": "Change logo",
+    "uploadLogo": "Upload logo",
+    "logoHelper": "PNG, JPG — max 2MB. If not uploaded, the initial letter is used.",
+    "nameLabel": "Association name",
+    "categoryLabel": "Category",
+    "categoryPlaceholder": "Select",
+    "websiteLabel": "Website",
+    "contactEmailLabel": "Contact email",
+    "sectorsLabel": "Sectors (comma-separated)",
+    "sectorsPlaceholder": "e.g. Finance, Consulting, Tech",
+    "shortDescriptionLabel": "Short description",
+    "shortDescriptionPlaceholder": "A sentence describing the association...",
+    "longDescriptionLabel": "Full description",
+    "longDescriptionPlaceholder": "Detailed description, mission, activities, team...",
+    "saveChanges": "Save changes",
+    "publishing": "Publishing...",
+    "publishPage": "Publish page",
+    "viewPublicPage": "View public page →"
   }
 }

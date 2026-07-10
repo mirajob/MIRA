@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { CycleEditor } from "./cycle-editor";
 import { QuestionBuilder } from "./question-builder";
 
@@ -11,6 +12,9 @@ interface Props {
 export default async function CycleDetailPage({ params }: Props) {
   const { slug, cycleId } = await params;
   const supabase = await createServiceClient();
+  const t = await getTranslations("CycleDetail");
+  const locale = await getLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
 
   const { data: cycle } = await (supabase.from("application_cycles") as any)
     .select("*")
@@ -38,24 +42,24 @@ export default async function CycleDetailPage({ params }: Props) {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h2 className="font-display text-h2 text-navy">{cycle.title}</h2>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium uppercase bg-navy-50 text-ink-tertiary">CHIUSO</span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium uppercase bg-navy-50 text-ink-tertiary">{t("closedBadge")}</span>
           </div>
           {cycle.description && <p className="text-body text-ink-secondary">{cycle.description}</p>}
           <div className="mt-2 flex gap-4 text-body-sm text-ink-tertiary">
-            {cycle.opens_at && <span>Aperto: {new Date(cycle.opens_at).toLocaleDateString("it-IT")}</span>}
-            {cycle.closes_at && <span>Chiuso: {new Date(cycle.closes_at).toLocaleDateString("it-IT")}</span>}
+            {cycle.opens_at && <span>{t("openedOn", { date: new Date(cycle.opens_at).toLocaleDateString(dateLocale) })}</span>}
+            {cycle.closes_at && <span>{t("closedOn", { date: new Date(cycle.closes_at).toLocaleDateString(dateLocale) })}</span>}
           </div>
         </div>
 
         {positions.length > 0 && (
           <div>
-            <h3 className="font-sans text-h3 text-navy mb-3">Posizioni</h3>
+            <h3 className="font-sans text-h3 text-navy mb-3">{t("positionsHeading")}</h3>
             <div className="space-y-2">
               {positions.map((pos, i) => (
                 <div key={i} className="rounded-md border border-border bg-white p-4">
                   <p className="text-body font-medium text-navy">{pos.name}</p>
                   {pos.description && <p className="text-body-sm text-ink-secondary mt-1">{pos.description}</p>}
-                  {pos.requirements && <p className="text-body-sm text-ink-tertiary mt-1">Requisiti: {pos.requirements}</p>}
+                  {pos.requirements && <p className="text-body-sm text-ink-tertiary mt-1">{t("requirementsPrefix", { requirements: pos.requirements })}</p>}
                 </div>
               ))}
             </div>
@@ -64,7 +68,7 @@ export default async function CycleDetailPage({ params }: Props) {
 
         {(questions ?? []).length > 0 && (
           <div>
-            <h3 className="font-sans text-h3 text-navy mb-3">Domande</h3>
+            <h3 className="font-sans text-h3 text-navy mb-3">{t("questionsHeading")}</h3>
             <div className="space-y-2">
               {(questions ?? []).map((q: any, i: number) => (
                 <div key={i} className="rounded-md border border-border bg-white px-4 py-3">
@@ -96,9 +100,9 @@ export default async function CycleDetailPage({ params }: Props) {
       />
 
       <div>
-        <h3 className="font-sans text-h3 text-navy mb-4">Domande personalizzate</h3>
+        <h3 className="font-sans text-h3 text-navy mb-4">{t("customQuestionsHeading")}</h3>
         <p className="text-body-sm text-ink-secondary mb-4">
-          Queste domande verranno mostrate ai candidati durante la candidatura.
+          {t("customQuestionsSubhead")}
         </p>
         <QuestionBuilder
           cycleId={cycleId}

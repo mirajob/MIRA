@@ -2,6 +2,7 @@ import { getUserContext } from "@/lib/auth";
 import { createServerClient } from "@mira/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { WORKSPACE_ROLES } from "@/lib/association-roles";
 
 interface Props {
@@ -9,27 +10,20 @@ interface Props {
   children: React.ReactNode;
 }
 
-const ROLE_LABELS: Record<string, string> = {
-  association_president: "Presidente",
-  association_admin: "Admin",
-  association_reviewer: "Reviewer",
-  association_interviewer: "Interviewer",
-  association_member: "Membro",
-};
-
-
-const getAssociationNav = (slug: string) => [
-  { label: "Cicli", href: `/association/${slug}/cycles` },
-  { label: "Candidati", href: `/association/${slug}/candidates` },
-  { label: "Colloqui", href: `/association/${slug}/interviews` },
-  { label: "Membri", href: `/association/${slug}/board` },
-  { label: "Pagina pubblica", href: `/association/${slug}/public-page` },
-];
-
 export default async function AssociationWorkspaceLayout({ params, children }: Props) {
   const { slug } = await params;
   const ctx = await getUserContext();
   const supabase = await createServerClient();
+  const t = await getTranslations("AssociationLayout");
+  const c = await getTranslations("Common");
+
+  const getAssociationNav = (slug: string) => [
+    { label: t("navCicli"), href: `/association/${slug}/cycles` },
+    { label: t("navCandidati"), href: `/association/${slug}/candidates` },
+    { label: t("navColloqui"), href: `/association/${slug}/interviews` },
+    { label: t("navMembri"), href: `/association/${slug}/board` },
+    { label: t("navPaginaPubblica"), href: `/association/${slug}/public-page` },
+  ];
 
   const { data: association } = await supabase
     .from("association_profiles")
@@ -79,7 +73,7 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
           href="/student/onboarding"
           className="mb-6 block rounded-lg border border-petrol/30 bg-petrol-50 px-4 py-3 text-body-sm text-petrol-700 hover:bg-petrol-100 transition-colors"
         >
-          Prima di continuare, completa il tuo profilo MiraCard (~5 minuti) →
+          {t("onboardingBanner")}
         </Link>
       )}
 
@@ -94,7 +88,7 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
         <div>
           <h1 className="font-sans text-h3 text-navy">{association.name}</h1>
           <p className="text-body-sm text-ink-tertiary">
-            {ROLE_LABELS[membership?.role ?? ""] ?? "Admin"}
+            {c.has(`boardRoles.${membership?.role}`) ? c(`boardRoles.${membership?.role}`) : c("boardRoles.association_admin")}
           </p>
         </div>
       </div>

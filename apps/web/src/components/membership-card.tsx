@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-
-const ROLE_LABELS: Record<string, string> = {
-  association_president: "Presidente",
-  association_admin: "Admin",
-  association_reviewer: "Reviewer",
-  association_interviewer: "Interviewer",
-  association_member: "Membro",
-};
+import { useTranslations } from "next-intl";
 
 export function MembershipCard({
   membership,
@@ -23,6 +16,8 @@ export function MembershipCard({
     associationSlug: string;
   };
 }) {
+  const t = useTranslations("MembershipCard");
+  const c = useTranslations("Common");
   const [description, setDescription] = useState(membership.activityDescription ?? "");
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -49,7 +44,7 @@ export function MembershipCard({
           {membership.associationName}
         </Link>
         <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-petrol-50 text-petrol-700">
-          {membership.title ?? ROLE_LABELS[membership.role] ?? membership.role}
+          {membership.title ?? (c.has(`boardRoles.${membership.role}`) ? c(`boardRoles.${membership.role}`) : membership.role)}
         </span>
       </div>
       <div className="flex gap-2">
@@ -59,10 +54,10 @@ export function MembershipCard({
           onChange={(e) => { setDescription(e.target.value); setDirty(true); }}
           onBlur={handleSave}
           onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
-          placeholder="Descrivi le tue attività..."
+          placeholder={t("activityPlaceholder")}
           className="flex-1 px-3 py-1.5 rounded-md bg-paper border border-border text-body-sm text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-petrol focus:ring-1 focus:ring-petrol/20 transition-colors"
         />
-        {saving && <span className="text-body-sm text-ink-tertiary self-center">Salvo...</span>}
+        {saving && <span className="text-body-sm text-ink-tertiary self-center">{t("saving")}</span>}
       </div>
     </div>
   );

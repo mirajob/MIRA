@@ -1,5 +1,6 @@
 import { createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { CandidateActions } from "./candidate-actions";
 import { RegenerateEvaluationButton } from "./regenerate-evaluation-button";
@@ -12,6 +13,9 @@ interface Props {
 export default async function CandidateDetailPage({ params }: Props) {
   const { slug, applicationId } = await params;
   const supabase = await createServiceClient();
+  const t = await getTranslations("CandidateDetail");
+  const locale = await getLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
 
   const { data: association } = await (supabase.from("association_profiles") as any)
     .select("name")
@@ -109,17 +113,17 @@ export default async function CandidateDetailPage({ params }: Props) {
         <div>
           <p className="text-eyebrow text-navy/60 uppercase mb-1">{cycle?.title}</p>
           <h2 className="font-display text-display-md text-navy">
-            {profile?.full_name ?? "Candidato"}
+            {profile?.full_name ?? t("fallbackName")}
           </h2>
           <p className="text-body text-ink-secondary">{profile?.email}</p>
           {(application as any).selected_role_preferences?.[0] && (
             <p className="mt-1 text-body-sm font-medium text-petrol">
-              Candidatura per: {(application as any).selected_role_preferences[0]}
+              {t("applyingFor", { role: (application as any).selected_role_preferences[0] })}
             </p>
           )}
           <div className="mt-2 flex items-center gap-3 text-body-sm text-ink-tertiary flex-wrap">
             <span>{(student?.degree_program as string) ?? "—"}</span>
-            {student?.current_year && <span>· {student.current_year as number}° anno</span>}
+            {student?.current_year && <span>· {t("yearOrdinal", { n: student.current_year as number })}</span>}
             {student?.degree_level && <span>· {student.degree_level as string}</span>}
             {transcriptUrl && (
               <a
@@ -131,7 +135,7 @@ export default async function CandidateDetailPage({ params }: Props) {
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                 </svg>
-                Vedi Libretto
+                {t("viewTranscript")}
               </a>
             )}
             {cvUrl && (
@@ -144,7 +148,7 @@ export default async function CandidateDetailPage({ params }: Props) {
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                 </svg>
-                Vedi CV
+                {t("viewCV")}
               </a>
             )}
           </div>
@@ -155,7 +159,7 @@ export default async function CandidateDetailPage({ params }: Props) {
       {/* Application answers — always first */}
       {answers.length > 0 && (
         <div>
-          <h3 className="font-sans text-h3 text-navy mb-3">Risposte candidatura</h3>
+          <h3 className="font-sans text-h3 text-navy mb-3">{t("answersHeading")}</h3>
           <div className="space-y-3">
             {answers.map((a) => (
               <div key={a.id} className="rounded-lg border border-border bg-white p-5">
@@ -172,13 +176,13 @@ export default async function CandidateDetailPage({ params }: Props) {
 
         {/* LEFT — MIRA Card (solo blocchi approved, filtrata per visibilità) */}
         <div className="space-y-4">
-          <h3 className="font-sans text-h3 text-navy">MIRA Card</h3>
+          <h3 className="font-sans text-h3 text-navy">{t("miraCardHeading")}</h3>
           <CandidateCard {...cardProps} />
         </div>
 
         {/* RIGHT — Per questa candidatura (generato al volo, mai un giudizio permanente) */}
         <div className="space-y-4">
-          <h3 className="font-sans text-h3 text-navy">Per questa candidatura</h3>
+          <h3 className="font-sans text-h3 text-navy">{t("forThisApplicationHeading")}</h3>
 
           {!aiEval ? (
             <RegenerateEvaluationButton applicationId={applicationId} />
@@ -192,7 +196,7 @@ export default async function CandidateDetailPage({ params }: Props) {
             return (
               <div className="space-y-4">
                 <div className="rounded-lg border border-border bg-white p-5">
-                  <p className="text-label text-navy text-xs mb-3">Perché è rilevante</p>
+                  <p className="text-label text-navy text-xs mb-3">{t("whyRelevant")}</p>
                   {ev.rilevanza?.length ? (
                     <div className="space-y-2">
                       {ev.rilevanza.slice(0, 3).map((r, i) => (
@@ -203,12 +207,12 @@ export default async function CandidateDetailPage({ params }: Props) {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-body-sm text-ink-secondary">Nessuna evidenza sufficiente sui criteri di questo ciclo.</p>
+                    <p className="text-body-sm text-ink-secondary">{t("noEvidence")}</p>
                   )}
                 </div>
 
                 <div className="rounded-lg border border-border bg-white p-5">
-                  <p className="text-label text-navy text-xs mb-2">Cosa non sappiamo</p>
+                  <p className="text-label text-navy text-xs mb-2">{t("whatWeDontKnow")}</p>
                   <ul className="space-y-1">
                     {(ev.gap ?? []).map((g, i) => (
                       <li key={i} className="text-body-sm text-ink">• {g}</li>
@@ -218,7 +222,7 @@ export default async function CandidateDetailPage({ params }: Props) {
 
                 {ev.domande_colloquio?.length ? (
                   <div className="rounded-lg border border-border bg-white p-5">
-                    <p className="text-label text-navy text-xs mb-2">Da chiedere al colloquio</p>
+                    <p className="text-label text-navy text-xs mb-2">{t("interviewQuestions")}</p>
                     <ol className="space-y-1.5">
                       {ev.domande_colloquio.map((q, i) => (
                         <li key={i} className="text-body-sm text-ink"><span className="text-ink-tertiary mr-1">{i + 1}.</span>{q}</li>
@@ -235,7 +239,7 @@ export default async function CandidateDetailPage({ params }: Props) {
       {/* Sidebar: status, timeline, notes */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="rounded-lg border border-border bg-white p-5">
-          <h3 className="font-sans text-h3 text-navy mb-3">Stato</h3>
+          <h3 className="font-sans text-h3 text-navy mb-3">{t("statusHeading")}</h3>
           <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium ${
             application.status === "accepted" ? "bg-success-bg text-success"
             : application.status === "rejected" ? "bg-error-bg text-error"
@@ -246,12 +250,12 @@ export default async function CandidateDetailPage({ params }: Props) {
         </div>
 
         <div className="rounded-lg border border-border bg-white p-5">
-          <h3 className="font-sans text-h3 text-navy mb-3">Cronologia</h3>
+          <h3 className="font-sans text-h3 text-navy mb-3">{t("historyHeading")}</h3>
           <div className="space-y-3">
             {statusEvents.map((ev) => (
               <div key={ev.id} className="text-body-sm">
                 <p className="text-ink">{APPLICATION_STATUS_LABELS[ev.new_status] ?? ev.new_status}</p>
-                <p className="text-ink-tertiary">{ev.profiles?.full_name ?? "Sistema"} · {new Date(ev.created_at).toLocaleDateString("it-IT")}</p>
+                <p className="text-ink-tertiary">{ev.profiles?.full_name ?? t("systemFallback")} · {new Date(ev.created_at).toLocaleDateString(dateLocale)}</p>
                 {ev.note && <p className="text-ink-secondary mt-1 italic">{ev.note}</p>}
               </div>
             ))}
@@ -259,15 +263,15 @@ export default async function CandidateDetailPage({ params }: Props) {
         </div>
 
         <div className="rounded-lg border border-border bg-white p-5">
-          <h3 className="font-sans text-h3 text-navy mb-3">Note interne</h3>
+          <h3 className="font-sans text-h3 text-navy mb-3">{t("notesHeading")}</h3>
           {notes.length === 0 ? (
-            <p className="text-body-sm text-ink-tertiary">Nessuna nota</p>
+            <p className="text-body-sm text-ink-tertiary">{t("noNotes")}</p>
           ) : (
             <div className="space-y-3">
               {notes.map((n) => (
                 <div key={n.id} className="text-body-sm">
                   <p className="text-ink">{n.note_text}</p>
-                  <p className="text-ink-tertiary mt-1">{n.profiles?.full_name} · {new Date(n.created_at).toLocaleDateString("it-IT")}</p>
+                  <p className="text-ink-tertiary mt-1">{n.profiles?.full_name} · {new Date(n.created_at).toLocaleDateString(dateLocale)}</p>
                 </div>
               ))}
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { approveBoardMember, rejectBoardMember } from "@/lib/actions/board";
 
 interface PendingMember {
@@ -23,6 +24,7 @@ export function PendingBoardRequests({
   requests: PendingMember[];
   associationId: string;
 }) {
+  const t = useTranslations("PendingBoardRequests");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
@@ -46,7 +48,7 @@ export function PendingBoardRequests({
   return (
     <div>
       <h3 className="font-sans text-h3 text-navy mb-3">
-        Richieste board in attesa ({visible.length})
+        {t("heading", { count: visible.length })}
       </h3>
       <div className="space-y-3">
         {visible.map((req) => (
@@ -74,14 +76,14 @@ export function PendingBoardRequests({
                 disabled={processingId === req.id}
                 className="bg-navy text-white px-4 py-2 rounded-md text-body-sm font-medium hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
               >
-                Approva
+                {t("approve")}
               </button>
               <button
                 onClick={() => handleReject(req.id)}
                 disabled={processingId === req.id}
                 className="border border-border text-ink-secondary px-4 py-2 rounded-md text-body-sm font-medium hover:text-error hover:border-error transition-colors duration-100 disabled:opacity-40"
               >
-                Rifiuta
+                {t("reject")}
               </button>
             </div>
           </div>

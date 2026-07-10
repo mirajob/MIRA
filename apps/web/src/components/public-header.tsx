@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { createServerClient } from "@mira/supabase/server";
+import { getTranslations } from "next-intl/server";
 import { LogoutButton } from "./logout-button";
 
 export async function PublicHeader() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const t = await getTranslations("PublicHeader");
+  const c = await getTranslations("Common");
 
   return (
     <header className="h-20 px-6 lg:px-12 flex items-center justify-between border-b border-border bg-white">
@@ -13,7 +16,7 @@ export async function PublicHeader() {
       </Link>
       <div className="flex items-center gap-4">
         <Link href="/associations" className="text-body text-ink-secondary hover:text-navy transition-colors duration-100">
-          Associazioni
+          {t("associationsLink")}
         </Link>
         {user ? (
           <>
@@ -21,17 +24,17 @@ export async function PublicHeader() {
               href="/api/auth/redirect"
               className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
             >
-              Dashboard
+              {t("dashboard")}
             </Link>
             <LogoutButton />
           </>
         ) : (
           <>
             <Link href="/login" className="text-body text-navy hover:text-petrol transition-colors duration-100">
-              Accedi
+              {c("login")}
             </Link>
             <Link href="/signup" className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100">
-              Inizia
+              {c("start")}
             </Link>
           </>
         )}
