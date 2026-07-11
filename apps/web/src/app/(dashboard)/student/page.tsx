@@ -3,7 +3,6 @@ import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { RoadmapBanner } from "@/components/roadmap-banner";
 import { ensureCardBlocksExist } from "@/lib/actions/card-blocks";
 import { EditableSection } from "@/components/card/editable-section";
 import { HeaderBlock, HeaderView } from "@/components/card/header-block";
@@ -46,7 +45,7 @@ export default async function StudentHomePage() {
 
   const { data: student } = await supabase
     .from("student_profiles")
-    .select("id, onboarding_completed, onboarding_answers")
+    .select("id, onboarding_completed")
     .eq("user_id", profileId)
     .single();
 
@@ -66,8 +65,6 @@ export default async function StudentHomePage() {
     ((blockRows ?? []) as CardBlockRow[]).map((b) => [b.block_type, b])
   );
 
-  const answers = (student as any).onboarding_answers as Record<string, unknown> | null;
-  const roadmapDismissed = answers?.roadmap_dismissed === true;
   const name = ctx.profile.full_name?.split(" ")[0] ?? "";
 
   const header = blocks.get("header");
@@ -106,8 +103,6 @@ export default async function StudentHomePage() {
           {t("completeCardCta")}
         </Link>
       )}
-
-      {!roadmapDismissed && <RoadmapBanner />}
 
       <div className="rounded-xl border border-border bg-white overflow-hidden divide-y divide-border">
         {header && (

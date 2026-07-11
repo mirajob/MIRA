@@ -252,6 +252,7 @@
       "evidenzaPlaceholder": "e.g. Financial Accounting",
       "emptyView": "No skills yet.",
       "academicSkills": "Academic skills ({count})",
+      "hardSkillsCount": "Hard skills ({count})",
       "softHeading": "Soft skills",
       "softPlaceholder": "Emerges from the questions about your experiences during onboarding — you can still edit it here.",
       "hardHeading": "Hard skills",
@@ -277,27 +278,6 @@
     "prose": {
       "notSpecified": "Not specified yet."
     }
-  },
-  "RoadmapBanner": {
-    "heading": "Your MIRA profile is ready! Here's what's coming next:",
-    "orientamento": {
-      "title": "Personalized orientation",
-      "body": "MIRA analyzes your academic path, interests, and experience to show you which careers, master's programs, and paths really fit you — not generic advice, but suggestions based on real evidence from your profile."
-    },
-    "simulazioni": {
-      "title": "Job simulations",
-      "body": "Realistic exercises that mimic real work tasks — analyzing a startup like a VC analyst, solving a consulting case, evaluating a balance sheet. They help show how you think and create concrete evidence in your profile."
-    },
-    "matching": {
-      "title": "Company matching",
-      "body": "Companies will be able to search for students based on real evidence — your path, simulations, projects. You control what you show and to whom. Initially your profile will be anonymous."
-    },
-    "crescita": {
-      "title": "A profile that grows",
-      "body": "Every interaction with MIRA — chats, simulations, applications, projects — enriches your profile. You don't have to fill anything in: the profile builds itself."
-    },
-    "closing": "Stay on MIRA — the more you interact, the stronger your profile becomes.",
-    "dismiss": "Got it"
   },
   "JoinByCode": {
     "prompt": "Are you on an association's board? Enter the invite code",

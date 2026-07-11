@@ -252,6 +252,7 @@
       "evidenzaPlaceholder": "es. Financial Accounting",
       "emptyView": "Nessuna competenza ancora.",
       "academicSkills": "Competenze accademiche ({count})",
+      "hardSkillsCount": "Hard skill ({count})",
       "softHeading": "Soft skill",
       "softPlaceholder": "Emergono dalle domande sulle tue esperienze durante l'onboarding — puoi comunque modificarle qui.",
       "hardHeading": "Hard skill",
@@ -277,27 +278,6 @@
     "prose": {
       "notSpecified": "Non ancora indicato."
     }
-  },
-  "RoadmapBanner": {
-    "heading": "Il tuo profilo MIRA è pronto! Ecco cosa sta arrivando:",
-    "orientamento": {
-      "title": "Orientamento personalizzato",
-      "body": "MIRA analizza il tuo percorso accademico, i tuoi interessi e le tue esperienze per mostrarti quali carriere, magistrali e percorsi fanno davvero per te — non consigli generici, ma suggerimenti basati su evidenze reali del tuo profilo."
-    },
-    "simulazioni": {
-      "title": "Simulazioni di lavoro",
-      "body": "Esercizi realistici che imitano task di lavoro veri — analizzare una startup come un analyst VC, risolvere un caso di consulting, valutare un bilancio. Servono a capire come ragioni e a creare evidenze concrete nel tuo profilo."
-    },
-    "matching": {
-      "title": "Matching con aziende",
-      "body": "Le aziende potranno cercare studenti per evidenze reali — il tuo percorso, le simulazioni, i progetti. Tu controlli cosa mostri e a chi. Inizialmente il tuo profilo sarà anonimo."
-    },
-    "crescita": {
-      "title": "Profilo che cresce",
-      "body": "Ogni interazione con MIRA — chat, simulazioni, candidature, progetti — arricchisce il tuo profilo. Non devi compilare nulla: il profilo si costruisce da solo."
-    },
-    "closing": "Resta su MIRA — più interagisci, più il tuo profilo diventa forte.",
-    "dismiss": "Ho capito"
   },
   "JoinByCode": {
     "prompt": "Sei nel board di un'associazione? Inserisci il codice invito",

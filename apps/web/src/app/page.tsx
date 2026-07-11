@@ -28,7 +28,7 @@ export default async function HomePage() {
         </div>
       </header>
 
-      <main className="flex flex-col items-center justify-center px-6 py-28">
+      <main className="flex flex-col items-center justify-center px-6 py-12">
         <p className="text-eyebrow text-navy/60 mb-4 uppercase">
           {t("eyebrow")}
         </p>

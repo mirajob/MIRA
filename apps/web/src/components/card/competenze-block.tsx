@@ -211,9 +211,25 @@ function CompetenzaRow({ it, showLivello }: { it: CompetenzaItem; showLivello?: 
  * Academic skill raggruppate e collassate di default (da sole occupano troppo spazio per il
  * loro peso, come gli esami nell'Header).
  */
+function CollapsibleGroup({ label, bordered, children }: { label: string; bordered: boolean; children: React.ReactNode }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className={bordered ? "mt-3 pt-3 border-t border-border" : ""}>
+      <button
+        type="button"
+        onClick={() => setExpanded((e) => !e)}
+        className="flex items-center gap-1.5 text-xs text-petrol hover:text-petrol-700 transition-colors"
+      >
+        <span>{expanded ? "▾" : "▸"}</span>
+        <span>{label}</span>
+      </button>
+      {expanded && <div className="mt-2 space-y-1.5">{children}</div>}
+    </div>
+  );
+}
+
 export function CompetenzeView({ data }: { data: CompetenzeProseContent }) {
   const t = useTranslations("CardBlocks");
-  const [expanded, setExpanded] = useState(false);
   const hardItems = data.items.filter((it) => getCompetenzaCategoria(it) === "hard");
   const academicItems = data.items.filter((it) => getCompetenzaCategoria(it) === "academic");
   const hasSoft = !!data.soft_skills_testo;
@@ -225,37 +241,21 @@ export function CompetenzeView({ data }: { data: CompetenzeProseContent }) {
       {isEmpty && <p className="text-body-sm text-ink-tertiary italic">{t("competenze.emptyView")}</p>}
 
       {hasSoft && (
-        <div>
-          <p className="text-xs text-ink-tertiary uppercase mb-1">{t("competenze.softHeading")}</p>
+        <CollapsibleGroup label={t("competenze.softHeading")} bordered={false}>
           <p className="text-body-sm text-ink">{data.soft_skills_testo}</p>
-        </div>
+        </CollapsibleGroup>
       )}
 
       {hardItems.length > 0 && (
-        <div className={hasSoft ? "mt-3 pt-3 border-t border-border" : ""}>
-          <p className="text-xs text-ink-tertiary uppercase mb-1">{t("competenze.hardHeading")}</p>
-          <div className="space-y-1.5">
-            {hardItems.map((it) => <CompetenzaRow key={it.id} it={it} showLivello />)}
-          </div>
-        </div>
+        <CollapsibleGroup label={t("competenze.hardSkillsCount", { count: hardItems.length })} bordered={hasSoft}>
+          {hardItems.map((it) => <CompetenzaRow key={it.id} it={it} showLivello />)}
+        </CollapsibleGroup>
       )}
 
       {academicItems.length > 0 && (
-        <div className={hasSoft || hardItems.length > 0 ? "mt-3 pt-3 border-t border-border" : ""}>
-          <button
-            type="button"
-            onClick={() => setExpanded((e) => !e)}
-            className="flex items-center gap-1.5 text-xs text-petrol hover:text-petrol-700 transition-colors"
-          >
-            <span>{expanded ? "▾" : "▸"}</span>
-            <span>{t("competenze.academicSkills", { count: academicItems.length })}</span>
-          </button>
-          {expanded && (
-            <div className="mt-2 space-y-1.5">
-              {academicItems.map((it) => <CompetenzaRow key={it.id} it={it} />)}
-            </div>
-          )}
-        </div>
+        <CollapsibleGroup label={t("competenze.academicSkills", { count: academicItems.length })} bordered={hasSoft || hardItems.length > 0}>
+          {academicItems.map((it) => <CompetenzaRow key={it.id} it={it} />)}
+        </CollapsibleGroup>
       )}
     </div>
   );

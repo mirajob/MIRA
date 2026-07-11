@@ -225,25 +225,6 @@ export async function loadProfileChat(): Promise<ChatMessage[]> {
   return (answers?.profile_chat as ChatMessage[]) ?? [];
 }
 
-export async function dismissRoadmap() {
-  const ctx = await getUserContext();
-  const supabase = await createServiceClient();
-
-  const { data } = await supabase
-    .from("student_profiles")
-    .select("onboarding_answers")
-    .eq("user_id", (ctx.profile as any).id)
-    .single();
-
-  const answers = (data?.onboarding_answers as Record<string, unknown>) || {};
-  await supabase
-    .from("student_profiles")
-    .update({
-      onboarding_answers: { ...answers, roadmap_dismissed: true },
-    })
-    .eq("user_id", (ctx.profile as any).id);
-}
-
 async function updateProfileFromChat(profileId: string, conversation: ChatMessage[]) {
   const recent = conversation.slice(-8);
   const conversationText = recent
