@@ -131,9 +131,13 @@ export function OnboardingCardPanel({ blocks, phase, onApproved }: OnboardingCar
                 />
               );
             case "competenze":
+              // Key include i conteggi: durante l'onboarding lo studente non ha mai una modifica
+              // manuale in corso su questo blocco (arriva solo via chat), quindi un remount pulito
+              // ad ogni nuova hard/soft skill è sicuro e garantisce che il pannello parta sempre
+              // dai dati freschi invece di fidarsi del merge interno del componente.
               return (
                 <CompetenzeBlock
-                  key={blockType}
+                  key={`competenze-${blocks.competenze.data.items.length}-${(blocks.competenze.data.soft_skills ?? []).length}`}
                   data={blocks.competenze.data}
                   status={blocks.competenze.status}
                   onApproved={() => onApproved("competenze")}

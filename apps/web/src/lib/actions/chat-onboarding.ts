@@ -578,27 +578,39 @@ export async function submitEsperienzaRisposta(
       nextQuestion = t("cvNextPlain", { title: next.title, org: next.organization });
     }
 
-    // Breve reazione reale a quello che ha appena detto, non un "Segnato" fisso —
-    // altrimenti sembra che MIRA non legga le risposte. Risponde nella lingua del locale attivo.
+    // Prima giudica se lo studente vuole FERMARSI con le domande su altre esperienze (es. "basta
+    // con le esperienze", "andiamo avanti") invece di trattare sempre il messaggio come una risposta
+    // nel merito — senza questo controllo MIRA ignorava la richiesta e chiedeva comunque la prossima
+    // esperienza del CV. Un'unica chiamata AI decide ed eventualmente scrive già la reazione, così non
+    // raddoppia le chiamate rispetto a prima. Risponde nella lingua del locale attivo.
     const languageInstruction = locale === "it" ? "Rispondi in italiano." : "Respond in English.";
-    const reaction = await chatCompletion(
+    const combined = await chatCompletion(
       [
         {
           role: "system",
-          content: `Lo studente ha appena risposto a una domanda su un'esperienza. Scrivi UNA riga breve che reagisca concretamente a quello che ha detto (fatti, non entusiasmo generico tipo "fantastico!"). Poi, a capo, prosegui con la prossima domanda esatta che ti viene data. Rispondi SOLO con il testo finale del messaggio, niente JSON. ${languageInstruction}`,
-        },
-        { role: "user", content: `Risposta studente: "${userMessage}"\n\nProssimo messaggio da porre: "${nextQuestion}"` },
-      ],
-      { temperature: 0.4, maxTokens: 200 }
-    );
+          content: `Lo studente sta rispondendo a domande su esperienze diverse, una alla volta, durante l'onboarding. Giudica prima di tutto: il suo messaggio esprime la volontà di FERMARSI/SALTARE le prossime domande su altre esperienze (es. "basta con le esperienze", "andiamo avanti", "salta pure", "non ho altro da aggiungere") oppure è una risposta normale nel merito?
 
-    const message = reaction.trim() || nextQuestion;
-    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
-    await saveConversation(supabase, profileId, fullConversation);
-    return { message, phase: "esperienze" as OnboardingPhase, done: false };
+Se vuole fermarsi: "stop":true, "message":null.
+Se è una risposta normale: "stop":false, e scrivi in "message" UNA riga breve che reagisca concretamente a quello che ha detto (fatti, non entusiasmo generico tipo "fantastico!"), poi a capo la prossima domanda esatta che ti viene data.
+
+Rispondi SOLO in JSON: {"stop":true|false,"message":"..."|null}. ${languageInstruction}`,
+        },
+        { role: "user", content: `Risposta studente: "${userMessage}"\n\nProssimo messaggio da porre se non si ferma: "${nextQuestion}"` },
+      ],
+      { temperature: 0.4, maxTokens: 250, jsonMode: true }
+    );
+    const { stop, message: continueMessage } = JSON.parse(combined) as { stop: boolean; message: string | null };
+
+    if (!stop) {
+      const message = continueMessage?.trim() || nextQuestion;
+      const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+      await saveConversation(supabase, profileId, fullConversation);
+      return { message, phase: "esperienze" as OnboardingPhase, done: false };
+    }
+    // Altrimenti prosegue sotto: chiude la fase esperienze in anticipo, come se fosse l'ultima risposta.
   }
 
-  // Ultima risposta: estrae tutto ciò che è emerso in questa fase nel blocco esperienze.
+  // Ultima risposta (o richiesta di fermarsi in anticipo): estrae tutto ciò che è emerso finora nel blocco esperienze.
   const recentText = conversation
     .slice(-2 * totalSubQuestions - 2)
     .map((m) => `${m.role === "user" ? "Studente" : "MIRA"}: ${m.content}`)
