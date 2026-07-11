@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ensureCardBlocksExist } from "./card-blocks";
 import { EMPTY_ONBOARDING_BLOCKS } from "@/lib/onboarding-defaults";
+import { SOFT_SKILL_CARD_TEXT, SOFT_SKILL_QUESTION_COUNT } from "@/lib/soft-skill-questions";
 import type {
   CardBlockType,
   CardBlockStatus,
@@ -788,7 +789,7 @@ export async function startFaseB() {
   }));
 
   const { data: updatedRows, error } = await (supabase.from("card_blocks") as any)
-    .update({ prose_content: { items, soft_skills_testo: null }, status: "draft" })
+    .update({ prose_content: { items, soft_skills: [] }, status: "draft" })
     .eq("student_profile_id", studentProfileId)
     .eq("block_type", "competenze")
     .select("id");
@@ -809,115 +810,96 @@ export async function startFaseB() {
   return {
     message,
     phase: "competenze" as OnboardingPhase,
-    competenze: { status: "draft" as CardBlockStatus, data: { items, soft_skills_testo: null } },
+    competenze: { status: "draft" as CardBlockStatus, data: { items, soft_skills: [] } },
     done: false,
   };
 }
 
 /**
- * Sequenza a 3 turni dentro la fase "competenze", stesso schema di submitAutodescrizioneRisposta:
- * subIndex 0 = risposta alla domanda hard skill → estrae le hard skill e fa la prima domanda
- * soft skill (generata dall'AI, ancorata a un'esperienza reale, stile comportamentale/STAR).
- * subIndex 1 = risposta alla prima domanda soft → fa la seconda (scelta forzata, statica).
- * subIndex 2 = risposta alla seconda domanda soft → sintetizza le due risposte in un paragrafo
- * breve in prima persona (mai tag/etichette), salvato in soft_skills_testo.
+ * Turno unico della fase "competenze" con risposta libera: la domanda hard-skill.
+ * Estrae le hard skill dalla risposta e apre il quiz a scelta forzata delle soft skill
+ * (5 domande statiche, gestite da submitSoftSkillChoice) — mai più una domanda AI aperta.
  */
-export async function submitCompetenzeRisposta(history: ChatMessage[], userMessage: string, subIndex: number) {
+export async function submitCompetenzeRisposta(history: ChatMessage[], userMessage: string) {
   const { supabase, profileId, studentProfileId, blocks } = await getOnboardingContext();
   const t = await getTranslations("OnboardingEngine");
-  const locale = await getLocale();
   const conversation = [...history, { role: "user" as const, content: userMessage }];
 
-  if (subIndex === 0) {
-    const esperienzeContext = blocks.esperienze.data.items
-      .map((i) => `${i.titolo || i.organizzazione}: ${i.descrizione}`)
-      .join("\n");
-
-    const extracted = await chatCompletion(
-      [
-        { role: "system", content: HARD_SKILLS_EXTRACTION_PROMPT },
-        { role: "user", content: `Esperienze dello studente:\n${esperienzeContext || "nessuna"}\n\nRisposta sugli strumenti usati: "${userMessage}"` },
-      ],
-      { temperature: 0.3, maxTokens: 400, jsonMode: true }
-    );
-    const parsed = JSON.parse(extracted);
-    const hardItems: CompetenzaItem[] = (parsed.items ?? []).map((it: any) => ({
-      id: crypto.randomUUID(),
-      testo: it.testo ?? "",
-      categoria: "hard" as const,
-      livello: parseLivello(it.livello),
-      evidenza_ref: it.evidenza_ref ?? null,
-      verified: false,
-      origin: "onboarding",
-    }));
-    const items = [...blocks.competenze.data.items, ...hardItems];
-
-    await (supabase.from("card_blocks") as any)
-      .update({ prose_content: { items, soft_skills_testo: blocks.competenze.data.soft_skills_testo ?? null }, status: "draft" })
-      .eq("student_profile_id", studentProfileId)
-      .eq("block_type", "competenze");
-
-    const languageInstruction = locale === "it" ? "Scrivi in italiano." : "Write in English.";
-    const esperienzeList = blocks.esperienze.data.items
-      .map((i) => `- ${i.titolo || i.organizzazione}: ${i.descrizione}`)
-      .join("\n") || "nessuna esperienza disponibile";
-    const question = await chatCompletion(
-      [
-        {
-          role: "system",
-          content: `Sei MIRA. Scegli UNA delle esperienze reali dello studente elencate sotto (quella più ricca di dinamiche di gruppo, pressione o responsabilità) e scrivi UNA domanda comportamentale breve e naturale, in stile metodo STAR, che chieda di un episodio concreto vissuto in quell'esperienza (es. un conflitto gestito, una decisione sotto pressione, un momento di leadership). Non nominare "metodo STAR" né spiegare cosa stai facendo. Una sola domanda, colloquiale, come la farebbe un amico curioso — non un elenco di opzioni, non un interrogatorio. Rispondi SOLO con la domanda. ${languageInstruction}`,
-        },
-        { role: "user", content: esperienzeList },
-      ],
-      { temperature: 0.6, maxTokens: 150 }
-    );
-
-    const message = question.trim() || t("softSkillQuestionOneFallback");
-    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
-    await saveFaseBConversation(supabase, profileId, fullConversation);
-    return { message, phase: "competenze" as OnboardingPhase, done: false };
-  }
-
-  if (subIndex === 1) {
-    const message = t("softSkillQuestionTwo");
-    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
-    await saveFaseBConversation(supabase, profileId, fullConversation);
-    return { message, phase: "competenze" as OnboardingPhase, done: false };
-  }
-
-  // subIndex 2 (ultimo turno): sintetizza le due risposte soft-skill in un paragrafo in prima persona.
-  const recentText = conversation
-    .slice(-4)
-    .map((m) => `${m.role === "user" ? "Studente" : "MIRA"}: ${m.content}`)
+  const esperienzeContext = blocks.esperienze.data.items
+    .map((i) => `${i.titolo || i.organizzazione}: ${i.descrizione}`)
     .join("\n");
 
-  const synthesized = await chatCompletion(
+  const extracted = await chatCompletion(
     [
-      {
-        role: "system",
-        content: `Dalle ultime due domande/risposte, scrivi un paragrafo breve (2-3 frasi) in PRIMA PERSONA che descrive lo stile di lavoro e le soft skill dello studente — solo ciò che emerge davvero dalle risposte, mai aggettivi generici scollegati (niente "team player" buttato lì senza motivo). La MIRA card è sempre in inglese: scrivi "testo" in inglese (prima persona: "I...") anche se lo studente ha risposto in italiano. Rispondi SOLO in JSON: {"testo":""}`,
-      },
-      { role: "user", content: recentText },
+      { role: "system", content: HARD_SKILLS_EXTRACTION_PROMPT },
+      { role: "user", content: `Esperienze dello studente:\n${esperienzeContext || "nessuna"}\n\nRisposta sugli strumenti usati: "${userMessage}"` },
     ],
-    { temperature: 0.4, maxTokens: 300, jsonMode: true }
+    { temperature: 0.3, maxTokens: 400, jsonMode: true }
   );
-  const { testo } = JSON.parse(synthesized) as { testo: string };
+  const parsed = JSON.parse(extracted);
+  const hardItems: CompetenzaItem[] = (parsed.items ?? []).map((it: any) => ({
+    id: crypto.randomUUID(),
+    testo: it.testo ?? "",
+    categoria: "hard" as const,
+    livello: parseLivello(it.livello),
+    evidenza_ref: it.evidenza_ref ?? null,
+    verified: false,
+    origin: "onboarding",
+  }));
+  const items = [...blocks.competenze.data.items, ...hardItems];
+  const softSkills = blocks.competenze.data.soft_skills ?? [];
 
-  const items = blocks.competenze.data.items;
   await (supabase.from("card_blocks") as any)
-    .update({ prose_content: { items, soft_skills_testo: testo }, status: "draft" })
+    .update({ prose_content: { items, soft_skills: softSkills }, status: "draft" })
     .eq("student_profile_id", studentProfileId)
     .eq("block_type", "competenze");
 
-  const message = t("competenzeSequenceDone");
+  const message = `${t("softSkillsIntro")}\n\n${t("softSkillQuestions.q1.prompt")}`;
   const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
   await saveFaseBConversation(supabase, profileId, fullConversation);
 
   return {
     message,
     phase: "competenze" as OnboardingPhase,
-    done: true,
-    competenze: { status: "draft" as CardBlockStatus, data: { items, soft_skills_testo: testo } },
+    done: false,
+    competenze: { status: "draft" as CardBlockStatus, data: { items, soft_skills: softSkills } },
+  };
+}
+
+/**
+ * Una risposta del quiz a scelta forzata (5 domande, indice 0-4). La frase salvata in card
+ * (inglese, fissa) non dipende dal locale della chat — solo l'etichetta mostrata in chat lo è.
+ * Ogni scelta viene subito scritta e risincronizzata lato pannello: le soft skill devono
+ * comparire man mano, non tutte insieme alla fine (stesso principio delle hard skill).
+ */
+export async function submitSoftSkillChoice(history: ChatMessage[], index: number, choice: "A" | "B") {
+  const { supabase, profileId, studentProfileId, blocks } = await getOnboardingContext();
+  const t = await getTranslations("OnboardingEngine");
+
+  const cardText = SOFT_SKILL_CARD_TEXT[index]?.[choice];
+  if (!cardText) throw new Error(`[MIRA] submitSoftSkillChoice: indice domanda non valido (${index})`);
+
+  const chosenLabel = t(`softSkillQuestions.q${index + 1}.option${choice}`);
+  const conversation = [...history, { role: "user" as const, content: chosenLabel }];
+
+  const items = blocks.competenze.data.items;
+  const softSkills = [...(blocks.competenze.data.soft_skills ?? []), cardText];
+
+  await (supabase.from("card_blocks") as any)
+    .update({ prose_content: { items, soft_skills: softSkills }, status: "draft" })
+    .eq("student_profile_id", studentProfileId)
+    .eq("block_type", "competenze");
+
+  const isLast = index + 1 >= SOFT_SKILL_QUESTION_COUNT;
+  const message = isLast ? t("competenzeSequenceDone") : t(`softSkillQuestions.q${index + 2}.prompt`);
+  const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+  await saveFaseBConversation(supabase, profileId, fullConversation);
+
+  return {
+    message,
+    phase: "competenze" as OnboardingPhase,
+    done: isLast,
+    competenze: { status: "draft" as CardBlockStatus, data: { items, soft_skills: softSkills } },
   };
 }
 
@@ -959,9 +941,10 @@ export async function submitCompetenzeAggiunta(history: ChatMessage[], userMessa
   }));
 
   const items = [...blocks.competenze.data.items, ...newItems];
+  const softSkills = blocks.competenze.data.soft_skills ?? [];
 
   const { data: updatedRows, error } = await (supabase.from("card_blocks") as any)
-    .update({ prose_content: { items, soft_skills_testo: blocks.competenze.data.soft_skills_testo ?? null }, status: "draft" })
+    .update({ prose_content: { items, soft_skills: softSkills }, status: "draft" })
     .eq("student_profile_id", studentProfileId)
     .eq("block_type", "competenze")
     .select("id");
@@ -984,14 +967,14 @@ export async function submitCompetenzeAggiunta(history: ChatMessage[], userMessa
   return {
     message,
     phase: "competenze" as OnboardingPhase,
-    competenze: { status: "draft" as CardBlockStatus, data: { items, soft_skills_testo: blocks.competenze.data.soft_skills_testo ?? null } },
+    competenze: { status: "draft" as CardBlockStatus, data: { items, soft_skills: softSkills } },
   };
 }
 
 const RESUME_FASE_B_QUESTION_KEYS: Partial<Record<OnboardingPhase, string>> = {
   lingue: "lingueQuestion",
-  interessi: "interessiQuestion",
-  autodescrizione: "autodescrizioneQuestion",
+  interessi: "interessiIntroQuestion",
+  autodescrizione: "autodescrizioneIntroQuestion",
 };
 
 /** La domanda si adatta a cosa MIRA sa già: a chi è in magistrale non si chiede più se vuole farla. */
@@ -1074,26 +1057,20 @@ export async function submitLingue(history: ChatMessage[], userMessage: string) 
 export async function afterLingueApproved(history: ChatMessage[]) {
   const { supabase, profileId } = await getOnboardingContext();
   const t = await getTranslations("OnboardingEngine");
-  const message = t("interessiQuestion");
+  const message = t("interessiIntroQuestion");
   const fullConversation = [...history, { role: "assistant" as const, content: message }];
   await saveFaseBConversation(supabase, profileId, fullConversation);
   return { message, phase: "interessi" as OnboardingPhase };
 }
 
-export async function submitInteressi(history: ChatMessage[], userMessage: string, subIndex: 0 | 1) {
+/** Un solo turno: la domanda consolidata copre già i tre spunti, niente giro di follow-up fisso. */
+export async function submitInteressi(history: ChatMessage[], userMessage: string) {
   const { supabase, profileId, studentProfileId, student } = await getOnboardingContext();
   const t = await getTranslations("OnboardingEngine");
   const conversation = [...history, { role: "user" as const, content: userMessage }];
 
-  if (subIndex === 0) {
-    const message = t("interessiSubZero");
-    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
-    await saveFaseBConversation(supabase, profileId, fullConversation);
-    return { message, phase: "interessi" as OnboardingPhase, done: false };
-  }
-
   const recentText = conversation
-    .slice(-4)
+    .slice(-2)
     .map((m) => `${m.role === "user" ? "Studente" : "MIRA"}: ${m.content}`)
     .join("\n");
 
@@ -1125,71 +1102,97 @@ export async function submitInteressi(history: ChatMessage[], userMessage: strin
   return { message, phase: "interessi" as OnboardingPhase, done: true, interessi: { status: "draft" as CardBlockStatus, data: { testo } } };
 }
 
-async function getAutodescrizioneQuestions(): Promise<string[]> {
-  const t = await getTranslations("OnboardingEngine");
-  return [t("autodescrizioneQuestion"), t("autodescrizioneWorkStyle"), t("autodescrizioneDislike")];
-}
-
 export async function afterInteressiApproved(history: ChatMessage[]) {
   const { supabase, profileId } = await getOnboardingContext();
-  const questions = await getAutodescrizioneQuestions();
-  const message = questions[1]!;
+  const t = await getTranslations("OnboardingEngine");
+  const message = t("autodescrizioneIntroQuestion");
   const fullConversation = [...history, { role: "assistant" as const, content: message }];
   await saveFaseBConversation(supabase, profileId, fullConversation);
   return { message, phase: "autodescrizione" as OnboardingPhase };
 }
 
+/**
+ * Un turno, con un eventuale secondo turno di rilancio se la risposta è troppo "magra"
+ * per dire qualcosa di reale sulla persona — mai un interrogatorio a domande fisse.
+ * subIndex 0 = risposta alla domanda consolidata: un'unica chiamata AI giudica se è
+ * sufficiente e, in un colpo solo, o sintetizza già il testo finale (done) o scrive
+ * l'UNICA domanda di rilancio (non salva ancora nulla).
+ * subIndex 1 = risposta al rilancio: sintetizza da entrambi i turni, sempre finale.
+ */
 export async function submitAutodescrizioneRisposta(history: ChatMessage[], userMessage: string, subIndex: number) {
   const { supabase, profileId, studentProfileId } = await getOnboardingContext();
   const t = await getTranslations("OnboardingEngine");
   const conversation = [...history, { role: "user" as const, content: userMessage }];
-  const questions = await getAutodescrizioneQuestions();
-  const total = questions.length;
-  const isLast = subIndex + 1 >= total;
 
-  if (!isLast) {
-    const message = questions[subIndex + 1]!;
+  async function saveAndFinish(testo: string) {
+    await (supabase.from("card_blocks") as any)
+      .update({ prose_content: { testo }, status: "draft" })
+      .eq("student_profile_id", studentProfileId)
+      .eq("block_type", "autodescrizione");
+
+    // LEGACY-WRITE(card-rework): rimuovere in Step 5/6. profile_summary è ora uno specchio
+    // in prima persona di autodescrizione (non più generato a parte da nessun altro flusso).
+    await (supabase.from("student_profiles") as any).update({ profile_summary: testo }).eq("id", studentProfileId);
+
+    const message = t("autodescrizioneDone");
     const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
     await saveFaseBConversation(supabase, profileId, fullConversation);
-    return { message, phase: "autodescrizione" as OnboardingPhase, done: false };
+
+    return {
+      message,
+      phase: "autodescrizione" as OnboardingPhase,
+      done: true,
+      autodescrizione: { status: "draft" as CardBlockStatus, data: { testo } },
+    };
   }
 
-  const recentText = conversation
-    .slice(-2 * total)
-    .map((m) => `${m.role === "user" ? "Studente" : "MIRA"}: ${m.content}`)
-    .join("\n");
+  if (subIndex === 1) {
+    // Secondo turno (dopo un rilancio): sintetizza da entrambe le risposte, sempre finale.
+    const recentText = conversation
+      .slice(-4)
+      .map((m) => `${m.role === "user" ? "Studente" : "MIRA"}: ${m.content}`)
+      .join("\n");
+    const synthesized = await chatCompletion(
+      [
+        {
+          role: "system",
+          content: `Scrivi un paragrafo breve (max 4 frasi) in PRIMA PERSONA che riassume come lo studente si descrive, basato SOLO su quello che ha detto in questi due turni. Mai aggettivi di carattere dedotti da te ("intraprendente", "resiliente") — solo ciò che lo studente ha effettivamente detto, riformulato in prima persona scorrevole. La MIRA card è sempre in inglese: scrivi "testo" in inglese (prima persona: "I...") anche se lo studente ha risposto in italiano. Rispondi SOLO in JSON: {"testo":""}`,
+        },
+        { role: "user", content: recentText },
+      ],
+      { temperature: 0.3, maxTokens: 400, jsonMode: true }
+    );
+    const { testo } = JSON.parse(synthesized) as { testo: string };
+    return saveAndFinish(testo);
+  }
 
-  const extracted = await chatCompletion(
+  // subIndex 0: un'unica chiamata giudica se la risposta basta e, in caso, sintetizza già.
+  const locale = await getLocale();
+  const languageInstruction = locale === "it" ? "Scrivi il follow-up in italiano." : "Write the follow-up in English.";
+  const judged = await chatCompletion(
     [
       {
         role: "system",
-        content: `Scrivi un paragrafo breve (max 4 frasi) in PRIMA PERSONA che riassume come lo studente si descrive, basato SOLO su quello che ha detto. Mai aggettivi di carattere dedotti da te ("intraprendente", "resiliente") — solo ciò che lo studente ha effettivamente detto, riformulato in prima persona scorrevole. La MIRA card è sempre in inglese: scrivi "testo" in inglese (prima persona: "I...") anche se lo studente ha risposto in italiano. Rispondi SOLO in JSON: {"testo":""}`,
+        content: `Lo studente ha risposto alla domanda "come ti descrivi" di MIRA (card di uno studente universitario). Giudica se la risposta è già sostanziosa (contiene fatti/dettagli concreti su come lavora o chi è) oppure troppo magra/generica per dire qualcosa di reale.
+
+Se è sostanziosa: "thin":false, e scrivi già "testo" — un paragrafo breve (max 4 frasi) in PRIMA PERSONA, basato SOLO su quello che ha detto, mai aggettivi di carattere dedotti da te ("intraprendente", "resiliente"). La MIRA card è sempre in inglese: scrivi "testo" in inglese (prima persona: "I...") anche se la risposta è in italiano.
+
+Se è troppo magra: "thin":true, "testo":null, e scrivi in "followup" UNA sola domanda di rilancio naturale e specifica, ancorata a quello che ha effettivamente scritto (es. un esempio concreto dell'ultima volta che è successo) — mai generica tipo "dimmi di più". ${languageInstruction}
+
+Rispondi SOLO in JSON: {"thin":true|false,"followup":"..."|null,"testo":"..."|null}`,
       },
-      { role: "user", content: recentText },
+      { role: "user", content: userMessage },
     ],
     { temperature: 0.3, maxTokens: 400, jsonMode: true }
   );
-  const { testo } = JSON.parse(extracted) as { testo: string };
+  const { thin, followup, testo } = JSON.parse(judged) as { thin: boolean; followup: string | null; testo: string | null };
 
-  await (supabase.from("card_blocks") as any)
-    .update({ prose_content: { testo }, status: "draft" })
-    .eq("student_profile_id", studentProfileId)
-    .eq("block_type", "autodescrizione");
+  if (!thin && testo) return saveAndFinish(testo);
 
-  // LEGACY-WRITE(card-rework): rimuovere in Step 5/6. profile_summary è ora uno specchio
-  // in prima persona di autodescrizione (non più generato a parte da nessun altro flusso).
-  await (supabase.from("student_profiles") as any).update({ profile_summary: testo }).eq("id", studentProfileId);
-
-  const message = t("autodescrizioneDone");
+  const message = followup || t("autodescrizioneIntroQuestion");
   const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
   await saveFaseBConversation(supabase, profileId, fullConversation);
-
-  return {
-    message,
-    phase: "autodescrizione" as OnboardingPhase,
-    done: true,
-    autodescrizione: { status: "draft" as CardBlockStatus, data: { testo } },
-  };
+  return { message, phase: "autodescrizione" as OnboardingPhase, done: false };
 }
 
 export async function afterAutodescrizioneApproved(history: ChatMessage[]) {
@@ -1259,7 +1262,7 @@ export async function forceCompleteOnboarding() {
     formazione: { items: [] },
     esperienze: { items: [{ id: crypto.randomUUID(), titolo: "[test] Esperienza placeholder", ruolo: "", organizzazione: "", periodo: "", descrizione: "[test] descrizione placeholder", verified: false, origin: "onboarding" }] },
     disponibilita: { cosa_cerca: "[test] stage", da_quando: "[test] subito", dove: "[test] Milano", vincoli: null },
-    competenze: { items: [{ id: crypto.randomUUID(), testo: "[test] competenza placeholder", tipo: "teorica", evidenza_ref: "[test]", verified: false, origin: "onboarding" }] },
+    competenze: { items: [{ id: crypto.randomUUID(), testo: "[test] competenza placeholder", tipo: "teorica", evidenza_ref: "[test]", verified: false, origin: "onboarding" }], soft_skills: ["[test] placeholder soft skill"] },
     lingue: { items: [{ id: crypto.randomUUID(), lingua: "[test] Inglese", livello: "B2", certificazione: null, verified: false, origin: "onboarding" }] },
     interessi: { testo: "[test] interessi placeholder" },
     autodescrizione: { testo: "[test] autodescrizione placeholder" },

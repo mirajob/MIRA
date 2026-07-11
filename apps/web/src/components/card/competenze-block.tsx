@@ -32,7 +32,7 @@ export function CompetenzeBlock({
 }) {
   const t = useTranslations("CardBlocks");
   const c = useTranslations("Common");
-  const [softText, setSoftText] = useState(data.soft_skills_testo ?? "");
+  const [softItems, setSoftItems] = useState<string[]>(data.soft_skills ?? []);
   const [hardItems, setHardItems] = useState<CompetenzaItem[]>(data.items.filter((it) => getCompetenzaCategoria(it) === "hard"));
   const [academicItems, setAcademicItems] = useState<CompetenzaItem[]>(data.items.filter((it) => getCompetenzaCategoria(it) === "academic"));
   const [dirty, setDirty] = useState(false);
@@ -40,12 +40,16 @@ export function CompetenzeBlock({
 
   useEffect(() => {
     if (dirty) return;
-    setSoftText(data.soft_skills_testo ?? "");
+    setSoftItems(data.soft_skills ?? []);
     setHardItems(data.items.filter((it) => getCompetenzaCategoria(it) === "hard"));
     setAcademicItems(data.items.filter((it) => getCompetenzaCategoria(it) === "academic"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
+  function updateSoft(index: number, value: string) {
+    setSoftItems((prev) => prev.map((it, i) => (i === index ? value : it)));
+    setDirty(true);
+  }
   function updateHard(index: number, key: keyof CompetenzaItem, value: unknown) {
     setHardItems((prev) => prev.map((it, i) => (i === index ? { ...it, [key]: value } : it)));
     setDirty(true);
@@ -58,7 +62,7 @@ export function CompetenzeBlock({
   async function handleSave() {
     setSaving(true);
     const items = [...hardItems, ...academicItems];
-    await updateCardBlockProseContent("competenze", { items, soft_skills_testo: softText.trim() || null });
+    await updateCardBlockProseContent("competenze", { items, soft_skills: softItems.map((s) => s.trim()).filter(Boolean) });
     setSaving(false);
     setDirty(false);
   }
@@ -70,14 +74,36 @@ export function CompetenzeBlock({
       <CardBlockHeader title={t("titles.competenze")} status={status} blockType="competenze" onApproved={onApproved} />
       <div className="p-5 space-y-6">
         <div>
-          <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("competenze.softHeading")}</p>
-          <textarea
-            value={softText}
-            placeholder={t("competenze.softPlaceholder")}
-            onChange={(e) => { setSoftText(e.target.value); setDirty(true); }}
-            rows={3}
-            className={fieldClass}
-          />
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-eyebrow text-navy/60 uppercase">{t("competenze.softHeading")}</p>
+            <button
+              type="button"
+              onClick={() => { setSoftItems((p) => [...p, ""]); setDirty(true); }}
+              className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
+            >
+              {t("addItem")}
+            </button>
+          </div>
+          {softItems.length === 0 && <p className="text-body-sm text-ink-tertiary">{t("competenze.softEmpty")}</p>}
+          <div className="space-y-2">
+            {softItems.map((s, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={s}
+                  placeholder={t("competenze.testoPlaceholder")}
+                  onChange={(e) => updateSoft(index, e.target.value)}
+                  className={fieldClass}
+                />
+                <button
+                  onClick={() => { setSoftItems((p) => p.filter((_, i) => i !== index)); setDirty(true); }}
+                  className="text-xs text-ink-tertiary hover:text-error transition-colors shrink-0"
+                >
+                  {t("remove")}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div>
@@ -232,7 +258,10 @@ export function CompetenzeView({ data }: { data: CompetenzeProseContent }) {
   const t = useTranslations("CardBlocks");
   const hardItems = data.items.filter((it) => getCompetenzaCategoria(it) === "hard");
   const academicItems = data.items.filter((it) => getCompetenzaCategoria(it) === "academic");
-  const hasSoft = !!data.soft_skills_testo;
+  const softSkills = data.soft_skills ?? [];
+  // Fallback per righe pre-quiz: se non ci sono ancora soft_skills ma esiste il vecchio
+  // paragrafo, resta leggibile invece di sparire finché lo studente non rifà il quiz.
+  const hasSoft = softSkills.length > 0 || !!data.soft_skills_testo;
   const isEmpty = !hasSoft && hardItems.length === 0 && academicItems.length === 0;
 
   return (
@@ -241,8 +270,16 @@ export function CompetenzeView({ data }: { data: CompetenzeProseContent }) {
       {isEmpty && <p className="text-body-sm text-ink-tertiary italic">{t("competenze.emptyView")}</p>}
 
       {hasSoft && (
-        <CollapsibleGroup label={t("competenze.softHeading")} bordered={false}>
-          <p className="text-body-sm text-ink">{data.soft_skills_testo}</p>
+        <CollapsibleGroup label={t("competenze.softSkillsCount", { count: softSkills.length || 1 })} bordered={false}>
+          {softSkills.length > 0 ? (
+            <ul className="space-y-1.5 list-disc list-inside">
+              {softSkills.map((s, i) => (
+                <li key={i} className="text-body-sm text-ink">{s}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-body-sm text-ink">{data.soft_skills_testo}</p>
+          )}
         </CollapsibleGroup>
       )}
 

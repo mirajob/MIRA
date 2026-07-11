@@ -22,6 +22,7 @@ import {
   startFaseB,
   resumeFaseB,
   submitCompetenzeRisposta,
+  submitSoftSkillChoice,
   submitCompetenzeAggiunta,
   afterCompetenzeApproved,
   submitLingue,
@@ -48,6 +49,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
   const t = useTranslations("OnboardingChatUI");
   const c = useTranslations("Common");
   const panelT = useTranslations("OnboardingCardPanel");
+  const engineT = useTranslations("OnboardingEngine");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [phase, setPhase] = useState<OnboardingPhase>("welcome");
   const [blocks, setBlocks] = useState<OnboardingBlocksState>(EMPTY_ONBOARDING_BLOCKS);
@@ -56,8 +58,11 @@ export function OnboardingChat({ userName }: { userName: string }) {
   const [uploading, setUploading] = useState(false);
   const [expIndex, setExpIndex] = useState(0);
   const [expTotal, setExpTotal] = useState(1);
-  const [interessiSubIndex, setInteressiSubIndex] = useState<0 | 1>(0);
+  // competenzeSubIndex: 0 = in attesa della domanda hard-skill, 1 = quiz soft skill in corso
+  // o finito (chat libera → submitCompetenzeAggiunta). competenzeSoftIndex: indice 0-4 della
+  // domanda del quiz a scelta forzata attiva, null quando non è in corso.
   const [competenzeSubIndex, setCompetenzeSubIndex] = useState(0);
+  const [competenzeSoftIndex, setCompetenzeSoftIndex] = useState<number | null>(null);
   const [autoSubIndex, setAutoSubIndex] = useState(0);
   const [complete, setComplete] = useState(false);
   const [cardOpenMobile, setCardOpenMobile] = useState(false);
@@ -101,9 +106,10 @@ export function OnboardingChat({ userName }: { userName: string }) {
             setExpIndex(0);
             setExpTotal(1);
           } else if (state.phase === "competenze") {
-            // Stesso principio: non si ricostruisce la posizione esatta nella mini-intervista
-            // hard/soft skill — si tratta come già conclusa, si passa alla chat libera per aggiungere.
-            setCompetenzeSubIndex(3);
+            // Stesso principio: non si ricostruisce la posizione esatta nel quiz soft skill —
+            // si tratta come già conclusa, si passa alla chat libera per aggiungere.
+            setCompetenzeSubIndex(1);
+            setCompetenzeSoftIndex(null);
           }
         }
       } catch (err) {
@@ -121,8 +127,8 @@ export function OnboardingChat({ userName }: { userName: string }) {
   }, [messages]);
 
   useEffect(() => {
-    if (!loading && !uploading && !GATED_PHASES.includes(phase)) inputRef.current?.focus();
-  }, [loading, uploading, phase]);
+    if (!loading && !uploading && !GATED_PHASES.includes(phase) && !(phase === "competenze" && competenzeSoftIndex !== null)) inputRef.current?.focus();
+  }, [loading, uploading, phase, competenzeSoftIndex]);
 
   /** Rilettura completa dal server: mai fidarsi solo dei merge ottimistici parziali,
    * che possono disallinearsi dallo stato reale (es. dopo una revalidatePath). */
@@ -175,14 +181,12 @@ export function OnboardingChat({ userName }: { userName: string }) {
         appendAssistant(result.message);
         await resyncBlocks();
       } else if (phase === "competenze") {
-        if (competenzeSubIndex < 3) {
-          const result = await submitCompetenzeRisposta(history, userMessage, competenzeSubIndex);
+        if (competenzeSubIndex === 0) {
+          const result = await submitCompetenzeRisposta(history, userMessage);
           appendAssistant(result.message);
-          if (result.done) {
-            await resyncBlocks();
-          } else {
-            setCompetenzeSubIndex((i) => i + 1);
-          }
+          await resyncBlocks();
+          setCompetenzeSubIndex(1);
+          setCompetenzeSoftIndex(0);
         } else {
           const result = await submitCompetenzeAggiunta(history, userMessage);
           appendAssistant(result.message);
@@ -193,13 +197,9 @@ export function OnboardingChat({ userName }: { userName: string }) {
         appendAssistant(result.message);
         await resyncBlocks();
       } else if (phase === "interessi") {
-        const result = await submitInteressi(history, userMessage, interessiSubIndex);
+        const result = await submitInteressi(history, userMessage);
         appendAssistant(result.message);
-        if (result.done) {
-          await resyncBlocks();
-        } else {
-          setInteressiSubIndex(1);
-        }
+        await resyncBlocks();
       } else if (phase === "autodescrizione") {
         const result = await submitAutodescrizioneRisposta(history, userMessage, autoSubIndex);
         appendAssistant(result.message);
@@ -215,6 +215,36 @@ export function OnboardingChat({ userName }: { userName: string }) {
       }
     } catch (err) {
       console.error("[MIRA] handleSend failed:", err);
+      appendAssistant(
+        err instanceof Error
+          ? t("errorWithMessage", { message: err.message })
+          : c("authErrors.generic")
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /** Click su una delle due opzioni del quiz soft skill (nessun testo libero). Risincronizza
+   * sempre subito dopo, così la lista soft skill cresce visibilmente nel pannello ad ogni click. */
+  async function handleSoftSkillChoice(choice: "A" | "B") {
+    if (competenzeSoftIndex === null || loading || uploading) return;
+    const index = competenzeSoftIndex;
+    const history = messages;
+    appendUser(engineT(`softSkillQuestions.q${index + 1}.option${choice}`));
+    setLoading(true);
+    try {
+      const result = await submitSoftSkillChoice(history, index, choice);
+      appendAssistant(result.message);
+      await resyncBlocks();
+      if (result.done) {
+        setCompetenzeSoftIndex(null);
+        setCompetenzeSubIndex(1);
+      } else {
+        setCompetenzeSoftIndex(index + 1);
+      }
+    } catch (err) {
+      console.error("[MIRA] handleSoftSkillChoice failed:", err);
       appendAssistant(
         err instanceof Error
           ? t("errorWithMessage", { message: err.message })
@@ -391,6 +421,8 @@ export function OnboardingChat({ userName }: { userName: string }) {
 
   const userMessageCount = messages.filter((m) => m.role === "user").length;
   const isWorking = loading || uploading;
+  const softQuizActive = phase === "competenze" && competenzeSoftIndex !== null;
+  const inputGated = GATED_PHASES.includes(phase) || softQuizActive;
   const cardPanel = <OnboardingCardPanel blocks={blocks} phase={phase} onApproved={handleBlockApproved} />;
 
   return (
@@ -542,6 +574,20 @@ export function OnboardingChat({ userName }: { userName: string }) {
                 </button>
               </div>
             )}
+            {softQuizActive && (
+              <div className="flex flex-col gap-2 mb-3">
+                {(["A", "B"] as const).map((choice) => (
+                  <button
+                    key={choice}
+                    onClick={() => handleSoftSkillChoice(choice)}
+                    disabled={isWorking}
+                    className="text-body-sm text-left bg-white border border-border rounded-md px-4 py-3 hover:border-petrol hover:bg-petrol-50 transition-colors disabled:opacity-40"
+                  >
+                    {engineT(`softSkillQuestions.q${(competenzeSoftIndex as number) + 1}.option${choice}`)}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="flex gap-3">
               <input
                 ref={inputRef}
@@ -549,13 +595,13 @@ export function OnboardingChat({ userName }: { userName: string }) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                placeholder={GATED_PHASES.includes(phase) ? t("useButtonsPlaceholder") : c("messagePlaceholder")}
-                disabled={isWorking || GATED_PHASES.includes(phase)}
+                placeholder={inputGated ? t("useButtonsPlaceholder") : c("messagePlaceholder")}
+                disabled={isWorking || inputGated}
                 className="flex-1 px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200 disabled:opacity-50"
               />
               <button
                 onClick={handleSend}
-                disabled={isWorking || !input.trim() || GATED_PHASES.includes(phase)}
+                disabled={isWorking || !input.trim() || inputGated}
                 className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
               >
                 {c("send")}

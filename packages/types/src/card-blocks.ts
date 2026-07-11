@@ -103,10 +103,12 @@ export interface CompetenzaItem {
 }
 
 export interface CompetenzeProseContent {
-  /** Solo hard + academic — le soft skill sono in `soft_skills_testo`, non itemizzate. */
+  /** Solo hard + academic — le soft skill sono in `soft_skills`. */
   items: CompetenzaItem[];
-  /** Paragrafo breve in prima persona, sintetizzato dalle domande soft-skill — mai a tag. */
-  soft_skills_testo: string | null;
+  /** Elenco delle frasi fisse (inglese) scelte nel quiz a scelta forzata a 5 domande. */
+  soft_skills: string[] | null;
+  /** @deprecated pre-quiz: paragrafo in prima persona sintetizzato da 2 domande AI aperte. Righe vecchie possono averlo senza `soft_skills` — mai scritto da codice nuovo. */
+  soft_skills_testo?: string | null;
 }
 
 /** Righe pre-redesign hanno `tipo` ma non `categoria` — normalizza in lettura, nessuna migrazione DB necessaria (prose_content è jsonb). */

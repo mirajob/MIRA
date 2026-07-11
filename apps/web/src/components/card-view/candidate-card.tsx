@@ -65,7 +65,10 @@ export function CandidateCard(props: CandidateCardProps) {
         <EsperienzeView items={props.esperienze.data.items} />
       )}
 
-      {props.competenze && (props.competenze.data.items.length > 0 || props.competenze.data.soft_skills_testo) && (
+      {props.competenze &&
+        (props.competenze.data.items.length > 0 ||
+          (props.competenze.data.soft_skills?.length ?? 0) > 0 ||
+          props.competenze.data.soft_skills_testo) && (
         <CompetenzeView data={props.competenze.data} />
       )}
 

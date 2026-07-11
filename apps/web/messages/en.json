@@ -254,7 +254,8 @@
       "academicSkills": "Academic skills ({count})",
       "hardSkillsCount": "Hard skills ({count})",
       "softHeading": "Soft skills",
-      "softPlaceholder": "Emerges from the questions about your experiences during onboarding — you can still edit it here.",
+      "softSkillsCount": "Soft skills ({count})",
+      "softEmpty": "No soft skills yet — these come from the quiz during onboarding.",
       "hardHeading": "Hard skills",
       "hardEmpty": "No hard skills yet.",
       "academicHeading": "Academic skills",
@@ -977,8 +978,34 @@
     "afterDisponibilitaApproved": "Applications unlocked. Your card is at {pct}%: you can already apply to associations on MIRA. Or we can finish the last sections — skills, interests, how you describe yourself, career plan — in about 5 minutes: associations see a much stronger profile.",
     "startFaseBMessage": "Let's finish the last sections together: a few minutes and your card is done.\n\nFrom your grades, here are the academic skills I'd already suggest:\n{listText}\n\nNow tell me: what tools, software, or methods did you use in the experiences you told me about?",
     "noCompetenzeDraft": "(no draft — you can add some from your Profile later)",
-    "softSkillQuestionOneFallback": "Was there a moment, in one of your experiences, where you had to handle something unexpected or a disagreement within the group? What did you do?",
-    "softSkillQuestionTwo": "One last thing: when you don't have clear direction on how to proceed, do you prefer to decide the direction yourself or look for input from someone else before moving forward?",
+    "softSkillsIntro": "Now a few quick scenarios — pick whichever sounds more like you. There are no right answers: these just tell companies how you work, not who's better.",
+    "softSkillQuestions": {
+      "q1": {
+        "prompt": "Group project at university, presentation is tomorrow. What usually happens?",
+        "optionA": "I present: talking in front of people doesn't bother me — I actually enjoy it.",
+        "optionB": "I prepare the slides and the content, but I'd rather someone else did the presenting."
+      },
+      "q2": {
+        "prompt": "Your team needs information from a company or professor none of you knows. How do you handle it?",
+        "optionA": "I reach out myself: making first contact with people I don't know comes easily to me.",
+        "optionB": "I'd rather someone else made the first move — I do my best work on the material itself, not on the phone with a stranger."
+      },
+      "q3": {
+        "prompt": "You have two weeks for an important deadline. How do you approach it?",
+        "optionA": "I make a plan on day one — a rough outline and milestones — and stick to it.",
+        "optionB": "I start right away and adjust as I go: I close out the bulk of it under deadline pressure, and that works well for me."
+      },
+      "q4": {
+        "prompt": "It's the night before the deadline and the project requirements change. What's your honest reaction?",
+        "optionA": "It's annoying, but I quickly rebuild the plan and get back on track in an organized way.",
+        "optionB": "It energizes me — reorganizing everything on the fly is when I perform best."
+      },
+      "q5": {
+        "prompt": "You're working on a project or a piece of coursework. What does your ideal day look like?",
+        "optionA": "Working side by side with others: bouncing ideas back and forth constantly energizes me.",
+        "optionB": "Working alone and focused, then syncing up with the team at key moments."
+      }
+    },
     "competenzeSequenceDone": "Here are your skills — take a look on the right and confirm them when they look good.",
     "errorSaveCompetenzeProposed": "Couldn't save the suggested skills — try again.",
     "errorCompetenzeRowNotFound": "Skills row not found for this student — try again.",
@@ -986,17 +1013,14 @@
     "competenzeAdded": "Added — check the skills on the right. Confirm them when they look good.",
     "competenzeNotLinked": "I couldn't link it to a specific exam or experience — you can add it directly in the Skills block on the right, noting what it refers to.",
     "lingueQuestion": "What languages do you know, and at what level? (If your program is in English, mention that too alongside the others.)",
-    "interessiQuestion": "What interests you professionally — sectors, roles, types of work?",
-    "autodescrizioneQuestion": "Tell me about a project you're proud of: what role did you take?",
-    "pianoCarrieraMagistrale": "One last thing: how do you see yourself in the next 1-2 years after your master's? Tell me whatever fits — a job in a specific field, wanting to keep studying or specializing further, taking a break, or simply not having decided yet and still weighing your options: any answer is fine.",
-    "pianoCarrieraOther": "One last thing: how do you see yourself in the next 1-2 years? Tell me whatever fits — a master's, an exchange period, a job in a specific field, or simply not having decided yet and still weighing your options: any answer is fine.",
+    "interessiIntroQuestion": "Now for a part that's usually missing from a CV, but that companies actually read closely: what you're genuinely interested in. Not a list of words like 'finance and travel' — everyone writes that. I'll help with three questions:\n— What do you follow on your own, outside of your coursework? Newsletters, podcasts, channels, topics you always end up reading about. And is there a topic that, when it comes up, you talk about more than you probably should?\n— Outside of school: what do you do consistently? Sports, music, projects, anything — unusual stuff counts too, actually that's what people remember. And for how long?\n— Bonus: is there something you're oddly good at that has nothing to do with university?\nWrite freely, even messily — I'll shape it, then you approve. Only one thing matters: things you actually do, not things that sound good.",
+    "autodescrizioneIntroQuestion": "Now the part that makes your card different from everyone else's: two lines about who you are, written by you. No interview tone — everyone knows how to write that, which is exactly why they all sound the same. If you don't know where to start:\n— What would your friends say about you, if you actually asked them? (usually more accurate than what we'd say ourselves)\n— What can't you stand, at work or in your studies? That says something about you too.\n— Is there one thing you won't give up? Sports, family, a project of your own — priorities matter.\n— What does a day look like when you go home satisfied?\nWrite the way you talk, even if it's messy — I'll shape it, then you approve. And be honest: this part only works if it's true. Whoever reads it wants to understand if you're the right person, not find the perfect candidate.",
+    "pianoCarrieraMagistrale": "Last section, and for companies it's one of the most useful: where you're headed. You don't need to have it figured out — just be honest about where you stand. I'll help:\n— Over the next few years, do you have a clear direction (a sector, a role), a few hypotheses you're weighing, or are you still exploring? All three answers are fine, genuinely.\n— Is there already something on the calendar or on your mind? An exchange, a certification, a project of your own.\n— And your next work experience: what would you want it to leave you with? Even just 'figure out if consulting is for me' is a useful answer.\nWrite it however it comes — I'll shape it, you approve. One tip: don't write the goal that sounds ambitious if it's not really yours. 'I'm exploring, X and Y interest me' tells a company much more than a fake 'I want to do investment banking'.",
+    "pianoCarrieraOther": "Last section, and for companies it's one of the most useful: where you're headed. You don't need to have it figured out — just be honest about where you stand. I'll help:\n— Over the next few years, do you have a clear direction (a sector, a role), a few hypotheses you're weighing, or are you still exploring? All three answers are fine, genuinely.\n— Is there already something on the calendar or on your mind? An exchange, a master's (where, if you know), a certification, a project of your own.\n— And your next work experience: what would you want it to leave you with? Even just 'figure out if consulting is for me' is a useful answer.\nWrite it however it comes — I'll shape it, you approve. One tip: don't write the goal that sounds ambitious if it's not really yours. 'I'm exploring, X and Y interest me' tells a company much more than a fake 'I want to do investment banking'.",
     "resumeFaseBMessage": "Welcome back! Let's finish the last sections of your card together.\n\n{question}",
     "resumeFallbackQuestion": "Shall we continue?",
     "lingueDone": "Noted — check the Languages block. Confirm it when it looks good.",
-    "interessiSubZero": "And outside university? Personal interests, hobbies, activities that feel like you.",
     "interessiDone": "Written up — check the Interests block. Confirm it when it looks good.",
-    "autodescrizioneWorkStyle": "When do you work best — alone, in a group, with clear direction or more freedom?",
-    "autodescrizioneDislike": "What do you dislike doing, on the other hand?",
     "autodescrizioneDone": "I wrote it in your own words — feel free to edit it, it's the most personal part of the card. Confirm it when it looks good.",
     "pianoCarrieraDone": "Noted — no problem if you haven't decided yet, that's a valid answer too. Confirm the Career plan block to finish your card.",
     "chiusuraMessage": "Your card is complete! You'll find it in your Profile, editable anytime. Good luck with your applications."

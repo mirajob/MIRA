@@ -52,7 +52,7 @@ const DEFAULT_PROSE_CONTENT: Record<CardBlockType, unknown> = {
   disponibilita: { cosa_cerca: null, ambito: null, periodo: null, dove: null },
   esperienze: { items: [] },
   formazione: { items: [] },
-  competenze: { items: [], soft_skills_testo: null },
+  competenze: { items: [], soft_skills: [] },
   lingue: { items: [] },
   autodescrizione: { testo: null },
   interessi: { testo: null },
@@ -173,10 +173,19 @@ export async function updateCardBlockProseContent(
       media_voti: existing.media_voti ?? null, // transcript-only, never writable here
       formazione_precedente: incoming.formazione_precedente ?? existing.formazione_precedente ?? null,
     };
-  } else if (blockType === "esperienze" || blockType === "competenze" || blockType === "lingue") {
+  } else if (blockType === "esperienze" || blockType === "lingue") {
     const incomingItems = (proseContent as { items: Array<Record<string, unknown>> }).items ?? [];
     const existingItems = ((current.prose_content as { items: Array<Record<string, unknown>> })?.items) ?? [];
     nextProseContent = { items: applyVerifiedDropRule(existingItems, incomingItems) };
+  } else if (blockType === "competenze") {
+    // Branch separata da esperienze/lingue: competenze porta anche `soft_skills`, che la
+    // ricostruzione "solo items" sopra scarterebbe silenziosamente ad ogni salvataggio manuale.
+    const incoming = proseContent as { items: Array<Record<string, unknown>>; soft_skills?: string[] | null };
+    const existing = current.prose_content as { items: Array<Record<string, unknown>>; soft_skills?: string[] | null };
+    nextProseContent = {
+      items: applyVerifiedDropRule(existing?.items ?? [], incoming.items ?? []),
+      soft_skills: incoming.soft_skills ?? existing?.soft_skills ?? [],
+    };
   }
 
   const nextStatus = current.status === "approved" ? "approved" : "draft";

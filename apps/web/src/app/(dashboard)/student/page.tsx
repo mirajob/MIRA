@@ -81,7 +81,7 @@ export default async function StudentHomePage() {
   const faseBIncomplete = faseBBlocks.some((b) => b?.status !== "approved");
 
   const esperienzeItems = (esperienze?.prose_content as EsperienzeProseContent | undefined)?.items ?? [];
-  const competenzeData = (competenze?.prose_content as CompetenzeProseContent | undefined) ?? { items: [], soft_skills_testo: null };
+  const competenzeData = (competenze?.prose_content as CompetenzeProseContent | undefined) ?? { items: [], soft_skills: [] };
   const lingueItems = (lingue?.prose_content as LingueProseContent | undefined)?.items ?? [];
   const autodescrizioneTesto = (autodescrizione?.prose_content as AutodescrizioneProseContent | undefined)?.testo ?? null;
   const interessiTesto = (interessi?.prose_content as InteressiProseContent | undefined)?.testo ?? null;
