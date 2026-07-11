@@ -6,7 +6,6 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "MIRA",
-  description: "AI-first university talent platform",
   icons: {
     icon: [
       { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
