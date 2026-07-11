@@ -61,50 +61,6 @@ ${message}
   return { success: true };
 }
 
-export async function sendAcceptanceEmail({
-  candidateEmail,
-  candidateName,
-  associationName,
-}: {
-  candidateEmail: string;
-  candidateName: string;
-  associationName: string;
-}) {
-  const { error } = await getResend().emails.send({
-    from: FROM_EMAIL,
-    to: candidateEmail,
-    subject: `Complimenti! Sei stato accettato in ${associationName}`,
-    html: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
-        <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 24px; margin-bottom: 32px;" />
-        <h2 style="color: #0a1628; font-size: 20px; margin-bottom: 8px;">Congratulazioni! 🎉</h2>
-        <p style="color: #1a202c; font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
-          Ciao ${candidateName},<br/><br/>
-          Siamo lieti di comunicarti che sei stato <strong>accettato</strong> in <strong>${associationName}</strong>!
-        </p>
-        <p style="color: #4a5568; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
-          Accedi a MIRA per vedere i dettagli e iniziare a far parte dell'associazione.
-        </p>
-        <a href="https://mirajob.cloud/student" style="display: inline-block; background: #0a1628; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;">
-          Vai su MIRA
-        </a>
-        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0 16px;" />
-        <p style="color: #a0aec0; font-size: 12px;">
-          MIRA — University Talent Platform<br/>
-          <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
-        </p>
-      </div>
-    `,
-  });
-
-  if (error) {
-    console.error("Resend acceptance error:", error);
-    return { error: error.message };
-  }
-
-  return { success: true };
-}
-
 function invitationEmailHtml({
   eyebrow,
   heading,
