@@ -3,6 +3,7 @@ import { DisponibilitaView } from "../card/disponibilita-block";
 import { EsperienzeView } from "../card/esperienze-block";
 import { CompetenzeView } from "../card/competenze-block";
 import { ProseView } from "../card/prose-block";
+import { MiraCardLayout } from "../card/mira-card-layout";
 import type {
   HeaderProseContent,
   HeaderVisibility,
@@ -28,6 +29,8 @@ interface CandidateCardProps {
   pianoCarriera?: { data: PianoCarrieraProseContent };
   /** Chi sta guardando la card — decide quale flag di visibilità dei voti applicare. Default: associazioni. */
   audience?: "associazioni" | "aziende";
+  /** Omesso nella vista azienda finché il candidato resta anonimizzato (nessuna richiesta di contatto accettata). */
+  studentName?: string | null;
 }
 
 /**
@@ -47,50 +50,52 @@ export function CandidateCard(props: CandidateCardProps) {
     );
   }
 
-  const hasInteressiOPiano = props.interessi?.data.testo || props.pianoCarriera?.data.testo;
-
   return (
-    <div className="rounded-xl border border-border bg-white overflow-hidden divide-y divide-border">
-      {props.header && (
-        <HeaderView
-          data={props.header.data}
-          formazioneItems={props.formazione?.data.items ?? []}
-          showMedia={showMedia}
-        />
-      )}
-
-      {props.disponibilita && <DisponibilitaView data={props.disponibilita.data} />}
-
-      {props.esperienze && props.esperienze.data.items.length > 0 && (
-        <EsperienzeView items={props.esperienze.data.items} />
-      )}
-
-      {props.competenze &&
-        (props.competenze.data.items.length > 0 ||
-          (props.competenze.data.soft_skills?.length ?? 0) > 0 ||
-          props.competenze.data.soft_skills_testo) && (
-        <CompetenzeView data={props.competenze.data} />
-      )}
-
-      {props.lingue && props.lingue.data.items.length > 0 && (
-        <div className="p-5">
-          <p className="text-eyebrow text-navy/60 uppercase mb-2">Lingue</p>
-          <div className="flex flex-wrap gap-1.5">
-            {props.lingue.data.items.map((it) => (
-              <span key={it.id} className="text-xs px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
-                {it.lingua} {it.livello}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {props.autodescrizione?.data.testo && (
-        <ProseView title="Come si descrive" testo={props.autodescrizione.data.testo} serif />
-      )}
-
-      {hasInteressiOPiano && (
-        <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
+    <MiraCardLayout
+      name={props.studentName}
+      masthead={
+        <>
+          {props.header && (
+            <HeaderView
+              data={props.header.data}
+              formazioneItems={props.formazione?.data.items ?? []}
+              showMedia={showMedia}
+            />
+          )}
+          {props.disponibilita && <DisponibilitaView data={props.disponibilita.data} />}
+        </>
+      }
+      left={
+        <>
+          {props.autodescrizione?.data.testo && (
+            <ProseView title="Come si descrive" testo={props.autodescrizione.data.testo} serif />
+          )}
+          {props.esperienze && props.esperienze.data.items.length > 0 && (
+            <EsperienzeView items={props.esperienze.data.items} />
+          )}
+        </>
+      }
+      right={
+        <>
+          {props.competenze &&
+            (props.competenze.data.items.length > 0 ||
+              (props.competenze.data.soft_skills?.length ?? 0) > 0 ||
+              props.competenze.data.soft_skills_testo) && (
+            <CompetenzeView data={props.competenze.data} />
+          )}
+          {props.lingue && props.lingue.data.items.length > 0 && (
+            <div className="p-5">
+              <p className="text-eyebrow text-navy/60 uppercase mb-2">Lingue</p>
+              <div className="flex flex-wrap gap-1.5">
+                {props.lingue.data.items.map((it) => (
+                  <span key={it.id} className="text-xs px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
+                    {it.lingua} {it.livello}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {props.interessi?.data.testo && <ProseView title="Interessi" testo={props.interessi.data.testo} />}
           {props.pianoCarriera?.data.testo && (
             <ProseView
               title="Piano di carriera"
@@ -98,9 +103,8 @@ export function CandidateCard(props: CandidateCardProps) {
               stato={props.pianoCarriera.data.stato}
             />
           )}
-          {props.interessi?.data.testo && <ProseView title="Interessi" testo={props.interessi.data.testo} />}
-        </div>
-      )}
-    </div>
+        </>
+      }
+    />
   );
 }

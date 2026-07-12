@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { ensureCardBlocksExist } from "@/lib/actions/card-blocks";
 import { EditableSection } from "@/components/card/editable-section";
+import { MiraCardLayout } from "@/components/card/mira-card-layout";
 import { HeaderBlock, HeaderView } from "@/components/card/header-block";
 import { DisponibilitaBlock, DisponibilitaView } from "@/components/card/disponibilita-block";
 import { EsperienzeBlock, EsperienzeView } from "@/components/card/esperienze-block";
@@ -86,13 +87,12 @@ export default async function StudentHomePage() {
   const autodescrizioneTesto = (autodescrizione?.prose_content as AutodescrizioneProseContent | undefined)?.testo ?? null;
   const interessiTesto = (interessi?.prose_content as InteressiProseContent | undefined)?.testo ?? null;
   const pianoData = pianoCarriera?.prose_content as PianoCarrieraProseContent | undefined;
-  const hasInteressiOPiano = interessiTesto || pianoData?.testo;
 
   const t = await getTranslations("StudentHome");
   const cardT = await getTranslations("CardBlocks");
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-6 space-y-5">
+    <div className="mx-auto max-w-5xl px-6 py-6 space-y-5">
       <h1 className="font-display text-h2 text-navy">{t("greeting")}{name ? `, ${name}` : ""}</h1>
 
       {faseBIncomplete && (
@@ -104,106 +104,94 @@ export default async function StudentHomePage() {
         </Link>
       )}
 
-      <div className="rounded-xl border border-border bg-white overflow-hidden divide-y divide-border">
-        {header && (
-          <EditableSection
-            view={
-              <HeaderView
-                data={header.prose_content as HeaderProseContent}
-                formazioneItems={(formazione?.prose_content as FormazioneProseContent | undefined)?.items ?? []}
-              />
-            }
-            edit={
-              <HeaderBlock
-                proseContent={header.prose_content as HeaderProseContent}
-                visibility={header.visibility as HeaderVisibility}
-                status={header.status}
-                formazioneItems={(formazione?.prose_content as FormazioneProseContent | undefined)?.items ?? []}
-              />
-            }
-          />
-        )}
-
-        {disponibilita && (
-          <EditableSection
-            view={<DisponibilitaView data={disponibilita.prose_content as DisponibilitaProseContent} />}
-            edit={
-              <DisponibilitaBlock
-                proseContent={disponibilita.prose_content as DisponibilitaProseContent}
-                status={disponibilita.status}
-              />
-            }
-          />
-        )}
-
-        {esperienze && (
-          <EditableSection
-            view={<EsperienzeView items={esperienzeItems} />}
-            edit={<EsperienzeBlock items={esperienzeItems} status={esperienze.status} />}
-          />
-        )}
-
-        {competenze && (
-          <EditableSection
-            view={<CompetenzeView data={competenzeData} />}
-            edit={<CompetenzeBlock data={competenzeData} status={competenze.status} />}
-          />
-        )}
-
-        {lingue && (
-          <EditableSection
-            view={
-              <div className="p-5">
-                <p className="text-eyebrow text-navy/60 uppercase mb-2">{cardT("titles.lingue")}</p>
-                {lingueItems.length > 0 ? (
-                  <div className="flex flex-wrap gap-1.5">
-                    {lingueItems.map((it) => (
-                      <span key={it.id} className="text-xs px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
-                        {it.lingua} {it.livello}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-body-sm text-ink-tertiary italic">{cardT("lingue.emptyView")}</p>
-                )}
-              </div>
-            }
-            edit={<LingueBlock items={lingueItems} status={lingue.status} />}
-          />
-        )}
-
-        {autodescrizione && (
-          <EditableSection
-            view={<ProseView title={cardT("titles.autodescrizione")} testo={autodescrizioneTesto} serif />}
-            edit={
-              <ProseBlock
-                blockType="autodescrizione"
-                title={cardT("titles.autodescrizione")}
-                testo={autodescrizioneTesto}
-                status={autodescrizione.status}
-                serif
-                intro={t("autodescrizioneIntro")}
-                placeholder={cardT("autodescrizionePlaceholder")}
-              />
-            }
-          />
-        )}
-
-        {hasInteressiOPiano && (
-          <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
-            {pianoCarriera && (
+      <MiraCardLayout
+        name={ctx.profile.full_name}
+        masthead={
+          <>
+            {header && (
               <EditableSection
-                view={<ProseView title={cardT("titles.pianoCarriera")} testo={pianoData?.testo ?? null} stato={pianoData?.stato} />}
-                edit={
-                  <ProseBlock
-                    blockType="piano_carriera"
-                    title={cardT("titles.pianoCarriera")}
-                    testo={pianoData?.testo ?? null}
-                    stato={pianoData?.stato}
-                    status={pianoCarriera.status}
-                    placeholder={cardT("pianoCarrieraPlaceholder")}
+                view={
+                  <HeaderView
+                    data={header.prose_content as HeaderProseContent}
+                    formazioneItems={(formazione?.prose_content as FormazioneProseContent | undefined)?.items ?? []}
                   />
                 }
+                edit={
+                  <HeaderBlock
+                    proseContent={header.prose_content as HeaderProseContent}
+                    visibility={header.visibility as HeaderVisibility}
+                    status={header.status}
+                    formazioneItems={(formazione?.prose_content as FormazioneProseContent | undefined)?.items ?? []}
+                  />
+                }
+              />
+            )}
+            {disponibilita && (
+              <EditableSection
+                view={<DisponibilitaView data={disponibilita.prose_content as DisponibilitaProseContent} />}
+                edit={
+                  <DisponibilitaBlock
+                    proseContent={disponibilita.prose_content as DisponibilitaProseContent}
+                    status={disponibilita.status}
+                  />
+                }
+              />
+            )}
+          </>
+        }
+        left={
+          <>
+            {autodescrizione && (
+              <EditableSection
+                view={<ProseView title={cardT("titles.autodescrizione")} testo={autodescrizioneTesto} serif />}
+                edit={
+                  <ProseBlock
+                    blockType="autodescrizione"
+                    title={cardT("titles.autodescrizione")}
+                    testo={autodescrizioneTesto}
+                    status={autodescrizione.status}
+                    serif
+                    intro={t("autodescrizioneIntro")}
+                    placeholder={cardT("autodescrizionePlaceholder")}
+                  />
+                }
+              />
+            )}
+            {esperienze && (
+              <EditableSection
+                view={<EsperienzeView items={esperienzeItems} />}
+                edit={<EsperienzeBlock items={esperienzeItems} status={esperienze.status} />}
+              />
+            )}
+          </>
+        }
+        right={
+          <>
+            {competenze && (
+              <EditableSection
+                view={<CompetenzeView data={competenzeData} />}
+                edit={<CompetenzeBlock data={competenzeData} status={competenze.status} />}
+              />
+            )}
+            {lingue && (
+              <EditableSection
+                view={
+                  <div className="p-5">
+                    <p className="text-eyebrow text-navy/60 uppercase mb-2">{cardT("titles.lingue")}</p>
+                    {lingueItems.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {lingueItems.map((it) => (
+                          <span key={it.id} className="text-xs px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
+                            {it.lingua} {it.livello}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-body-sm text-ink-tertiary italic">{cardT("lingue.emptyView")}</p>
+                    )}
+                  </div>
+                }
+                edit={<LingueBlock items={lingueItems} status={lingue.status} />}
               />
             )}
             {interessi && (
@@ -220,9 +208,24 @@ export default async function StudentHomePage() {
                 }
               />
             )}
-          </div>
-        )}
-      </div>
+            {pianoCarriera && (
+              <EditableSection
+                view={<ProseView title={cardT("titles.pianoCarriera")} testo={pianoData?.testo ?? null} stato={pianoData?.stato} />}
+                edit={
+                  <ProseBlock
+                    blockType="piano_carriera"
+                    title={cardT("titles.pianoCarriera")}
+                    testo={pianoData?.testo ?? null}
+                    stato={pianoData?.stato}
+                    status={pianoCarriera.status}
+                    placeholder={cardT("pianoCarrieraPlaceholder")}
+                  />
+                }
+              />
+            )}
+          </>
+        }
+      />
     </div>
   );
 }
