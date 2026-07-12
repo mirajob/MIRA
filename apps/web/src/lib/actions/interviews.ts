@@ -85,6 +85,5 @@ export async function sendInterviewInvite(applicationId: string, formData: FormD
 
   const slug = (application.association_profiles as { slug: string })?.slug;
   revalidatePath(`/association/${slug}/candidates/${applicationId}`);
-  revalidatePath(`/association/${slug}/interviews`);
   return { success: true };
 }

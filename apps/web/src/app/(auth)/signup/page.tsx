@@ -5,6 +5,7 @@ import { createBrowserClient } from "@mira/supabase/client";
 import { validateStudentEmail, validatePassword } from "@mira/domain";
 import { UniversityCombobox } from "@/components/university-combobox";
 import { getAuthErrorKey } from "@/lib/auth-error-messages";
+import { PasswordInput } from "@/components/password-input";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -152,13 +153,7 @@ function SignupForm() {
 
         <label className="block">
           <span className="text-label text-navy mb-2 block">{c("password")}</span>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={inputClass}
-          />
+          <PasswordInput value={password} onChange={setPassword} required autoComplete="new-password" />
           <p className="mt-1 text-body-sm text-ink-tertiary">{t("passwordHelper")}</p>
         </label>
 

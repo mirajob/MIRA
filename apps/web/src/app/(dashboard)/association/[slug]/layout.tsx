@@ -20,7 +20,6 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
   const getAssociationNav = (slug: string) => [
     { label: t("navCicli"), href: `/association/${slug}/cycles` },
     { label: t("navCandidati"), href: `/association/${slug}/candidates` },
-    { label: t("navColloqui"), href: `/association/${slug}/interviews` },
     { label: t("navMembri"), href: `/association/${slug}/board` },
     { label: t("navPaginaPubblica"), href: `/association/${slug}/public-page` },
   ];

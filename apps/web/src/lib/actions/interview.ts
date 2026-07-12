@@ -128,6 +128,5 @@ export async function sendInterviewEmail(
   const slug = application.association_profiles?.slug;
   revalidatePath(`/association/${slug}/candidates`);
   revalidatePath(`/association/${slug}/candidates/${applicationId}`);
-  revalidatePath(`/association/${slug}/interviews`);
   return { success: true };
 }

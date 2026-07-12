@@ -26,6 +26,8 @@
     "studentTab": "Studente",
     "companyTab": "Azienda",
     "studentEmailPlaceholder": "nome.cognome@studenti.tuateneo.it",
+    "showPassword": "Mostra password",
+    "hidePassword": "Nascondi password",
     "authErrors": {
       "invalid_credentials": "Email o password errati.",
       "user_already_registered": "Esiste già un account con questa email.",
@@ -488,7 +490,6 @@
     "onboardingBanner": "Prima di continuare, completa il tuo profilo MiraCard (~5 minuti) →",
     "navCicli": "Cicli",
     "navCandidati": "Candidati",
-    "navColloqui": "Colloqui",
     "navMembri": "Membri",
     "navPaginaPubblica": "Pagina pubblica"
   },

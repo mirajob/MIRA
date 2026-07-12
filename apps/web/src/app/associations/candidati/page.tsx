@@ -8,6 +8,7 @@ import { ASSOCIATION_CATEGORIES, validatePassword } from "@mira/domain";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { PasswordInput } from "@/components/password-input";
 
 export default function CandidatiAssociazionePage() {
   const t = useTranslations("CandidatiPage");
@@ -181,14 +182,7 @@ export default function CandidatiAssociazionePage() {
 
                 <label className="block">
                   <span className="text-label text-navy mb-2 block">{t("passwordLabel")}</span>
-                  <input
-                    type="password"
-                    required
-                    minLength={8}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
-                  />
+                  <PasswordInput value={password} onChange={setPassword} required minLength={8} autoComplete="new-password" />
                   <p className="mt-1 text-body-sm text-ink-tertiary">{t("passwordHelper")}</p>
                 </label>
               </div>

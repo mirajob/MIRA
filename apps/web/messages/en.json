@@ -26,6 +26,8 @@
     "studentTab": "Student",
     "companyTab": "Company",
     "studentEmailPlaceholder": "name.surname@students.youruni.edu",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "authErrors": {
       "invalid_credentials": "Incorrect email or password.",
       "user_already_registered": "An account with this email already exists.",
@@ -488,7 +490,6 @@
     "onboardingBanner": "Before continuing, complete your MiraCard profile (~5 minutes) →",
     "navCicli": "Cycles",
     "navCandidati": "Candidates",
-    "navColloqui": "Interviews",
     "navMembri": "Members",
     "navPaginaPubblica": "Public page"
   },

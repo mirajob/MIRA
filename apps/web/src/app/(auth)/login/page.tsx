@@ -5,6 +5,7 @@ import { createBrowserClient } from "@mira/supabase/client";
 import { checkPendingCompanyRequest } from "@/lib/actions/company-register";
 import { checkAccountType } from "@/lib/actions/auth";
 import { getAuthErrorKey } from "@/lib/auth-error-messages";
+import { PasswordInput } from "@/components/password-input";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -126,13 +127,7 @@ function LoginForm() {
 
         <label className="block">
           <span className="text-label text-navy mb-2 block">{c("password")}</span>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
-          />
+          <PasswordInput value={password} onChange={setPassword} required autoComplete="current-password" />
         </label>
 
         <button
