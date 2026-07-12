@@ -7,6 +7,7 @@ import { setupAssociationProfile } from "@/lib/actions/association-register";
 import { ASSOCIATION_CATEGORIES, validatePassword } from "@mira/domain";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 
 export default function CandidatiAssociazionePage() {
   const t = useTranslations("CandidatiPage");
@@ -79,10 +80,11 @@ export default function CandidatiAssociazionePage() {
 
   return (
     <div className="min-h-screen bg-paper flex flex-col">
-      <header className="px-6 py-4 border-b border-border bg-white">
+      <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
         <Link href="/">
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
         </Link>
+        <LocaleSwitcher />
       </header>
 
       <div className="flex-1 flex items-start justify-center px-6 py-12">

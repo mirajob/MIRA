@@ -4,6 +4,7 @@ import { useState } from "react";
 import { joinWithCode } from "@/lib/actions/board";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { CornerLocale } from "@/components/corner-locale";
 
 export default function JoinPage() {
   const { code } = useParams<{ code: string }>();
@@ -26,6 +27,7 @@ export default function JoinPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper">
         <div className="max-w-md text-center space-y-4 px-4">
+          <CornerLocale />
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
           <div className="rounded-lg border border-border bg-white p-6 space-y-3 mt-8">
             <h1 className="font-display text-h2 text-navy">Richiesta inviata!</h1>
@@ -45,6 +47,7 @@ export default function JoinPage() {
     <div className="flex min-h-screen items-center justify-center bg-paper">
       <div className="w-full max-w-md space-y-6 px-4">
         <div className="text-center">
+          <CornerLocale />
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
         </div>
 

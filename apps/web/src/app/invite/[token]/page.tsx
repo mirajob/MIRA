@@ -1,6 +1,7 @@
 import { createServerClient } from "@mira/supabase/server";
 import { AcceptInvitation } from "./accept-invitation";
 import Link from "next/link";
+import { CornerLocale } from "@/components/corner-locale";
 
 interface Props {
   params: Promise<{ token: string }>;
@@ -22,6 +23,7 @@ export default async function InvitePage({ params }: Props) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper">
         <div className="max-w-md text-center space-y-4 px-4">
+          <CornerLocale />
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
           <h1 className="font-display text-h1 text-navy mt-8">Invito non trovato</h1>
           <p className="text-body text-ink-secondary">
@@ -45,6 +47,7 @@ export default async function InvitePage({ params }: Props) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper">
         <div className="max-w-md text-center space-y-4 px-4">
+          <CornerLocale />
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
           <h1 className="font-display text-h1 text-navy mt-8">Invito non disponibile</h1>
           <p className="text-body text-ink-secondary">{message}</p>
@@ -61,6 +64,7 @@ export default async function InvitePage({ params }: Props) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper">
         <div className="max-w-md text-center space-y-4 px-4">
+          <CornerLocale />
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
           <h1 className="font-display text-h1 text-navy mt-8">Invito scaduto</h1>
           <p className="text-body text-ink-secondary">
@@ -98,6 +102,7 @@ export default async function InvitePage({ params }: Props) {
     <div className="flex min-h-screen items-center justify-center bg-paper">
       <div className="w-full max-w-md space-y-6 px-4">
         <div className="text-center">
+          <CornerLocale />
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
         </div>
 

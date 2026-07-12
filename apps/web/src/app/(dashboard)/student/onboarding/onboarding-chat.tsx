@@ -40,6 +40,7 @@ import { uploadTranscript } from "@/lib/actions/transcript-upload";
 import { uploadCV } from "@/lib/actions/cv-upload";
 import { signOut } from "@/lib/actions/auth";
 import { OnboardingCardPanel } from "@/components/onboarding/onboarding-card-panel";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import type { CardBlockType } from "@mira/types";
 
 const FASE_B_PHASES: OnboardingPhase[] = ["competenze", "lingue", "interessi", "autodescrizione", "piano_carriera", "chiusura"];
@@ -431,6 +432,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
         <div className="px-6 py-3 flex items-center justify-between shrink-0 border-b border-border">
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
           <div className="flex items-center gap-4">
+            <LocaleSwitcher />
             {userMessageCount >= 3 && !complete && (
               <button
                 onClick={handleForceComplete}

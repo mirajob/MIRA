@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { signOut } from "@/lib/actions/auth";
 import Link from "next/link";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 
 export default async function AssociazioneInAttesaPage() {
   const supabase = await createServerClient();
@@ -17,11 +18,14 @@ export default async function AssociazioneInAttesaPage() {
     <div className="min-h-screen bg-paper flex flex-col">
       <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
         <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
-        <form action={signOut}>
-          <button type="submit" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors duration-100">
-            {c("signOut")}
-          </button>
-        </form>
+        <div className="flex items-center gap-4">
+          <LocaleSwitcher />
+          <form action={signOut}>
+            <button type="submit" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors duration-100">
+              {c("signOut")}
+            </button>
+          </form>
+        </div>
       </header>
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">

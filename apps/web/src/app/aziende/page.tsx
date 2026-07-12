@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { requestCompanyAccess } from "@/lib/actions/company-register";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 
 const SECTORS = [
   "Consulting",
@@ -58,8 +59,9 @@ export default function AziendePage() {
   if (step === "form") {
     return (
       <div className="min-h-screen bg-paper flex flex-col">
-        <header className="px-6 py-4 border-b border-border bg-white">
+        <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
+          <LocaleSwitcher />
         </header>
 
         <div className="flex-1 flex items-start justify-center px-6 py-12">
@@ -188,9 +190,12 @@ export default function AziendePage() {
     <div className="min-h-screen bg-paper">
       <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
         <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
-        <Link href="/login?type=company" className="text-body-sm text-ink-secondary hover:text-navy transition-colors">
-          {c("login")}
-        </Link>
+        <div className="flex items-center gap-4">
+          <LocaleSwitcher />
+          <Link href="/login?type=company" className="text-body-sm text-ink-secondary hover:text-navy transition-colors">
+            {c("login")}
+          </Link>
+        </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-16">

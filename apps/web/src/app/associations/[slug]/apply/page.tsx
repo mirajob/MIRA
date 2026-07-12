@@ -4,6 +4,8 @@ import { getUser } from "@/lib/auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ApplicationForm } from "./application-form";
 import Link from "next/link";
+import { CornerLocale } from "@/components/corner-locale";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -74,6 +76,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     return (
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="max-w-md text-center space-y-4 px-4">
+          <CornerLocale />
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
           <h1 className="font-display text-h1 text-navy mt-8">
             {notYetOpen ? t("notYetOpenHeading") : t("closedHeading")}
@@ -110,6 +113,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     return (
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="max-w-md text-center space-y-4 px-4">
+          <CornerLocale />
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
           <h1 className="font-display text-h1 text-navy mt-8">{t("alreadyAppliedHeading")}</h1>
           <p className="text-body text-ink-secondary">
@@ -125,10 +129,11 @@ export default async function ApplyPage({ params, searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-paper">
-      <header className="h-20 px-6 lg:px-12 flex items-center border-b border-border bg-white">
+      <header className="h-20 px-6 lg:px-12 flex items-center justify-between border-b border-border bg-white">
         <Link href={`/associations/${slug}`}>
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-7" />
         </Link>
+        <LocaleSwitcher />
       </header>
 
       <main className="mx-auto max-w-reading px-6 py-12">
