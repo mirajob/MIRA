@@ -189,11 +189,17 @@ export default async function CandidateDetailPage({ params }: Props) {
           {!aiEval ? (
             <RegenerateEvaluationButton applicationId={applicationId} />
           ) : (() => {
-            const ev = (aiEval.evaluation_json ?? aiEval) as {
+            interface EvalContent {
               rilevanza?: Array<{ claim: string; evidenza: string }>;
               gap?: string[];
               domande_colloquio?: string[];
-            };
+            }
+            const raw = (aiEval.evaluation_json ?? aiEval) as EvalContent & { it?: EvalContent; en?: EvalContent };
+            // Valutazioni nuove: { it: {...}, en: {...} } — si sceglie la lingua dell'interfaccia.
+            // Valutazioni vecchie (pre-bilingue): struttura piatta, solo italiano.
+            const ev: EvalContent = raw.it || raw.en
+              ? (locale === "en" ? raw.en ?? raw.it! : raw.it ?? raw.en!)
+              : raw;
 
             return (
               <div className="space-y-4">

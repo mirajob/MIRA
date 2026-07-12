@@ -231,13 +231,16 @@ ${cardContext}
 RISPOSTE CANDIDATURA:
 ${answers || "Nessuna risposta specifica"}
 
-Rispondi in JSON con questa struttura:
+Rispondi in JSON con questa struttura — la stessa valutazione in DUE lingue (il board può usare l'interfaccia in italiano o in inglese):
 {
-  "rilevanza": [
-    {"claim": "affermazione su perché è rilevante per questa candidatura", "evidenza": "il fatto specifico della card da cui deriva (esame, esperienza, competenza — mai generico)"}
-  ],
-  "gap": ["cosa manca rispetto ai criteri di questo ciclo — SEZIONE OBBLIGATORIA, mai vuota. Se il matching non trova riscontri per un criterio, dillo esplicitamente invece di gonfiare la rilevanza."],
-  "domande_colloquio": ["1-2 domande concrete derivate direttamente dai gap sopra"]
+  "it": {
+    "rilevanza": [
+      {"claim": "affermazione su perché è rilevante per questa candidatura", "evidenza": "il fatto specifico della card da cui deriva (esame, esperienza, competenza — mai generico)"}
+    ],
+    "gap": ["cosa manca rispetto ai criteri di questo ciclo — SEZIONE OBBLIGATORIA, mai vuota. Se il matching non trova riscontri per un criterio, dillo esplicitamente invece di gonfiare la rilevanza."],
+    "domande_colloquio": ["1-2 domande concrete derivate direttamente dai gap sopra"]
+  },
+  "en": { "rilevanza": [...], "gap": [...], "domande_colloquio": [...] }
 }
 
 REGOLE:
@@ -245,7 +248,8 @@ REGOLE:
 - "gap" non può mai essere vuoto: se non trovi lacune ovvie, indica cosa non è ancora emerso dalla card rispetto ai criteri
 - Vietati aggettivi di carattere o inferenze psicologiche (niente "leadership", "resiliente", "intraprendente")
 - Nessun punteggio, nessuna categoria di fit assoluta — solo fatti e gap rispetto A QUESTO ciclo
-- Scrivi in italiano, tono di nota interna di un recruiter, non lettera di presentazione`;
+- "it" in italiano, "en" la stessa identica valutazione tradotta in inglese (stesse chiavi "rilevanza"/"gap"/"domande_colloquio", contenuto fedele)
+- Tono di nota interna di un recruiter, non lettera di presentazione`;
 
   const systemMsg = `Sei MIRA. Generi un layer di valutazione per una specifica candidatura a una specifica associazione — mai un giudizio permanente sulla persona. Ogni affermazione deve citare un fatto della card. Non inventare informazioni. Vietate inferenze psicologiche o di carattere. Rispondi SOLO in JSON valido.`;
 
@@ -255,10 +259,18 @@ REGOLE:
         { role: "system", content: systemMsg },
         { role: "user", content: prompt },
       ],
-      { temperature: 0.3, maxTokens: 1200, jsonMode: true }
+      // maxTokens raddoppiati: la valutazione ora esce in due lingue (it + en)
+      { temperature: 0.3, maxTokens: 2400, jsonMode: true }
     );
 
     const evaluation = JSON.parse(result);
+    // Colonne legacy (strengths/gaps) restano in italiano; il JSON completo ha entrambe le lingue.
+    const primary = evaluation.it ?? evaluation;
+
+    // La rigenerazione sostituisce, non accumula: la pagina legge la prima riga del join.
+    await (supabase.from("candidate_ai_evaluations") as any)
+      .delete()
+      .eq("application_id", applicationId);
 
     await (supabase.from("candidate_ai_evaluations") as any).insert({
       application_id: applicationId,
@@ -266,8 +278,8 @@ REGOLE:
       model_name: "gpt-4o",
       evaluation_json: evaluation,
       fit_summary: null,
-      strengths: (evaluation.rilevanza ?? []).map((r: any) => r.claim),
-      gaps: evaluation.gap ?? [],
+      strengths: (primary.rilevanza ?? []).map((r: any) => r.claim),
+      gaps: primary.gap ?? [],
       input_snapshot: {
         answers_count: (application.application_answers ?? []).length,
         evaluation_criteria: evalCriteria || null,

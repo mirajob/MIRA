@@ -155,10 +155,9 @@ export default async function StudentAssociazioniPage() {
               const upcomingInterview = interviews.find((i) => i.selected_time && i.status !== "cancelled");
 
               return (
-                <Link
+                <div
                   key={app.id}
-                  href={`/student/applications/${app.id}`}
-                  className="block rounded-lg border border-border bg-white p-4 hover:border-navy/30 hover:shadow-sm transition-all duration-100"
+                  className="rounded-lg border border-border bg-white p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
@@ -201,7 +200,7 @@ export default async function StudentAssociazioniPage() {
                       <p className="text-body-sm text-success font-medium">{t("congratsAccepted")}</p>
                     </div>
                   )}
-                </Link>
+                </div>
               );
             })}
           </div>
