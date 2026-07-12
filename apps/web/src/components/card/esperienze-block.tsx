@@ -15,10 +15,10 @@ export function EsperienzeBlock({
 }) {
   const t = useTranslations("CardBlocks");
   const fields: ListFieldConfig<EsperienzaItem>[] = [
-    { key: "titolo", label: t("esperienze.titoloLabel"), placeholder: t("esperienze.titoloPlaceholder") },
-    { key: "organizzazione", label: t("esperienze.organizzazioneLabel"), placeholder: t("esperienze.organizzazionePlaceholder") },
-    { key: "periodo", label: t("esperienze.periodoLabel"), placeholder: t("esperienze.periodoPlaceholder") },
-    { key: "descrizione", label: t("esperienze.descrizioneLabel"), type: "textarea", placeholder: t("esperienze.descrizionePlaceholder") },
+    { key: "titolo", label: t("esperienze.titoloLabel"), placeholder: t("esperienze.titoloPlaceholder"), maxLength: 80 },
+    { key: "organizzazione", label: t("esperienze.organizzazioneLabel"), placeholder: t("esperienze.organizzazionePlaceholder"), maxLength: 80 },
+    { key: "periodo", label: t("esperienze.periodoLabel"), placeholder: t("esperienze.periodoPlaceholder"), maxLength: 40 },
+    { key: "descrizione", label: t("esperienze.descrizioneLabel"), type: "textarea", placeholder: t("esperienze.descrizionePlaceholder"), maxLength: 300 },
   ];
   return (
     <ListBlock

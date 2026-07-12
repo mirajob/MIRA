@@ -169,7 +169,17 @@
   "StudentHome": {
     "greeting": "Hi",
     "completeCardCta": "Complete your card: skills, languages, interests, self-description, and career plan are missing (~5 minutes) →",
-    "autodescrizioneIntro": "Written in your own words — feel free to edit it, it's the most personal part of the card."
+    "autodescrizioneIntro": "Written in your own words — feel free to edit it, it's the most personal part of the card.",
+    "editCard": "Edit card",
+    "backToCard": "Back to card"
+  },
+  "CardDocument": {
+    "empty": "This student has no approved card blocks yet.",
+    "readMore": "Read more",
+    "close": "Close",
+    "zoomIn": "Tap the card to zoom in",
+    "zoomOut": "View full card",
+    "moreItems": "+{count} more"
   },
   "CardBlocks": {
     "titles": {

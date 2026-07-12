@@ -14,6 +14,8 @@ export interface ListFieldConfig<T> {
   type?: "text" | "textarea" | "select";
   options?: Array<{ value: string; label: string }>;
   placeholder?: string;
+  /** Limite one-page: la card documento ha spazio fisso, i testi devono restare sintetici. */
+  maxLength?: number;
 }
 
 interface ListBlockProps<T extends { id: string; verified: boolean }> {
@@ -96,7 +98,7 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
               )}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              {fields.map(({ key, label, type, placeholder, options }) => (
+              {fields.map(({ key, label, type, placeholder, options, maxLength }) => (
                 <div key={String(key)} className={type === "textarea" ? "sm:col-span-2" : ""}>
                   <label className="text-ink-tertiary text-body-sm">{label}</label>
                   {readOnly ? (
@@ -105,6 +107,7 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
                     <textarea
                       value={String((item as Record<string, unknown>)[key as string] ?? "")}
                       placeholder={placeholder}
+                      maxLength={maxLength}
                       onChange={(e) => updateItem(index, key, e.target.value)}
                       rows={2}
                       className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
@@ -125,6 +128,7 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
                       type="text"
                       value={String((item as Record<string, unknown>)[key as string] ?? "")}
                       placeholder={placeholder}
+                      maxLength={maxLength}
                       onChange={(e) => updateItem(index, key, e.target.value)}
                       className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
                     />

@@ -169,7 +169,17 @@
   "StudentHome": {
     "greeting": "Ciao",
     "completeCardCta": "Completa la tua card: mancano competenze, lingue, interessi, come ti descrivi e piano di carriera (~5 minuti) →",
-    "autodescrizioneIntro": "Scritto con le tue parole — modificalo pure, ed è la parte più personale della card."
+    "autodescrizioneIntro": "Scritto con le tue parole — modificalo pure, ed è la parte più personale della card.",
+    "editCard": "Modifica la card",
+    "backToCard": "Torna alla card"
+  },
+  "CardDocument": {
+    "empty": "Questo studente non ha ancora blocchi approvati nella card.",
+    "readMore": "Leggi tutto",
+    "close": "Chiudi",
+    "zoomIn": "Tocca la card per ingrandirla",
+    "zoomOut": "Vedi la card intera",
+    "moreItems": "+{count} altre"
   },
   "CardBlocks": {
     "titles": {

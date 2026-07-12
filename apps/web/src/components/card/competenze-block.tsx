@@ -132,6 +132,7 @@ export function CompetenzeBlock({
                 <textarea
                   value={item.testo}
                   placeholder={t("competenze.testoPlaceholder")}
+                  maxLength={80}
                   onChange={(e) => updateHard(index, "testo", e.target.value)}
                   rows={1}
                   className={fieldClass}
@@ -185,6 +186,7 @@ export function CompetenzeBlock({
                 <textarea
                   value={item.testo}
                   placeholder={t("competenze.testoPlaceholder")}
+                  maxLength={80}
                   onChange={(e) => updateAcademic(index, "testo", e.target.value)}
                   rows={1}
                   className={fieldClass}

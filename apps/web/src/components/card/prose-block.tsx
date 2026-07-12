@@ -18,6 +18,13 @@ interface ProseBlockProps {
   onApproved?: () => void;
 }
 
+/** Limiti one-page: la card documento ha spazio fisso, i testi devono restare sintetici. */
+const MAX_LENGTHS: Record<ProseBlockProps["blockType"], number> = {
+  autodescrizione: 700,
+  interessi: 450,
+  piano_carriera: 450,
+};
+
 export function ProseBlock({ blockType, title, testo, status, serif, stato, intro, placeholder, onApproved }: ProseBlockProps) {
   const t = useTranslations("CardBlocks");
   const c = useTranslations("Common");
@@ -51,6 +58,7 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
         <textarea
           value={text}
           placeholder={placeholder}
+          maxLength={MAX_LENGTHS[blockType]}
           onChange={(e) => {
             setText(e.target.value);
             setDirty(true);
@@ -60,6 +68,7 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
             serif ? "font-display" : ""
           }`}
         />
+        <p className="text-right text-xs text-ink-tertiary">{text.length}/{MAX_LENGTHS[blockType]}</p>
         {dirty && (
           <button
             onClick={handleSave}

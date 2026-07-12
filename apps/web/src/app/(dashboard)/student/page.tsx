@@ -6,6 +6,8 @@ import { getTranslations } from "next-intl/server";
 import { ensureCardBlocksExist } from "@/lib/actions/card-blocks";
 import { EditableSection } from "@/components/card/editable-section";
 import { MiraCardLayout } from "@/components/card/mira-card-layout";
+import { MiraCardDocument } from "@/components/card-view/mira-card-document";
+import { ProfileViewSwitcher } from "@/components/card-view/profile-view-switcher";
 import { HeaderBlock, HeaderView } from "@/components/card/header-block";
 import { DisponibilitaBlock, DisponibilitaView } from "@/components/card/disponibilita-block";
 import { EsperienzeBlock, EsperienzeView } from "@/components/card/esperienze-block";
@@ -104,6 +106,23 @@ export default async function StudentHomePage() {
         </Link>
       )}
 
+      <ProfileViewSwitcher
+        card={
+          <MiraCardDocument
+            viewer="self"
+            displayName={ctx.profile.full_name}
+            header={header ? { data: header.prose_content as HeaderProseContent, visibility: header.visibility as HeaderVisibility } : undefined}
+            disponibilita={disponibilita ? { data: disponibilita.prose_content as DisponibilitaProseContent } : undefined}
+            esperienze={esperienze ? { data: { items: esperienzeItems } } : undefined}
+            formazione={formazione ? { data: (formazione.prose_content as FormazioneProseContent | undefined) ?? { items: [] } } : undefined}
+            competenze={competenze ? { data: competenzeData } : undefined}
+            lingue={lingue ? { data: { items: lingueItems } } : undefined}
+            interessi={interessi ? { data: { testo: interessiTesto } } : undefined}
+            autodescrizione={autodescrizione ? { data: { testo: autodescrizioneTesto } } : undefined}
+            pianoCarriera={pianoData ? { data: pianoData } : undefined}
+          />
+        }
+        edit={
       <MiraCardLayout
         name={ctx.profile.full_name}
         masthead={
@@ -224,6 +243,8 @@ export default async function StudentHomePage() {
               />
             )}
           </>
+        }
+      />
         }
       />
     </div>

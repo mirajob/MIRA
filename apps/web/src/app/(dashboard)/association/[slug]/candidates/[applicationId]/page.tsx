@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { CandidateActions } from "./candidate-actions";
 import { RegenerateEvaluationButton } from "./regenerate-evaluation-button";
-import { CandidateCard } from "@/components/card-view/candidate-card";
+import { MiraCardDocument } from "@/components/card-view/mira-card-document";
 
 interface Props {
   params: Promise<{ slug: string; applicationId: string }>;
@@ -104,6 +104,7 @@ export default async function CandidateDetailPage({ params }: Props) {
     interessi: blockMap.has("interessi") ? { data: blockMap.get("interessi").prose_content } : undefined,
     autodescrizione: blockMap.has("autodescrizione") ? { data: blockMap.get("autodescrizione").prose_content } : undefined,
     pianoCarriera: blockMap.has("piano_carriera") ? { data: blockMap.get("piano_carriera").prose_content } : undefined,
+    viewer: "associazioni" as const,
     displayName: profile?.full_name ?? undefined,
   };
 
@@ -178,7 +179,7 @@ export default async function CandidateDetailPage({ params }: Props) {
         {/* LEFT — MIRA Card (solo blocchi approved, filtrata per visibilità) */}
         <div className="space-y-4">
           <h3 className="font-sans text-h3 text-navy">{t("miraCardHeading")}</h3>
-          <CandidateCard {...cardProps} />
+          <MiraCardDocument {...cardProps} />
         </div>
 
         {/* RIGHT — Per questa candidatura (generato al volo, mai un giudizio permanente) */}

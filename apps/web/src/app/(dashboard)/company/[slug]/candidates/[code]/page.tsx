@@ -2,7 +2,7 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getCompanyContext } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { CandidateCard } from "@/components/card-view/candidate-card";
+import { MiraCardDocument } from "@/components/card-view/mira-card-document";
 import { ContactButton } from "./contact-button";
 import { getTranslations } from "next-intl/server";
 
@@ -53,7 +53,7 @@ export default async function CompanyCandidateCardPage({ params, searchParams }:
     interessi: blockMap.has("interessi") ? { data: blockMap.get("interessi").prose_content } : undefined,
     autodescrizione: blockMap.has("autodescrizione") ? { data: blockMap.get("autodescrizione").prose_content } : undefined,
     pianoCarriera: blockMap.has("piano_carriera") ? { data: blockMap.get("piano_carriera").prose_content } : undefined,
-    audience: "aziende" as const,
+    viewer: "aziende" as const,
     displayName: code,
   };
 
@@ -75,7 +75,7 @@ export default async function CompanyCandidateCardPage({ params, searchParams }:
         <ContactButton slug={slug} code={code} />
       </div>
 
-      <CandidateCard {...cardProps} />
+      <MiraCardDocument {...cardProps} />
     </div>
   );
 }
