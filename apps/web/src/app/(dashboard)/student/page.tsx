@@ -92,7 +92,7 @@ export default async function StudentHomePage() {
   const cardT = await getTranslations("CardBlocks");
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-6 space-y-5">
+    <div className="mx-auto max-w-4xl px-0 py-0 sm:px-6 sm:py-6 space-y-5">
       <h1 className="font-display text-h2 text-navy">{t("greeting")}{name ? `, ${name}` : ""}</h1>
 
       {faseBIncomplete && (

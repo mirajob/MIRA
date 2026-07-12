@@ -21,7 +21,7 @@ export function LocaleSwitcher() {
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-50 flex items-center gap-1 rounded-md border border-border bg-white px-2 py-1.5 shadow-sm"
+      className="fixed bottom-4 right-4 z-50 flex items-center gap-1 rounded-md border border-border bg-white px-2 py-1.5 shadow-sm max-lg:[body.has-bottom-nav_&]:bottom-24"
       aria-label={t("label")}
     >
       {(["it", "en"] as const).map((option) => (

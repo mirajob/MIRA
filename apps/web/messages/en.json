@@ -29,6 +29,7 @@
     "authErrors": {
       "invalid_credentials": "Incorrect email or password.",
       "user_already_registered": "An account with this email already exists.",
+      "email_not_confirmed": "You need to confirm your email first. Check your inbox (including spam) and click the confirmation link.",
       "generic": "Something went wrong. Please try again."
     },
     "boardRoles": {
@@ -70,6 +71,7 @@
     "submitLoading": "Signing in...",
     "pendingRequest": "Your access request is still awaiting confirmation from the MIRA team. You'll get an email as soon as it's approved.",
     "wrongAccountType": "This is a {accountType} account. Switch to \"{targetLabel}\" above to sign in.",
+    "callbackFailed": "We couldn't complete the email confirmation. Try logging in below, or request a new confirmation link.",
     "accountTypeStudent": "student",
     "accountTypeCompany": "company"
   },
@@ -156,6 +158,10 @@
     "companies": "Companies",
     "workspacesHeader": "Associations",
     "adminHeader": "Admin"
+  },
+  "MobileNav": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "UserNav": {
     "userFallback": "User"

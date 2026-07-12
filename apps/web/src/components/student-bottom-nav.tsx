@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
-const tabs = [
+const TABS = [
   {
-    label: "Profilo",
+    labelKey: "profile",
     href: "/student",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -15,7 +17,7 @@ const tabs = [
     ),
   },
   {
-    label: "Associazioni",
+    labelKey: "associations",
     href: "/student/associazioni",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -27,7 +29,7 @@ const tabs = [
     ),
   },
   {
-    label: "Aziende",
+    labelKey: "companies",
     href: "/student/aziende",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -36,10 +38,24 @@ const tabs = [
       </svg>
     ),
   },
-];
+] as const;
 
-export function StudentBottomNav() {
+export function StudentBottomNav({
+  unreadNotifications = 0,
+  unreadAziende = 0,
+}: {
+  unreadNotifications?: number;
+  unreadAziende?: number;
+}) {
+  const t = useTranslations("SidebarNav");
   const pathname = usePathname();
+
+  // Segnala agli elementi flottanti globali (es. LocaleSwitcher) che su mobile
+  // c'è una barra fissa in basso da cui scostarsi.
+  useEffect(() => {
+    document.body.classList.add("has-bottom-nav");
+    return () => document.body.classList.remove("has-bottom-nav");
+  }, []);
 
   function isActive(href: string) {
     if (href === "/student") return pathname === "/student" || pathname === "/student/profile";
@@ -47,20 +63,30 @@ export function StudentBottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-white">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
       <div className="mx-auto flex max-w-lg">
-        {tabs.map((tab) => {
+        {TABS.map((tab) => {
           const active = isActive(tab.href);
+          const badgeCount =
+            tab.href === "/student/associazioni" ? unreadNotifications :
+            tab.href === "/student/aziende" ? unreadAziende : 0;
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-1 flex-col items-center gap-1 py-3 text-center transition-colors duration-100 ${
+              className={`relative flex flex-1 flex-col items-center gap-1 py-3 text-center transition-colors duration-100 ${
                 active ? "text-navy" : "text-ink-tertiary hover:text-ink-secondary"
               }`}
             >
-              {tab.icon}
-              <span className={`text-xs ${active ? "font-medium" : ""}`}>{tab.label}</span>
+              <span className="relative">
+                {tab.icon}
+                {badgeCount > 0 && (
+                  <span className="absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[9px] font-bold text-white">
+                    {badgeCount > 9 ? "9+" : badgeCount}
+                  </span>
+                )}
+              </span>
+              <span className={`text-xs ${active ? "font-medium" : ""}`}>{t(tab.labelKey)}</span>
             </Link>
           );
         })}

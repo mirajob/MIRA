@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { createBrowserClient } from "@mira/supabase/client";
 import { checkPendingCompanyRequest } from "@/lib/actions/company-register";
 import { checkAccountType } from "@/lib/actions/auth";
@@ -29,6 +29,13 @@ function LoginForm() {
   const router = useRouter();
   const rawRedirect = searchParams.get("redirect") ?? "";
   const redirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/api/auth/redirect";
+
+  useEffect(() => {
+    if (searchParams.get("error") === "auth_callback_failed") {
+      setError(t("callbackFailed"));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
