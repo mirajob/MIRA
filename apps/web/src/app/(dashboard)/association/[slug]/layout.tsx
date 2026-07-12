@@ -3,7 +3,7 @@ import { createServerClient } from "@mira/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { WORKSPACE_ROLES } from "@/lib/association-roles";
+import { hasWorkspaceAccess } from "@/lib/association-roles";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -45,15 +45,10 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
     redirect("/student");
   }
 
-  // Block simple members (no permissions) from workspace
-  if (membership && !ctx.isMiraAdmin) {
-    const hasWorkspaceRole = WORKSPACE_ROLES.includes(membership.role);
-    const perms = membership.permissions as Record<string, boolean> | null;
-    const hasAnyPermission = perms && Object.values(perms).some((v) => v === true);
-
-    if (!hasWorkspaceRole && !hasAnyPermission) {
-      redirect("/student");
-    }
+  // Block simple members (no permissions) from workspace — same rule the UI
+  // uses to decide whether to even show "Gestisci"/sidebar entries.
+  if (membership && !ctx.isMiraAdmin && !hasWorkspaceAccess(membership)) {
+    redirect("/student");
   }
 
   const nav = getAssociationNav(slug);

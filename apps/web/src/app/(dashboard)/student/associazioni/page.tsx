@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { JoinByCode } from "@/components/join-by-code";
-import { WORKSPACE_ROLES } from "@/lib/association-roles";
+import { WORKSPACE_ROLES, hasWorkspaceAccess } from "@/lib/association-roles";
 import { MarkAssociationNotificationsRead } from "./mark-read";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -52,7 +52,7 @@ export default async function StudentAssociazioniPage() {
     .order("submitted_at", { ascending: false });
 
   const { data: myMemberships } = await (supabase.from("association_memberships") as any)
-    .select("association_id, role, joined_at, association_profiles(name, slug, verification_status, public_page_status)")
+    .select("association_id, role, permissions, joined_at, association_profiles(name, slug, verification_status, public_page_status)")
     .eq("user_id", profileId)
     .eq("status", "active");
 
@@ -260,13 +260,13 @@ export default async function StudentAssociazioniPage() {
 
                 <div className="mt-3 flex items-center gap-3">
                   <Link
-                    href={`/associations/${assoc.slug}`}
+                    href={`/student/associazioni/${assoc.slug}`}
                     className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
                   >
                     {t("viewPage")}
                   </Link>
 
-                  {membership ? (
+                  {hasWorkspaceAccess(membership) ? (
                     <Link
                       href={`/association/${assoc.slug}`}
                       className="bg-petrol text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-petrol-700 transition-colors duration-100"

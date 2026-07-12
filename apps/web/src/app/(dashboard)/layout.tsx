@@ -5,6 +5,7 @@ import { MobileHeader } from "@/components/mobile-header";
 import { StudentBottomNav } from "@/components/student-bottom-nav";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { getUnreadCounts } from "@/lib/actions/notifications";
+import { hasWorkspaceAccess } from "@/lib/association-roles";
 import Link from "next/link";
 
 export default async function DashboardLayout({
@@ -20,13 +21,17 @@ export default async function DashboardLayout({
     return <>{children}</>;
   }
 
-  const memberships = ctx.memberships.map((m) => ({
-    role: m.role,
-    association_profiles: m.association_profiles as {
-      name: string;
-      slug: string;
-    } | null,
-  }));
+  // In sidebar solo i workspace a cui si ha davvero accesso: un membro semplice
+  // (es. candidato appena accettato) non deve vedere una voce che lo rimbalza.
+  const memberships = ctx.memberships
+    .filter((m) => hasWorkspaceAccess(m as { role: string; permissions?: unknown }))
+    .map((m) => ({
+      role: m.role,
+      association_profiles: m.association_profiles as {
+        name: string;
+        slug: string;
+      } | null,
+    }));
 
   const unreadCounts = ctx.isStudent ? await getUnreadCounts() : { total: 0, aziende: 0, other: 0 };
 
