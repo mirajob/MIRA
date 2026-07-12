@@ -2,6 +2,7 @@ import { getCompanyContext } from "@/lib/auth";
 import { signOut } from "@/lib/actions/auth";
 import { getUnreadCount } from "@/lib/actions/notifications";
 import { NotificationBell } from "@/components/notification-bell";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
@@ -35,6 +36,7 @@ export default async function CompanyLayout({ children, params }: Props) {
             <span className="text-body-sm font-medium text-ink">{(company as any).display_name ?? (company as any).legal_name}</span>
           </div>
           <div className="flex items-center gap-4">
+            <LocaleSwitcher />
             <NotificationBell initialUnreadCount={unreadNotifications} />
             <span className="text-body-sm text-ink-secondary">{(profile as any).full_name}</span>
             <form action={signOut}>

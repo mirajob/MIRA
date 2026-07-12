@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createServerClient } from "@mira/supabase/server";
 import { getTranslations } from "next-intl/server";
 import { LogoutButton } from "./logout-button";
+import { LocaleSwitcher } from "./locale-switcher";
 
 export async function PublicHeader() {
   const supabase = await createServerClient();
@@ -15,6 +16,7 @@ export async function PublicHeader() {
         <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-7" />
       </Link>
       <div className="flex items-center gap-4">
+        <LocaleSwitcher />
         <Link href="/associations" className="text-body text-ink-secondary hover:text-navy transition-colors duration-100">
           {t("associationsLink")}
         </Link>

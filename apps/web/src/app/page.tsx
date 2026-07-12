@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerClient } from "@mira/supabase/server";
 import { getTranslations } from "next-intl/server";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 
 export default async function HomePage() {
   const supabase = await createServerClient();
@@ -19,6 +20,7 @@ export default async function HomePage() {
       <header className="h-20 px-6 lg:px-12 flex items-center justify-between">
         <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-7" />
         <div className="flex items-center gap-4">
+          <LocaleSwitcher />
           <Link href="/login" className="text-body text-navy hover:text-petrol transition-colors duration-100">
             {c("login")}
           </Link>

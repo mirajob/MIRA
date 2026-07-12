@@ -5,7 +5,12 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { setLocale } from "@/lib/actions/locale";
 
-export function LocaleSwitcher() {
+/**
+ * Selettore lingua inline: va posizionato dal layout che lo ospita (sidebar, drawer,
+ * header pubblici) — non più un elemento flottante fisso, che su mobile copriva
+ * contenuti e bottom sheet.
+ */
+export function LocaleSwitcher({ className = "" }: { className?: string }) {
   const locale = useLocale();
   const t = useTranslations("LocaleSwitcher");
   const router = useRouter();
@@ -21,7 +26,7 @@ export function LocaleSwitcher() {
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-50 flex items-center gap-1 rounded-md border border-border bg-white px-2 py-1.5 shadow-sm max-lg:[body.has-bottom-nav_&]:bottom-24"
+      className={`inline-flex items-center gap-1 rounded-md border border-border bg-white px-1.5 py-1 ${className}`}
       aria-label={t("label")}
     >
       {(["it", "en"] as const).map((option) => (
@@ -30,7 +35,7 @@ export function LocaleSwitcher() {
           type="button"
           disabled={isPending}
           onClick={() => handleChange(option)}
-          className={`rounded-md px-2 py-1 text-label uppercase transition-colors duration-100 ${
+          className={`rounded px-1.5 py-0.5 text-xs uppercase transition-colors duration-100 ${
             locale === option ? "bg-navy text-white" : "text-ink-secondary hover:text-navy"
           }`}
           aria-pressed={locale === option}

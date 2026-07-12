@@ -3,6 +3,7 @@ import { SidebarNav } from "@/components/sidebar-nav";
 import { UserNav } from "@/components/user-nav";
 import { MobileHeader } from "@/components/mobile-header";
 import { StudentBottomNav } from "@/components/student-bottom-nav";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import { getUnreadCounts } from "@/lib/actions/notifications";
 import Link from "next/link";
 
@@ -39,7 +40,10 @@ export default async function DashboardLayout({
     />
   );
   const userContent = (
-    <UserNav fullName={ctx.profile.full_name} email={ctx.profile.email} />
+    <div className="space-y-3">
+      <UserNav fullName={ctx.profile.full_name} email={ctx.profile.email} />
+      <LocaleSwitcher />
+    </div>
   );
 
   return (

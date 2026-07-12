@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -49,13 +48,6 @@ export function StudentBottomNav({
 }) {
   const t = useTranslations("SidebarNav");
   const pathname = usePathname();
-
-  // Segnala agli elementi flottanti globali (es. LocaleSwitcher) che su mobile
-  // c'è una barra fissa in basso da cui scostarsi.
-  useEffect(() => {
-    document.body.classList.add("has-bottom-nav");
-    return () => document.body.classList.remove("has-bottom-nav");
-  }, []);
 
   function isActive(href: string) {
     if (href === "/student") return pathname === "/student" || pathname === "/student/profile";

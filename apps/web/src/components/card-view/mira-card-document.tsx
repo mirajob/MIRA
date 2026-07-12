@@ -205,6 +205,42 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
     });
   }
 
+  function openSoft() {
+    setOverlay({
+      title: t("competenze.softHeading"),
+      content: softSkills.length > 0 ? (
+        <ul className="space-y-1.5 list-disc list-inside">
+          {softSkills.map((s, i) => (
+            <li key={i} className="text-body-sm text-ink">{s}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-body-sm text-ink">{softTesto}</p>
+      ),
+    });
+  }
+
+  function openHard() {
+    setOverlay({
+      title: t("competenze.hardHeading"),
+      content: (
+        <div className="space-y-1.5">
+          {hardItems.map((it) => (
+            <div key={it.id} className="text-body-sm text-ink flex items-center gap-2 flex-wrap">
+              <span>{it.testo}</span>
+              {it.livello && (
+                <span className="text-xs px-1.5 py-0.5 rounded bg-petrol-50 text-petrol-700">
+                  {t(`competenze.livelloLabels.${it.livello}`)}
+                </span>
+              )}
+              {it.evidenza_ref && <span className="text-xs text-ink-tertiary">· {it.evidenza_ref}</span>}
+            </div>
+          ))}
+        </div>
+      ),
+    });
+  }
+
   function openAcademic() {
     setOverlay({
       title: t("competenze.academicHeading"),
@@ -266,53 +302,62 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                 <span className="text-[10px] tracking-[0.22em] text-navy/40 uppercase shrink-0">MIRA Card</span>
               </div>
 
-              {header && (
-                <div className="mt-2.5">
-                  <p className="text-[14px] text-ink">
-                    {header.corso && <span className="font-medium">{header.corso}</span>}
-                    {header.universita && <span className="text-ink-secondary"> — {header.universita}</span>}
-                  </p>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-ink-secondary">
-                    {levelLabel && <span>{levelLabel}</span>}
-                    {header.anno && <span>{t("header.annoOrdinal", { n: header.anno })}</span>}
-                    {(header.anno_inizio || header.laurea_anno) && (
-                      <span>{header.anno_inizio ?? "—"}–{header.laurea_anno ?? "—"}</span>
-                    )}
-                    {header.media_voti != null &&
-                      (showMedia ? (
-                        <span className="font-medium text-ink">{Number(header.media_voti).toFixed(1)}/30</span>
-                      ) : (
-                        <span className="italic text-ink-tertiary text-[11px]">{t("header.mediaNotShared")}</span>
-                      ))}
-                    {formazioneItems.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); openEsami(); }}
-                        className="text-petrol hover:text-petrol-700 transition-colors"
-                      >
-                        {t("header.esami", { count: formazioneItems.length })} ▸
-                      </button>
-                    )}
-                  </div>
-                  {fp && (fp.corso || fp.universita) && (
-                    <p className="mt-1 text-[11px] text-ink-tertiary">
-                      {t("header.previousDegreeSummaryPrefix")} {fp.corso ?? "—"}
-                      {fp.universita ? ` — ${fp.universita}` : ""}
-                      {fp.voto_laurea ? ` (${fp.voto_laurea})` : ""}
-                    </p>
+              {/* Studi a sinistra, Disponibilità etichettata a destra — stessa striscia,
+                  allineata alle due colonne del corpo. */}
+              <div className="mt-2.5 grid grid-cols-[1fr_260px] gap-x-7">
+                <div className="min-w-0">
+                  {header && (
+                    <>
+                      <p className="text-[14px] text-ink">
+                        {header.corso && <span className="font-medium">{header.corso}</span>}
+                        {header.universita && <span className="text-ink-secondary"> — {header.universita}</span>}
+                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-ink-secondary">
+                        {levelLabel && <span>{levelLabel}</span>}
+                        {header.anno && <span>{t("header.annoOrdinal", { n: header.anno })}</span>}
+                        {(header.anno_inizio || header.laurea_anno) && (
+                          <span>{header.anno_inizio ?? "—"}–{header.laurea_anno ?? "—"}</span>
+                        )}
+                        {header.media_voti != null &&
+                          (showMedia ? (
+                            <span className="font-medium text-ink">{Number(header.media_voti).toFixed(1)}/30</span>
+                          ) : (
+                            <span className="italic text-ink-tertiary text-[11px]">{t("header.mediaNotShared")}</span>
+                          ))}
+                        {formazioneItems.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); openEsami(); }}
+                            className="text-petrol hover:text-petrol-700 transition-colors"
+                          >
+                            {t("header.esami", { count: formazioneItems.length })} ▸
+                          </button>
+                        )}
+                      </div>
+                      {fp && (fp.corso || fp.universita) && (
+                        <p className="mt-1 text-[11px] text-ink-tertiary">
+                          {t("header.previousDegreeSummaryPrefix")} {fp.corso ?? "—"}
+                          {fp.universita ? ` — ${fp.universita}` : ""}
+                          {fp.voto_laurea ? ` (${fp.voto_laurea})` : ""}
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
-              )}
 
-              {dispPills.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {dispPills.map((p, i) => (
-                    <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
-                      {p}
-                    </span>
-                  ))}
-                </div>
-              )}
+                {dispPills.length > 0 && (
+                  <div className="min-w-0 border-l border-border pl-6">
+                    <SectionTitle>{t("titles.disponibilita")}</SectionTitle>
+                    <div className="flex flex-wrap gap-1.5">
+                      {dispPills.map((p, i) => (
+                        <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="border-t border-border" />
@@ -362,49 +407,38 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
               </div>
 
               <div className="min-w-0 space-y-5 border-l border-border pl-6">
-                {(softSkills.length > 0 || softTesto) && (
+                {(softSkills.length > 0 || softTesto || hardItems.length > 0 || academicItems.length > 0) && (
                   <div>
-                    <SectionTitle>{t("competenze.softHeading")}</SectionTitle>
-                    {softSkills.length > 0 ? (
-                      <ul className="space-y-1">
-                        {softSkills.map((s, i) => (
-                          <li key={i} className="text-[12px] text-ink leading-snug">· {s}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-[12px] text-ink leading-snug">{clampText(softTesto!, 280).clamped}</p>
-                    )}
-                  </div>
-                )}
-
-                {hardItems.length > 0 && (
-                  <div>
-                    <SectionTitle>{t("competenze.hardHeading")}</SectionTitle>
-                    <div className="space-y-1">
-                      {hardItems.map((it) => (
-                        <div key={it.id} className="text-[12px] text-ink leading-snug flex items-center gap-1.5 flex-wrap">
-                          <span>{it.testo}</span>
-                          {it.livello && (
-                            <span className="text-[10px] px-1.5 py-px rounded bg-petrol-50 text-petrol-700">
-                              {t(`competenze.livelloLabels.${it.livello}`)}
-                            </span>
-                          )}
-                        </div>
-                      ))}
+                    <SectionTitle>{t("titles.competenze")}</SectionTitle>
+                    <div className="space-y-1.5">
+                      {(softSkills.length > 0 || softTesto) && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); openSoft(); }}
+                          className="block text-[12px] text-petrol hover:text-petrol-700 transition-colors"
+                        >
+                          {t("competenze.softSkillsCount", { count: softSkills.length || 1 })} ▸
+                        </button>
+                      )}
+                      {hardItems.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); openHard(); }}
+                          className="block text-[12px] text-petrol hover:text-petrol-700 transition-colors"
+                        >
+                          {t("competenze.hardSkillsCount", { count: hardItems.length })} ▸
+                        </button>
+                      )}
+                      {academicItems.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); openAcademic(); }}
+                          className="block text-[12px] text-petrol hover:text-petrol-700 transition-colors"
+                        >
+                          {t("competenze.academicSkills", { count: academicItems.length })} ▸
+                        </button>
+                      )}
                     </div>
-                  </div>
-                )}
-
-                {academicItems.length > 0 && (
-                  <div>
-                    <SectionTitle>{t("competenze.academicHeading")}</SectionTitle>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); openAcademic(); }}
-                      className="text-[11px] text-petrol hover:text-petrol-700 transition-colors"
-                    >
-                      {t("competenze.academicSkills", { count: academicItems.length })} ▸
-                    </button>
                   </div>
                 )}
 
