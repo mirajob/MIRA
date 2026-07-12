@@ -54,6 +54,7 @@ export default async function CompanyCandidateCardPage({ params, searchParams }:
     autodescrizione: blockMap.has("autodescrizione") ? { data: blockMap.get("autodescrizione").prose_content } : undefined,
     pianoCarriera: blockMap.has("piano_carriera") ? { data: blockMap.get("piano_carriera").prose_content } : undefined,
     audience: "aziende" as const,
+    displayName: code,
   };
 
   return (

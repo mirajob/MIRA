@@ -82,7 +82,7 @@ export function DisponibilitaView({ data }: { data: DisponibilitaProseContent })
   const t = useTranslations("CardBlocks");
   const pills = [data.cosa_cerca, data.ambito, data.periodo, data.dove].filter(Boolean) as string[];
   return (
-    <div className="p-5">
+    <div className="p-4">
       <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.disponibilita")}</p>
       {pills.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">

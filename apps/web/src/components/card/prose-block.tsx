@@ -91,7 +91,7 @@ export function ProseView({
 }) {
   const t = useTranslations("CardBlocks");
   return (
-    <div className="p-5">
+    <div className="p-4">
       <p className="text-eyebrow text-navy/60 uppercase mb-2">{title}</p>
       {testo ? (
         <p className={`text-body-sm text-ink ${serif ? "font-display italic" : ""}`}>{testo}</p>

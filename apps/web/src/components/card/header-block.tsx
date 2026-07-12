@@ -290,7 +290,7 @@ export function HeaderView({
   const fp = data.formazione_precedente;
 
   return (
-    <div className="p-5">
+    <div className="p-4">
       <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.header")}</p>
       <div className="flex flex-wrap items-baseline gap-x-2">
         {data.corso && <span className="text-body font-medium text-ink">{data.corso}</span>}

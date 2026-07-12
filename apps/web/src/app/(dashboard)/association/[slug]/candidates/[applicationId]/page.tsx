@@ -104,7 +104,7 @@ export default async function CandidateDetailPage({ params }: Props) {
     interessi: blockMap.has("interessi") ? { data: blockMap.get("interessi").prose_content } : undefined,
     autodescrizione: blockMap.has("autodescrizione") ? { data: blockMap.get("autodescrizione").prose_content } : undefined,
     pianoCarriera: blockMap.has("piano_carriera") ? { data: blockMap.get("piano_carriera").prose_content } : undefined,
-    studentName: profile?.full_name ?? undefined,
+    displayName: profile?.full_name ?? undefined,
   };
 
   return (

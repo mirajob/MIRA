@@ -26,11 +26,15 @@ export function MiraCardLayout({
     <div className="space-y-4">
       <div className="rounded-xl border border-border bg-white overflow-hidden">
         {name && (
-          <div className="px-6 pt-5">
+          <div className="px-6 pt-4">
             <h1 className="font-display text-h1 text-navy">{name}</h1>
           </div>
         )}
-        <div className="divide-y divide-border">{masthead}</div>
+        {/* Header e Disponibilità nella stessa striscia orizzontale (non impilati) per non
+         * sprecare altezza su una disponibilità che di solito è solo un paio di pill brevi. */}
+        <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] divide-y sm:divide-y-0 sm:divide-x divide-border">
+          {masthead}
+        </div>
       </div>
 
       <div className="@container">

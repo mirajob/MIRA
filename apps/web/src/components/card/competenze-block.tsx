@@ -265,7 +265,7 @@ export function CompetenzeView({ data }: { data: CompetenzeProseContent }) {
   const isEmpty = !hasSoft && hardItems.length === 0 && academicItems.length === 0;
 
   return (
-    <div className="p-5">
+    <div className="p-4">
       <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.competenze")}</p>
       {isEmpty && <p className="text-body-sm text-ink-tertiary italic">{t("competenze.emptyView")}</p>}
 

@@ -92,7 +92,7 @@ export default async function StudentHomePage() {
   const cardT = await getTranslations("CardBlocks");
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-6 space-y-5">
+    <div className="mx-auto max-w-4xl px-6 py-6 space-y-5">
       <h1 className="font-display text-h2 text-navy">{t("greeting")}{name ? `, ${name}` : ""}</h1>
 
       {faseBIncomplete && (
@@ -176,7 +176,7 @@ export default async function StudentHomePage() {
             {lingue && (
               <EditableSection
                 view={
-                  <div className="p-5">
+                  <div className="p-4">
                     <p className="text-eyebrow text-navy/60 uppercase mb-2">{cardT("titles.lingue")}</p>
                     {lingueItems.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">

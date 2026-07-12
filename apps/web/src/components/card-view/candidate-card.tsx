@@ -29,8 +29,8 @@ interface CandidateCardProps {
   pianoCarriera?: { data: PianoCarrieraProseContent };
   /** Chi sta guardando la card — decide quale flag di visibilità dei voti applicare. Default: associazioni. */
   audience?: "associazioni" | "aziende";
-  /** Omesso nella vista azienda finché il candidato resta anonimizzato (nessuna richiesta di contatto accettata). */
-  studentName?: string | null;
+  /** Nome reale (vista studente/associazione) o codice anonimizzato tipo "C001" (vista azienda, finché non accetta una richiesta di contatto). */
+  displayName?: string | null;
 }
 
 /**
@@ -52,7 +52,7 @@ export function CandidateCard(props: CandidateCardProps) {
 
   return (
     <MiraCardLayout
-      name={props.studentName}
+      name={props.displayName}
       masthead={
         <>
           {props.header && (
@@ -84,7 +84,7 @@ export function CandidateCard(props: CandidateCardProps) {
             <CompetenzeView data={props.competenze.data} />
           )}
           {props.lingue && props.lingue.data.items.length > 0 && (
-            <div className="p-5">
+            <div className="p-4">
               <p className="text-eyebrow text-navy/60 uppercase mb-2">Lingue</p>
               <div className="flex flex-wrap gap-1.5">
                 {props.lingue.data.items.map((it) => (
