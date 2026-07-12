@@ -123,10 +123,8 @@ export default async function CandidateDetailPage({ params }: Props) {
               {t("applyingFor", { role: (application as any).selected_role_preferences[0] })}
             </p>
           )}
+          {/* Corso/anno/livello non ripetuti qui: sono già nel masthead della MiraCard sotto */}
           <div className="mt-2 flex items-center gap-3 text-body-sm text-ink-tertiary flex-wrap">
-            <span>{(student?.degree_program as string) ?? "—"}</span>
-            {student?.current_year && <span>· {t("yearOrdinal", { n: student.current_year as number })}</span>}
-            {student?.degree_level && <span>· {student.degree_level as string}</span>}
             {transcriptUrl && (
               <a
                 href={transcriptUrl}
