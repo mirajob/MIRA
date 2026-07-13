@@ -66,7 +66,7 @@ function SignupForm() {
     setLoading(true);
 
     const supabase = createBrowserClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -81,6 +81,16 @@ function SignupForm() {
 
     if (error) {
       setError(c(`authErrors.${getAuthErrorKey(error.message)}`));
+      setLoading(false);
+      return;
+    }
+
+    // Supabase non restituisce un errore per un'email già registrata (per non
+    // rivelare a un attaccante quali email esistono): risponde con successo ma
+    // un utente con `identities` vuoto. Senza questo controllo l'utente pensa
+    // di essersi appena iscritto, mentre non è successo nulla.
+    if (data.user && data.user.identities?.length === 0) {
+      setError(c(`authErrors.${getAuthErrorKey("already registered")}`));
       setLoading(false);
       return;
     }

@@ -10,9 +10,18 @@ export async function deleteUserAccount(profileId: string) {
   if (profileId === ctx.profile.id) return { error: "Non puoi eliminare il tuo stesso account." };
 
   const supabase = await createServiceClient();
-  const { error } = await supabase.rpc("admin_delete_profile", { target_profile_id: profileId });
+  const { data: authUserId, error } = await supabase.rpc("admin_delete_profile", { target_profile_id: profileId });
 
   if (error) return { error: error.message };
+
+  // Il vero utente auth va rimosso via Admin API, non con una DELETE SQL diretta
+  // su auth.users: GoTrue tiene stato interno (identities, sessioni, token) che
+  // solo questa chiamata pulisce correttamente — una DELETE grezza lasciava
+  // residui che confondevano una successiva registrazione con la stessa email.
+  if (authUserId) {
+    const { error: authError } = await supabase.auth.admin.deleteUser(authUserId as string);
+    if (authError) return { error: authError.message };
+  }
 
   revalidatePath("/admin/users");
   return { success: true };

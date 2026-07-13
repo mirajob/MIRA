@@ -73,7 +73,7 @@
     "submitLoading": "Signing in...",
     "pendingRequest": "Your access request is still awaiting confirmation from the MIRA team. You'll get an email as soon as it's approved.",
     "wrongAccountType": "This is a {accountType} account. Switch to \"{targetLabel}\" above to sign in.",
-    "callbackFailed": "We couldn't complete the email confirmation. Try logging in below, or request a new confirmation link.",
+    "callbackFailed": "This confirmation link was already used — this often happens because some email filters open it automatically before you do. If you received the email, your address is likely already confirmed: try logging in below.",
     "accountTypeStudent": "student",
     "accountTypeCompany": "company"
   },

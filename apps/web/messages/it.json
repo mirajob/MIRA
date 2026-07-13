@@ -73,7 +73,7 @@
     "submitLoading": "Accesso in corso...",
     "pendingRequest": "La tua richiesta di accesso è ancora in attesa di conferma da parte del team MIRA. Riceverai un'email non appena verrà approvata.",
     "wrongAccountType": "Questo è un account {accountType}. Passa su \"{targetLabel}\" qui sopra per accedere.",
-    "callbackFailed": "Non è stato possibile completare la conferma dell'email. Prova ad accedere direttamente qui sotto, oppure richiedi un nuovo link di conferma.",
+    "callbackFailed": "Il link di conferma risulta già usato — capita spesso perché alcuni filtri email lo aprono in automatico prima di te. Se hai già ricevuto l'email, la tua email è probabilmente già confermata: prova ad accedere qui sotto.",
     "accountTypeStudent": "studente",
     "accountTypeCompany": "azienda"
   },

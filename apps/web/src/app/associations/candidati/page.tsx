@@ -50,6 +50,14 @@ export default function CandidatiAssociazionePage() {
       return;
     }
 
+    // Email già registrata: Supabase risponde con successo (identities vuoto)
+    // invece di un errore, per non rivelare quali email esistono già.
+    if (data.user && data.user.identities?.length === 0) {
+      setError(c("authErrors.user_already_registered"));
+      setLoading(false);
+      return;
+    }
+
     if (!data.user?.id) {
       setError(t("registrationErrorGeneric"));
       setLoading(false);
