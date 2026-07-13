@@ -315,6 +315,7 @@
     "myApplicationsHeading": "Your applications",
     "noApplications": "You don't have any applications yet. Find an association below.",
     "allAssociationsHeading": "All associations",
+    "bocconiOnlyNotice": "Associations on MIRA are currently open only to Bocconi University students.",
     "interviewScheduled": "Interview scheduled",
     "congratsAccepted": "Congratulations! You've been accepted.",
     "viewPage": "View page",
@@ -435,7 +436,9 @@
     "goToDashboard": "Go to dashboard",
     "eyebrow": "Application",
     "positionsHeading": "Open positions",
-    "closesOn": "Deadline: {date}"
+    "closesOn": "Deadline: {date}",
+    "notBocconiHeading": "Applications open to Bocconi students only",
+    "notBocconiBody": "Associations on MIRA are currently open only to Bocconi University students."
   },
   "ApplicationForm": {
     "selectPlaceholder": "Select",

@@ -6,6 +6,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { JoinByCode } from "@/components/join-by-code";
 import { WORKSPACE_ROLES, hasWorkspaceAccess } from "@/lib/association-roles";
+import { BOCCONI_UNIVERSITY_NAME } from "@mira/domain";
 import { MarkAssociationNotificationsRead } from "./mark-read";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -57,9 +58,14 @@ export default async function StudentAssociazioniPage() {
     .eq("status", "active");
 
   const { data: studentProfile } = await (supabase.from("student_profiles") as any)
-    .select("onboarding_completed")
+    .select("onboarding_completed, university")
     .eq("user_id", profileId)
     .maybeSingle();
+
+  // Associations First Build: le associazioni su MIRA sono solo Bocconi — gli
+  // studenti di altre università possono iscriversi alla piattaforma, ma non
+  // sfogliano/candidano associazioni finché il modulo non si estende.
+  const isBocconiStudent = studentProfile?.university === BOCCONI_UNIVERSITY_NAME;
 
   const cyclesByAssoc = new Map<string, any[]>();
   for (const c of openCycles ?? []) {
@@ -207,7 +213,12 @@ export default async function StudentAssociazioniPage() {
         )}
       </div>
 
-      {/* Tutte le associazioni */}
+      {/* Tutte le associazioni — solo studenti Bocconi (Associations First Build) */}
+      {!isBocconiStudent ? (
+        <div className="rounded-lg border border-border bg-white p-8 text-center">
+          <p className="text-body text-ink-secondary">{t("bocconiOnlyNotice")}</p>
+        </div>
+      ) : (
       <div>
         <h2 className="font-sans text-h3 text-navy mb-3">{t("allAssociationsHeading")}</h2>
         <div className="space-y-4">
@@ -299,6 +310,7 @@ export default async function StudentAssociazioniPage() {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

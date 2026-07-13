@@ -101,6 +101,13 @@ export const ITALIAN_UNIVERSITY_DOMAINS: Array<{ name: string; domain: string }>
 
 export const ALLOWED_STUDENT_DOMAINS = ITALIAN_UNIVERSITY_DOMAINS.map((u) => u.domain);
 
+// Associations First Build (docs/02_MIRA_ASSOCIATIONS_FIRST_BUILD.md) is
+// scoped to Bocconi associations only: students can sign up from any
+// university (that's what ITALIAN_UNIVERSITY_DOMAINS is for), but browsing
+// and applying to associations is gated to this exact value of
+// student_profiles.university until other universities' associations exist.
+export const BOCCONI_UNIVERSITY_NAME = "Università Bocconi";
+
 function domainMatches(emailDomain: string, allowedDomain: string): boolean {
   return emailDomain === allowedDomain || emailDomain.endsWith(`.${allowedDomain}`);
 }

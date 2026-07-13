@@ -4,6 +4,7 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { evaluateCandidate } from "./candidates";
+import { BOCCONI_UNIVERSITY_NAME } from "@mira/domain";
 
 export async function submitApplication(cycleId: string, formData: FormData) {
   const ctx = await getUserContext();
@@ -11,12 +12,18 @@ export async function submitApplication(cycleId: string, formData: FormData) {
 
   const { data: student } = await supabase
     .from("student_profiles")
-    .select("id, onboarding_completed")
+    .select("id, onboarding_completed, university")
     .eq("user_id", ctx.profile.id)
     .single();
 
   if (!student) return { error: "Profilo studente non trovato" };
   if (!student.onboarding_completed) return { error: "Completa l'onboarding prima di candidarti" };
+  // Associations First Build: le associazioni sono solo Bocconi, quindi solo
+  // studenti Bocconi possono candidarsi — controllo server-side, non solo UI,
+  // perché l'endpoint è raggiungibile direttamente conoscendo un cycleId.
+  if (student.university !== BOCCONI_UNIVERSITY_NAME) {
+    return { error: "Le candidature alle associazioni su MIRA sono per ora aperte solo agli studenti dell'Università Bocconi." };
+  }
 
   const { data: cycle } = await supabase
     .from("application_cycles")

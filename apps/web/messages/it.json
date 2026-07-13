@@ -315,6 +315,7 @@
     "myApplicationsHeading": "Le tue candidature",
     "noApplications": "Non hai ancora candidature. Trova un'associazione qui sotto.",
     "allAssociationsHeading": "Tutte le associazioni",
+    "bocconiOnlyNotice": "Le associazioni su MIRA sono per ora aperte solo agli studenti dell'Università Bocconi.",
     "interviewScheduled": "Colloquio programmato",
     "congratsAccepted": "Congratulazioni! Sei stato accettato.",
     "viewPage": "Vedi pagina",
@@ -435,7 +436,9 @@
     "goToDashboard": "Vai alla dashboard",
     "eyebrow": "Candidatura",
     "positionsHeading": "Posizioni aperte",
-    "closesOn": "Scadenza: {date}"
+    "closesOn": "Scadenza: {date}",
+    "notBocconiHeading": "Candidature riservate agli studenti Bocconi",
+    "notBocconiBody": "Le associazioni su MIRA sono per ora aperte solo agli studenti dell'Università Bocconi."
   },
   "ApplicationForm": {
     "selectPlaceholder": "Seleziona",
