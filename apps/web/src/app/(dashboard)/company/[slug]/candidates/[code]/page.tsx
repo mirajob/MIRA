@@ -30,17 +30,20 @@ export default async function CompanyCandidateCardPage({ params, searchParams }:
 
   const studentProfileId = codeRow.student_profile_id as string;
 
-  const { data: student } = await (supabase.from("student_profiles") as any)
-    .select("id, degree_program, degree_level, current_year")
-    .eq("id", studentProfileId)
-    .maybeSingle();
+  // Nessuna dipende dall'altra (entrambe usano solo studentProfileId, già noto) — in
+  // parallelo invece che in sequenza dimezza il tempo di attesa di questa pagina.
+  const [{ data: student }, { data: blockRows }] = await Promise.all([
+    (supabase.from("student_profiles") as any)
+      .select("id, degree_program, degree_level, current_year")
+      .eq("id", studentProfileId)
+      .maybeSingle(),
+    (supabase.from("card_blocks") as any)
+      .select("block_type, prose_content, visibility")
+      .eq("student_profile_id", studentProfileId)
+      .eq("status", "approved"),
+  ]);
 
   if (!student) notFound();
-
-  const { data: blockRows } = await (supabase.from("card_blocks") as any)
-    .select("block_type, prose_content, visibility")
-    .eq("student_profile_id", studentProfileId)
-    .eq("status", "approved");
 
   const blockMap = new Map<string, any>((blockRows ?? []).map((b: any) => [b.block_type, b]));
   const cardProps = {

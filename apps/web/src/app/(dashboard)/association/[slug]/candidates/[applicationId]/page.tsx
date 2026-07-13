@@ -17,54 +17,60 @@ export default async function CandidateDetailPage({ params }: Props) {
   const locale = await getLocale();
   const dateLocale = locale === "it" ? "it-IT" : "en-US";
 
-  const { data: association } = await (supabase.from("association_profiles") as any)
-    .select("name")
-    .eq("slug", slug)
-    .single();
-
-  const { data: application } = await (supabase.from("applications") as any)
-    .select(`
-      *,
-      profiles(full_name, email),
-      student_profiles(id, degree_program, degree_level, current_year, transcript_summary),
-      application_cycles(title),
-      application_answers(id, answer_text, answer_json, application_questions(question_text, question_type)),
-      candidate_ai_evaluations(*),
-      application_status_events(id, previous_status, new_status, note, created_at, profiles(full_name)),
-      candidate_internal_notes(id, note_text, created_at, profiles(full_name))
-    `)
-    .eq("id", applicationId)
-    .maybeSingle();
+  // association e application non dipendono l'una dall'altra — in parallelo.
+  const [{ data: association }, { data: application }] = await Promise.all([
+    (supabase.from("association_profiles") as any).select("name").eq("slug", slug).single(),
+    (supabase.from("applications") as any)
+      .select(`
+        *,
+        profiles(full_name, email),
+        student_profiles(id, degree_program, degree_level, current_year, transcript_summary),
+        application_cycles(title),
+        application_answers(id, answer_text, answer_json, application_questions(question_text, question_type)),
+        candidate_ai_evaluations(*),
+        application_status_events(id, previous_status, new_status, note, created_at, profiles(full_name)),
+        candidate_internal_notes(id, note_text, created_at, profiles(full_name))
+      `)
+      .eq("id", applicationId)
+      .maybeSingle(),
+  ]);
 
   if (!application) notFound();
 
   // Read files directly from Storage (uploaded_files table may not be populated)
   const studentUserId = (application as any).student_user_id as string;
+  const studentProfileIdForFiles = (application.student_profiles as any)?.id as string | undefined;
 
   let transcriptUrl: string | null = null;
   let cvUrl: string | null = null;
 
-  const { data: transcriptFiles } = await supabase.storage
-    .from("student-transcripts")
-    .list(studentUserId, { limit: 1, sortBy: { column: "created_at", order: "desc" } });
-
-  if (transcriptFiles?.[0]) {
-    const { data: signed } = await supabase.storage
+  // Le tre liste (transcript, cv, blocchi card) dipendono solo da id già noti —
+  // in parallelo invece che in sequenza, questa pagina è la più pesante del sito.
+  const [{ data: transcriptFiles }, { data: cvFiles }, { data: blockRows }] = await Promise.all([
+    supabase.storage
       .from("student-transcripts")
-      .createSignedUrl(`${studentUserId}/${transcriptFiles[0].name}`, 3600);
-    transcriptUrl = signed?.signedUrl ?? null;
-  }
-
-  const { data: cvFiles } = await supabase.storage
-    .from("transcripts")
-    .list(`cv/${studentUserId}`, { limit: 1, sortBy: { column: "created_at", order: "desc" } });
-
-  if (cvFiles?.[0]) {
-    const { data: signed } = await supabase.storage
+      .list(studentUserId, { limit: 1, sortBy: { column: "created_at", order: "desc" } }),
+    supabase.storage
       .from("transcripts")
-      .createSignedUrl(`cv/${studentUserId}/${cvFiles[0].name}`, 3600);
-    cvUrl = signed?.signedUrl ?? null;
-  }
+      .list(`cv/${studentUserId}`, { limit: 1, sortBy: { column: "created_at", order: "desc" } }),
+    studentProfileIdForFiles
+      ? (supabase.from("card_blocks") as any)
+          .select("block_type, prose_content, visibility")
+          .eq("student_profile_id", studentProfileIdForFiles)
+          .eq("status", "approved")
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const [signedTranscript, signedCv] = await Promise.all([
+    transcriptFiles?.[0]
+      ? supabase.storage.from("student-transcripts").createSignedUrl(`${studentUserId}/${transcriptFiles[0].name}`, 3600)
+      : Promise.resolve({ data: null }),
+    cvFiles?.[0]
+      ? supabase.storage.from("transcripts").createSignedUrl(`cv/${studentUserId}/${cvFiles[0].name}`, 3600)
+      : Promise.resolve({ data: null }),
+  ]);
+  transcriptUrl = signedTranscript.data?.signedUrl ?? null;
+  cvUrl = signedCv.data?.signedUrl ?? null;
 
   const profile = application.profiles as { full_name: string | null; email: string };
   const student = application.student_profiles as Record<string, unknown>;
@@ -83,15 +89,6 @@ export default async function CandidateDetailPage({ params }: Props) {
   }>;
   const aiEval = (application.candidate_ai_evaluations as Array<Record<string, unknown>>)?.[0];
   const ts = (student?.transcript_summary as Record<string, any>) ?? {};
-
-  // Card: solo blocchi approved, esplicito (il service client bypassa RLS).
-  const studentProfileId = (student as any)?.id as string | undefined;
-  const { data: blockRows } = studentProfileId
-    ? await (supabase.from("card_blocks") as any)
-        .select("block_type, prose_content, visibility")
-        .eq("student_profile_id", studentProfileId)
-        .eq("status", "approved")
-    : { data: [] };
 
   const blockMap = new Map<string, any>((blockRows ?? []).map((b: any) => [b.block_type, b]));
   const cardProps = {
