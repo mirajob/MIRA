@@ -3,6 +3,7 @@
 import { parseTranscriptFile, formatTranscriptForChat, type ParsedCourse } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 import { ensureCardBlocksExist } from "./card-blocks";
 import type { HeaderProseContent, FormazioneItem } from "@mira/types";
 
@@ -228,6 +229,11 @@ export async function uploadTranscript(formData: FormData) {
       },
       status: "success",
     });
+
+    // Il libretto può ora essere (ri)caricato anche dal Profilo, non solo in onboarding:
+    // senza questa revalidate la pagina Profilo continuerebbe a mostrare esami/media vecchi
+    // finché non si naviga altrove e si torna.
+    revalidatePath("/student");
 
     const summary = formatTranscriptForChat(parsed);
     return { success: true, summary, parsed };

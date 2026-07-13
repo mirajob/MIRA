@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { updateCardBlockProseContent, updateHeaderVisibility } from "@/lib/actions/card-blocks";
+import { uploadTranscript } from "@/lib/actions/transcript-upload";
 import { CardBlockHeader } from "./card-block-header";
 import type { CardBlockStatus, FormazioneItem, HeaderProseContent, HeaderVisibility } from "@mira/types";
 
@@ -24,6 +26,7 @@ export function HeaderBlock({
 }) {
   const t = useTranslations("CardBlocks");
   const c = useTranslations("Common");
+  const router = useRouter();
   const [form, setForm] = useState(proseContent);
   const [vis, setVis] = useState<HeaderVisibility>(
     visibility?.media_voti ? visibility : { media_voti: { associazioni: false, aziende: false } }
@@ -31,6 +34,9 @@ export function HeaderBlock({
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [esamiExpanded, setEsamiExpanded] = useState(false);
+  const [transcriptUploading, setTranscriptUploading] = useState(false);
+  const [transcriptError, setTranscriptError] = useState<string | null>(null);
+  const transcriptFileRef = useRef<HTMLInputElement>(null);
 
   // In onboarding proseContent arriva in modo asincrono (es. dopo il parsing del libretto):
   // se non c'è un edit locale in corso, riflette sempre l'ultimo dato dal server.
@@ -73,6 +79,28 @@ export function HeaderBlock({
     const next = { media_voti: { ...vis.media_voti, [key]: !vis.media_voti[key] } };
     setVis(next);
     await updateHeaderVisibility(next);
+  }
+
+  // Il libretto sostituisce sempre l'intero elenco esami (mai un merge): un libretto è per
+  // natura cumulativo, quindi ricaricarlo copre già i vecchi esami più gli eventuali nuovi —
+  // niente rischio di duplicati, perché la lista precedente viene sempre rimpiazzata di netto.
+  async function handleTranscriptFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setTranscriptUploading(true);
+    setTranscriptError(null);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    const result = await uploadTranscript(formData);
+
+    if (result.error) {
+      setTranscriptError(result.error);
+    } else {
+      router.refresh();
+    }
+    setTranscriptUploading(false);
+    if (transcriptFileRef.current) transcriptFileRef.current.value = "";
   }
 
   return (
@@ -155,8 +183,8 @@ export function HeaderBlock({
           </div>
         </div>
 
-        {formazioneItems.length > 0 && (
-          <div className="border-t border-border pt-4">
+        <div className="border-t border-border pt-4">
+          {formazioneItems.length > 0 && (
             <button
               type="button"
               onClick={() => setEsamiExpanded((e) => !e)}
@@ -165,22 +193,48 @@ export function HeaderBlock({
               <span>{esamiExpanded ? "▾" : "▸"}</span>
               <span>{t("header.esami", { count: formazioneItems.length })}</span>
             </button>
-            {esamiExpanded && (
-              <div className="mt-3 space-y-1">
-                {formazioneItems.map((it) => (
-                  <div key={it.id} className="flex items-center justify-between gap-2 text-body-sm">
-                    <span className="text-ink truncate">{it.esame}</span>
-                    <span className="text-ink-secondary whitespace-nowrap">
-                      {it.voto ?? "—"}
-                      {it.cfu != null && <span className="text-xs text-ink-tertiary">{t("header.cfuSuffix", { cfu: it.cfu })}</span>}
-                      <span className="ml-2 text-xs text-success font-medium">{t("header.examVerified")}</span>
-                    </span>
-                  </div>
-                ))}
-              </div>
+          )}
+          {esamiExpanded && formazioneItems.length > 0 && (
+            <div className="mt-3 space-y-1">
+              {formazioneItems.map((it) => (
+                <div key={it.id} className="flex items-center justify-between gap-2 text-body-sm">
+                  <span className="text-ink truncate">{it.esame}</span>
+                  <span className="text-ink-secondary whitespace-nowrap">
+                    {it.voto ?? "—"}
+                    {it.cfu != null && <span className="text-xs text-ink-tertiary">{t("header.cfuSuffix", { cfu: it.cfu })}</span>}
+                    <span className="ml-2 text-xs text-success font-medium">{t("header.examVerified")}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className={formazioneItems.length > 0 ? "mt-3" : ""}>
+            <input
+              ref={transcriptFileRef}
+              type="file"
+              accept="application/pdf,image/png,image/jpeg,image/webp"
+              onChange={handleTranscriptFile}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => transcriptFileRef.current?.click()}
+              disabled={transcriptUploading}
+              className="text-body-sm font-medium text-petrol hover:text-petrol-700 transition-colors disabled:opacity-50"
+            >
+              {transcriptUploading
+                ? t("header.uploadingTranscript")
+                : t(formazioneItems.length > 0 ? "header.reuploadTranscriptLabel" : "header.uploadTranscriptLabel")}
+            </button>
+            {formazioneItems.length > 0 && (
+              <p className="mt-1 text-xs text-ink-tertiary">{t("header.reuploadTranscriptNote")}</p>
+            )}
+            {transcriptError && (
+              <p className="mt-1 text-xs text-error">{t("header.transcriptUploadError", { error: transcriptError })}</p>
             )}
           </div>
-        )}
+        </div>
 
         {(form.livello === "magistrale" || form.formazione_precedente) && (
           <div className="border-t border-border pt-4 space-y-3">

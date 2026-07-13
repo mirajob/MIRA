@@ -239,7 +239,12 @@
       "visibilitaAziende": "Aziende",
       "annoOrdinal": "{n}° anno",
       "mediaNotShared": "media non condivisa",
-      "previousDegreeSummaryPrefix": "Triennale:"
+      "previousDegreeSummaryPrefix": "Triennale:",
+      "uploadTranscriptLabel": "Carica libretto",
+      "reuploadTranscriptLabel": "Ricarica libretto",
+      "uploadingTranscript": "Caricamento in corso...",
+      "transcriptUploadError": "Errore nel caricamento: {error}",
+      "reuploadTranscriptNote": "Ricaricandolo, esami e media si aggiornano da zero in base al nuovo libretto."
     },
     "disponibilita": {
       "cosaCercaLabel": "Cosa cerca",

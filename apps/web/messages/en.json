@@ -239,7 +239,12 @@
       "visibilitaAziende": "Companies",
       "annoOrdinal": "Year {n}",
       "mediaNotShared": "GPA not shared",
-      "previousDegreeSummaryPrefix": "Bachelor's:"
+      "previousDegreeSummaryPrefix": "Bachelor's:",
+      "uploadTranscriptLabel": "Upload transcript",
+      "reuploadTranscriptLabel": "Re-upload transcript",
+      "uploadingTranscript": "Uploading...",
+      "transcriptUploadError": "Upload error: {error}",
+      "reuploadTranscriptNote": "Re-uploading refreshes exams and GPA from scratch based on the new transcript."
     },
     "disponibilita": {
       "cosaCercaLabel": "Looking for",
