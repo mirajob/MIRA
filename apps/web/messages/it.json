@@ -988,7 +988,7 @@
     "afterHeaderApproved": "Hai un CV? Caricalo e parto da lì per farti domande mirate sulle tue esperienze. Se non ce l'hai, nessun problema: lo costruiamo parlando.",
     "hiddenExperienceQuestion": "C'è qualcosa che non hai mai messo nel CV? Progetti personali, competizioni, sport a livello agonistico, volontariato, lavori — qualsiasi cosa pensi possa rappresentarti.",
     "skipCVMessage": "Nessun problema, lo costruiamo parlando. {hiddenExperienceQuestion}",
-    "cvItemGood": "Dal CV: \"{title} @ {org}\" — {description}\n\nVa bene così, o vuoi aggiungere qualcosa?",
+    "cvItemGood": "Il CV descrive già bene questa esperienza: {title} @ {org}. Va bene così com'è, o vuoi aggiungere o correggere qualcosa?",
     "cvFoundOne": "Ho trovato un'esperienza. Su {title} @ {org} — cosa hai fatto tu, concretamente?",
     "cvFoundMany": "Ho trovato {count} esperienze. Su {title} @ {org} — cosa hai fatto tu, concretamente?",
     "cvNextPlain": "Su {title} @ {org} — cosa hai fatto tu, concretamente?",
@@ -997,8 +997,8 @@
     "disponibilitaQuestion": "Cosa cerchi (uno stage, un part-time, un progetto...) e da quando sei disponibile?",
     "disponibilitaDone": "Segnato — controlla il blocco Disponibilità. Confermalo per sbloccare la candidatura.",
     "afterDisponibilitaApproved": "Candidatura sbloccata. La tua card è al {pct}%: puoi già candidarti alle associazioni su MIRA. Oppure completiamo le ultime sezioni — competenze, interessi, come ti descrivi, piano di carriera — in circa 5 minuti: le associazioni vedono un profilo molto più forte.",
-    "startFaseBMessage": "Completiamo insieme le ultime sezioni: qualche minuto e la tua card è finita.\n\nDai tuoi voti ti propongo già queste competenze accademiche:\n{listText}\n\nOra dimmi: quali strumenti, software o metodologie hai usato nelle esperienze di cui mi hai parlato?",
-    "noCompetenzeDraft": "(nessuna bozza — puoi aggiungerne dal Profilo dopo)",
+    "startFaseBMessage": "Completiamo insieme le ultime sezioni: qualche minuto e la tua card è finita.\n\nDai tuoi voti ho già proposto alcune competenze accademiche nel blocco Competenze qui a destra — dacci un'occhiata.\n\nOra dimmi: quali strumenti, software o metodologie hai usato nelle esperienze di cui mi hai parlato?",
+    "startFaseBMessageEmpty": "Completiamo insieme le ultime sezioni: qualche minuto e la tua card è finita.\n\nDai tuoi voti non emerge un pattern chiaro per proporti già competenze accademiche, ma potrai aggiungerle tu dal Profilo in seguito.\n\nOra dimmi: quali strumenti, software o metodologie hai usato nelle esperienze di cui mi hai parlato?",
     "softSkillsIntro": "Adesso qualche situazione veloce, scegli quella che ti somiglia di più. Non ci sono risposte giuste — servono a dire alle aziende come lavori, non a giudicarti.",
     "softSkillQuestions": {
       "q1": {

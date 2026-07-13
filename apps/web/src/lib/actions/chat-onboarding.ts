@@ -540,7 +540,9 @@ export async function reactToCV(history: ChatMessage[]) {
     message = await getHiddenExperienceQuestion();
   } else if (first.description && first.description.length >= DETAILED_DESCRIPTION_THRESHOLD) {
     // Il CV descrive già bene questa esperienza: la propongo com'è invece di chiedere da zero.
-    message = t("cvItemGood", { title: first.title, org: first.organization, description: first.description });
+    // Non citiamo la descrizione in chat: è sempre in inglese per design (card content), e
+    // mostrarla mischierebbe inglese e italiano nello stesso messaggio.
+    message = t("cvItemGood", { title: first.title, org: first.organization });
   } else if (experiences.length === 1) {
     message = t("cvFoundOne", { title: first.title, org: first.organization });
   } else {
@@ -573,7 +575,7 @@ export async function submitEsperienzaRisposta(
     if (!next) {
       nextQuestion = await getHiddenExperienceQuestion();
     } else if (next.description && next.description.length >= DETAILED_DESCRIPTION_THRESHOLD) {
-      nextQuestion = t("cvItemGood", { title: next.title, org: next.organization, description: next.description });
+      nextQuestion = t("cvItemGood", { title: next.title, org: next.organization });
     } else {
       nextQuestion = t("cvNextPlain", { title: next.title, org: next.organization });
     }
@@ -832,8 +834,10 @@ export async function startFaseB() {
     throw new Error(t("errorCompetenzeRowNotFound"));
   }
 
-  const listText = items.map((i) => `• ${i.testo}`).join("\n");
-  const message = t("startFaseBMessage", { listText: listText || t("noCompetenzeDraft") });
+  // Non citiamo mai il testo delle competenze in chat: sono sempre scritte in inglese (per
+  // design, la MIRA card è sempre in inglese) e citarle qui mischierebbe inglese e italiano
+  // nello stesso messaggio — rimandiamo invece al pannello, dove sono comunque già visibili.
+  const message = items.length > 0 ? t("startFaseBMessage") : t("startFaseBMessageEmpty");
 
   await saveFaseBConversation(supabase, profileId, [{ role: "assistant", content: message }]);
 
