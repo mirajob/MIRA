@@ -997,8 +997,9 @@
     "disponibilitaQuestion": "What are you looking for (an internship, part-time, a project...) and from when are you available?",
     "disponibilitaDone": "Noted — check the Availability block. Confirm it to unlock applications.",
     "afterDisponibilitaApproved": "Applications unlocked. Your card is at {pct}%: you can already apply to associations on MIRA. Or we can finish the last sections — skills, interests, how you describe yourself, career plan — in about 5 minutes: associations see a much stronger profile.",
-    "startFaseBMessage": "Let's finish the last sections together: a few minutes and your card is done.\n\nFrom your grades, I've already suggested some academic skills in the Skills block on the right — take a look.\n\nNow tell me: what tools, software, or methods did you use in the experiences you told me about?",
-    "startFaseBMessageEmpty": "Let's finish the last sections together: a few minutes and your card is done.\n\nYour grades don't show a clear enough pattern for me to suggest academic skills yet, but you can add some from your Profile later.\n\nNow tell me: what tools, software, or methods did you use in the experiences you told me about?",
+    "startFaseBIntro": "Let's finish the last sections together: a few minutes and your card is done.\n\nFrom your grades, I've already suggested some academic skills in the Skills block on the right — take a look.",
+    "startFaseBIntroEmpty": "Let's finish the last sections together: a few minutes and your card is done.\n\nYour grades don't show a clear enough pattern for me to suggest academic skills yet, but you can add some from your Profile later.",
+    "startFaseBHardSkillQuestion": "Now tell me: what tools, software, or methods did you use in the experiences you told me about?",
     "softSkillsIntro": "Now a few quick scenarios — pick whichever sounds more like you. There are no right answers: these just tell companies how you work, not who's better.",
     "softSkillQuestions": {
       "q1": {

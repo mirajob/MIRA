@@ -997,8 +997,9 @@
     "disponibilitaQuestion": "Cosa cerchi (uno stage, un part-time, un progetto...) e da quando sei disponibile?",
     "disponibilitaDone": "Segnato — controlla il blocco Disponibilità. Confermalo per sbloccare la candidatura.",
     "afterDisponibilitaApproved": "Candidatura sbloccata. La tua card è al {pct}%: puoi già candidarti alle associazioni su MIRA. Oppure completiamo le ultime sezioni — competenze, interessi, come ti descrivi, piano di carriera — in circa 5 minuti: le associazioni vedono un profilo molto più forte.",
-    "startFaseBMessage": "Completiamo insieme le ultime sezioni: qualche minuto e la tua card è finita.\n\nDai tuoi voti ho già proposto alcune competenze accademiche nel blocco Competenze qui a destra — dacci un'occhiata.\n\nOra dimmi: quali strumenti, software o metodologie hai usato nelle esperienze di cui mi hai parlato?",
-    "startFaseBMessageEmpty": "Completiamo insieme le ultime sezioni: qualche minuto e la tua card è finita.\n\nDai tuoi voti non emerge un pattern chiaro per proporti già competenze accademiche, ma potrai aggiungerle tu dal Profilo in seguito.\n\nOra dimmi: quali strumenti, software o metodologie hai usato nelle esperienze di cui mi hai parlato?",
+    "startFaseBIntro": "Completiamo insieme le ultime sezioni: qualche minuto e la tua card è finita.\n\nDai tuoi voti ho già proposto alcune competenze accademiche nel blocco Competenze qui a destra — dacci un'occhiata.",
+    "startFaseBIntroEmpty": "Completiamo insieme le ultime sezioni: qualche minuto e la tua card è finita.\n\nDai tuoi voti non emerge un pattern chiaro per proporti già competenze accademiche, ma potrai aggiungerle tu dal Profilo in seguito.",
+    "startFaseBHardSkillQuestion": "Ora dimmi: quali strumenti, software o metodologie hai usato nelle esperienze di cui mi hai parlato?",
     "softSkillsIntro": "Adesso qualche situazione veloce, scegli quella che ti somiglia di più. Non ci sono risposte giuste — servono a dire alle aziende come lavori, non a giudicarti.",
     "softSkillQuestions": {
       "q1": {

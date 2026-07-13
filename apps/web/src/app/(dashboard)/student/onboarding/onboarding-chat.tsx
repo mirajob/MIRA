@@ -90,11 +90,12 @@ export function OnboardingChat({ userName }: { userName: string }) {
           // un solo messaggio di ripresa, mai il replay della Fase A.
           if (state.phase === "competenze") {
             const result = await startFaseB();
-            setMessages([{ role: "assistant", content: result.message }]);
+            setMessages(result.messages.map((content) => ({ role: "assistant" as const, content })));
             setBlocks((b) => ({ ...b, competenze: result.competenze }));
           } else {
             const result = await resumeFaseB(state.phase);
-            setMessages([{ role: "assistant", content: result.message }]);
+            const contents = "messages" in result ? result.messages : [result.message];
+            setMessages(contents.map((content) => ({ role: "assistant" as const, content })));
           }
           setPhase(state.phase);
           if (state.phase === "chiusura") setComplete(true);
@@ -318,7 +319,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
   async function handleContinueNow() {
     setLoading(true);
     const result = await startFaseB();
-    appendAssistant(result.message);
+    result.messages.forEach(appendAssistant);
     setPhase("competenze");
     await resyncBlocks();
     setLoading(false);

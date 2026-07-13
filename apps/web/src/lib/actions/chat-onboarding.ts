@@ -837,12 +837,19 @@ export async function startFaseB() {
   // Non citiamo mai il testo delle competenze in chat: sono sempre scritte in inglese (per
   // design, la MIRA card è sempre in inglese) e citarle qui mischierebbe inglese e italiano
   // nello stesso messaggio — rimandiamo invece al pannello, dove sono comunque già visibili.
-  const message = items.length > 0 ? t("startFaseBMessage") : t("startFaseBMessageEmpty");
+  // Due bolle separate, non un unico paragrafo: la nota sulle academic skill e la domanda
+  // sulle hard skill sono due informazioni distinte — unite in un solo blocco di testo, la
+  // domanda vera e propria si perdeva in coda ed era facile non accorgersi che c'era.
+  const intro = items.length > 0 ? t("startFaseBIntro") : t("startFaseBIntroEmpty");
+  const hardSkillQuestion = t("startFaseBHardSkillQuestion");
 
-  await saveFaseBConversation(supabase, profileId, [{ role: "assistant", content: message }]);
+  await saveFaseBConversation(supabase, profileId, [
+    { role: "assistant", content: intro },
+    { role: "assistant", content: hardSkillQuestion },
+  ]);
 
   return {
-    message,
+    messages: [intro, hardSkillQuestion],
     phase: "competenze" as OnboardingPhase,
     competenze: { status: "draft" as CardBlockStatus, data: { items, soft_skills: [] } },
     done: false,
