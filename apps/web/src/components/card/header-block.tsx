@@ -121,6 +121,7 @@ export function HeaderBlock({
             <label className="text-ink-tertiary text-body-sm">{t("header.annoLabel")}</label>
             <input
               type="number"
+              placeholder={t("header.annoPlaceholder")}
               value={form.anno ?? ""}
               onChange={(e) => update("anno", e.target.value ? Number(e.target.value) : null)}
               className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"

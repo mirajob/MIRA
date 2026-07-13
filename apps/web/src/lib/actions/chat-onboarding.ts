@@ -610,7 +610,11 @@ Rispondi SOLO in JSON: {"stop":true|false,"message":"..."|null}. ${languageInstr
     // Altrimenti prosegue sotto: chiude la fase esperienze in anticipo, come se fosse l'ultima risposta.
   }
 
-  // Ultima risposta (o richiesta di fermarsi in anticipo): estrae tutto ciò che è emerso finora nel blocco esperienze.
+  // Ultima risposta (o richiesta di fermarsi in anticipo): prima di scrivere in card, giudica se
+  // lo studente ha davvero risposto nel merito (racconta un'esperienza, o dice chiaramente di non
+  // avere altro da aggiungere) oppure no (una domanda, un dubbio, confusione tipo "non ho capito").
+  // Senza questo controllo il blocco veniva chiuso con dati vuoti/a caso e MIRA ripeteva sempre lo
+  // stesso messaggio di chiusura, ignorando cosa lo studente aveva effettivamente scritto.
   const recentText = conversation
     .slice(-2 * totalSubQuestions - 2)
     .map((m) => `${m.role === "user" ? "Studente" : "MIRA"}: ${m.content}`)
@@ -620,7 +624,13 @@ Rispondi SOLO in JSON: {"stop":true|false,"message":"..."|null}. ${languageInstr
     [
       {
         role: "system",
-        content: `Dalla conversazione, estrai le esperienze raccontate dallo studente. Per ognuna scrivi una descrizione di 2-3 righe di cosa ha fatto concretamente — fatti, non aggettivi di carattere. STILE OBBLIGATORIO: come un CV professionale — frasi che iniziano direttamente con un verbo al passato, senza soggetto (es. "Built a...", "Led a team of...", "Analyzed..."), MAI "I built..." né "He/she built...". La MIRA card è sempre in inglese: scrivi "titolo" e "descrizione" in inglese anche se la conversazione è in italiano (non tradurre invece "organizzazione" se è un nome proprio, es. il nome di un'azienda). Rispondi SOLO in JSON: {"items":[{"titolo":"","organizzazione":"","periodo":"","descrizione":""}]}`,
+        content: `Dalla conversazione, giudica prima se lo studente ha risposto nel merito alla domanda sulle esperienze: ha raccontato fatti concreti su un'esperienza, oppure ha detto chiaramente di non avere altro da aggiungere/vuole fermarsi qui. Se invece il suo ultimo messaggio è una domanda, un dubbio, confusione (es. "non ho capito") o qualcosa di scollegato dalla domanda, NON ha risposto nel merito.
+
+Se ha risposto nel merito: "risposta_valida":true, ed estrai in "items" le esperienze raccontate (array vuoto se ha detto di non avere altro da aggiungere). Per ognuna scrivi una descrizione di 2-3 righe di cosa ha fatto concretamente — fatti, non aggettivi di carattere. STILE OBBLIGATORIO: come un CV professionale — frasi che iniziano direttamente con un verbo al passato, senza soggetto (es. "Built a...", "Led a team of...", "Analyzed..."), MAI "I built..." né "He/she built...". La MIRA card è sempre in inglese: scrivi "titolo" e "descrizione" in inglese anche se la conversazione è in italiano (non tradurre invece "organizzazione" se è un nome proprio, es. il nome di un'azienda).
+
+Se NON ha risposto nel merito: "risposta_valida":false, "items":[].
+
+Rispondi SOLO in JSON: {"risposta_valida":true|false,"items":[{"titolo":"","organizzazione":"","periodo":"","descrizione":""}]}`,
       },
       { role: "user", content: recentText },
     ],
@@ -628,6 +638,14 @@ Rispondi SOLO in JSON: {"stop":true|false,"message":"..."|null}. ${languageInstr
   );
 
   const parsed = JSON.parse(extracted);
+
+  if (parsed.risposta_valida === false) {
+    const message = await handleUnclearAnswer(userMessage, await getHiddenExperienceQuestion());
+    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+    await saveConversation(supabase, profileId, fullConversation);
+    return { message, phase: "esperienze" as OnboardingPhase, done: false };
+  }
+
   const items: EsperienzaItem[] = (parsed.items ?? []).map((it: any) => ({
     id: crypto.randomUUID(),
     titolo: it.titolo ?? "",
@@ -1030,9 +1048,22 @@ export async function submitLingue(history: ChatMessage[], userMessage: string) 
   const cvLanguages = cv?.languages ?? [];
 
   const data = await extractJSON(
-    `Estrai le lingue menzionate: {"items":[{"lingua":"","livello":""}]}. Rispondi solo JSON.`,
+    `Giudica prima se il messaggio risponde nel merito alla domanda su quali lingue parla lo studente — anche "solo l'italiano" o "nessun'altra lingua" è una risposta valida. Se invece è una domanda, un dubbio, o confusione (es. "non ho capito") che non risponde, non è valida.
+
+Se valida: "risposta_valida":true, ed estrai in "items" le lingue esplicitamente menzionate (array vuoto se ha detto di non parlarne altre).
+Se NON valida: "risposta_valida":false, "items":[].
+
+Rispondi solo JSON: {"risposta_valida":true|false,"items":[{"lingua":"","livello":""}]}`,
     userMessage
   );
+
+  if (data.risposta_valida === false) {
+    const message = await handleUnclearAnswer(userMessage, t("lingueQuestion"));
+    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+    await saveFaseBConversation(supabase, profileId, fullConversation);
+    return { message, phase: "lingue" as OnboardingPhase, done: false };
+  }
+
   const mentioned: LinguaItem[] = (data.items ?? []).map((it: any) => ({
     id: crypto.randomUUID(),
     lingua: it.lingua ?? "",
@@ -1090,13 +1121,26 @@ export async function submitInteressi(history: ChatMessage[], userMessage: strin
     [
       {
         role: "system",
-        content: `Scrivi una prosa breve (2-3 frasi) che unisce interessi professionali e personali dello studente, in PRIMA PERSONA (es. "I'm drawn to...", "I enjoy..."), solo fatti/temi concreti. La MIRA card è sempre in inglese: scrivi "testo" in inglese (prima persona) anche se lo studente ha risposto in italiano. Rispondi SOLO in JSON: {"testo":""}`,
+        content: `Giudica prima se il messaggio dello studente risponde nel merito alla domanda sugli interessi (professionali o personali) — anche una risposta minima va bene, purché parli di interessi reali. Se invece è una domanda, un dubbio, o confusione (es. "non ho capito") che non risponde alla domanda, non ha risposto nel merito.
+
+Se ha risposto nel merito: "risposta_valida":true, e scrivi in "testo" una prosa breve (2-3 frasi) che unisce interessi professionali e personali dello studente, in PRIMA PERSONA (es. "I'm drawn to...", "I enjoy..."), solo fatti/temi concreti. La MIRA card è sempre in inglese: scrivi "testo" in inglese (prima persona) anche se lo studente ha risposto in italiano.
+
+Se NON ha risposto nel merito: "risposta_valida":false, "testo":null.
+
+Rispondi SOLO in JSON: {"risposta_valida":true|false,"testo":"..."|null}`,
       },
       { role: "user", content: recentText },
     ],
     { temperature: 0.3, maxTokens: 300, jsonMode: true }
   );
-  const { testo } = JSON.parse(extracted) as { testo: string };
+  const { risposta_valida, testo } = JSON.parse(extracted) as { risposta_valida: boolean; testo: string | null };
+
+  if (!risposta_valida || !testo) {
+    const message = await handleUnclearAnswer(userMessage, t("interessiIntroQuestion"));
+    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+    await saveFaseBConversation(supabase, profileId, fullConversation);
+    return { message, phase: "interessi" as OnboardingPhase, done: false };
+  }
 
   await (supabase.from("card_blocks") as any)
     .update({ prose_content: { testo }, status: "draft" })
@@ -1216,14 +1260,27 @@ export async function afterAutodescrizioneApproved(history: ChatMessage[]) {
 }
 
 export async function submitPianoCarriera(history: ChatMessage[], userMessage: string) {
-  const { supabase, profileId, studentProfileId, student } = await getOnboardingContext();
+  const { supabase, profileId, studentProfileId, student, blocks } = await getOnboardingContext();
   const t = await getTranslations("OnboardingEngine");
   const conversation = [...history, { role: "user" as const, content: userMessage }];
 
   const data = await extractJSON(
-    `Estrai dal messaggio: {"stato":"direzione_chiara|ipotesi|esplorazione","testo":""}. "stato" è direzione_chiara SOLO se lo studente indica un settore/ruolo definito in modo esplicito e sicuro; ipotesi se menziona 2-3 direzioni in valutazione; esplorazione se non ha ancora idea o è vago. Non forzare mai direzione_chiara per default — "stato" è un dato solo interno, non va mai citato esplicitamente dentro "testo". "testo" va sempre valorizzato (riformula il messaggio in PRIMA PERSONA se serve, non lasciarlo vuoto) e scritto in inglese anche se il messaggio è in italiano — la MIRA card è sempre in inglese. Rispondi solo JSON.`,
+    `Giudica prima se il messaggio risponde nel merito ai piani di carriera dello studente — anche "non ho ancora idea" o una risposta vaga conta come risposta valida (stato esplorazione). Se invece è una domanda, un dubbio, o confusione (es. "non ho capito") che non risponde, non è valida.
+
+Se valida: "risposta_valida":true, "stato":"direzione_chiara|ipotesi|esplorazione", "testo":"". "stato" è direzione_chiara SOLO se lo studente indica un settore/ruolo definito in modo esplicito e sicuro; ipotesi se menziona 2-3 direzioni in valutazione; esplorazione se non ha ancora idea o è vago. Non forzare mai direzione_chiara per default — "stato" è un dato solo interno, non va mai citato esplicitamente dentro "testo". "testo" va sempre valorizzato (riformula il messaggio in PRIMA PERSONA) e scritto in inglese anche se il messaggio è in italiano — la MIRA card è sempre in inglese.
+
+Se NON valida: "risposta_valida":false, "stato":null, "testo":null.
+
+Rispondi solo JSON: {"risposta_valida":true|false,"stato":"direzione_chiara|ipotesi|esplorazione"|null,"testo":"..."|null}`,
     userMessage
   );
+
+  if (data.risposta_valida === false) {
+    const message = await handleUnclearAnswer(userMessage, await pianoCarrieraQuestion(blocks.header.data.livello));
+    const fullConversation = [...conversation, { role: "assistant" as const, content: message }];
+    await saveFaseBConversation(supabase, profileId, fullConversation);
+    return { message, phase: "piano_carriera" as OnboardingPhase, done: false };
+  }
 
   const stato: PianoCarrieraStato =
     data.stato === "direzione_chiara" || data.stato === "ipotesi" ? data.stato : "esplorazione";

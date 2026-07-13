@@ -218,7 +218,8 @@
       "universitaLabel": "Università",
       "corsoLabel": "Corso di laurea",
       "livelloLabel": "Livello",
-      "annoLabel": "Anno",
+      "annoLabel": "Anno di corso",
+      "annoPlaceholder": "es. 3",
       "annoInizioLabel": "Anno di inizio",
       "annoInizioPlaceholder": "es. 2023",
       "laureaPrevistaLabel": "Laurea prevista",
@@ -955,7 +956,7 @@
       "universita": "l'università",
       "corso": "il corso di laurea",
       "livello": "il livello di studi",
-      "anno": "l'anno che frequenti",
+      "anno": "l'anno di corso che frequenti",
       "annoInizio": "l'anno di inizio del corso",
       "laureaAnno": "l'anno di laurea previsto",
       "media": "la media (ricarica il libretto)"

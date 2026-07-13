@@ -218,7 +218,8 @@
       "universitaLabel": "University",
       "corsoLabel": "Degree course",
       "livelloLabel": "Level",
-      "annoLabel": "Year",
+      "annoLabel": "Year of study",
+      "annoPlaceholder": "e.g. 3",
       "annoInizioLabel": "Start year",
       "annoInizioPlaceholder": "e.g. 2023",
       "laureaPrevistaLabel": "Expected graduation",
@@ -955,7 +956,7 @@
       "universita": "your university",
       "corso": "your degree program",
       "livello": "your degree level",
-      "anno": "the year you're in",
+      "anno": "the year of study you're in",
       "annoInizio": "the year you started your program",
       "laureaAnno": "your expected graduation year",
       "media": "your average (re-upload your transcript)"
