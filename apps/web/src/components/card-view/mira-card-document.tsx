@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { getCompetenzaCategoria } from "@mira/types";
+import { disponibilitaPills } from "@/components/card/disponibilita-block";
 import type {
   HeaderProseContent,
   HeaderVisibility,
@@ -124,15 +125,17 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
   const header = props.header?.data;
   const fp = header?.formazione_precedente;
   const formazioneItems = props.formazione?.data.items ?? [];
-  const dispPills = props.disponibilita
-    ? ([props.disponibilita.data.cosa_cerca, props.disponibilita.data.ambito, props.disponibilita.data.periodo, props.disponibilita.data.dove].filter(Boolean) as string[])
-    : [];
+  // Disponibilità (rework): stato strutturato attiva/non attiva, pill deduplicate —
+  // mai tag duplicati tipo "not looking / not looking".
+  const dispNotActive = props.disponibilita?.data.attiva === false;
+  const dispPills = props.disponibilita && !dispNotActive ? disponibilitaPills(props.disponibilita.data) : [];
+  const dispMotivo = dispNotActive ? props.disponibilita?.data.periodo ?? null : null;
   const esperienze = props.esperienze?.data.items ?? [];
   const competenze = props.competenze?.data;
   const hardItems = competenze?.items.filter((it) => getCompetenzaCategoria(it) === "hard") ?? [];
   const academicItems = competenze?.items.filter((it) => getCompetenzaCategoria(it) === "academic") ?? [];
-  const softSkills = competenze?.soft_skills ?? [];
-  const softTesto = competenze?.soft_skills_testo ?? null;
+  // Le soft skill non compaiono più nella MIRA Card (rework 2026-07): i dati legacy
+  // restano nel DB ma non vengono renderizzati.
   const lingue = props.lingue?.data.items ?? [];
   const autodescrizione = props.autodescrizione?.data.testo ?? null;
   const interessi = props.interessi?.data.testo ?? null;
@@ -202,21 +205,6 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
     setOverlay({
       title,
       content: <p className="text-body-sm text-ink whitespace-pre-wrap">{testo}</p>,
-    });
-  }
-
-  function openSoft() {
-    setOverlay({
-      title: t("competenze.softHeading"),
-      content: softSkills.length > 0 ? (
-        <ul className="space-y-1.5 list-disc list-inside">
-          {softSkills.map((s, i) => (
-            <li key={i} className="text-body-sm text-ink">{s}</li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-body-sm text-ink">{softTesto}</p>
-      ),
     });
   }
 
@@ -345,15 +333,28 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                   )}
                 </div>
 
-                {dispPills.length > 0 && (
+                {(dispPills.length > 0 || dispNotActive) && (
                   <div className="min-w-0 border-l border-border pl-6">
-                    <SectionTitle>{t("titles.disponibilita")}</SectionTitle>
+                    <SectionTitle>{t("titles.disponibilitaEPiano")}</SectionTitle>
                     <div className="flex flex-wrap gap-1.5">
-                      {dispPills.map((p, i) => (
-                        <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
-                          {p}
-                        </span>
-                      ))}
+                      {dispNotActive ? (
+                        <>
+                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-border/60 text-ink-secondary">
+                            {t("disponibilita.notActive")}
+                          </span>
+                          {dispMotivo && (
+                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
+                              {dispMotivo}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        dispPills.map((p, i) => (
+                          <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
+                            {p}
+                          </span>
+                        ))
+                      )}
                     </div>
                   </div>
                 )}
@@ -366,7 +367,7 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
             <div className="grid grid-cols-[1fr_260px] gap-x-7 px-10 py-6">
               <div className="min-w-0 space-y-5">
                 {autodescrizione && (
-                  <ProseSection title={t("titles.autodescrizione")} testo={autodescrizione} limit={520} serif />
+                  <ProseSection title={t("titles.profiloPersonale")} testo={autodescrizione} limit={520} serif />
                 )}
 
                 {esperienze.length > 0 && (
@@ -407,19 +408,10 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
               </div>
 
               <div className="min-w-0 space-y-5 border-l border-border pl-6">
-                {(softSkills.length > 0 || softTesto || hardItems.length > 0 || academicItems.length > 0) && (
+                {(hardItems.length > 0 || academicItems.length > 0) && (
                   <div>
                     <SectionTitle>{t("titles.competenze")}</SectionTitle>
                     <div className="space-y-1.5">
-                      {(softSkills.length > 0 || softTesto) && (
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); openSoft(); }}
-                          className="block text-[12px] text-petrol hover:text-petrol-700 transition-colors"
-                        >
-                          {t("competenze.softSkillsCount", { count: softSkills.length || 1 })} ▸
-                        </button>
-                      )}
                       {hardItems.length > 0 && (
                         <button
                           type="button"
@@ -455,9 +447,10 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                   </div>
                 )}
 
-                {interessi && <ProseSection title={t("titles.interessi")} testo={interessi} limit={260} />}
+                {piano && <ProseSection title={t("disponibilita.pianoHeading")} testo={piano} limit={260} />}
 
-                {piano && <ProseSection title={t("titles.pianoCarriera")} testo={piano} limit={260} />}
+                {/* Interessi legacy (pre-rework): visibile solo se un vecchio profilo lo aveva compilato. */}
+                {interessi && <ProseSection title={t("titles.interessi")} testo={interessi} limit={260} />}
               </div>
             </div>
           </div>

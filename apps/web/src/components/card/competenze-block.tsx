@@ -32,7 +32,6 @@ export function CompetenzeBlock({
 }) {
   const t = useTranslations("CardBlocks");
   const c = useTranslations("Common");
-  const [softItems, setSoftItems] = useState<string[]>(data.soft_skills ?? []);
   const [hardItems, setHardItems] = useState<CompetenzaItem[]>(data.items.filter((it) => getCompetenzaCategoria(it) === "hard"));
   const [academicItems, setAcademicItems] = useState<CompetenzaItem[]>(data.items.filter((it) => getCompetenzaCategoria(it) === "academic"));
   const [dirty, setDirty] = useState(false);
@@ -40,16 +39,11 @@ export function CompetenzeBlock({
 
   useEffect(() => {
     if (dirty) return;
-    setSoftItems(data.soft_skills ?? []);
     setHardItems(data.items.filter((it) => getCompetenzaCategoria(it) === "hard"));
     setAcademicItems(data.items.filter((it) => getCompetenzaCategoria(it) === "academic"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
-  function updateSoft(index: number, value: string) {
-    setSoftItems((prev) => prev.map((it, i) => (i === index ? value : it)));
-    setDirty(true);
-  }
   function updateHard(index: number, key: keyof CompetenzaItem, value: unknown) {
     setHardItems((prev) => prev.map((it, i) => (i === index ? { ...it, [key]: value } : it)));
     setDirty(true);
@@ -62,7 +56,9 @@ export function CompetenzeBlock({
   async function handleSave() {
     setSaving(true);
     const items = [...hardItems, ...academicItems];
-    await updateCardBlockProseContent("competenze", { items, soft_skills: softItems.map((s) => s.trim()).filter(Boolean) });
+    // Le soft skill non si modificano più da qui (rework 2026-07): il salvataggio non le
+    // invia e il server preserva quelle legacy già presenti nel jsonb.
+    await updateCardBlockProseContent("competenze", { items });
     setSaving(false);
     setDirty(false);
   }
@@ -73,39 +69,6 @@ export function CompetenzeBlock({
     <div className="rounded-lg border border-border bg-white overflow-hidden">
       <CardBlockHeader title={t("titles.competenze")} status={status} blockType="competenze" onApproved={onApproved} />
       <div className="p-5 space-y-6">
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-eyebrow text-navy/60 uppercase">{t("competenze.softHeading")}</p>
-            <button
-              type="button"
-              onClick={() => { setSoftItems((p) => [...p, ""]); setDirty(true); }}
-              className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
-            >
-              {t("addItem")}
-            </button>
-          </div>
-          {softItems.length === 0 && <p className="text-body-sm text-ink-tertiary">{t("competenze.softEmpty")}</p>}
-          <div className="space-y-2">
-            {softItems.map((s, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={s}
-                  placeholder={t("competenze.testoPlaceholder")}
-                  onChange={(e) => updateSoft(index, e.target.value)}
-                  className={fieldClass}
-                />
-                <button
-                  onClick={() => { setSoftItems((p) => p.filter((_, i) => i !== index)); setDirty(true); }}
-                  className="text-xs text-ink-tertiary hover:text-error transition-colors shrink-0"
-                >
-                  {t("remove")}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
         <div>
           <div className="flex items-center justify-between mb-2">
             <p className="text-eyebrow text-navy/60 uppercase">{t("competenze.hardHeading")}</p>
@@ -234,10 +197,8 @@ function CompetenzaRow({ it, showLivello }: { it: CompetenzaItem; showLivello?: 
 
 /**
  * Resa di sola lettura, riusata dal Profilo (default) e dalla vista associazione/azienda.
- * Tre gruppi separati (non un elenco piatto): Soft skill come paragrafo in prima persona
- * (mai a tag/etichette — vedi decisione prodotto), Hard skill sempre visibili con il livello,
- * Academic skill raggruppate e collassate di default (da sole occupano troppo spazio per il
- * loro peso, come gli esami nell'Header).
+ * Due gruppi (rework 2026-07): Hard skill con il livello, Academic skill. Le soft skill
+ * non fanno più parte della MIRA Card — i dati legacy restano nel DB ma non si mostrano.
  */
 function CollapsibleGroup({ label, bordered, children }: { label: string; bordered: boolean; children: React.ReactNode }) {
   const [expanded, setExpanded] = useState(false);
@@ -260,39 +221,21 @@ export function CompetenzeView({ data }: { data: CompetenzeProseContent }) {
   const t = useTranslations("CardBlocks");
   const hardItems = data.items.filter((it) => getCompetenzaCategoria(it) === "hard");
   const academicItems = data.items.filter((it) => getCompetenzaCategoria(it) === "academic");
-  const softSkills = data.soft_skills ?? [];
-  // Fallback per righe pre-quiz: se non ci sono ancora soft_skills ma esiste il vecchio
-  // paragrafo, resta leggibile invece di sparire finché lo studente non rifà il quiz.
-  const hasSoft = softSkills.length > 0 || !!data.soft_skills_testo;
-  const isEmpty = !hasSoft && hardItems.length === 0 && academicItems.length === 0;
+  const isEmpty = hardItems.length === 0 && academicItems.length === 0;
 
   return (
     <div className="p-4">
       <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.competenze")}</p>
       {isEmpty && <p className="text-body-sm text-ink-tertiary italic">{t("competenze.emptyView")}</p>}
 
-      {hasSoft && (
-        <CollapsibleGroup label={t("competenze.softSkillsCount", { count: softSkills.length || 1 })} bordered={false}>
-          {softSkills.length > 0 ? (
-            <ul className="space-y-1.5 list-disc list-inside">
-              {softSkills.map((s, i) => (
-                <li key={i} className="text-body-sm text-ink">{s}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-body-sm text-ink">{data.soft_skills_testo}</p>
-          )}
-        </CollapsibleGroup>
-      )}
-
       {hardItems.length > 0 && (
-        <CollapsibleGroup label={t("competenze.hardSkillsCount", { count: hardItems.length })} bordered={hasSoft}>
+        <CollapsibleGroup label={t("competenze.hardSkillsCount", { count: hardItems.length })} bordered={false}>
           {hardItems.map((it) => <CompetenzaRow key={it.id} it={it} showLivello />)}
         </CollapsibleGroup>
       )}
 
       {academicItems.length > 0 && (
-        <CollapsibleGroup label={t("competenze.academicSkills", { count: academicItems.length })} bordered={hasSoft || hardItems.length > 0}>
+        <CollapsibleGroup label={t("competenze.academicSkills", { count: academicItems.length })} bordered={hardItems.length > 0}>
           {academicItems.map((it) => <CompetenzaRow key={it.id} it={it} />)}
         </CollapsibleGroup>
       )}

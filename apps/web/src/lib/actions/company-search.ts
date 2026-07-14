@@ -55,14 +55,20 @@ function buildCandidateContext(
     const autodescrizione = blocks.autodescrizione?.prose_content?.testo ?? null;
     const pianoCarriera = blocks.piano_carriera?.prose_content?.testo ?? null;
 
+    // Card rework 2026-07: `attiva` è il toggle strutturato della disponibilità;
+    // la riga "autodescrizione" ospita il Profilo personale (interessi inclusi).
+    const disponibilitaLine = disp.attiva === false
+      ? `NON in cerca al momento${disp.periodo ? ` (${disp.periodo})` : ""}`
+      : `${disp.cosa_cerca ?? "n/d"}, ambito: ${disp.ambito ?? "n/d"}, periodo: ${disp.periodo ?? "n/d"}${disp.durata ? `, durata: ${disp.durata}` : ""}${disp.dove ? `, dove: ${disp.dove}` : ""}`;
+
     return `student_id: ${s.id}
 - Corso: ${header.corso ?? s.degree_program ?? "n/d"} (${header.livello ?? s.degree_level ?? "n/d"}, anno ${header.anno ?? s.current_year ?? "n/d"})
-- Cerca: ${disp.cosa_cerca ?? "n/d"}, ambito: ${disp.ambito ?? "n/d"}, periodo: ${disp.periodo ?? "n/d"}
+- Cerca: ${disponibilitaLine}
 - Competenze: ${competenze.map((c: any) => c.testo).filter(Boolean).join(", ") || "n/d"}
 - Esperienze: ${esperienze.map((e: any) => `${e.ruolo || e.titolo || ""} @ ${e.organizzazione ?? ""} — ${e.descrizione ?? ""}`.trim()).filter((x: string) => x !== "@") .join(" | ") || "n/d"}
-- Lingue: ${lingue.map((l: any) => `${l.lingua} (${l.livello})`).join(", ") || "n/d"}
-- Come si descrive: ${autodescrizione ?? "n/d"}
-- Piano di carriera: ${pianoCarriera ?? "n/d"}`;
+- Lingue: ${lingue.map((l: any) => `${l.lingua} (${l.livello})${l.certificazione ? ` [${l.certificazione}]` : ""}`).join(", ") || "n/d"}
+- Profilo personale: ${autodescrizione ?? "n/d"}
+- Piano e direzione: ${pianoCarriera ?? "n/d"}`;
   }).join("\n\n");
 }
 

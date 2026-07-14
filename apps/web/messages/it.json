@@ -146,10 +146,22 @@
       "comparison": {
         "recruitingHeader": "Portali di recruiting",
         "miraHeader": "MIRA",
-        "row1": { "left": "Ricevi candidature e CV da scremare", "right": "Niente annunci da pubblicare ogni volta." },
-        "row2": { "left": "Informazioni limitate a quanto dichiarato nel CV", "right": "Profili arricchiti con esperienza, interessi, attitudine, disponibilità e obiettivi" },
-        "row3": { "left": "Non sai cosa c'è davvero dentro un candidato", "right": "Definisci chi vuoi e scopri automaticamente i candidati più adatti." },
-        "row4": { "left": "Lo studente aggiorna il profilo solo quando cerca lavoro", "right": "Ogni match è accompagnato da una spiegazione del perché è adatto" }
+        "row1": {
+          "left": "Ricevi candidature e CV da scremare",
+          "right": "Niente annunci da pubblicare ogni volta."
+        },
+        "row2": {
+          "left": "Informazioni limitate a quanto dichiarato nel CV",
+          "right": "Profili arricchiti con esperienza, interessi, attitudine, disponibilità e obiettivi"
+        },
+        "row3": {
+          "left": "Non sai cosa c'è davvero dentro un candidato",
+          "right": "Definisci chi vuoi e scopri automaticamente i candidati più adatti."
+        },
+        "row4": {
+          "left": "Lo studente aggiorna il profilo solo quando cerca lavoro",
+          "right": "Ogni match è accompagnato da una spiegazione del perché è adatto"
+        }
       },
       "bottomCta": "Registra la tua azienda"
     }
@@ -174,7 +186,7 @@
   },
   "StudentHome": {
     "greeting": "Ciao",
-    "completeCardCta": "Completa la tua card: mancano competenze, lingue, interessi, come ti descrivi e piano di carriera (~5 minuti) →",
+    "completeCardCta": "Completa la tua card: mancano competenze, lingue e profilo personale (~5 minuti) →",
     "autodescrizioneIntro": "Scritto con le tue parole — modificalo pure, ed è la parte più personale della card.",
     "editCard": "Modifica la card",
     "backToCard": "Torna alla card"
@@ -197,7 +209,9 @@
       "lingue": "Lingue",
       "autodescrizione": "Come si descrive",
       "interessi": "Interessi",
-      "pianoCarriera": "Piano di carriera"
+      "pianoCarriera": "Piano di carriera",
+      "disponibilitaEPiano": "Disponibilità e piano",
+      "profiloPersonale": "Profilo personale"
     },
     "approved": "Approvato",
     "pendingConfirmation": "Da confermare",
@@ -259,7 +273,16 @@
       "periodoPlaceholder": "es. da settembre 2026, da giugno ad agosto...",
       "doveLabel": "Dove",
       "dovePlaceholder": "es. Milano, full remote...",
-      "notSpecified": "Non ancora indicata."
+      "notSpecified": "Non ancora indicata.",
+      "attivaLabel": "In cerca / aperto a opportunità",
+      "durataLabel": "Durata",
+      "durataPlaceholder": "es. 3 mesi, tutta l'estate...",
+      "motivoLabel": "Nota (opzionale)",
+      "motivoPlaceholder": "es. già impegnato fino a dicembre",
+      "notActive": "Non in cerca al momento",
+      "pianoLabel": "Piano e direzione (prossimi mesi/anni)",
+      "pianoPlaceholder": "es. exchange, magistrale, lavoro, certificazioni... e la direzione che hai in mente",
+      "pianoHeading": "Piani e direzione"
     },
     "esperienze": {
       "titoloLabel": "Titolo / ruolo",
@@ -281,9 +304,6 @@
       "emptyView": "Nessuna competenza ancora.",
       "academicSkills": "Competenze accademiche ({count})",
       "hardSkillsCount": "Hard skill ({count})",
-      "softHeading": "Soft skill",
-      "softSkillsCount": "Soft skill ({count})",
-      "softEmpty": "Nessuna soft skill ancora — emergono dal quiz durante l'onboarding.",
       "hardHeading": "Hard skill",
       "hardEmpty": "Nessuna hard skill ancora.",
       "academicHeading": "Competenze accademiche",
@@ -306,7 +326,8 @@
     },
     "prose": {
       "notSpecified": "Non ancora indicato."
-    }
+    },
+    "profiloPersonalePlaceholder": "Come ti presenti oltre a esami ed esperienze: interessi veri, abitudini, priorità..."
   },
   "JoinByCode": {
     "prompt": "Sei nel board di un'associazione? Inserisci il codice invito",
@@ -407,7 +428,8 @@
     "cvReadError": "Non sono riuscito a leggere bene il CV, ma va bene lo stesso.",
     "applicationUnlocked": "Candidatura sbloccata! Reindirizzamento...",
     "errorWithMessage": "Si è verificato un errore: {message}",
-    "unexpectedLoadError": "Errore imprevisto nel caricamento della card."
+    "unexpectedLoadError": "Errore imprevisto nel caricamento della card.",
+    "gateWarning": "ATTENZIONE: Più completo è il profilo, più attrai l'attenzione delle aziende!"
   },
   "PublicHeader": {
     "associationsLink": "Associazioni",
@@ -975,85 +997,60 @@
       "magistrale": "la magistrale",
       "ciclo_unico": "il ciclo unico"
     },
-    "introMessage": "Ciao {firstName}! Io sono MIRA.\n\nCostruiamo insieme la tua MIRA card: ti serve ora per candidarti alle associazioni, ed è il profilo con cui le aziende potranno trovarti e contattarti direttamente quando sarai compatibile con quello che stanno cercando. Più è fatta bene, più lavora per te.\n\nLa tua MIRA card sarà scritta in inglese, il formato che aziende e associazioni si aspettano — ma con me puoi continuare a scrivere in italiano, ci penso io.",
+    "introMessage": "Ciao {firstName}! Io sono MIRA. Costruiamo insieme la tua MIRA Card: ti serve per candidarti alle associazioni, ed è il profilo con cui le aziende potranno trovarti e contattarti direttamente. La tua MIRA Card sarà scritta in inglese, ci penso io a tradurre.",
     "knownLivelloClosing": "Dalla registrazione risulta che stai facendo {livello}. Confermi?",
-    "livelloQuestionIntro": "Partiamo dalle basi: studi triennale, magistrale o ciclo unico?",
     "livelloQuestionPlain": "Studi triennale, magistrale o ciclo unico?",
     "errorSaveLivello": "Impossibile salvare il livello di studi — riprova.",
     "errorHeaderRowNotFound": "Riga Header non trovata per questo studente — riprova.",
-    "afterLivelloMagistrale": "Perfetto. Prima di procedere, dove hai fatto la triennale, in che corso e con che voto di laurea?",
-    "afterLivelloOther": "Carica il libretto in PDF: leggo corso, esami, voti e media direttamente da lì. Se non ce l'hai sotto mano, puoi saltare.",
-    "previousDegreeQuestion": "Dove hai fatto la triennale, in che corso e con che voto di laurea?",
+    "afterLivelloMagistrale": "Perfetto. Prima di procedere, dove hai fatto la triennale, in che corso e con che voto di laurea? Puoi anche raccontarmi della tua tesi.",
+    "afterLivelloOther": "Carica il libretto/transcript in PDF: leggo corso, esami, voti e media direttamente da lì. {hint} Se non ce l'hai sotto mano, puoi saltare.",
+    "transcriptHintBocconi": "Lo trovi su you@b: nella sezione certificati/autocertificazioni puoi scaricare l'autocertificazione con l'elenco degli esami.",
+    "transcriptHintGeneric": "Di solito lo trovi sul sito o nel portale della tua università, tra i documenti e i certificati.",
+    "previousDegreeQuestion": "Dove hai fatto la triennale, in che corso e con che voto di laurea? Puoi anche raccontarmi della tua tesi.",
     "errorSavePreviousDegree": "Impossibile salvare la formazione precedente — riprova.",
-    "afterPreviousDegree": "Grazie. Ora carica il libretto della magistrale: leggo corso, esami, voti e media aggiornati. Se non ce l'hai sotto mano, puoi saltare.",
+    "afterPreviousDegree": "Grazie. Ora carica il libretto della magistrale: leggo corso, esami, voti e media aggiornati. {hint} Se non ce l'hai sotto mano, puoi saltare.",
     "skipTranscriptMessage": "Va bene — dimmi almeno il nome del corso e l'anno che frequenti: potrai caricare il libretto quando vuoi dal tuo Profilo, aggiornando media ed esami.",
-    "transcriptDoneWithMissing": "Fatto: {courses} esami, {credits} CFU{avg}. Mi manca solo {missing} — dimmelo e la card è pronta da confermare.",
-    "transcriptDoneComplete": "Fatto: {courses} esami, {credits} CFU{avg}. La card è pronta — conferma il blocco Header qui a destra.",
+    "transcriptDoneWithMissing": "Fatto: {courses} esami, {credits} CFU{avg}. Mi manca ancora {missing}.",
+    "transcriptDoneComplete": "Fatto: {courses} esami, {credits} CFU{avg}. Perfetto, conferma il blocco Header qui a destra per continuare — o scrivimelo qui ('va bene così').",
     "avgSuffix": ", media {avg}/30",
     "headerGapQuestion": "Mi dici {missing}?",
     "errorSaveHeader": "Impossibile salvare l'Header — riprova.",
-    "headerGapComplete": "Perfetto, la card è pronta — conferma il blocco Header qui a destra per continuare.",
+    "headerGapComplete": "Perfetto, conferma il blocco Header qui a destra per continuare — o scrivimelo qui ('va bene così').",
     "headerGapIncomplete": "Mi manca ancora {missing}.",
-    "afterHeaderApproved": "Hai un CV? Caricalo e parto da lì per farti domande mirate sulle tue esperienze. Se non ce l'hai, nessun problema: lo costruiamo parlando.",
-    "hiddenExperienceQuestion": "C'è qualcosa che non hai mai messo nel CV? Progetti personali, competizioni, sport a livello agonistico, volontariato, lavori — qualsiasi cosa pensi possa rappresentarti.",
+    "afterHeaderApproved": "Hai un CV? Caricalo e ti farò delle domande. Se non ce l'hai, nessun problema: lo costruiamo parlando.",
+    "hiddenExperienceQuestion": "C'è qualcosa che non hai mai messo nel CV? Progetti personali, competizioni, sport a livello agonistico, volontariato, lavori, attività associative — qualsiasi cosa pensi possa rappresentarti.",
     "skipCVMessage": "Nessun problema, lo costruiamo parlando. {hiddenExperienceQuestion}",
     "cvItemGood": "Il CV descrive già bene questa esperienza: {title} @ {org}. Va bene così com'è, o vuoi aggiungere o correggere qualcosa?",
     "cvFoundOne": "Ho trovato un'esperienza. Su {title} @ {org} — cosa hai fatto tu, concretamente?",
     "cvFoundMany": "Ho trovato {count} esperienze. Su {title} @ {org} — cosa hai fatto tu, concretamente?",
     "cvNextPlain": "Su {title} @ {org} — cosa hai fatto tu, concretamente?",
-    "esperienzeDone": "Scritte — controlla il blocco Esperienze qui a destra. Confermalo quando sei pronto.",
-    "afterEsperienzeApproved": "Ultima cosa per sbloccare la candidatura: hai una disponibilità lavorativa da indicare, così le aziende possono trovarti quando sei compatibile? Dimmi cosa cerchi — uno stage in un ambito specifico, un part-time, un progetto — e da quando: va bene sia una data aperta (\"da settembre in avanti\") sia un periodo preciso (\"da giugno ad agosto\"). Dimmi pure se hai una preferenza di sede. Se invece non sei in cerca al momento o sei già impegnato altrove, dimmelo pure: va bene anche così.",
-    "disponibilitaQuestion": "Cosa cerchi (uno stage, un part-time, un progetto...) e da quando sei disponibile?",
-    "disponibilitaDone": "Segnato — controlla il blocco Disponibilità. Confermalo per sbloccare la candidatura.",
-    "afterDisponibilitaApproved": "Candidatura sbloccata. La tua card è al {pct}%: puoi già candidarti alle associazioni su MIRA. Oppure completiamo le ultime sezioni — competenze, interessi, come ti descrivi, piano di carriera — in circa 5 minuti: le associazioni vedono un profilo molto più forte.",
-    "startFaseBIntro": "Completiamo insieme le ultime sezioni: qualche minuto e la tua card è finita.\n\nDai tuoi voti ho già proposto alcune competenze accademiche nel blocco Competenze qui a destra — dacci un'occhiata.",
-    "startFaseBIntroEmpty": "Completiamo insieme le ultime sezioni: qualche minuto e la tua card è finita.\n\nDai tuoi voti non emerge un pattern chiaro per proporti già competenze accademiche, ma potrai aggiungerle tu dal Profilo in seguito.",
-    "startFaseBHardSkillQuestion": "Ora dimmi: quali strumenti, software o metodologie hai usato nelle esperienze di cui mi hai parlato?",
-    "softSkillsIntro": "Adesso qualche situazione veloce, scegli quella che ti somiglia di più. Non ci sono risposte giuste — servono a dire alle aziende come lavori, non a giudicarti.",
-    "softSkillQuestions": {
-      "q1": {
-        "prompt": "Progetto di gruppo all'università, domani c'è la presentazione. Cosa succede di solito?",
-        "optionA": "Presento io: parlare davanti alla gente non mi pesa, anzi mi piace.",
-        "optionB": "Io preparo le slide e i contenuti, ma a presentare preferisco che vada qualcun altro."
-      },
-      "q2": {
-        "prompt": "Al tuo team serve un'informazione da un'azienda o da un professore che nessuno di voi conosce. Come vi organizzate?",
-        "optionA": "Scrivo o chiamo io: il primo contatto con persone che non conosco mi viene facile.",
-        "optionB": "Preferisco che il primo aggancio lo faccia qualcun altro: io do il meglio quando lavoro sul materiale, non al telefono con uno sconosciuto."
-      },
-      "q3": {
-        "prompt": "Hai due settimane di tempo per una consegna importante. Come le affronti?",
-        "optionA": "Faccio un piano il primo giorno — scaletta e tappe intermedie — e poi lo rispetto.",
-        "optionB": "Comincio subito e aggiusto strada facendo: il grosso lo chiudo sotto scadenza, e mi viene bene così."
-      },
-      "q4": {
-        "prompt": "È la sera prima della consegna e cambiano i requisiti del progetto. Qual è la tua reazione onesta?",
-        "optionA": "Mi secca, però rifaccio il piano in fretta e si riparte in modo ordinato.",
-        "optionB": "Mi accende: riorganizzare tutto al volo è il momento in cui rendo di più."
-      },
-      "q5": {
-        "prompt": "Devi portare avanti uno studio o un progetto. Com'è la tua giornata ideale?",
-        "optionA": "Lavoro fianco a fianco con gli altri: confrontarmi di continuo mi dà energia.",
-        "optionB": "Lavoro da solo e concentrato, e poi mi allineo con il team nei momenti chiave."
-      }
-    },
-    "competenzeSequenceDone": "Ecco le competenze — dai un'occhiata a destra e confermale quando vanno bene.",
+    "esperienzeDone": "Scritte — controlla il blocco Esperienze qui a destra. Confermalo quando sei pronto, dal pannello o scrivendomelo qui.",
+    "afterEsperienzeApproved": "Ultima cosa: definiamo disponibilità e prossimi passi.\nSei alla ricerca di un lavoro o aperto a future opportunità?",
+    "disponibilitaDetailsQuestion": "Che tipo di esperienza cerchi, in che ambito, da quando, per quanto tempo e dove?",
+    "pianoQuestion": "— Cosa hai in programma per i prossimi mesi/anni? (es. exchange, laurea, magistrale, lavoro, certificazioni, o altro)\n— Hai già in mente una direzione di carriera precisa o stai ancora esplorando?\nScrivi come ti viene: poi organizzo tutto io.",
+    "pianoQuestionAfterNo": "Nessun problema, va bene anche così.\n— Cosa hai in programma per i prossimi mesi/anni? (es. exchange, laurea, magistrale, lavoro, certificazioni, o altro)\n— Hai già in mente una direzione di carriera precisa o stai ancora esplorando?\nScrivi come ti viene: poi organizzo tutto io.",
+    "disponibilitaEPianoDone": "Segnato — controlla il blocco Disponibilità e piano qui a destra. Confermalo per sbloccare la candidatura, dal pannello o scrivendomelo qui ('confermo').",
+    "disponibilitaEditQuestion": "Cosa vuoi cambiare del blocco Disponibilità e piano? Dimmi pure, oppure confermalo se va bene così.",
+    "disponibilitaUpdated": "Aggiornato — controlla il blocco a destra e conferma quando va bene.",
+    "afterDisponibilitaApproved": "Candidatura sbloccata. La tua card è al {pct}%: puoi già candidarti alle associazioni su MIRA. Oppure completiamo le ultime sezioni in pochi minuti.",
+    "startFaseBIntro": "Completiamo insieme le ultime sezioni. Dai tuoi esami ho già proposto alcune competenze accademiche nel blocco Competenze qui a destra — dacci un'occhiata.\n\nPuoi confermarle, correggerle, toglierne qualcuna o aggiungerne altre. Se pensi che manchi qualcosa, dimmi pure quali competenze teoriche senti di aver acquisito dal tuo percorso o dagli esami in cui sei andato meglio.",
+    "academicSkillsQuestion": "Partiamo dalle skills accademiche: quali competenze teoriche senti di aver acquisito? Per esempio: financial statement analysis, accounting, corporate finance, statistics, economics, marketing, law, data analysis o altre aree simili.\nPuoi anche dirmi gli esami o le materie in cui sei andato meglio.",
+    "academicSkillsSaved": "Segnate nel blocco Competenze qui a destra.",
+    "hardSkillQuestion": "Ora passiamo alle hard skill: strumenti, software, metodologie o capacità pratiche che sai usare o hai applicato. Qui non parliamo di teoria studiata, ma di cose che sai fare o usare concretamente.\nDimmi liberamente cosa sai usare e, se vuoi, dove l'hai usato.",
+    "competenzeSequenceDone": "Ecco le competenze — dai un'occhiata a destra e confermale quando vanno bene, dal pannello o scrivendomelo qui.",
+    "resumeCompetenzeEdit": "Le tue competenze sono nel blocco a destra: confermale se vanno bene, oppure dimmi cosa aggiungere o togliere.",
     "errorSaveCompetenzeProposed": "Impossibile salvare le competenze proposte — riprova.",
     "errorCompetenzeRowNotFound": "Riga Competenze non trovata per questo studente — riprova.",
     "errorSaveCompetenze": "Impossibile salvare le competenze — riprova.",
-    "competenzeAdded": "Aggiunte — controlla le competenze a destra. Confermale quando vanno bene.",
-    "competenzeNotLinked": "Non sono riuscito a collegarlo a un esame o un'esperienza concreta — puoi aggiungerla direttamente nel blocco Competenze a destra, indicando a cosa si riferisce.",
-    "lingueQuestion": "Che lingue conosci, e a che livello? (Se il tuo corso è in inglese, indicalo pure insieme alle altre.)",
-    "interessiIntroQuestion": "Ora una parte che sul CV di solito manca, e che invece le aziende leggono con attenzione: cosa ti interessa davvero. Non la lista di parole tipo 'finanza e viaggiare' — quella la scrivono tutti. Ti aiuto con tre domande:\n— Cosa segui per conto tuo, fuori dai programmi d'esame? Newsletter, podcast, canali, temi su cui finisci sempre a leggere. E c'è un argomento su cui, quando salta fuori, parli più del dovuto?\n— Fuori dallo studio: cosa fai con costanza? Sport, musica, progetti, qualsiasi cosa — vale anche la roba insolita, anzi è quella che si ricordano. E da quanto tempo?\n— Bonus: c'è una cosa in cui sei stranamente bravo e che non c'entra niente con l'università?\nScrivi liberamente, anche alla rinfusa — ci penso io a dargli forma, poi tu approvi. Conta una cosa sola: cose che fai davvero, non cose che suonano bene.",
-    "autodescrizioneIntroQuestion": "Ora la parte che rende la tua card diversa da tutte le altre: due righe su chi sei, scritte da te. Niente tono da colloquio — quello lo sanno scrivere tutti e infatti si somigliano tutti. Se non sai da dove partire:\n— Cosa direbbero i tuoi amici di te, se glielo chiedessi davvero? (di solito è più preciso di quello che diremmo noi)\n— Cosa non sopporti, nel lavoro o nello studio? Anche questo dice chi sei.\n— C'è una cosa a cui non rinunci? Lo sport, la famiglia, un progetto tuo — le priorità contano.\n— Com'è fatta una giornata in cui torni a casa soddisfatto?\nScrivi come parli, anche disordinato — a dargli forma ci penso io, poi tu approvi. E sii sincero: questa parte funziona solo se è vera. La leggerà chi vuole capire se sei la persona giusta, non chi vuole il candidato perfetto.",
-    "pianoCarrieraMagistrale": "Ultima sezione, e per le aziende è una delle più utili: dove stai andando. Non serve avere le idee chiare — serve dire onestamente a che punto sei. Ti aiuto:\n— Nei prossimi anni, hai una direzione precisa (un settore, un ruolo), qualche ipotesi che stai valutando, o stai ancora esplorando? Tutte e tre le risposte vanno bene, davvero.\n— C'è già qualcosa in calendario o in testa? Exchange, un certificato, un progetto tuo.\n— E la prossima esperienza di lavoro: cosa vorresti che ti lasciasse? Anche solo 'capire se il consulting fa per me' è una risposta utile.\nScrivi come ti viene — do io la forma, tu approvi. Un consiglio: non scrivere l'obiettivo che suona ambizioso se non è il tuo. 'Sto esplorando, mi incuriosiscono X e Y' a un'azienda dice molto più di un finto 'voglio fare investment banking'.",
-    "pianoCarrieraOther": "Ultima sezione, e per le aziende è una delle più utili: dove stai andando. Non serve avere le idee chiare — serve dire onestamente a che punto sei. Ti aiuto:\n— Nei prossimi anni, hai una direzione precisa (un settore, un ruolo), qualche ipotesi che stai valutando, o stai ancora esplorando? Tutte e tre le risposte vanno bene, davvero.\n— C'è già qualcosa in calendario o in testa? Exchange, magistrale (dove, se lo sai), un certificato, un progetto tuo.\n— E la prossima esperienza di lavoro: cosa vorresti che ti lasciasse? Anche solo 'capire se il consulting fa per me' è una risposta utile.\nScrivi come ti viene — do io la forma, tu approvi. Un consiglio: non scrivere l'obiettivo che suona ambizioso se non è il tuo. 'Sto esplorando, mi incuriosiscono X e Y' a un'azienda dice molto più di un finto 'voglio fare investment banking'.",
+    "competenzeAdded": "Fatto — controlla le competenze a destra. Confermale quando vanno bene.",
+    "lingueQuestion": "Che lingue conosci e a che livello?",
+    "lingueFromCVQuestion": "Nel CV ho trovato queste lingue: {lingue}. Vanno bene?",
+    "lingueLevelQuestion": "Mi dici il livello per {lingue}? (es. B2, C1, madrelingua — e se hai una certificazione tipo IELTS o TOEFL, dimmela pure)",
+    "lingueDone": "Segnate — controlla il blocco Lingue. Confermalo quando va bene, dal pannello o scrivendomelo qui.",
+    "profiloPersonaleQuestion": "Ora una parte che sul CV di solito manca: come ti presenti oltre a esami ed esperienze. Non serve un elenco di hobby né una frase fatta da colloquio. Racconta qualcosa di autentico: aiuterà chi legge a capire meglio chi sei veramente.\nEcco alcune linee-guida per aiutarti a rispondere:\n— Cosa segui per conto tuo, fuori dai programmi d'esame? Newsletter, podcast, canali, temi su cui finisci spesso a leggere.\n— Fuori dallo studio: cosa fai con costanza? Sport, musica, progetti, volontariato — anche cose insolite, se ti rappresentano.\n— Come ti descriverebbero le persone che ti conoscono bene?\n— Cosa non sopporti nel lavoro o nello studio, oppure a cosa non rinunci?\n— Qual è la cosa più \"te\" che hai fatto nell'ultimo anno?\nScrivi come parli, io trasformo tutto in un testo in prima persona, poi tu approvi.",
+    "profiloPersonaleDone": "L'ho scritto in prima persona con parole tue — è la parte più personale della card, modificala pure. Conferma il blocco Profilo personale quando va bene, dal pannello o scrivendomelo qui.",
     "resumeFaseBMessage": "Bentornato! Completiamo insieme le ultime sezioni della tua card.\n\n{question}",
     "resumeFallbackQuestion": "Continuiamo?",
-    "lingueDone": "Segnate — controlla il blocco Lingue. Confermalo quando va bene.",
-    "interessiDone": "Scritto — controlla il blocco Interessi. Confermalo quando va bene.",
-    "autodescrizioneDone": "L'ho scritto con parole tue — modificalo pure, ed è la parte più personale della card. Confermalo quando va bene.",
-    "pianoCarrieraDone": "Segnato — nessun problema se non hai ancora deciso, è un dato vero anche così. Conferma il blocco Piano di carriera per chiudere la tua card.",
-    "chiusuraMessage": "La tua card è completa! La trovi nel tuo Profilo, modificabile quando vuoi. In bocca al lupo per le tue candidature."
+    "chiusuraMessage": "Hai completato la tua MIRA Card!\nLa trovi nella sezione Profilo, e puoi modificarla quando vuoi."
   }
 }

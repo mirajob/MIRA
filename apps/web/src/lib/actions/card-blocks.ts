@@ -49,7 +49,7 @@ async function getStudentProfileId(): Promise<string> {
 // backfill (rows made only by this function, never touched by the backfill migration).
 const DEFAULT_PROSE_CONTENT: Record<CardBlockType, unknown> = {
   header: { universita: null, corso: null, livello: null, anno: null, anno_inizio: null, laurea_anno: null, media_voti: null },
-  disponibilita: { cosa_cerca: null, ambito: null, periodo: null, dove: null },
+  disponibilita: { attiva: null, cosa_cerca: null, ambito: null, periodo: null, durata: null, dove: null },
   esperienze: { items: [] },
   formazione: { items: [] },
   competenze: { items: [], soft_skills: [] },

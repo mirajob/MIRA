@@ -21,18 +21,12 @@ import {
   forceCompleteOnboarding,
   startFaseB,
   resumeFaseB,
-  submitCompetenzeRisposta,
-  submitSoftSkillChoice,
-  submitCompetenzeAggiunta,
+  submitCompetenze,
   afterCompetenzeApproved,
   submitLingue,
   afterLingueApproved,
-  submitInteressi,
-  afterInteressiApproved,
-  submitAutodescrizioneRisposta,
-  afterAutodescrizioneApproved,
-  submitPianoCarriera,
-  afterPianoCarrieraApproved,
+  submitProfiloPersonale,
+  afterProfiloPersonaleApproved,
 } from "@/lib/actions/chat-onboarding";
 import type { ChatMessage, OnboardingPhase, OnboardingBlocksState } from "@/lib/actions/chat-onboarding";
 import { EMPTY_ONBOARDING_BLOCKS } from "@/lib/onboarding-defaults";
@@ -43,14 +37,13 @@ import { OnboardingCardPanel } from "@/components/onboarding/onboarding-card-pan
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import type { CardBlockType } from "@mira/types";
 
-const FASE_B_PHASES: OnboardingPhase[] = ["competenze", "lingue", "interessi", "autodescrizione", "piano_carriera", "chiusura"];
+const FASE_B_PHASES: OnboardingPhase[] = ["competenze", "lingue", "profilo_personale", "chiusura"];
 const GATED_PHASES: OnboardingPhase[] = ["transcript", "cv", "gate", "chiusura"];
 
 export function OnboardingChat({ userName }: { userName: string }) {
   const t = useTranslations("OnboardingChatUI");
   const c = useTranslations("Common");
   const panelT = useTranslations("OnboardingCardPanel");
-  const engineT = useTranslations("OnboardingEngine");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [phase, setPhase] = useState<OnboardingPhase>("welcome");
   const [blocks, setBlocks] = useState<OnboardingBlocksState>(EMPTY_ONBOARDING_BLOCKS);
@@ -59,12 +52,6 @@ export function OnboardingChat({ userName }: { userName: string }) {
   const [uploading, setUploading] = useState(false);
   const [expIndex, setExpIndex] = useState(0);
   const [expTotal, setExpTotal] = useState(1);
-  // competenzeSubIndex: 0 = in attesa della domanda hard-skill, 1 = quiz soft skill in corso
-  // o finito (chat libera → submitCompetenzeAggiunta). competenzeSoftIndex: indice 0-4 della
-  // domanda del quiz a scelta forzata attiva, null quando non è in corso.
-  const [competenzeSubIndex, setCompetenzeSubIndex] = useState(0);
-  const [competenzeSoftIndex, setCompetenzeSoftIndex] = useState<number | null>(null);
-  const [autoSubIndex, setAutoSubIndex] = useState(0);
   const [complete, setComplete] = useState(false);
   const [cardOpenMobile, setCardOpenMobile] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -91,10 +78,10 @@ export function OnboardingChat({ userName }: { userName: string }) {
           if (state.phase === "competenze") {
             const result = await startFaseB();
             setMessages(result.messages.map((content) => ({ role: "assistant" as const, content })));
-            setBlocks((b) => ({ ...b, competenze: result.competenze }));
+            if (result.competenze) setBlocks((b) => ({ ...b, competenze: result.competenze }));
           } else {
             const result = await resumeFaseB(state.phase);
-            const contents = "messages" in result ? result.messages : [result.message];
+            const contents = "messages" in result ? (result as { messages: string[] }).messages : [result.message];
             setMessages(contents.map((content) => ({ role: "assistant" as const, content })));
           }
           setPhase(state.phase);
@@ -107,11 +94,6 @@ export function OnboardingChat({ userName }: { userName: string }) {
             // non si ricostruisce la posizione esatta nel sotto-ciclo del CV.
             setExpIndex(0);
             setExpTotal(1);
-          } else if (state.phase === "competenze") {
-            // Stesso principio: non si ricostruisce la posizione esatta nel quiz soft skill —
-            // si tratta come già conclusa, si passa alla chat libera per aggiungere.
-            setCompetenzeSubIndex(1);
-            setCompetenzeSoftIndex(null);
           }
         }
       } catch (err) {
@@ -129,8 +111,8 @@ export function OnboardingChat({ userName }: { userName: string }) {
   }, [messages]);
 
   useEffect(() => {
-    if (!loading && !uploading && !GATED_PHASES.includes(phase) && !(phase === "competenze" && competenzeSoftIndex !== null)) inputRef.current?.focus();
-  }, [loading, uploading, phase, competenzeSoftIndex]);
+    if (!loading && !uploading && !GATED_PHASES.includes(phase)) inputRef.current?.focus();
+  }, [loading, uploading, phase]);
 
   /** Rilettura completa dal server: mai fidarsi solo dei merge ottimistici parziali,
    * che possono disallinearsi dallo stato reale (es. dopo una revalidatePath). */
@@ -146,6 +128,15 @@ export function OnboardingChat({ userName }: { userName: string }) {
     setMessages((prev) => [...prev, { role: "user", content }]);
   }
 
+  /** La chiusura può arrivare sia dal pannello sia da una conferma scritta in chat. */
+  function finishAndRedirect(delayMs: number) {
+    setComplete(true);
+    setTimeout(() => {
+      router.push("/student");
+      router.refresh();
+    }, delayMs);
+  }
+
   async function handleSend() {
     if (!input.trim() || loading || uploading) return;
     const userMessage = input.trim();
@@ -155,65 +146,33 @@ export function OnboardingChat({ userName }: { userName: string }) {
     setLoading(true);
 
     try {
+      let result: { message: string; phase: OnboardingPhase; done?: boolean } | null = null;
+
       if (phase === "livello") {
-        const result = await submitLivello(history, userMessage);
-        appendAssistant(result.message);
-        setPhase(result.phase);
-        await resyncBlocks();
+        result = await submitLivello(history, userMessage);
       } else if (phase === "previous_degree") {
-        const result = await submitPreviousDegree(history, userMessage);
-        appendAssistant(result.message);
-        setPhase(result.phase);
-        await resyncBlocks();
+        result = await submitPreviousDegree(history, userMessage);
       } else if (phase === "header_gap") {
-        const result = await submitHeaderGap(history, userMessage);
+        result = await submitHeaderGap(history, userMessage);
+      } else if (phase === "esperienze") {
+        result = await submitEsperienzaRisposta(history, userMessage, expIndex, expTotal);
+        if (result && !result.done) setExpIndex((i) => i + 1);
+      } else if (phase === "disponibilita") {
+        result = await submitDisponibilita(history, userMessage);
+      } else if (phase === "competenze") {
+        result = await submitCompetenze(history, userMessage);
+      } else if (phase === "lingue") {
+        result = await submitLingue(history, userMessage);
+      } else if (phase === "profilo_personale") {
+        result = await submitProfiloPersonale(history, userMessage);
+      }
+
+      if (result) {
         appendAssistant(result.message);
         setPhase(result.phase);
         await resyncBlocks();
-      } else if (phase === "esperienze") {
-        const result = await submitEsperienzaRisposta(history, userMessage, expIndex, expTotal);
-        appendAssistant(result.message);
-        if (result.done) {
-          await resyncBlocks();
-        } else {
-          setExpIndex((i) => i + 1);
-        }
-      } else if (phase === "disponibilita") {
-        const result = await submitDisponibilita(history, userMessage);
-        appendAssistant(result.message);
-        await resyncBlocks();
-      } else if (phase === "competenze") {
-        if (competenzeSubIndex === 0) {
-          const result = await submitCompetenzeRisposta(history, userMessage);
-          appendAssistant(result.message);
-          await resyncBlocks();
-          setCompetenzeSubIndex(1);
-          setCompetenzeSoftIndex(0);
-        } else {
-          const result = await submitCompetenzeAggiunta(history, userMessage);
-          appendAssistant(result.message);
-          await resyncBlocks();
-        }
-      } else if (phase === "lingue") {
-        const result = await submitLingue(history, userMessage);
-        appendAssistant(result.message);
-        await resyncBlocks();
-      } else if (phase === "interessi") {
-        const result = await submitInteressi(history, userMessage);
-        appendAssistant(result.message);
-        await resyncBlocks();
-      } else if (phase === "autodescrizione") {
-        const result = await submitAutodescrizioneRisposta(history, userMessage, autoSubIndex);
-        appendAssistant(result.message);
-        if (result.done) {
-          await resyncBlocks();
-        } else {
-          setAutoSubIndex((i) => i + 1);
-        }
-      } else if (phase === "piano_carriera") {
-        const result = await submitPianoCarriera(history, userMessage);
-        appendAssistant(result.message);
-        await resyncBlocks();
+        // Una conferma scritta in chat può chiudere l'onboarding come il bottone del pannello.
+        if (result.phase === "chiusura") finishAndRedirect(3000);
       }
     } catch (err) {
       console.error("[MIRA] handleSend failed:", err);
@@ -227,37 +186,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
     }
   }
 
-  /** Click su una delle due opzioni del quiz soft skill (nessun testo libero). Risincronizza
-   * sempre subito dopo, così la lista soft skill cresce visibilmente nel pannello ad ogni click. */
-  async function handleSoftSkillChoice(choice: "A" | "B") {
-    if (competenzeSoftIndex === null || loading || uploading) return;
-    const index = competenzeSoftIndex;
-    const history = messages;
-    appendUser(engineT(`softSkillQuestions.q${index + 1}.option${choice}`));
-    setLoading(true);
-    try {
-      const result = await submitSoftSkillChoice(history, index, choice);
-      appendAssistant(result.message);
-      await resyncBlocks();
-      if (result.done) {
-        setCompetenzeSoftIndex(null);
-        setCompetenzeSubIndex(1);
-      } else {
-        setCompetenzeSoftIndex(index + 1);
-      }
-    } catch (err) {
-      console.error("[MIRA] handleSoftSkillChoice failed:", err);
-      appendAssistant(
-        err instanceof Error
-          ? t("errorWithMessage", { message: err.message })
-          : c("authErrors.generic")
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  /** Chiamato dal pannello dopo che un blocco Step 2 è già stato approvato lì —
+  /** Chiamato dal pannello dopo che un blocco è già stato approvato lì —
    * decide solo la prossima domanda; mai richiama approveCardBlock (già fatto dal click). */
   async function handleBlockApproved(blockType: CardBlockType) {
     const history = messages;
@@ -284,6 +213,8 @@ export function OnboardingChat({ userName }: { userName: string }) {
       appendAssistant(result.message);
       setPhase(result.phase);
     } else if (blockType === "disponibilita") {
+      // "Disponibilità e piano": il Conferma del pannello ha approvato insieme
+      // disponibilita + piano_carriera (alsoApprove) — qui si apre il gate.
       const result = await afterDisponibilitaApproved(history);
       appendAssistant(result.message);
       setPhase(result.phase);
@@ -295,23 +226,12 @@ export function OnboardingChat({ userName }: { userName: string }) {
       const result = await afterLingueApproved(history);
       appendAssistant(result.message);
       setPhase(result.phase);
-    } else if (blockType === "interessi") {
-      const result = await afterInteressiApproved(history);
-      appendAssistant(result.message);
-      setPhase(result.phase);
     } else if (blockType === "autodescrizione") {
-      const result = await afterAutodescrizioneApproved(history);
+      // "Profilo personale" (riga DB autodescrizione): ultimo blocco della card.
+      const result = await afterProfiloPersonaleApproved(history);
       appendAssistant(result.message);
       setPhase(result.phase);
-    } else if (blockType === "piano_carriera") {
-      const result = await afterPianoCarrieraApproved(history);
-      appendAssistant(result.message);
-      setPhase(result.phase);
-      setComplete(true);
-      setTimeout(() => {
-        router.push("/student");
-        router.refresh();
-      }, 3000);
+      finishAndRedirect(3000);
     }
     // Formazione non ha una fase propria: viene approvata insieme all'Header (alsoApprove).
   }
@@ -326,11 +246,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
   }
 
   function handleContinueLater() {
-    setComplete(true);
-    setTimeout(() => {
-      router.push("/student");
-      router.refresh();
-    }, 1200);
+    finishAndRedirect(1200);
   }
 
   async function handleTranscriptFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -411,11 +327,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
     setLoading(true);
     const result = await forceCompleteOnboarding();
     if (result.success) {
-      setComplete(true);
-      setTimeout(() => {
-        router.push("/student");
-        router.refresh();
-      }, 2000);
+      finishAndRedirect(2000);
     } else {
       setLoading(false);
     }
@@ -423,8 +335,7 @@ export function OnboardingChat({ userName }: { userName: string }) {
 
   const userMessageCount = messages.filter((m) => m.role === "user").length;
   const isWorking = loading || uploading;
-  const softQuizActive = phase === "competenze" && competenzeSoftIndex !== null;
-  const inputGated = GATED_PHASES.includes(phase) || softQuizActive;
+  const inputGated = GATED_PHASES.includes(phase);
   const cardPanel = <OnboardingCardPanel blocks={blocks} phase={phase} onApproved={handleBlockApproved} />;
 
   return (
@@ -491,6 +402,16 @@ export function OnboardingChat({ userName }: { userName: string }) {
               </div>
             );
           })}
+
+          {/* Avviso del gate (spec Passo 9): box giallo chiaro con scritta verde. È un elemento
+              UI, non un messaggio: non viene mai salvato nella conversazione (dubbio 23). */}
+          {phase === "gate" && !complete && (
+            <div className="flex justify-start">
+              <div className="max-w-[80%] rounded-lg border border-yellow-300 bg-yellow-50 px-4 py-3">
+                <p className="text-body-sm font-semibold text-green-700">{t("gateWarning")}</p>
+              </div>
+            </div>
+          )}
 
           {isWorking && messages.length > 0 && (
             <div className="flex justify-start">
@@ -575,20 +496,6 @@ export function OnboardingChat({ userName }: { userName: string }) {
                 >
                   {t("skip")}
                 </button>
-              </div>
-            )}
-            {softQuizActive && (
-              <div className="flex flex-col gap-2 mb-3">
-                {(["A", "B"] as const).map((choice) => (
-                  <button
-                    key={choice}
-                    onClick={() => handleSoftSkillChoice(choice)}
-                    disabled={isWorking}
-                    className="text-body-sm text-left bg-white border border-border rounded-md px-4 py-3 hover:border-petrol hover:bg-petrol-50 transition-colors disabled:opacity-40"
-                  >
-                    {engineT(`softSkillQuestions.q${(competenzeSoftIndex as number) + 1}.option${choice}`)}
-                  </button>
-                ))}
               </div>
             )}
             <div className="flex gap-3">

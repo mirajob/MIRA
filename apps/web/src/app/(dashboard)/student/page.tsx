@@ -9,7 +9,7 @@ import { MiraCardLayout } from "@/components/card/mira-card-layout";
 import { MiraCardDocument } from "@/components/card-view/mira-card-document";
 import { ProfileViewSwitcher } from "@/components/card-view/profile-view-switcher";
 import { HeaderBlock, HeaderView } from "@/components/card/header-block";
-import { DisponibilitaBlock, DisponibilitaView } from "@/components/card/disponibilita-block";
+import { DisponibilitaEPianoBlock, DisponibilitaEPianoView } from "@/components/card/disponibilita-block";
 import { EsperienzeBlock, EsperienzeView } from "@/components/card/esperienze-block";
 import { CompetenzeBlock, CompetenzeView } from "@/components/card/competenze-block";
 import { LingueBlock } from "@/components/card/lingue-block";
@@ -80,7 +80,9 @@ export default async function StudentHomePage() {
   const interessi = blocks.get("interessi");
   const pianoCarriera = blocks.get("piano_carriera");
 
-  const faseBBlocks = [competenze, lingue, interessi, autodescrizione, pianoCarriera];
+  // Fase B del rework: competenze, lingue, profilo personale (riga autodescrizione).
+  // interessi è legacy e piano_carriera fa ormai parte della Fase A.
+  const faseBBlocks = [competenze, lingue, autodescrizione];
   const faseBIncomplete = faseBBlocks.some((b) => b?.status !== "approved");
 
   const esperienzeItems = (esperienze?.prose_content as EsperienzeProseContent | undefined)?.items ?? [];
@@ -147,11 +149,23 @@ export default async function StudentHomePage() {
             )}
             {disponibilita && (
               <EditableSection
-                view={<DisponibilitaView data={disponibilita.prose_content as DisponibilitaProseContent} />}
+                view={
+                  <DisponibilitaEPianoView
+                    disponibilita={disponibilita.prose_content as DisponibilitaProseContent}
+                    piano={pianoData ?? null}
+                  />
+                }
                 edit={
-                  <DisponibilitaBlock
-                    proseContent={disponibilita.prose_content as DisponibilitaProseContent}
-                    status={disponibilita.status}
+                  <DisponibilitaEPianoBlock
+                    disponibilita={disponibilita.prose_content as DisponibilitaProseContent}
+                    piano={pianoData ?? { stato: "esplorazione", testo: null }}
+                    status={
+                      disponibilita.status === "approved" && pianoCarriera?.status === "approved"
+                        ? "approved"
+                        : disponibilita.status === "empty" && (pianoCarriera?.status ?? "empty") === "empty"
+                          ? "empty"
+                          : "draft"
+                    }
                   />
                 }
               />
@@ -162,16 +176,16 @@ export default async function StudentHomePage() {
           <>
             {autodescrizione && (
               <EditableSection
-                view={<ProseView title={cardT("titles.autodescrizione")} testo={autodescrizioneTesto} serif />}
+                view={<ProseView title={cardT("titles.profiloPersonale")} testo={autodescrizioneTesto} serif />}
                 edit={
                   <ProseBlock
                     blockType="autodescrizione"
-                    title={cardT("titles.autodescrizione")}
+                    title={cardT("titles.profiloPersonale")}
                     testo={autodescrizioneTesto}
                     status={autodescrizione.status}
                     serif
                     intro={t("autodescrizioneIntro")}
-                    placeholder={cardT("autodescrizionePlaceholder")}
+                    placeholder={cardT("profiloPersonalePlaceholder")}
                   />
                 }
               />
@@ -213,7 +227,9 @@ export default async function StudentHomePage() {
                 edit={<LingueBlock items={lingueItems} status={lingue.status} />}
               />
             )}
-            {interessi && (
+            {/* Interessi è legacy (confluito nel Profilo personale): resta visibile
+                solo per gli utenti pre-rework che hanno già un testo, per non perdere dati. */}
+            {interessi && interessiTesto && (
               <EditableSection
                 view={<ProseView title={cardT("titles.interessi")} testo={interessiTesto} />}
                 edit={
@@ -223,21 +239,6 @@ export default async function StudentHomePage() {
                     testo={interessiTesto}
                     status={interessi.status}
                     placeholder={cardT("interessiPlaceholder")}
-                  />
-                }
-              />
-            )}
-            {pianoCarriera && (
-              <EditableSection
-                view={<ProseView title={cardT("titles.pianoCarriera")} testo={pianoData?.testo ?? null} stato={pianoData?.stato} />}
-                edit={
-                  <ProseBlock
-                    blockType="piano_carriera"
-                    title={cardT("titles.pianoCarriera")}
-                    testo={pianoData?.testo ?? null}
-                    stato={pianoData?.stato}
-                    status={pianoCarriera.status}
-                    placeholder={cardT("pianoCarrieraPlaceholder")}
                   />
                 }
               />

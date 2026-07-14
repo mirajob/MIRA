@@ -201,17 +201,24 @@ export async function evaluateCandidate(applicationId: string) {
   const formazione = (blocks.get("formazione")?.items ?? []) as Array<{ esame: string; voto: string }>;
   const esperienze = (blocks.get("esperienze")?.items ?? []) as Array<{ titolo: string; organizzazione: string; descrizione: string }>;
   const competenze = (blocks.get("competenze")?.items ?? []) as Array<{ testo: string; evidenza_ref?: string }>;
-  const interessi = blocks.get("interessi")?.testo ?? "";
+  // Card rework 2026-07: il Profilo personale vive sulla riga "autodescrizione";
+  // "interessi" resta solo come dato legacy dei profili pre-rework.
+  const profiloPersonale = blocks.get("autodescrizione")?.testo ?? "";
+  const interessiLegacy = blocks.get("interessi")?.testo ?? "";
   const pianoCarriera = blocks.get("piano_carriera") ?? {};
+
+  const disponibilitaText = disponibilita.attiva === false
+    ? `non in cerca al momento${disponibilita.periodo ? ` (${disponibilita.periodo})` : ""}`
+    : [disponibilita.cosa_cerca, disponibilita.ambito, disponibilita.periodo, disponibilita.durata, disponibilita.dove].filter(Boolean).join(", ") || "non specificata";
 
   const cardContext = `CARD DELLO STUDENTE (solo blocchi approvati dallo studente):
 Corso: ${header.corso || "?"} (${header.livello || "?"}, anno ${header.anno || "?"})
-Disponibilità: ${[disponibilita.cosa_cerca, disponibilita.da_quando, disponibilita.dove].filter(Boolean).join(", ") || "non specificata"}
+Disponibilità: ${disponibilitaText}
 Esami: ${formazione.map((e) => `${e.esame} (${e.voto})`).join(", ") || "nessuno approvato"}
 Esperienze: ${esperienze.map((e) => `${e.titolo || e.organizzazione}: ${e.descrizione}`).join("\n") || "nessuna approvata"}
 Competenze: ${competenze.map((c) => `${c.testo}${c.evidenza_ref ? ` (${c.evidenza_ref})` : ""}`).join("; ") || "nessuna approvata"}
-Interessi: ${interessi || "non specificati"}
-Piano di carriera: ${pianoCarriera.testo || "non specificato"} (${pianoCarriera.stato || "?"})`;
+Profilo personale: ${profiloPersonale || "non specificato"}${interessiLegacy ? `\nInteressi (profilo pre-rework): ${interessiLegacy}` : ""}
+Piano e direzione: ${pianoCarriera.testo || "non specificato"} (${pianoCarriera.stato || "?"})`;
 
   const evalCriteria = (cycle?.evaluation_criteria as Record<string, any>)?.general_requirements || "";
 

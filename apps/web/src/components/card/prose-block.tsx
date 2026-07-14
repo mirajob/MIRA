@@ -18,9 +18,11 @@ interface ProseBlockProps {
   onApproved?: () => void;
 }
 
-/** Limiti one-page: la card documento ha spazio fisso, i testi devono restare sintetici. */
+/** Limiti one-page: la card documento ha spazio fisso, i testi devono restare sintetici.
+ * `autodescrizione` ora ospita il Profilo personale (interessi + autodescrizione uniti,
+ * card rework 2026-07): limite più alto, ma sempre compatibile col foglio A4 (dubbio 38). */
 const MAX_LENGTHS: Record<ProseBlockProps["blockType"], number> = {
-  autodescrizione: 700,
+  autodescrizione: 900,
   interessi: 450,
   piano_carriera: 450,
 };

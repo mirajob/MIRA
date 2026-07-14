@@ -45,6 +45,9 @@ export interface HeaderVisibility {
 }
 
 export interface DisponibilitaProseContent {
+  /** Toggle strutturato "in cerca sì/no" (card rework 2026-07): mai dedotto da tag testuali
+   * tipo "not looking". null = non ancora chiesto (righe legacy pre-rework). */
+  attiva?: boolean | null;
   /** Tipo di opportunità: stage curriculare/extracurriculare, part-time, progetto — o "non in cerca"/"già occupato". */
   cosa_cerca: string | null;
   /** Settore o ruolo cercato, es. "venture capital", "marketing". */
@@ -52,6 +55,8 @@ export interface DisponibilitaProseContent {
   /** Il "quando": una data di inizio aperta ("da settembre 2026"), un intervallo ("da giugno ad agosto 2026"),
    * o uno stato speciale ("già occupato fino a dicembre", "non in cerca al momento"). */
   periodo: string | null;
+  /** Per quanto tempo (es. "3 months", "the whole summer"). */
+  durata?: string | null;
   dove: string | null;
 }
 
@@ -103,10 +108,11 @@ export interface CompetenzaItem {
 }
 
 export interface CompetenzeProseContent {
-  /** Solo hard + academic — le soft skill sono in `soft_skills`. */
+  /** Solo hard + academic — le soft skill non fanno più parte della MIRA Card (rework 2026-07). */
   items: CompetenzaItem[];
-  /** Elenco delle frasi fisse (inglese) scelte nel quiz a scelta forzata a 5 domande. */
-  soft_skills: string[] | null;
+  /** @deprecated card rework 2026-07: il quiz soft skill è stato rimosso; le soft skill non
+   * compaiono più nella card. Righe legacy possono ancora avere valori — mai scritto/mostrato da codice nuovo. */
+  soft_skills?: string[] | null;
   /** @deprecated pre-quiz: paragrafo in prima persona sintetizzato da 2 domande AI aperte. Righe vecchie possono averlo senza `soft_skills` — mai scritto da codice nuovo. */
   soft_skills_testo?: string | null;
 }
@@ -130,10 +136,15 @@ export interface LingueProseContent {
   items: LinguaItem[];
 }
 
+/** Card rework 2026-07: questa riga DB ospita il blocco "Profilo personale" (interessi +
+ * autodescrizione uniti in un'unica prosa). Il block_type resta "autodescrizione" per non
+ * migrare l'enum Postgres. */
 export interface AutodescrizioneProseContent {
   testo: string | null;
 }
 
+/** @deprecated card rework 2026-07: gli interessi sono confluiti nel Profilo personale
+ * (riga "autodescrizione"). La riga "interessi" resta solo come dato legacy in lettura. */
 export interface InteressiProseContent {
   testo: string | null;
 }
