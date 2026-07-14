@@ -2,6 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { ListBlock, ListView, type ListFieldConfig } from "./list-block";
+import { MiraImproveButton } from "./mira-improve-button";
+import { miraImproveEsperienza } from "@/lib/actions/onboarding-flow";
 import type { CardBlockStatus, EsperienzaItem } from "@mira/types";
 
 export function EsperienzeBlock({
@@ -39,6 +41,18 @@ export function EsperienzeBlock({
         verified: false,
         origin: "manual",
       })}
+      itemExtra={(item, index, updateItem) => (
+        <div className="mt-2">
+          <MiraImproveButton
+            getText={() => item.descrizione}
+            improve={async (text) =>
+              (await miraImproveEsperienza({ titolo: item.titolo, organizzazione: item.organizzazione, descrizione: text }))
+                .descrizione
+            }
+            onImproved={(text) => updateItem(index, "descrizione", text)}
+          />
+        </div>
+      )}
     />
   );
 }

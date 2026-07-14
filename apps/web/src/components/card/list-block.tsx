@@ -28,6 +28,8 @@ interface ListBlockProps<T extends { id: string; verified: boolean }> {
   emptyLabel: string;
   readOnly?: boolean;
   onApproved?: () => void;
+  /** Riga extra in fondo a ogni item (es. "✦ Migliora con MIRA" sulle esperienze). */
+  itemExtra?: (item: T, index: number, updateItem: (index: number, key: keyof T, value: unknown) => void) => React.ReactNode;
 }
 
 export function ListBlock<T extends { id: string; verified: boolean }>({
@@ -40,6 +42,7 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
   emptyLabel,
   readOnly,
   onApproved,
+  itemExtra,
 }: ListBlockProps<T>) {
   const t = useTranslations("CardBlocks");
   const c = useTranslations("Common");
@@ -79,7 +82,13 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
 
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
-      <CardBlockHeader title={title} status={status} blockType={blockType as CardBlockType} onApproved={onApproved} />
+      <CardBlockHeader
+        title={title}
+        status={status}
+        blockType={blockType as CardBlockType}
+        onBeforeApprove={readOnly ? undefined : handleSave}
+        onApproved={onApproved}
+      />
       <div className="p-5 space-y-4">
         {items.length === 0 && <p className="text-body-sm text-ink-secondary">{emptyLabel}</p>}
         {visibleItems.map((item, index) => (
@@ -136,6 +145,7 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
                 </div>
               ))}
             </div>
+            {!readOnly && itemExtra?.(item, index, updateItem)}
           </div>
         ))}
         {readOnly && items.length > COLLAPSE_THRESHOLD && (

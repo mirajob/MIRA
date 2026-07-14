@@ -1,4 +1,4 @@
-import type { OnboardingBlocksState } from "./actions/chat-onboarding";
+import type { OnboardingBlocksState } from "./actions/onboarding-flow";
 
 // Plain module (no "use server"): a "use server" file can only export async
 // functions, never a plain object — this constant crossing the client/server

@@ -2,6 +2,8 @@
 
 **Data:** 14 luglio 2026
 **Stato:** specifica approvata dal founder — sostituisce le sezioni 1.3 e 1.4 di `docs/MIRA_STATO_PRODOTTO.md`
+
+> **⚠️ PIVOT UX (14 luglio 2026, sera):** dopo il test in produzione del flusso chat, il founder ha deciso di **abbandonare l'onboarding conversazionale bidirezionale**. La struttura della card (6 blocchi), il gate, i contenuti e le regole di questo documento restano validi, ma l'interazione è ora **form-first**: MIRA parla con un riquadro-guida fisso sopra il blocco attivo (voce a senso unico), lo studente compila direttamente i campi del blocco e preme Conferma; i blocchi futuri restano nascosti finché non è il loro turno. L'AI resta su: parsing libretto/CV (prefill dei campi), proposta academic skill dai voti, e bottone "✦ Migliora con MIRA" che riscrive i testi liberi in inglese. Le domande testuali di questo documento sopravvivono come testi dei riquadri-guida.
 **Contenuto:** nuova struttura della MIRA Card (da 8 a 6 blocchi), nuovo flusso di onboarding, perfezionamenti alla chat. In coda: 40 dubbi tecnici da investigare prima dell'implementazione (sono dubbi, non conclusioni).
 
 ---

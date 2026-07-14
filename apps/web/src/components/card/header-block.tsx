@@ -110,6 +110,7 @@ export function HeaderBlock({
         status={status}
         blockType="header"
         alsoApprove={["formazione"]}
+        onBeforeApprove={handleSave}
         onApproved={onApproved}
       />
       <div className="p-5 space-y-4">

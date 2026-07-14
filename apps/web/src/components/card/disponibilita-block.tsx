@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
+import { miraImprovePiano } from "@/lib/actions/onboarding-flow";
 import { CardBlockHeader } from "./card-block-header";
+import { MiraImproveButton } from "./mira-improve-button";
 import type {
   CardBlockStatus,
   DisponibilitaProseContent,
@@ -33,7 +35,7 @@ export function DisponibilitaEPianoBlock({
   const c = useTranslations("Common");
   const [form, setForm] = useState(disponibilita);
   const [pianoTesto, setPianoTesto] = useState(piano.testo ?? "");
-  const [pianoStato] = useState<PianoCarrieraStato>(piano.stato ?? "esplorazione");
+  const [pianoStato, setPianoStato] = useState<PianoCarrieraStato>(piano.stato ?? "esplorazione");
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -82,6 +84,7 @@ export function DisponibilitaEPianoBlock({
         status={status}
         blockType="disponibilita"
         alsoApprove={["piano_carriera"]}
+        onBeforeApprove={handleSave}
         onApproved={onApproved}
       />
       <div className="p-5 space-y-4">
@@ -136,6 +139,20 @@ export function DisponibilitaEPianoBlock({
             }}
             className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
           />
+          <div className="mt-2">
+            <MiraImproveButton
+              getText={() => pianoTesto}
+              improve={async (text) => {
+                const result = await miraImprovePiano({ testo: text });
+                setPianoStato(result.stato);
+                return result.testo;
+              }}
+              onImproved={(text) => {
+                setPianoTesto(text);
+                setDirty(true);
+              }}
+            />
+          </div>
         </div>
 
         {dirty && (

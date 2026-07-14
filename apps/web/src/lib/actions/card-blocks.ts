@@ -140,8 +140,7 @@ function applyVerifiedDropRule(
  * media_voti is transcript-verified and always preserved from the existing row.
  *
  * structured_data resync for free-text blocks is best-effort and non-blocking: prose_content is
- * saved synchronously below regardless of the AI call's outcome (matches the existing fire-and-forget
- * pattern used for pathway analysis in chat-onboarding.ts).
+ * saved synchronously below regardless of the AI call's outcome (fire-and-forget).
  */
 export async function updateCardBlockProseContent(
   blockType: Exclude<CardBlockType, "formazione">,

@@ -67,7 +67,7 @@ export function CompetenzeBlock({
 
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
-      <CardBlockHeader title={t("titles.competenze")} status={status} blockType="competenze" onApproved={onApproved} />
+      <CardBlockHeader title={t("titles.competenze")} status={status} blockType="competenze" onBeforeApprove={handleSave} onApproved={onApproved} />
       <div className="p-5 space-y-6">
         <div>
           <div className="flex items-center justify-between mb-2">

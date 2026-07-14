@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
+import { miraImproveProfilo } from "@/lib/actions/onboarding-flow";
 import { CardBlockHeader } from "./card-block-header";
+import { MiraImproveButton } from "./mira-improve-button";
 import type { CardBlockStatus, PianoCarrieraStato } from "@mira/types";
 
 interface ProseBlockProps {
@@ -54,7 +56,7 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
 
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
-      <CardBlockHeader title={title} status={status} blockType={blockType} onApproved={onApproved} />
+      <CardBlockHeader title={title} status={status} blockType={blockType} onBeforeApprove={handleSave} onApproved={onApproved} />
       <div className="p-5 space-y-3">
         {intro && <p className="text-body-sm text-ink-secondary italic">{intro}</p>}
         <textarea
@@ -70,7 +72,23 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
             serif ? "font-display" : ""
           }`}
         />
-        <p className="text-right text-xs text-ink-tertiary">{text.length}/{MAX_LENGTHS[blockType]}</p>
+        <div className="flex items-center justify-between gap-3">
+          {/* Il Profilo personale (riga autodescrizione) ha la riscrittura AI: lo studente
+              scrive come parla, anche in italiano, e MIRA lo trasforma in inglese in prima persona. */}
+          {blockType === "autodescrizione" ? (
+            <MiraImproveButton
+              getText={() => text}
+              improve={async (raw) => (await miraImproveProfilo({ testo: raw })).testo}
+              onImproved={(improved) => {
+                setText(improved);
+                setDirty(true);
+              }}
+            />
+          ) : (
+            <span />
+          )}
+          <p className="text-right text-xs text-ink-tertiary">{text.length}/{MAX_LENGTHS[blockType]}</p>
+        </div>
         {dirty && (
           <button
             onClick={handleSave}
