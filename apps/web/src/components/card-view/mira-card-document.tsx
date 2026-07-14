@@ -335,7 +335,7 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
 
                 {(dispPills.length > 0 || dispNotActive) && (
                   <div className="min-w-0 border-l border-border pl-6">
-                    <SectionTitle>{t("titles.disponibilitaEPiano")}</SectionTitle>
+                    <SectionTitle>{t("titles.disponibilita")}</SectionTitle>
                     <div className="flex flex-wrap gap-1.5">
                       {dispNotActive ? (
                         <>
@@ -447,7 +447,7 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                   </div>
                 )}
 
-                {piano && <ProseSection title={t("disponibilita.pianoHeading")} testo={piano} limit={260} />}
+                {piano && <ProseSection title={t("titles.pianoCarriera")} testo={piano} limit={260} />}
 
                 {/* Interessi legacy (pre-rework): visibile solo se un vecchio profilo lo aveva compilato. */}
                 {interessi && <ProseSection title={t("titles.interessi")} testo={interessi} limit={260} />}

@@ -281,8 +281,7 @@
       "motivoPlaceholder": "e.g. already committed until December",
       "notActive": "Not currently looking",
       "pianoLabel": "Plans & direction (coming months/years)",
-      "pianoPlaceholder": "e.g. exchange, Master's, work, certifications... and the direction you have in mind",
-      "pianoHeading": "Plans & direction"
+      "pianoPlaceholder": "e.g. exchange, Master's, work, certifications... and the direction you have in mind"
     },
     "esperienze": {
       "titoloLabel": "Title / role",

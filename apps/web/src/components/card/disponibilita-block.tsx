@@ -196,7 +196,9 @@ export function DisponibilitaEPianoView({
   return (
     <div className="p-4 space-y-3">
       <div>
-        <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.disponibilitaEPiano")}</p>
+        {/* Titolo solo "Disponibilità": qui sotto ci sono solo i dati di disponibilità, il
+            piano ha la sua sezione (con titolo proprio) più in basso. */}
+        <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.disponibilita")}</p>
         {notActive ? (
           <div className="flex flex-wrap gap-1.5">
             <span className="text-xs px-2 py-0.5 rounded-full bg-border/60 text-ink-secondary">
@@ -220,7 +222,7 @@ export function DisponibilitaEPianoView({
       </div>
       {piano?.testo && (
         <div>
-          <p className="text-xs text-ink-tertiary uppercase tracking-wide mb-1">{t("disponibilita.pianoHeading")}</p>
+          <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.pianoCarriera")}</p>
           <p className="text-body-sm text-ink">{piano.testo}</p>
         </div>
       )}
