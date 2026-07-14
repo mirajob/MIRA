@@ -39,6 +39,7 @@ function SignupForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -95,7 +96,32 @@ function SignupForm() {
       return;
     }
 
+    // Se la conferma email è richiesta, signUp non restituisce una sessione: mandare comunque
+    // avanti l'utente lo farebbe sbattere contro un login vuoto senza sapere perché — meglio
+    // dirgli subito di controllare la posta, con l'avviso che può volerci qualche minuto.
+    if (!data.session) {
+      setEmailSent(true);
+      setLoading(false);
+      return;
+    }
+
     router.push(redirect);
+  }
+
+  if (emailSent) {
+    return (
+      <div className="mt-8 space-y-6 rounded-lg border border-border bg-white p-6 text-center">
+        <h2 className="font-display text-h2 text-navy">{t("emailSentHeading")}</h2>
+        <p className="text-body text-ink-secondary">{t("emailSentBody", { email })}</p>
+        <p className="text-body-sm text-ink-tertiary">{t("emailSentDelayNote")}</p>
+        <Link
+          href="/login"
+          className="inline-block text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2"
+        >
+          {t("emailSentBackToLogin")}
+        </Link>
+      </div>
+    );
   }
 
   const inputClass = "w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200";
