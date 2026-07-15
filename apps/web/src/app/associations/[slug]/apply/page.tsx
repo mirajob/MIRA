@@ -6,7 +6,6 @@ import { ApplicationForm } from "./application-form";
 import Link from "next/link";
 import { CornerLocale } from "@/components/corner-locale";
 import { LocaleSwitcher } from "@/components/locale-switcher";
-import { BOCCONI_UNIVERSITY_NAME } from "@mira/domain";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -24,7 +23,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
 
   const { data: association } = await supabase
     .from("association_profiles")
-    .select("id, name, slug")
+    .select("id, name, slug, university")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -50,17 +49,20 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     redirect(`/student/onboarding?redirect=/associations/${slug}/apply${cycleId ? `?cycle=${cycleId}` : ""}`);
   }
 
-  // Associations First Build: le associazioni su MIRA sono solo Bocconi, quindi
-  // solo studenti Bocconi possono candidarsi — controllo qui (pagina) e in
-  // submitApplication (server action), non solo lato UI del pulsante "Candidati".
-  if (student.university !== BOCCONI_UNIVERSITY_NAME) {
+  // Le candidature sono scoped per università: ogni associazione ha ereditato l'università
+  // del presidente che l'ha candidata, e solo gli studenti della stessa università possono
+  // candidarsi — controllo qui (pagina) e in submitApplication (server action), non solo
+  // lato UI del pulsante "Candidati".
+  if (student.university !== (association as any).university) {
     return (
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="max-w-md text-center space-y-4 px-4">
           <CornerLocale />
           <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
-          <h1 className="font-display text-h1 text-navy mt-8">{t("notBocconiHeading")}</h1>
-          <p className="text-body text-ink-secondary">{t("notBocconiBody")}</p>
+          <h1 className="font-display text-h1 text-navy mt-8">{t("wrongUniversityHeading")}</h1>
+          <p className="text-body text-ink-secondary">
+            {t("wrongUniversityBody", { university: (association as any).university })}
+          </p>
           <Link href="/student" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
             {t("goToDashboard")}
           </Link>

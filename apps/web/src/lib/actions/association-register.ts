@@ -46,11 +46,17 @@ async function waitForProfile(supabase: any, authUserId: string): Promise<string
   return null;
 }
 
-/** Crea la pagina associazione (pending) + la membership da presidente per un profilo già esistente. */
+/**
+ * Crea la pagina associazione (pending) + la membership da presidente per un profilo già
+ * esistente. L'associazione eredita l'università del presidente: gli studenti vedono e si
+ * candidano solo alle associazioni della propria università (vedi i controlli in
+ * student/associazioni/page.tsx, associations/[slug]/apply/page.tsx e applications.ts).
+ */
 async function createAssociationForProfile(
   supabase: any,
   profileId: string,
   contactEmail: string | null | undefined,
+  university: string,
   input: { associationName: string; category: string; websiteUrl: string; description: string }
 ) {
   const baseSlug = toSlug(input.associationName) || "associazione";
@@ -65,6 +71,7 @@ async function createAssociationForProfile(
       short_description: input.description || null,
       website_url: input.websiteUrl || null,
       contact_email: contactEmail,
+      university,
       official: false,
       verification_status: "pending_verification",
       created_by_user_id: profileId,
@@ -191,7 +198,7 @@ export async function registerAssociationPresident(input: {
     degreeLevel: input.degreeLevel,
   });
 
-  const result = await createAssociationForProfile(supabase, profileId, email, input);
+  const result = await createAssociationForProfile(supabase, profileId, email, input.university, input);
   if (result.error) {
     await supabase.auth.admin.deleteUser(authUserId).catch(() => {});
   }
@@ -214,7 +221,19 @@ export async function attachAssociationToCurrentUser(input: {
 
   await ensureStudentProfile(supabase, ctx.profile.id, ctx.user.email);
 
-  return createAssociationForProfile(supabase, ctx.profile.id, ctx.user.email, input);
+  const { data: studentProfile } = await supabase
+    .from("student_profiles")
+    .select("university")
+    .eq("user_id", ctx.profile.id)
+    .maybeSingle();
+
+  return createAssociationForProfile(
+    supabase,
+    ctx.profile.id,
+    ctx.user.email,
+    (studentProfile as any)?.university ?? "",
+    input
+  );
 }
 
 export async function approveAssociation(associationId: string) {

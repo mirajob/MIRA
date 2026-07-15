@@ -27,6 +27,7 @@ function AssociationRow({ assoc, president, t, statusLabel, dateLocale }: { asso
         <p className="text-body-sm text-ink-tertiary">{president?.email ?? assoc.contact_email ?? "—"}</p>
       </td>
       <td className="px-4 py-3 text-body text-ink">{assoc.category ?? "—"}</td>
+      <td className="px-4 py-3 text-body-sm text-ink">{assoc.university ?? "—"}</td>
       <td className="px-4 py-3">
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_CLASS[assoc.verification_status] ?? "bg-gray-100 text-gray-600"}`}>
           {statusLabel[assoc.verification_status] ?? assoc.verification_status}
@@ -54,6 +55,7 @@ function AssociationTable({ rows, presidentByAssociation, t, statusLabel, dateLo
             <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableAssociation")}</th>
             <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tablePresident")}</th>
             <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableCategory")}</th>
+            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableUniversity")}</th>
             <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableStatus")}</th>
             <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableDate")}</th>
             <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableActions")}</th>

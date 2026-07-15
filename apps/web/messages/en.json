@@ -345,8 +345,7 @@
     "completeProfileCta": "Complete your MiraCard profile (~5 minutes) →",
     "myApplicationsHeading": "Your applications",
     "noApplications": "You don't have any applications yet. Find an association below.",
-    "allAssociationsHeading": "All associations",
-    "bocconiOnlyNotice": "Associations on MIRA are currently open only to Bocconi University students.",
+    "allAssociationsHeading": "Associations at your university",
     "interviewScheduled": "Interview scheduled",
     "congratsAccepted": "Congratulations! You've been accepted.",
     "viewPage": "View page",
@@ -354,7 +353,7 @@
     "applicationStatus": "Application: {status}",
     "applyNow": "Apply",
     "applicationsClosed": "Applications closed",
-    "noAssociationsAvailable": "No associations available at the moment."
+    "noAssociationsAvailable": "No associations available yet for your university."
   },
   "Applications": {
     "backLink": "← Associations",
@@ -448,8 +447,8 @@
     "eyebrow": "Application",
     "positionsHeading": "Open positions",
     "closesOn": "Deadline: {date}",
-    "notBocconiHeading": "Applications open to Bocconi students only",
-    "notBocconiBody": "Associations on MIRA are currently open only to Bocconi University students."
+    "wrongUniversityHeading": "Applications open to students of this university only",
+    "wrongUniversityBody": "This association is only open to students at {university}."
   },
   "ApplicationForm": {
     "selectPlaceholder": "Select",
@@ -920,6 +919,7 @@
     "tableAssociation": "Association",
     "tablePresident": "President",
     "tableCategory": "Category",
+    "tableUniversity": "University",
     "tableStatus": "Status",
     "tableDate": "Date",
     "tableActions": "Actions",

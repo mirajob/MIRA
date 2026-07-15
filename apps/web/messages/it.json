@@ -345,8 +345,7 @@
     "completeProfileCta": "Completa il tuo profilo MiraCard (~5 minuti) →",
     "myApplicationsHeading": "Le tue candidature",
     "noApplications": "Non hai ancora candidature. Trova un'associazione qui sotto.",
-    "allAssociationsHeading": "Tutte le associazioni",
-    "bocconiOnlyNotice": "Le associazioni su MIRA sono per ora aperte solo agli studenti dell'Università Bocconi.",
+    "allAssociationsHeading": "Associazioni della tua università",
     "interviewScheduled": "Colloquio programmato",
     "congratsAccepted": "Congratulazioni! Sei stato accettato.",
     "viewPage": "Vedi pagina",
@@ -354,7 +353,7 @@
     "applicationStatus": "Candidatura: {status}",
     "applyNow": "Candidati",
     "applicationsClosed": "Candidature chiuse",
-    "noAssociationsAvailable": "Nessuna associazione disponibile al momento."
+    "noAssociationsAvailable": "Nessuna associazione ancora disponibile per la tua università."
   },
   "Applications": {
     "backLink": "← Associazioni",
@@ -448,8 +447,8 @@
     "eyebrow": "Candidatura",
     "positionsHeading": "Posizioni aperte",
     "closesOn": "Scadenza: {date}",
-    "notBocconiHeading": "Candidature riservate agli studenti Bocconi",
-    "notBocconiBody": "Le associazioni su MIRA sono per ora aperte solo agli studenti dell'Università Bocconi."
+    "wrongUniversityHeading": "Candidature riservate agli studenti di questa università",
+    "wrongUniversityBody": "Questa associazione è aperta solo agli studenti di {university}."
   },
   "ApplicationForm": {
     "selectPlaceholder": "Seleziona",
@@ -920,6 +919,7 @@
     "tableAssociation": "Associazione",
     "tablePresident": "Presidente",
     "tableCategory": "Categoria",
+    "tableUniversity": "Università",
     "tableStatus": "Stato",
     "tableDate": "Data",
     "tableActions": "Azioni",

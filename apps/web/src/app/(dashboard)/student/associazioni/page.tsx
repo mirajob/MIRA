@@ -6,7 +6,6 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { JoinByCode } from "@/components/join-by-code";
 import { WORKSPACE_ROLES, hasWorkspaceAccess } from "@/lib/association-roles";
-import { BOCCONI_UNIVERSITY_NAME } from "@mira/domain";
 import { MarkAssociationNotificationsRead } from "./mark-read";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -33,9 +32,17 @@ export default async function StudentAssociazioniPage() {
   const supabase = await createServerClient();
   const profileId = (ctx.profile as any).id as string;
 
+  const { data: studentProfile } = await (supabase.from("student_profiles") as any)
+    .select("onboarding_completed, university")
+    .eq("user_id", profileId)
+    .maybeSingle();
+
+  // Ogni associazione eredita l'università del presidente che l'ha candidata: uno
+  // studente vede e si candida solo alle associazioni della propria università.
   const { data: associations } = await (supabase.from("association_profiles") as any)
     .select("id, name, slug, category, short_description, logo_url, sectors")
     .eq("public_page_status", "published")
+    .eq("university", studentProfile?.university ?? "")
     .order("name");
 
   const { data: openCycles } = await (supabase.from("application_cycles") as any)
@@ -56,16 +63,6 @@ export default async function StudentAssociazioniPage() {
     .select("association_id, role, permissions, joined_at, association_profiles(name, slug, verification_status, public_page_status)")
     .eq("user_id", profileId)
     .eq("status", "active");
-
-  const { data: studentProfile } = await (supabase.from("student_profiles") as any)
-    .select("onboarding_completed, university")
-    .eq("user_id", profileId)
-    .maybeSingle();
-
-  // Associations First Build: le associazioni su MIRA sono solo Bocconi — gli
-  // studenti di altre università possono iscriversi alla piattaforma, ma non
-  // sfogliano/candidano associazioni finché il modulo non si estende.
-  const isBocconiStudent = studentProfile?.university === BOCCONI_UNIVERSITY_NAME;
 
   const cyclesByAssoc = new Map<string, any[]>();
   for (const c of openCycles ?? []) {
@@ -213,12 +210,7 @@ export default async function StudentAssociazioniPage() {
         )}
       </div>
 
-      {/* Tutte le associazioni — solo studenti Bocconi (Associations First Build) */}
-      {!isBocconiStudent ? (
-        <div className="rounded-lg border border-border bg-white p-8 text-center">
-          <p className="text-body text-ink-secondary">{t("bocconiOnlyNotice")}</p>
-        </div>
-      ) : (
+      {/* Associazioni della propria università — la query è già filtrata per university */}
       <div>
         <h2 className="font-sans text-h3 text-navy mb-3">{t("allAssociationsHeading")}</h2>
         <div className="space-y-4">
@@ -310,7 +302,6 @@ export default async function StudentAssociazioniPage() {
           )}
         </div>
       </div>
-      )}
     </div>
   );
 }

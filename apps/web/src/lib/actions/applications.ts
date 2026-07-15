@@ -4,7 +4,6 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { evaluateCandidate } from "./candidates";
-import { BOCCONI_UNIVERSITY_NAME } from "@mira/domain";
 
 export async function submitApplication(cycleId: string, formData: FormData) {
   const ctx = await getUserContext();
@@ -18,12 +17,6 @@ export async function submitApplication(cycleId: string, formData: FormData) {
 
   if (!student) return { error: "Profilo studente non trovato" };
   if (!student.onboarding_completed) return { error: "Completa l'onboarding prima di candidarti" };
-  // Associations First Build: le associazioni sono solo Bocconi, quindi solo
-  // studenti Bocconi possono candidarsi — controllo server-side, non solo UI,
-  // perché l'endpoint è raggiungibile direttamente conoscendo un cycleId.
-  if (student.university !== BOCCONI_UNIVERSITY_NAME) {
-    return { error: "Le candidature alle associazioni su MIRA sono per ora aperte solo agli studenti dell'Università Bocconi." };
-  }
 
   const { data: cycle } = await supabase
     .from("application_cycles")
@@ -33,6 +26,20 @@ export async function submitApplication(cycleId: string, formData: FormData) {
 
   if (!cycle) return { error: "Ciclo non trovato" };
   if (cycle.status !== "open") return { error: "Le candidature per questo ciclo sono chiuse" };
+
+  // Ogni associazione ha ereditato l'università del presidente che l'ha candidata: solo
+  // gli studenti della stessa università possono candidarsi — controllo server-side, non
+  // solo UI, perché l'endpoint è raggiungibile direttamente conoscendo un cycleId.
+  const { data: association } = await supabase
+    .from("association_profiles")
+    .select("university")
+    .eq("id", cycle.association_id)
+    .maybeSingle();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (student.university !== (association as any)?.university) {
+    return { error: "Le candidature a questa associazione sono aperte solo agli studenti della stessa università." };
+  }
 
   const { data: existing } = await supabase
     .from("applications")
