@@ -27,7 +27,6 @@ function AssociationRow({ assoc, president, t, statusLabel, dateLocale }: { asso
         <p className="text-body-sm text-ink-tertiary">{president?.email ?? assoc.contact_email ?? "—"}</p>
       </td>
       <td className="px-4 py-3 text-body text-ink">{assoc.category ?? "—"}</td>
-      <td className="px-4 py-3 text-body-sm text-ink">{assoc.university ?? "—"}</td>
       <td className="px-4 py-3">
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_CLASS[assoc.verification_status] ?? "bg-gray-100 text-gray-600"}`}>
           {statusLabel[assoc.verification_status] ?? assoc.verification_status}
@@ -47,26 +46,39 @@ function AssociationRow({ assoc, president, t, statusLabel, dateLocale }: { asso
 }
 
 function AssociationTable({ rows, presidentByAssociation, t, statusLabel, dateLocale }: { rows: any[]; presidentByAssociation: Record<string, any>; t: any; statusLabel: Record<string, string>; dateLocale: string }) {
+  if (!rows.length) {
+    return <p className="px-4 py-4 text-body-sm text-ink-tertiary">{t("noAssociationsInSection")}</p>;
+  }
+  return (
+    <table className="w-full">
+      <thead>
+        <tr className="border-b border-border">
+          <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableAssociation")}</th>
+          <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tablePresident")}</th>
+          <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableCategory")}</th>
+          <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableStatus")}</th>
+          <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableDate")}</th>
+          <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableActions")}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((assoc) => (
+          <AssociationRow key={assoc.id} assoc={assoc} president={presidentByAssociation[assoc.id]} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function AssociationSection({ label, rows, presidentByAssociation, t, statusLabel, dateLocale }: {
+  label: string; rows: any[]; presidentByAssociation: Record<string, any>; t: any; statusLabel: Record<string, string>; dateLocale: string;
+}) {
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-border">
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableAssociation")}</th>
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tablePresident")}</th>
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableCategory")}</th>
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableUniversity")}</th>
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableStatus")}</th>
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableDate")}</th>
-            <th className="px-4 py-3 text-left text-label text-ink-secondary">{t("tableActions")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((assoc) => (
-            <AssociationRow key={assoc.id} assoc={assoc} president={presidentByAssociation[assoc.id]} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
-          ))}
-        </tbody>
-      </table>
+      <div className="border-b border-border bg-navy-50/50 px-4 py-2">
+        <p className="text-label text-navy">{label}</p>
+      </div>
+      <AssociationTable rows={rows} presidentByAssociation={presidentByAssociation} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
     </div>
   );
 }
@@ -106,9 +118,23 @@ export default async function AdminAssociationsPage() {
   const presidentByAssociation: Record<string, any> = {};
   for (const m of memberships ?? []) presidentByAssociation[m.association_id] = m.profiles;
 
-  const pending = (associations ?? []).filter((a: any) => a.verification_status === "pending_verification");
-  const active = (associations ?? []).filter((a: any) => a.verification_status === "verified");
-  const others = (associations ?? []).filter((a: any) => !["pending_verification", "verified"].includes(a.verification_status));
+  // Richieste in attesa e associazioni accettate — raggruppate per università, con
+  // sottosezioni per stato del percorso (richiesta → accettata → pagina pubblica).
+  const relevant = (associations ?? []).filter((a: any) =>
+    ["pending_verification", "verified"].includes(a.verification_status)
+  );
+  const others = (associations ?? []).filter((a: any) =>
+    !["pending_verification", "verified"].includes(a.verification_status)
+  );
+
+  const byUniversity = new Map<string, any[]>();
+  for (const a of relevant) {
+    const uni = a.university || t("noUniversitySpecified");
+    const list = byUniversity.get(uni) ?? [];
+    list.push(a);
+    byUniversity.set(uni, list);
+  }
+  const universities = [...byUniversity.keys()].sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="space-y-8">
@@ -123,28 +149,58 @@ export default async function AdminAssociationsPage() {
         <InvitationForm />
       </section>
 
-      {pending.length > 0 && (
-        <section>
-          <h2 className="font-display text-h2 text-navy mb-4">{t("pendingApprovalHeading", { count: pending.length })}</h2>
-          <AssociationTable rows={pending} presidentByAssociation={presidentByAssociation} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
-        </section>
-      )}
+      {universities.length === 0 ? (
+        <div className="rounded-lg border border-border bg-white p-8 text-center">
+          <p className="text-body text-ink-secondary">{t("noActiveAssociations")}</p>
+        </div>
+      ) : (
+        universities.map((uni) => {
+          const rows = byUniversity.get(uni)!;
+          const pendingRows = rows.filter((a) => a.verification_status === "pending_verification");
+          const acceptedNoPage = rows.filter((a) => a.verification_status === "verified" && a.public_page_status !== "published");
+          const published = rows.filter((a) => a.verification_status === "verified" && a.public_page_status === "published");
 
-      <section>
-        <h2 className="font-display text-h2 text-navy mb-4">{t("activeHeading", { count: active.length })}</h2>
-        {active.length > 0 ? (
-          <AssociationTable rows={active} presidentByAssociation={presidentByAssociation} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
-        ) : (
-          <div className="rounded-lg border border-border bg-white p-8 text-center">
-            <p className="text-body text-ink-secondary">{t("noActiveAssociations")}</p>
-          </div>
-        )}
-      </section>
+          return (
+            <div key={uni} className="space-y-3">
+              <h2 className="font-display text-h2 text-navy">
+                {uni} <span className="text-body text-ink-tertiary font-normal">({rows.length})</span>
+              </h2>
+
+              <AssociationSection
+                label={t("pendingApprovalHeading", { count: pendingRows.length })}
+                rows={pendingRows}
+                presidentByAssociation={presidentByAssociation}
+                t={t}
+                statusLabel={statusLabel}
+                dateLocale={dateLocale}
+              />
+              <AssociationSection
+                label={t("acceptedNoPageHeading", { count: acceptedNoPage.length })}
+                rows={acceptedNoPage}
+                presidentByAssociation={presidentByAssociation}
+                t={t}
+                statusLabel={statusLabel}
+                dateLocale={dateLocale}
+              />
+              <AssociationSection
+                label={t("publishedHeading", { count: published.length })}
+                rows={published}
+                presidentByAssociation={presidentByAssociation}
+                t={t}
+                statusLabel={statusLabel}
+                dateLocale={dateLocale}
+              />
+            </div>
+          );
+        })
+      )}
 
       {others.length > 0 && (
         <section>
           <h2 className="font-display text-h2 text-navy mb-4">{t("othersHeading", { count: others.length })}</h2>
-          <AssociationTable rows={others} presidentByAssociation={presidentByAssociation} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
+          <div className="rounded-lg border border-border bg-white overflow-hidden">
+            <AssociationTable rows={others} presidentByAssociation={presidentByAssociation} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
+          </div>
         </section>
       )}
     </div>
