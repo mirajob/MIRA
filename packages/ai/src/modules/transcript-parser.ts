@@ -1,5 +1,3 @@
-import { chatCompletion, AI_CONFIG } from "../provider";
-
 export interface ParsedCourse {
   course_name: string;
   course_code: string;
@@ -55,57 +53,40 @@ Estrai anche dal documento (campi OBBLIGATORI, non lasciarli mai vuoti se il doc
 Rispondi SOLO in JSON valido con questa struttura:
 {"university_name":"","degree_program":"","degree_level":"triennale|magistrale|ciclo_unico|phd","courses":[...],"weighted_average":null,"total_credits":0,"graded_credits":0,"pass_fail_credits":0}`;
 
-export async function parseTranscriptFile(base64Data: string, mimeType: string): Promise<ParsedTranscript> {
-  const isPdf = mimeType === "application/pdf";
+/**
+ * Modello dedicato alla lettura del transcript, separato dal modello di default usato dal
+ * resto del pacchetto AI (packages/ai/src/provider.ts). Voti ed esami sono il dato più
+ * delicato della card — qui serve la massima accuratezza possibile, non il modello più
+ * economico. Verificato con chiamate reali all'API (input_file PDF, input_image,
+ * reasoning.effort e text.verbosity tutti confermati funzionanti su questo modello).
+ */
+export const TRANSCRIPT_MODEL = "gpt-5.4";
 
-  if (isPdf) {
-    return parseTranscriptPdf(base64Data);
-  }
-
-  return parseTranscriptImage(base64Data, mimeType);
-}
-
-async function parseTranscriptImage(base64Data: string, mimeType: string): Promise<ParsedTranscript> {
-  const dataUrl = `data:${mimeType};base64,${base64Data}`;
-
-  const result = await chatCompletion(
-    [
-      { role: "system", content: EXTRACTION_PROMPT },
-      {
-        role: "user",
-        content: [
-          { type: "text", text: "Estrai tutti i dati da questo libretto. SOLO esami completati con data e voto." },
-          { type: "image_url", image_url: { url: dataUrl, detail: "high" as const } },
-        ],
-      },
-    ],
-    { temperature: 0.1, maxTokens: 4096, jsonMode: true }
-  );
-
-  return JSON.parse(result) as ParsedTranscript;
-}
-
-async function parseTranscriptPdf(base64Data: string): Promise<ParsedTranscript> {
+async function callResponsesAPI(fileContent: Record<string, unknown>): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
 
-  const dataUrl = `data:application/pdf;base64,${base64Data}`;
-
   const body = {
-    model: "gpt-4o",
+    model: TRANSCRIPT_MODEL,
     input: [
       { role: "system", content: EXTRACTION_PROMPT },
       {
         role: "user",
         content: [
           { type: "input_text", text: "Estrai tutti i dati da questo libretto universitario. SOLO esami completati con data e voto." },
-          { type: "input_file", filename: "libretto.pdf", file_data: dataUrl },
+          fileContent,
         ],
       },
     ],
-    text: { format: { type: "json_object" } },
-    temperature: 0.1,
-    max_output_tokens: 4096,
+    text: { format: { type: "json_object" }, verbosity: "high" },
+    // "temperature" non è supportato insieme a "reasoning" su questo modello (l'API lo
+    // rifiuta con 400) — il controllo sulla precisione passa da reasoning.effort, non più
+    // dal sampling.
+    reasoning: { effort: "high" },
+    // I token di ragionamento (interni, invisibili) sono conteggiati in questo stesso
+    // budget: con un limite basso il JSON finale può troncarsi a metà su un libretto con
+    // molti esami, perdendo silenziosamente le ultime righe. Budget alto = niente troncamento.
+    max_output_tokens: 16384,
   };
 
   const response = await fetch("https://api.openai.com/v1/responses", {
@@ -131,6 +112,41 @@ async function parseTranscriptPdf(base64Data: string): Promise<ParsedTranscript>
   if (!textOutput) {
     throw new Error("Nessuna risposta dall'AI per il parsing del transcript.");
   }
+
+  return textOutput;
+}
+
+export async function parseTranscriptFile(base64Data: string, mimeType: string): Promise<ParsedTranscript> {
+  const isPdf = mimeType === "application/pdf";
+
+  if (isPdf) {
+    return parseTranscriptPdf(base64Data);
+  }
+
+  return parseTranscriptImage(base64Data, mimeType);
+}
+
+async function parseTranscriptImage(base64Data: string, mimeType: string): Promise<ParsedTranscript> {
+  const dataUrl = `data:${mimeType};base64,${base64Data}`;
+
+  const textOutput = await callResponsesAPI({
+    type: "input_image",
+    image_url: dataUrl,
+    // "original" preserva i dettagli fini (numeri piccoli, tabelle dense) meglio di "high".
+    detail: "original",
+  });
+
+  return JSON.parse(textOutput) as ParsedTranscript;
+}
+
+async function parseTranscriptPdf(base64Data: string): Promise<ParsedTranscript> {
+  const dataUrl = `data:application/pdf;base64,${base64Data}`;
+
+  const textOutput = await callResponsesAPI({
+    type: "input_file",
+    filename: "libretto.pdf",
+    file_data: dataUrl,
+  });
 
   return JSON.parse(textOutput) as ParsedTranscript;
 }

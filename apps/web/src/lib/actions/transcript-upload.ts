@@ -1,6 +1,6 @@
 "use server";
 
-import { parseTranscriptFile, formatTranscriptForChat, type ParsedCourse } from "@mira/ai";
+import { parseTranscriptFile, formatTranscriptForChat, TRANSCRIPT_MODEL, type ParsedCourse } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -214,7 +214,7 @@ export async function uploadTranscript(formData: FormData) {
     await (supabase.from("ai_logs") as any).insert({
       module: "transcript_parser",
       provider: "openai",
-      model: "gpt-4o",
+      model: TRANSCRIPT_MODEL,
       entity_type: "student_transcript",
       entity_id: transcript!.id,
       user_id: profileId,

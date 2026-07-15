@@ -3,6 +3,11 @@ import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+
+// Il libretto si può ricaricare anche da qui (HeaderBlock): il parsing usa un modello ad
+// alto reasoning effort per la massima accuratezza su voti/esami, che può superare il
+// timeout di default delle funzioni serverless.
+export const maxDuration = 120;
 import { ensureCardBlocksExist } from "@/lib/actions/card-blocks";
 import { EditableSection } from "@/components/card/editable-section";
 import { MiraCardLayout } from "@/components/card/mira-card-layout";

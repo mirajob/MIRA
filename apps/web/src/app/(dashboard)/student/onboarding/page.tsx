@@ -5,6 +5,11 @@ import { OnboardingFlow } from "./onboarding-flow";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+// Il parsing del libretto (uploadTranscript) usa un modello ad alto reasoning effort per
+// la massima accuratezza su voti/esami: può superare il timeout di default delle funzioni
+// serverless, quindi questa route (da cui la Server Action viene invocata) ne ha bisogno.
+export const maxDuration = 120;
+
 export default async function OnboardingPage() {
   const ctx = await getUserContext();
   if (!ctx.isStudent) redirect("/api/auth/redirect");
