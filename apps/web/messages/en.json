@@ -469,6 +469,7 @@
     "eyebrow": "For associations",
     "heading": "Apply for your association",
     "intro": "Fill in your association's details and create your president account. Your request will be verified within 24h. You'll receive a confirmation email. Meanwhile, you can already start building your student profile.",
+    "existingAccountBanner": "Already have a MIRA account? <link>Log in</link> and apply for your association without creating new credentials.",
     "associationNameLabel": "Association name *",
     "associationNamePlaceholder": "e.g. BSIC, Bocconi Finance Club...",
     "categoryLabel": "Category *",
@@ -485,6 +486,10 @@
     "passwordHelper": "At least 8 characters, one uppercase letter, one number, and one special character.",
     "submitLoading": "Sending...",
     "submit": "Submit application"
+  },
+  "AssociaEsistentePage": {
+    "intro": "You're signed in as {email}. Fill in your association's details: the request will be verified within 24h.",
+    "differentAccountNote": "Wrong account? Sign out and log in with the right one before applying for your association."
   },
   "InAttesaPage": {
     "heading": "Application pending",

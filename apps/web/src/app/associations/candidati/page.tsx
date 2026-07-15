@@ -93,9 +93,19 @@ export default function CandidatiAssociazionePage() {
         <div className="w-full max-w-md">
           <p className="text-eyebrow text-petrol uppercase tracking-wider mb-3">{t("eyebrow")}</p>
           <h1 className="font-display text-h1 text-navy mb-2">{t("heading")}</h1>
-          <p className="text-body text-ink-secondary mb-8">
+          <p className="text-body text-ink-secondary mb-6">
             {t("intro")}
           </p>
+
+          <div className="rounded-md border border-petrol/30 bg-petrol-50 px-4 py-3 mb-8 text-body-sm text-ink-secondary">
+            {t.rich("existingAccountBanner", {
+              link: (chunks) => (
+                <Link href={`/login?redirect=${encodeURIComponent("/associations/nuova")}`} className="text-petrol font-medium underline underline-offset-2 decoration-1 hover:text-petrol-700">
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
@@ -248,7 +258,7 @@ export default function CandidatiAssociazionePage() {
 
             <p className="text-center text-body-sm text-ink-secondary">
               {c("alreadyHaveAccount")}{" "}
-              <Link href="/login" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
+              <Link href={`/login?redirect=${encodeURIComponent("/associations/nuova")}`} className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
                 {c("login")}
               </Link>
             </p>

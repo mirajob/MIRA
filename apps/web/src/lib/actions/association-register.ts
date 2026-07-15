@@ -46,6 +46,54 @@ async function waitForProfile(supabase: any, authUserId: string): Promise<string
   return null;
 }
 
+/** Crea la pagina associazione (pending) + la membership da presidente per un profilo già esistente. */
+async function createAssociationForProfile(
+  supabase: any,
+  profileId: string,
+  contactEmail: string | null | undefined,
+  input: { associationName: string; category: string; websiteUrl: string; description: string }
+) {
+  const baseSlug = toSlug(input.associationName) || "associazione";
+  const slug = await uniqueSlug(supabase, baseSlug);
+
+  const { data: association, error: assocErr } = await supabase
+    .from("association_profiles")
+    .insert({
+      name: input.associationName,
+      slug,
+      category: input.category || null,
+      short_description: input.description || null,
+      website_url: input.websiteUrl || null,
+      contact_email: contactEmail,
+      official: false,
+      verification_status: "pending_verification",
+      created_by_user_id: profileId,
+    })
+    .select("id, slug, name")
+    .single();
+
+  if (assocErr) {
+    console.error("association_profiles insert error:", assocErr);
+    return { error: "Errore nella creazione della pagina associazione." as const };
+  }
+
+  const permissions: Record<string, boolean> = {};
+  for (const perm of ROLE_PERMISSION_TEMPLATES.association_president) {
+    permissions[perm] = true;
+  }
+
+  await supabase.from("association_memberships").insert({
+    association_id: association.id,
+    user_id: profileId,
+    role: "association_president",
+    permissions,
+    status: "active",
+    joined_at: new Date().toISOString(),
+  });
+
+  return { success: true as const, slug: association.slug as string, name: association.name as string };
+}
+
 /**
  * Crea in un solo passaggio server-side: utente auth (già confermato — l'associazione
  * passa comunque per una revisione manuale del MIRA admin entro 24h, non serve anche il
@@ -72,7 +120,9 @@ export async function registerAssociationPresident(input: {
 
   // Un tentativo precedente (col vecchio bug "Sessione non valida") può aver già creato
   // l'utente auth senza completare associazione/profilo studente: recupera quell'account
-  // invece di bloccare il retry con "email già registrata".
+  // invece di bloccare il retry con "email già registrata". Va fatto SOLO per account mai
+  // confermati — altrimenti chiunque potrebbe rubare un account MIRA reale digitando la sua
+  // email in questo form pubblico e sovrascrivendone silenziosamente la password.
   const { data: existingProfile } = await supabase
     .from("profiles")
     .select("id, auth_user_id")
@@ -89,8 +139,13 @@ export async function registerAssociationPresident(input: {
       .eq("user_id", (existingProfile as any).id)
       .maybeSingle();
 
-    if (existingMembership) {
-      return { error: "Esiste già un account con questa email." };
+    const { data: existingAuthUser } = await supabase.auth.admin.getUserById(
+      (existingProfile as any).auth_user_id
+    );
+    const neverConfirmed = !existingAuthUser?.user?.email_confirmed_at;
+
+    if (existingMembership || !neverConfirmed) {
+      return { error: "Esiste già un account con questa email. Accedi per candidare una nuova associazione." };
     }
 
     const { error: updateErr } = await supabase.auth.admin.updateUserById(
@@ -136,46 +191,30 @@ export async function registerAssociationPresident(input: {
     degreeLevel: input.degreeLevel,
   });
 
-  const baseSlug = toSlug(input.associationName) || "associazione";
-  const slug = await uniqueSlug(supabase, baseSlug);
-
-  const { data: association, error: assocErr } = await supabase
-    .from("association_profiles")
-    .insert({
-      name: input.associationName,
-      slug,
-      category: input.category || null,
-      short_description: input.description || null,
-      website_url: input.websiteUrl || null,
-      contact_email: email,
-      official: false,
-      verification_status: "pending_verification",
-      created_by_user_id: profileId,
-    })
-    .select("id, slug, name")
-    .single();
-
-  if (assocErr) {
-    console.error("association_profiles insert error:", assocErr);
+  const result = await createAssociationForProfile(supabase, profileId, email, input);
+  if (result.error) {
     await supabase.auth.admin.deleteUser(authUserId).catch(() => {});
-    return { error: "Errore nella creazione della pagina associazione." };
   }
+  return result;
+}
 
-  const permissions: Record<string, boolean> = {};
-  for (const perm of ROLE_PERMISSION_TEMPLATES.association_president) {
-    permissions[perm] = true;
-  }
+/**
+ * Per chi ha già un account MIRA (studente o presidente di un'altra associazione) e vuole
+ * candidare la sua associazione senza rifare la registrazione: niente campi di
+ * credenziali, si usa il profilo della sessione già autenticata.
+ */
+export async function attachAssociationToCurrentUser(input: {
+  associationName: string;
+  category: string;
+  websiteUrl: string;
+  description: string;
+}) {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
 
-  await supabase.from("association_memberships").insert({
-    association_id: association.id,
-    user_id: profileId,
-    role: "association_president",
-    permissions,
-    status: "active",
-    joined_at: new Date().toISOString(),
-  });
+  await ensureStudentProfile(supabase, ctx.profile.id, ctx.user.email);
 
-  return { success: true, slug: association.slug as string, name: association.name as string };
+  return createAssociationForProfile(supabase, ctx.profile.id, ctx.user.email, input);
 }
 
 export async function approveAssociation(associationId: string) {
