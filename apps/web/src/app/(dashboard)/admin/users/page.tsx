@@ -1,6 +1,7 @@
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { CopyLink } from "./copy-link";
 import { DeleteUserButton } from "./delete-user-button";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -84,12 +85,21 @@ export default async function AdminUsersPage() {
           {rows.map((s) => (
             <tr key={s.id} className="border-b border-border last:border-0 hover:bg-navy-50/50">
               <td className="py-4 px-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy text-white text-eyebrow font-semibold">
-                    {(s.fullName ?? s.email).charAt(0).toUpperCase()}
+                {s.onboardingCompleted ? (
+                  <Link href={`/admin/users/${s.id}/card`} className="flex items-center gap-3 group">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy text-white text-eyebrow font-semibold">
+                      {(s.fullName ?? s.email).charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-body font-medium text-navy group-hover:underline underline-offset-2 decoration-1">{s.fullName ?? "—"}</span>
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy text-white text-eyebrow font-semibold">
+                      {(s.fullName ?? s.email).charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-body font-medium text-navy">{s.fullName ?? "—"}</span>
                   </div>
-                  <span className="text-body font-medium text-navy">{s.fullName ?? "—"}</span>
-                </div>
+                )}
               </td>
               <td className="py-4 px-4 text-body-sm text-ink">{s.email}</td>
               <td className="py-4 px-4 text-body-sm text-ink">{degreeLevelLabel(s.degreeLevel)}</td>

@@ -966,7 +966,8 @@
     "deleteConfirmWord": "DELETE",
     "deletedLabel": "Deleted",
     "deleteButton": "Delete",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "backToUsers": "← Back to users"
   },
   "OnboardingFlow": {
     "progressTitle": "Your MIRA Card",
