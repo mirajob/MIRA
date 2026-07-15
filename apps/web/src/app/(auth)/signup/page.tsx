@@ -37,6 +37,7 @@ function SignupForm() {
   const [university, setUniversity] = useState("");
   const [degreeLevel, setDegreeLevel] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -193,19 +194,33 @@ function SignupForm() {
           <p className="mt-1 text-body-sm text-ink-tertiary">{t("passwordHelper")}</p>
         </label>
 
-        <p className="text-body-sm text-ink-tertiary">
-          {t.rich("privacyNotice", {
-            link: (chunks) => (
-              <Link href="/privacy" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
-                {chunks}
-              </Link>
-            ),
-          })}
-        </p>
+        <label className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            required
+            checked={acceptedTerms}
+            onChange={(e) => setAcceptedTerms(e.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-border text-petrol focus:ring-petrol"
+          />
+          <span className="text-body-sm text-ink-secondary">
+            {t.rich("termsConsent", {
+              privacyLink: (chunks) => (
+                <Link href="/privacy" target="_blank" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
+                  {chunks}
+                </Link>
+              ),
+              termsLink: (chunks) => (
+                <Link href="/termini" target="_blank" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </span>
+        </label>
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !acceptedTerms}
           className="w-full bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {loading ? t("submitLoading") : c("signUp")}

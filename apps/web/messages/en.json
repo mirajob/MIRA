@@ -97,7 +97,7 @@
     "emailSentBody": "We've sent a confirmation link to {email}. Click the link to activate your account.",
     "emailSentDelayNote": "The email can take a few minutes to arrive — if you don't see it right away, check your spam folder too.",
     "emailSentBackToLogin": "Back to login",
-    "privacyNotice": "By creating an account you agree to our <link>Privacy Policy</link>."
+    "termsConsent": "I have read the <privacyLink>Privacy Policy</privacyLink> and I agree to the <termsLink>Terms of Service</termsLink>."
   },
   "AziendePage": {
     "backLink": "← Go back",
