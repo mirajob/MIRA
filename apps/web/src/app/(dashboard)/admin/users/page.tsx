@@ -35,10 +35,12 @@ export default async function AdminUsersPage() {
 
   // Questa pagina è il roster studenti: gli altri ruoli (admin, aziende, associazioni)
   // non hanno uno student_profile e si gestiscono altrove.
+  // `user_id` su student_profiles è UNIQUE, quindi Postgrest restituisce l'embed come
+  // oggetto singolo (relazione 1:1), non come array — niente `?.[0]`.
   const students: StudentRow[] = (profiles ?? [])
-    .filter((p) => (p.student_profiles as Array<Record<string, unknown>>)?.length)
+    .filter((p) => Boolean(p.student_profiles))
     .map((p) => {
-      const sp = (p.student_profiles as Array<Record<string, unknown>>)[0];
+      const sp = p.student_profiles as Record<string, unknown>;
       return {
         id: p.id as string,
         fullName: p.full_name as string | null,
