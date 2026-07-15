@@ -478,6 +478,7 @@
     "descriptionLabel": "Breve descrizione",
     "descriptionPlaceholder": "Cosa fa l'associazione, in due righe...",
     "credentialsSectionLabel": "I tuoi dati di accesso (presidente)",
+    "credentialsSectionIntro": "Questi dati creano anche il tuo profilo studente MIRA: potrai costruire la tua MiraCard da subito, mentre aspetti la verifica dell'associazione.",
     "fullNameLabel": "Nome e cognome *",
     "emailLabel": "Email *",
     "passwordLabel": "Password *",

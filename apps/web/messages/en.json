@@ -478,6 +478,7 @@
     "descriptionLabel": "Short description",
     "descriptionPlaceholder": "What the association does, in a couple of lines...",
     "credentialsSectionLabel": "Your login details (president)",
+    "credentialsSectionIntro": "These details also create your MIRA student profile: you can start building your MiraCard right away, while your association is being reviewed.",
     "fullNameLabel": "Full name *",
     "emailLabel": "Email *",
     "passwordLabel": "Password *",

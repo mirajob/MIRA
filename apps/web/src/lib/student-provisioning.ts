@@ -22,7 +22,8 @@ function guessUniversityFromEmail(email: string | null | undefined): string {
 export async function ensureStudentProfile(
   supabase: Awaited<ReturnType<typeof createServiceClient>>,
   profileId: string,
-  email: string | null | undefined
+  email: string | null | undefined,
+  overrides?: { university?: string; degreeLevel?: string }
 ) {
   const { data: existing } = await (supabase.from("student_profiles") as any)
     .select("id")
@@ -33,7 +34,8 @@ export async function ensureStudentProfile(
     await (supabase.from("student_profiles") as any).insert({
       user_id: profileId,
       university_email: email,
-      university: guessUniversityFromEmail(email),
+      university: overrides?.university || guessUniversityFromEmail(email),
+      degree_level: overrides?.degreeLevel || null,
     });
   }
 

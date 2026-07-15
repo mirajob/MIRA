@@ -1,6 +1,6 @@
 "use server";
 
-import { createServiceClient, createServerClient } from "@mira/supabase/server";
+import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { ensureStudentProfile } from "@/lib/student-provisioning";
 import { sendAssociationDecisionEmail } from "@/lib/email";
@@ -46,26 +46,95 @@ async function waitForProfile(supabase: any, authUserId: string): Promise<string
   return null;
 }
 
-export async function setupAssociationProfile(input: {
+/**
+ * Crea in un solo passaggio server-side: utente auth (già confermato — l'associazione
+ * passa comunque per una revisione manuale del MIRA admin entro 24h, non serve anche il
+ * click di conferma email), profilo studente (stessi dati del signup normale, così il
+ * presidente può costruire la sua MiraCard da subito) e la pagina associazione in
+ * attesa di verifica. Non dipende da una sessione: il vecchio flusso (signUp lato client
+ * seguito da una server action che leggeva la sessione) falliva sempre con "Sessione non
+ * valida" perché la conferma email è obbligatoria su questo progetto Supabase, quindi
+ * auth.signUp() non restituisce mai una sessione al primo giro.
+ */
+export async function registerAssociationPresident(input: {
   associationName: string;
   category: string;
   websiteUrl: string;
   description: string;
   presidentName: string;
+  email: string;
+  password: string;
+  university: string;
+  degreeLevel: string;
 }) {
-  // Read auth from session — never trust client-supplied user IDs
-  const serverClient = await createServerClient();
-  const { data: { user } } = await serverClient.auth.getUser();
-  if (!user) return { error: "Sessione non valida. Riprova." };
-
+  const email = input.email.trim().toLowerCase();
   const supabase = await createServiceClient();
 
-  const profileId = await waitForProfile(supabase, user.id);
-  if (!profileId) return { error: "Profilo non trovato dopo la registrazione. Riprova." };
+  // Un tentativo precedente (col vecchio bug "Sessione non valida") può aver già creato
+  // l'utente auth senza completare associazione/profilo studente: recupera quell'account
+  // invece di bloccare il retry con "email già registrata".
+  const { data: existingProfile } = await supabase
+    .from("profiles")
+    .select("id, auth_user_id")
+    .eq("email", email)
+    .maybeSingle();
 
-  if (input.presidentName) {
-    await supabase.from("profiles").update({ full_name: input.presidentName }).eq("id", profileId);
+  let authUserId: string;
+  let profileId: string;
+
+  if (existingProfile) {
+    const { data: existingMembership } = await supabase
+      .from("association_memberships")
+      .select("id")
+      .eq("user_id", (existingProfile as any).id)
+      .maybeSingle();
+
+    if (existingMembership) {
+      return { error: "Esiste già un account con questa email." };
+    }
+
+    const { error: updateErr } = await supabase.auth.admin.updateUserById(
+      (existingProfile as any).auth_user_id,
+      { password: input.password, email_confirm: true }
+    );
+    if (updateErr) return { error: "Errore nel recupero dell'account esistente. Riprova." };
+
+    authUserId = (existingProfile as any).auth_user_id;
+    profileId = (existingProfile as any).id;
+  } else {
+    const { data: created, error: createErr } = await supabase.auth.admin.createUser({
+      email,
+      password: input.password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: input.presidentName,
+        signup_source: "association",
+      },
+    });
+
+    if (createErr || !created?.user) {
+      const alreadyRegistered = createErr?.message?.toLowerCase().includes("already registered")
+        || createErr?.message?.toLowerCase().includes("already been registered");
+      return {
+        error: alreadyRegistered
+          ? "Esiste già un account con questa email."
+          : "Errore nella creazione dell'account. Riprova.",
+      };
+    }
+
+    authUserId = created.user.id;
+    const foundProfileId = await waitForProfile(supabase, authUserId);
+    if (!foundProfileId) {
+      await supabase.auth.admin.deleteUser(authUserId).catch(() => {});
+      return { error: "Profilo non trovato dopo la registrazione. Riprova." };
+    }
+    profileId = foundProfileId;
   }
+
+  await ensureStudentProfile(supabase, profileId, email, {
+    university: input.university,
+    degreeLevel: input.degreeLevel,
+  });
 
   const baseSlug = toSlug(input.associationName) || "associazione";
   const slug = await uniqueSlug(supabase, baseSlug);
@@ -78,7 +147,7 @@ export async function setupAssociationProfile(input: {
       category: input.category || null,
       short_description: input.description || null,
       website_url: input.websiteUrl || null,
-      contact_email: user.email,
+      contact_email: email,
       official: false,
       verification_status: "pending_verification",
       created_by_user_id: profileId,
@@ -88,7 +157,7 @@ export async function setupAssociationProfile(input: {
 
   if (assocErr) {
     console.error("association_profiles insert error:", assocErr);
-    await supabase.auth.admin.deleteUser(user.id).catch(() => {});
+    await supabase.auth.admin.deleteUser(authUserId).catch(() => {});
     return { error: "Errore nella creazione della pagina associazione." };
   }
 
@@ -105,8 +174,6 @@ export async function setupAssociationProfile(input: {
     status: "active",
     joined_at: new Date().toISOString(),
   });
-
-  await ensureStudentProfile(supabase, profileId, user.email);
 
   return { success: true, slug: association.slug as string, name: association.name as string };
 }

@@ -3,16 +3,20 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { createBrowserClient } from "@mira/supabase/client";
-import { setupAssociationProfile } from "@/lib/actions/association-register";
+import { registerAssociationPresident } from "@/lib/actions/association-register";
 import { ASSOCIATION_CATEGORIES, validatePassword } from "@mira/domain";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { PasswordInput } from "@/components/password-input";
+import { UniversityCombobox } from "@/components/university-combobox";
+
+const DEGREE_LEVEL_VALUES = ["triennale", "magistrale", "ciclo_unico"] as const;
 
 export default function CandidatiAssociazionePage() {
   const t = useTranslations("CandidatiPage");
   const c = useTranslations("Common");
+  const s = useTranslations("SignupPage");
   const v = useTranslations("Validation");
   const [associationName, setAssociationName] = useState("");
   const [category, setCategory] = useState("");
@@ -20,7 +24,10 @@ export default function CandidatiAssociazionePage() {
   const [description, setDescription] = useState("");
   const [presidentName, setPresidentName] = useState("");
   const [email, setEmail] = useState("");
+  const [university, setUniversity] = useState("");
+  const [degreeLevel, setDegreeLevel] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -37,50 +44,36 @@ export default function CandidatiAssociazionePage() {
 
     setLoading(true);
 
-    const supabase = createBrowserClient();
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: presidentName, signup_source: "association" } },
-    });
-
-    if (signUpError) {
-      setError(signUpError.message);
-      setLoading(false);
-      return;
-    }
-
-    // Email già registrata: Supabase risponde con successo (identities vuoto)
-    // invece di un errore, per non rivelare quali email esistono già.
-    if (data.user && data.user.identities?.length === 0) {
-      setError(c("authErrors.user_already_registered"));
-      setLoading(false);
-      return;
-    }
-
-    if (!data.user?.id) {
-      setError(t("registrationErrorGeneric"));
-      setLoading(false);
-      return;
-    }
-
     const normalizedUrl = websiteUrl
       ? websiteUrl.startsWith("http") ? websiteUrl : `https://${websiteUrl}`
       : "";
 
-    const result = await setupAssociationProfile({
+    const result = await registerAssociationPresident({
       associationName,
       category,
       websiteUrl: normalizedUrl,
       description,
       presidentName,
+      email,
+      password,
+      university,
+      degreeLevel,
     });
 
     if (result.error) {
-      // Sign out so the orphaned auth user doesn't block a retry
-      await supabase.auth.signOut();
       setError(result.error + t("retrySameEmail"));
       setLoading(false);
+      return;
+    }
+
+    // L'account è già confermato lato server (registerAssociationPresident usa l'admin
+    // API): basta autenticarsi con le stesse credenziali per ottenere una sessione.
+    const supabase = createBrowserClient();
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError) {
+      // L'account e l'associazione esistono comunque: manda l'utente al login invece di
+      // bloccarlo su un errore, così può accedere subito con le credenziali appena scelte.
+      router.push("/login");
       return;
     }
 
@@ -162,7 +155,8 @@ export default function CandidatiAssociazionePage() {
             </label>
 
             <div className="border-t border-border pt-5">
-              <p className="text-label text-ink-secondary mb-4">{t("credentialsSectionLabel")}</p>
+              <p className="text-label text-ink-secondary mb-1">{t("credentialsSectionLabel")}</p>
+              <p className="text-body-sm text-ink-tertiary mb-4">{t("credentialsSectionIntro")}</p>
 
               <div className="space-y-4">
                 <label className="block">
@@ -189,6 +183,30 @@ export default function CandidatiAssociazionePage() {
                 </label>
 
                 <label className="block">
+                  <span className="text-label text-navy mb-2 block">{s("universityLabel")}</span>
+                  <UniversityCombobox
+                    value={university}
+                    onChange={setUniversity}
+                    inputClassName="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-label text-navy mb-2 block">{s("degreeLevelLabel")}</span>
+                  <select
+                    required
+                    value={degreeLevel}
+                    onChange={(e) => setDegreeLevel(e.target.value)}
+                    className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
+                  >
+                    <option value="">{s("degreeLevelPlaceholder")}</option>
+                    {DEGREE_LEVEL_VALUES.map((value) => (
+                      <option key={value} value={value}>{s(`degreeLevels.${value}`)}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block">
                   <span className="text-label text-navy mb-2 block">{t("passwordLabel")}</span>
                   <PasswordInput value={password} onChange={setPassword} required minLength={8} autoComplete="new-password" />
                   <p className="mt-1 text-body-sm text-ink-tertiary">{t("passwordHelper")}</p>
@@ -196,9 +214,33 @@ export default function CandidatiAssociazionePage() {
               </div>
             </div>
 
+            <label className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                required
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-border text-petrol focus:ring-petrol"
+              />
+              <span className="text-body-sm text-ink-secondary">
+                {s.rich("termsConsent", {
+                  privacyLink: (chunks) => (
+                    <Link href="/privacy" target="_blank" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
+                      {chunks}
+                    </Link>
+                  ),
+                  termsLink: (chunks) => (
+                    <Link href="/termini" target="_blank" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
+                      {chunks}
+                    </Link>
+                  ),
+                })}
+              </span>
+            </label>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !acceptedTerms}
               className="w-full bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? t("submitLoading") : t("submit")}
