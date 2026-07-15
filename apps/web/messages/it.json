@@ -469,7 +469,6 @@
     "eyebrow": "Per le associazioni",
     "heading": "Candida la tua associazione",
     "intro": "Compila i dati della tua associazione e crea il tuo account da presidente. La tua richiesta sarà verificata entro 24h. Riceverai una mail di conferma. Nel frattempo potrai già iniziare a costruire il tuo profilo studente.",
-    "existingAccountBanner": "Hai già un account MIRA? <link>Accedi</link> e candida la tua associazione senza ricreare le credenziali.",
     "associationNameLabel": "Nome associazione *",
     "associationNamePlaceholder": "Es. BSIC, Bocconi Finance Club...",
     "categoryLabel": "Categoria *",
@@ -480,16 +479,16 @@
     "descriptionPlaceholder": "Cosa fa l'associazione, in due righe...",
     "credentialsSectionLabel": "I tuoi dati di accesso (presidente)",
     "credentialsSectionIntro": "Questi dati creano anche il tuo profilo studente MIRA: potrai costruire la tua MiraCard da subito, mentre aspetti la verifica dell'associazione.",
+    "loginSectionLabel": "Accedi al tuo account",
+    "loginSectionIntro": "Usa le credenziali del tuo account MIRA esistente: la candidatura verrà collegata al tuo profilo.",
+    "switchToLogin": "Hai già un account? Accedi",
+    "switchToCreate": "Non hai un account? Registrati",
     "fullNameLabel": "Nome e cognome *",
     "emailLabel": "Email *",
     "passwordLabel": "Password *",
     "passwordHelper": "Almeno 8 caratteri, una maiuscola, un numero e un carattere speciale.",
     "submitLoading": "Invio in corso...",
     "submit": "Invia candidatura"
-  },
-  "AssociaEsistentePage": {
-    "intro": "Sei connesso come {email}. Compila i dati della tua associazione: la richiesta sarà verificata entro 24h.",
-    "differentAccountNote": "Account sbagliato? Esci e accedi con l'account giusto prima di candidare l'associazione."
   },
   "InAttesaPage": {
     "heading": "Candidatura in attesa",

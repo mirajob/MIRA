@@ -469,7 +469,6 @@
     "eyebrow": "For associations",
     "heading": "Apply for your association",
     "intro": "Fill in your association's details and create your president account. Your request will be verified within 24h. You'll receive a confirmation email. Meanwhile, you can already start building your student profile.",
-    "existingAccountBanner": "Already have a MIRA account? <link>Log in</link> and apply for your association without creating new credentials.",
     "associationNameLabel": "Association name *",
     "associationNamePlaceholder": "e.g. BSIC, Bocconi Finance Club...",
     "categoryLabel": "Category *",
@@ -480,16 +479,16 @@
     "descriptionPlaceholder": "What the association does, in a couple of lines...",
     "credentialsSectionLabel": "Your login details (president)",
     "credentialsSectionIntro": "These details also create your MIRA student profile: you can start building your MiraCard right away, while your association is being reviewed.",
+    "loginSectionLabel": "Log in to your account",
+    "loginSectionIntro": "Use your existing MIRA account credentials: the application will be linked to your profile.",
+    "switchToLogin": "Already have an account? Log in",
+    "switchToCreate": "Don't have an account? Sign up",
     "fullNameLabel": "Full name *",
     "emailLabel": "Email *",
     "passwordLabel": "Password *",
     "passwordHelper": "At least 8 characters, one uppercase letter, one number, and one special character.",
     "submitLoading": "Sending...",
     "submit": "Submit application"
-  },
-  "AssociaEsistentePage": {
-    "intro": "You're signed in as {email}. Fill in your association's details: the request will be verified within 24h.",
-    "differentAccountNote": "Wrong account? Sign out and log in with the right one before applying for your association."
   },
   "InAttesaPage": {
     "heading": "Application pending",
