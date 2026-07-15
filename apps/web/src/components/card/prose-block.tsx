@@ -20,15 +20,6 @@ interface ProseBlockProps {
   onApproved?: () => void;
 }
 
-/** Limiti one-page: la card documento ha spazio fisso, i testi devono restare sintetici.
- * `autodescrizione` ora ospita il Profilo personale (interessi + autodescrizione uniti,
- * card rework 2026-07): limite più alto, ma sempre compatibile col foglio A4 (dubbio 38). */
-const MAX_LENGTHS: Record<ProseBlockProps["blockType"], number> = {
-  autodescrizione: 900,
-  interessi: 450,
-  piano_carriera: 450,
-};
-
 export function ProseBlock({ blockType, title, testo, status, serif, stato, intro, placeholder, onApproved }: ProseBlockProps) {
   const t = useTranslations("CardBlocks");
   const c = useTranslations("Common");
@@ -62,7 +53,6 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
         <textarea
           value={text}
           placeholder={placeholder}
-          maxLength={MAX_LENGTHS[blockType]}
           onChange={(e) => {
             setText(e.target.value);
             setDirty(true);
@@ -72,23 +62,18 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
             serif ? "font-display" : ""
           }`}
         />
-        <div className="flex items-center justify-between gap-3">
-          {/* Il Profilo personale (riga autodescrizione) ha la riscrittura AI: lo studente
-              scrive come parla, anche in italiano, e MIRA lo trasforma in inglese in prima persona. */}
-          {blockType === "autodescrizione" ? (
-            <MiraImproveButton
-              getText={() => text}
-              improve={async (raw) => (await miraImproveProfilo({ testo: raw })).testo}
-              onImproved={(improved) => {
-                setText(improved);
-                setDirty(true);
-              }}
-            />
-          ) : (
-            <span />
-          )}
-          <p className="text-right text-xs text-ink-tertiary">{text.length}/{MAX_LENGTHS[blockType]}</p>
-        </div>
+        {/* Il Profilo personale (riga autodescrizione) ha la riscrittura AI: lo studente
+            scrive come parla, anche in italiano, e MIRA lo trasforma in inglese in prima persona. */}
+        {blockType === "autodescrizione" && (
+          <MiraImproveButton
+            getText={() => text}
+            improve={async (raw) => (await miraImproveProfilo({ testo: raw })).testo}
+            onImproved={(improved) => {
+              setText(improved);
+              setDirty(true);
+            }}
+          />
+        )}
         {dirty && (
           <button
             onClick={handleSave}

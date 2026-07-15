@@ -193,6 +193,16 @@ function SignupForm() {
           <p className="mt-1 text-body-sm text-ink-tertiary">{t("passwordHelper")}</p>
         </label>
 
+        <p className="text-body-sm text-ink-tertiary">
+          {t.rich("privacyNotice", {
+            link: (chunks) => (
+              <Link href="/privacy" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
+                {chunks}
+              </Link>
+            ),
+          })}
+        </p>
+
         <button
           type="submit"
           disabled={loading}

@@ -21,17 +21,20 @@ import type {
  * La MiraCard come documento a formato fisso — il "CV virtuale".
  *
  * A differenza di MiraCardLayout (contenuto responsive che si riadatta), qui la card è un
- * foglio a larghezza fissa (~A4 a 96dpi) che viene SCALATO per stare nel contenitore, come
- * un PDF in un viewer: da telefono la vedi intera rimpicciolita e tocchi per ingrandire.
+ * foglio a larghezza fissa che viene SCALATO per stare nel contenitore, come un PDF in un
+ * viewer: da telefono la vedi intera rimpicciolita e tocchi per ingrandire.
  * Le sezioni espandibili non allungano mai il foglio — aprono un overlay sopra la card
  * (pannello centrato su desktop, bottom sheet su mobile), così la pagina resta immutabile.
+ *
+ * L'altezza del foglio segue il contenuto reale (misurato via ResizeObserver): niente più
+ * formato A4 fisso, altrimenti resta spazio bianco in fondo per i profili con poco testo.
  *
  * L'overlay è renderizzato FUORI dal sottoalbero trasformato: position:fixed dentro un
  * antenato con transform verrebbe posizionato rispetto a quello, non al viewport.
  */
 
-const SHEET_W = 794; // larghezza A4 a 96dpi
-const SHEET_MIN_H = 1123; // altezza A4 — il foglio può crescere oltre, ma non restringersi
+const SHEET_W = 680; // larghezza foglio — più stretta dell'A4 per restare quasi quadrato una volta tagliato al contenuto
+const SHEET_MIN_H = 320; // altezza minima di sicurezza per profili con pochissimo contenuto
 const ZOOM_THRESHOLD = 0.7; // sotto questa scala il testo non è leggibile: si abilita il tap-to-zoom
 
 export interface MiraCardDocumentProps {

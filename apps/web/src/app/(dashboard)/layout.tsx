@@ -2,7 +2,6 @@ import { getUserContext } from "@/lib/auth";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { UserNav } from "@/components/user-nav";
 import { MobileHeader } from "@/components/mobile-header";
-import { StudentBottomNav } from "@/components/student-bottom-nav";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { getUnreadCounts } from "@/lib/actions/notifications";
 import { hasWorkspaceAccess } from "@/lib/association-roles";
@@ -68,21 +67,10 @@ export default async function DashboardLayout({
       <MobileHeader nav={navContent} user={userContent} />
 
       <main className="flex-1 bg-paper">
-        <div
-          className={`mx-auto max-w-app px-4 py-6 lg:px-8 lg:py-8 ${
-            ctx.isStudent ? "pb-24 lg:pb-8" : ""
-          }`}
-        >
+        <div className="mx-auto max-w-app px-4 py-6 lg:px-8 lg:py-8">
           {children}
         </div>
       </main>
-
-      {ctx.isStudent && (
-        <StudentBottomNav
-          unreadNotifications={unreadCounts.other}
-          unreadAziende={unreadCounts.aziende}
-        />
-      )}
     </div>
   );
 }

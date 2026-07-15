@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { submitApplication } from "@/lib/actions/applications";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Question {
   id: string;
@@ -140,7 +141,13 @@ export function ApplicationForm({ cycleId, positions, questions, slug }: { cycle
         <label className="flex items-start gap-3">
           <input type="checkbox" required className="mt-1 h-4 w-4 rounded border-border text-petrol focus:ring-petrol" />
           <span className="text-body-sm text-ink-secondary">
-            {t("consentText")}
+            {t.rich("consentText", {
+              link: (chunks) => (
+                <Link href="/privacy" target="_blank" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </span>
         </label>
       </div>

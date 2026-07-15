@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@mira/supabase/middleware";
 
-const PUBLIC_ROUTES = ["/", "/login", "/signup", "/verify-email", "/auth/callback", "/auth/confirm", "/associations", "/join", "/aziende"];
+const PUBLIC_ROUTES = ["/", "/login", "/signup", "/verify-email", "/auth/callback", "/auth/confirm", "/associations", "/join", "/aziende", "/privacy"];
 const ADMIN_ROUTES = ["/admin"];
 
 function isPublicRoute(pathname: string): boolean {
