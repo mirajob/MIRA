@@ -457,7 +457,7 @@
     "positionQuestionLabel": "Which position are you applying for?",
     "genericApplication": "Generic application",
     "noQuestions": "No additional questions for this application.",
-    "consentText": "I consent to the processing of my personal data for the purpose of evaluating my application, as described in the <link>Privacy Policy</link>. My data will only be visible to authorized members of the association.",
+    "consentText": "I consent to the processing of my personal data for the purpose of evaluating my application, as described in the <privacyLink>Privacy Policy</privacyLink>, and I agree to the <termsLink>Terms of Service</termsLink>. My data will only be visible to authorized members of the association.",
     "availabilityPlaceholder": "e.g. 10-15 hours/week",
     "rolePreferencePlaceholder": "e.g. Analyst, Marketing",
     "submitLoading": "Submitting application...",

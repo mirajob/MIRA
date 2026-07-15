@@ -142,8 +142,13 @@ export function ApplicationForm({ cycleId, positions, questions, slug }: { cycle
           <input type="checkbox" required className="mt-1 h-4 w-4 rounded border-border text-petrol focus:ring-petrol" />
           <span className="text-body-sm text-ink-secondary">
             {t.rich("consentText", {
-              link: (chunks) => (
+              privacyLink: (chunks) => (
                 <Link href="/privacy" target="_blank" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
+                  {chunks}
+                </Link>
+              ),
+              termsLink: (chunks) => (
+                <Link href="/termini" target="_blank" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
                   {chunks}
                 </Link>
               ),
