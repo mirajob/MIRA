@@ -67,6 +67,40 @@
     "companyBody": "Non aspettare candidature. Trova i candidati giusti: descrivi chi cerchi, MIRA ti mostra chi si adatta davvero.",
     "companyCta": "Registra la tua azienda →"
   },
+  "LandingDemo": {
+    "progressTitle": "La tua MIRA Card",
+    "confirmed": "Confermato",
+    "confirm": "Conferma",
+    "uploadTranscript": "Carica libretto",
+    "improve": "✦ Migliora con MIRA",
+    "reading": "Leggo il libretto…",
+    "expPlaceholder": "Raccontami…",
+    "planLabel": "Piano e direzione",
+    "academicLabel": "Accademiche",
+    "hardLabel": "Pratiche",
+    "pause": "Pausa",
+    "play": "Riprendi",
+    "titles": {
+      "header": "Header",
+      "experience": "Esperienza",
+      "availability": "Disponibilità",
+      "skills": "Competenze",
+      "languages": "Lingue",
+      "profile": "Profilo personale"
+    },
+    "guide": {
+      "headerIntro": "Ciao {name}! Costruiamo la tua MIRA Card.",
+      "headerUploading": "Leggo il tuo libretto…",
+      "headerFilled": "Fatto — controlla i dati e conferma.",
+      "expAsk": "Raccontami un'esperienza.",
+      "expImprove": "Scrivi come ti viene — ci penso io a metterla in forma.",
+      "expImproved": "Eccola, pronta da CV. Confermi?",
+      "availability": "Cosa cerchi, e i prossimi passi?",
+      "skills": "Dai tuoi esami, ecco le tue competenze.",
+      "languages": "E le lingue che parli.",
+      "profile": "Ultima cosa — chi sei oltre al CV."
+    }
+  },
   "LoginPage": {
     "heading": "Accedi",
     "emailPlaceholderCompany": "nome@azienda.com",

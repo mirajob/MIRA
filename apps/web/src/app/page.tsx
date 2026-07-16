@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@mira/supabase/server";
 import { getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { LandingDemo } from "@/components/landing/landing-demo";
 
 export default async function HomePage() {
   const supabase = await createServerClient();
@@ -30,23 +31,31 @@ export default async function HomePage() {
         </div>
       </header>
 
-      <main className="flex flex-col items-center justify-center px-6 py-12">
-        <p className="text-eyebrow text-navy/60 mb-4 uppercase">
-          {t("eyebrow")}
-        </p>
-        <h1 className="font-display text-display-xl text-navy text-center max-w-3xl">
-          {t("heading")}
-        </h1>
-        <p className="mt-6 text-body-lg text-ink-secondary text-center max-w-2xl">
-          {t("subhead")}
-        </p>
-        <div className="mt-10">
-          <Link
-            href="/signup"
-            className="bg-navy text-white px-8 py-4 rounded-md text-body hover:bg-navy-700 transition-colors duration-100"
-          >
-            {t("ctaStudent")}
-          </Link>
+      <main className="mx-auto max-w-6xl px-6 lg:px-12 py-12 lg:py-20">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          <div className="text-center lg:text-left">
+            <p className="text-eyebrow text-navy/60 mb-4 uppercase">
+              {t("eyebrow")}
+            </p>
+            <h1 className="font-display text-display-xl text-navy max-w-xl mx-auto lg:mx-0">
+              {t("heading")}
+            </h1>
+            <p className="mt-6 text-body-lg text-ink-secondary max-w-xl mx-auto lg:mx-0">
+              {t("subhead")}
+            </p>
+            <div className="mt-10">
+              <Link
+                href="/signup"
+                className="inline-block bg-navy text-white px-8 py-4 rounded-md text-body hover:bg-navy-700 transition-colors duration-100"
+              >
+                {t("ctaStudent")}
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex justify-center lg:justify-end">
+            <LandingDemo />
+          </div>
         </div>
       </main>
 
