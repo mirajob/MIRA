@@ -26,7 +26,7 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
 
   const { data: association } = await supabase
     .from("association_profiles")
-    .select("id, name, slug, logo_url, verification_status")
+    .select("id, name, slug, logo_url, verification_status, public_page_status")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -102,6 +102,11 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
 
   const showOnboardingBanner = membership && studentProfile && !studentProfile.onboarding_completed;
 
+  // Finché la pagina pubblica non è pubblicata, l'associazione non compare ai
+  // candidati: lo diciamo con un banner su ogni tab, così non aprono un ciclo
+  // pensando di essere già visibili. Sparisce da solo appena pubblicano.
+  const showPublicPageBanner = association.public_page_status !== "published";
+
   return (
     <div>
       {showOnboardingBanner && (
@@ -111,6 +116,25 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
         >
           {t("onboardingBanner")}
         </Link>
+      )}
+
+      {showPublicPageBanner && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning/30 bg-warning-bg px-4 py-3">
+          <p className="flex items-center gap-2 text-body-sm text-warning">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            {t("publicPageBanner")}
+          </p>
+          <Link
+            href={`/association/${slug}/public-page`}
+            className="shrink-0 text-body-sm font-medium text-navy underline underline-offset-2 hover:text-petrol transition-colors"
+          >
+            {t("publicPageBannerCta")}
+          </Link>
+        </div>
       )}
 
       {associationHeader}

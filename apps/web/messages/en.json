@@ -597,7 +597,9 @@
     "navMembri": "Board",
     "navPaginaPubblica": "Public page",
     "pendingHeading": "{name} is awaiting approval",
-    "pendingBody": "We'll review your association as soon as possible and email you the outcome. You'll get access to the dashboard once it's approved."
+    "pendingBody": "We'll review your association as soon as possible and email you the outcome. You'll get access to the dashboard once it's approved.",
+    "publicPageBanner": "Until you publish your public page, candidates can't find you.",
+    "publicPageBannerCta": "Complete the page →"
   },
   "Board": {
     "heading": "Board",

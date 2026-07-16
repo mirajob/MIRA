@@ -597,7 +597,9 @@
     "navMembri": "Board",
     "navPaginaPubblica": "Pagina pubblica",
     "pendingHeading": "{name} è in attesa di approvazione",
-    "pendingBody": "Verificheremo la tua associazione il prima possibile e ti scriveremo l'esito via email. Avrai accesso alla dashboard una volta approvata."
+    "pendingBody": "Verificheremo la tua associazione il prima possibile e ti scriveremo l'esito via email. Avrai accesso alla dashboard una volta approvata.",
+    "publicPageBanner": "Finché non pubblichi la tua pagina pubblica, non sei visibile ai candidati.",
+    "publicPageBannerCta": "Completa la pagina →"
   },
   "Board": {
     "heading": "Board",
