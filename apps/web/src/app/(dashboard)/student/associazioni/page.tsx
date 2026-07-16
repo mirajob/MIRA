@@ -112,53 +112,55 @@ export default async function StudentAssociazioniPage() {
         );
         const showOnboardingPrompt = (myMemberships ?? []).length > 0 && !studentProfile?.onboarding_completed;
 
-        if (pendingApproval.length === 0 && pendingPages.length === 0 && !showOnboardingPrompt) return null;
+        const showTodo = pendingPages.length > 0 || showOnboardingPrompt;
+
+        if (pendingApproval.length === 0 && !showTodo) return null;
 
         return (
-          <div className="rounded-lg border border-petrol/30 bg-petrol-50 p-5 space-y-3">
-            <h2 className="font-sans text-h3 text-navy">{t("todoHeading")}</h2>
-
+          <div className="space-y-4">
+            {/* In attesa di approvazione: box informativo, nessuna azione, niente "Da fare". */}
             {pendingApproval.map((m: any) => (
-              <div key={m.association_id} className="flex items-center justify-between gap-3 rounded-md bg-white px-4 py-3">
+              <div key={m.association_id} className="rounded-lg border border-petrol/30 bg-petrol-50 px-5 py-4">
                 <span className="text-body text-ink">
                   {t.rich("associationPending", {
                     name: m.association_profiles.name,
                     strong: (chunks) => <strong className="text-navy">{chunks}</strong>,
                   })}
                 </span>
-                <Link
-                  href="/associations/in-attesa"
-                  className="flex-shrink-0 bg-navy text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-navy-700 transition-colors duration-100"
-                >
-                  {t("pendingStatusCta")}
-                </Link>
               </div>
             ))}
 
-            {pendingPages.map((m: any) => (
-              <div key={m.association_id} className="flex items-center justify-between gap-3 rounded-md bg-white px-4 py-3">
-                <span className="text-body text-ink">
-                  {t.rich("pageNotPublic", {
-                    name: m.association_profiles.name,
-                    strong: (chunks) => <strong className="text-navy">{chunks}</strong>,
-                  })}
-                </span>
-                <Link
-                  href={`/association/${m.association_profiles.slug}/public-page`}
-                  className="flex-shrink-0 bg-navy text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-navy-700 transition-colors duration-100"
-                >
-                  {t("completePageCta")}
-                </Link>
-              </div>
-            ))}
+            {/* Da fare: azioni concrete (costruire la pagina pubblica, completare il profilo). */}
+            {showTodo && (
+              <div className="rounded-lg border border-petrol/30 bg-petrol-50 p-5 space-y-3">
+                <h2 className="font-sans text-h3 text-navy">{t("todoHeading")}</h2>
 
-            {showOnboardingPrompt && (
-              <Link
-                href="/student/onboarding"
-                className="block rounded-md bg-white px-4 py-3 text-body-sm text-petrol-700 hover:bg-petrol-100/50 transition-colors"
-              >
-                {t("completeProfileCta")}
-              </Link>
+                {pendingPages.map((m: any) => (
+                  <div key={m.association_id} className="flex items-center justify-between gap-3 rounded-md bg-white px-4 py-3">
+                    <span className="text-body text-ink">
+                      {t.rich("pageNotPublic", {
+                        name: m.association_profiles.name,
+                        strong: (chunks) => <strong className="text-navy">{chunks}</strong>,
+                      })}
+                    </span>
+                    <Link
+                      href={`/association/${m.association_profiles.slug}/public-page`}
+                      className="flex-shrink-0 bg-navy text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-navy-700 transition-colors duration-100"
+                    >
+                      {t("completePageCta")}
+                    </Link>
+                  </div>
+                ))}
+
+                {showOnboardingPrompt && (
+                  <Link
+                    href="/student/onboarding"
+                    className="block rounded-md bg-white px-4 py-3 text-body-sm text-petrol-700 hover:bg-petrol-100/50 transition-colors"
+                  >
+                    {t("completeProfileCta")}
+                  </Link>
+                )}
+              </div>
             )}
           </div>
         );

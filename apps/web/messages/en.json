@@ -428,7 +428,6 @@
     "pageNotPublic": "<strong>{name}</strong>'s page isn't public yet",
     "completePageCta": "Complete it →",
     "associationPending": "<strong>{name}</strong> is awaiting approval",
-    "pendingStatusCta": "View status →",
     "completeProfileCta": "Complete your MiraCard profile (~5 minutes) →",
     "myApplicationsHeading": "Your applications",
     "noApplications": "You don't have any applications yet. Find an association below.",

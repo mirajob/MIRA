@@ -428,7 +428,6 @@
     "pageNotPublic": "La pagina di <strong>{name}</strong> non è ancora pubblica",
     "completePageCta": "Completala →",
     "associationPending": "<strong>{name}</strong> è in attesa di approvazione",
-    "pendingStatusCta": "Vedi stato →",
     "completeProfileCta": "Completa il tuo profilo MiraCard (~5 minuti) →",
     "myApplicationsHeading": "Le tue candidature",
     "noApplications": "Non hai ancora candidature. Trova un'associazione qui sotto.",
