@@ -129,6 +129,29 @@
       "detail": "L'AI legge ogni profilo — decidi tu."
     }
   },
+  "CompanyDemo": {
+    "pause": "Pausa",
+    "play": "Riprendi",
+    "talentSearch": "Ricerca talenti",
+    "newSearch": "Nuova ricerca",
+    "whyMatch": "Perché MIRA te lo propone",
+    "dimSkills": "Competenze",
+    "dimAvailability": "Disponibilità",
+    "dimBoth": "Competenze + disponibilità",
+    "interests": "Interessi",
+    "requestContact": "Richiedi contatto",
+    "contactAccepted": "Contatto accettato",
+    "sendCase": "Invia business case",
+    "conversationsTitle": "Le tue conversazioni",
+    "interviewProposed": "Colloquio proposto",
+    "contacted": "Contattato",
+    "awaitingReply": "In attesa",
+    "guide": {
+      "compose": "Descrivi il candidato ideale.",
+      "results": "Ecco chi corrisponde — e perché.",
+      "detail": "Anonimo finché non accetta il contatto."
+    }
+  },
   "LoginPage": {
     "heading": "Accedi",
     "emailPlaceholderCompany": "nome@azienda.com",

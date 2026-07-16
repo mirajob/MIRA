@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { LandingDemo } from "@/components/landing/landing-demo";
 import { AssociationDemo } from "@/components/landing/association-demo";
+import { CompanyDemo } from "@/components/landing/company-demo";
 
 export default async function HomePage() {
   const supabase = await createServerClient();
@@ -85,18 +86,23 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Azienda: card per ora (il reel dedicato arriverà dopo) */}
-          <div className="mx-auto mt-16 max-w-xl rounded-lg border border-border bg-white p-8 text-center">
-            <h2 className="font-display text-h2 text-navy mb-2">{t("companyTitle")}</h2>
-            <p className="text-body text-ink-secondary mb-6">
-              {t("companyBody")}
-            </p>
-            <Link
-              href="/aziende"
-              className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
-            >
-              {t("companyCta")}
-            </Link>
+          {/* Banda azienda: testo + CTA a sinistra, reel a destra */}
+          <div className="mt-16 grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+            <div className="text-center lg:text-left">
+              <h2 className="font-display text-h1 text-navy mb-3">{t("companyTitle")}</h2>
+              <p className="text-body text-ink-secondary mb-6 max-w-md mx-auto lg:mx-0">
+                {t("companyBody")}
+              </p>
+              <Link
+                href="/aziende"
+                className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
+              >
+                {t("companyCta")}
+              </Link>
+            </div>
+            <div className="flex justify-center lg:justify-end">
+              <CompanyDemo />
+            </div>
           </div>
         </div>
       </section>

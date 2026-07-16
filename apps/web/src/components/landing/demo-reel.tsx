@@ -27,6 +27,8 @@ export type CursorTarget =
   | "publish"
   | "candidate"
   | "invite"
+  | "contact"
+  | "send"
   | null;
 
 export interface BaseFrame {

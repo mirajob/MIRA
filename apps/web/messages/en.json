@@ -129,6 +129,29 @@
       "detail": "AI reads every profile — you decide."
     }
   },
+  "CompanyDemo": {
+    "pause": "Pause",
+    "play": "Play",
+    "talentSearch": "Talent search",
+    "newSearch": "New search",
+    "whyMatch": "Why MIRA suggests them",
+    "dimSkills": "Skills",
+    "dimAvailability": "Availability",
+    "dimBoth": "Skills + availability",
+    "interests": "Interests",
+    "requestContact": "Request contact",
+    "contactAccepted": "Contact accepted",
+    "sendCase": "Send business case",
+    "conversationsTitle": "Your conversations",
+    "interviewProposed": "Interview proposed",
+    "contacted": "Contacted",
+    "awaitingReply": "Awaiting reply",
+    "guide": {
+      "compose": "Describe your ideal candidate.",
+      "results": "Here's who fits — and why.",
+      "detail": "Anonymous until they accept the contact."
+    }
+  },
   "LoginPage": {
     "heading": "Log in",
     "emailPlaceholderCompany": "name@company.com",
