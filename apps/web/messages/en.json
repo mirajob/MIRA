@@ -101,6 +101,34 @@
       "profile": "Last thing — who you are beyond the CV."
     }
   },
+  "AssociationDemo": {
+    "pause": "Pause",
+    "play": "Play",
+    "dashboard": "Dashboard",
+    "newCycle": "New recruitment",
+    "positions": "Positions",
+    "requirements": "Requirements",
+    "questions": "Questions",
+    "publish": "Publish",
+    "applications": "Applications",
+    "newCount": "{n} new",
+    "match": "match",
+    "motivation": "Motivation",
+    "aiEvaluation": "AI evaluation",
+    "strongFit": "Strong fit",
+    "inviteInterview": "Invite to interview",
+    "interviewSent": "Interview invite sent",
+    "pipelineTitle": "Selection pipeline",
+    "colReview": "Review",
+    "colInterview": "Interview",
+    "colAccepted": "Accepted",
+    "guide": {
+      "compose": "Tell me who you're recruiting.",
+      "building": "Here's your cycle — positions, requirements, questions.",
+      "candidates": "Applications are coming in.",
+      "detail": "AI reads every profile — you decide."
+    }
+  },
   "LoginPage": {
     "heading": "Log in",
     "emailPlaceholderCompany": "name@company.com",

@@ -4,6 +4,7 @@ import { createServerClient } from "@mira/supabase/server";
 import { getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { LandingDemo } from "@/components/landing/landing-demo";
+import { AssociationDemo } from "@/components/landing/association-demo";
 
 export default async function HomePage() {
   const supabase = await createServerClient();
@@ -60,14 +61,19 @@ export default async function HomePage() {
       </main>
 
       <section className="border-t border-border px-6 lg:px-12 py-16">
-        <div className="mx-auto max-w-4xl">
-          <p className="text-eyebrow text-navy/60 uppercase text-center mb-10">
+        <div className="mx-auto max-w-6xl">
+          <p className="text-eyebrow text-navy/60 uppercase text-center mb-12">
             {t("orgEyebrow")}
           </p>
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div className="rounded-lg border border-border bg-white p-8 text-center">
-              <h2 className="font-display text-h2 text-navy mb-2">{t("associationTitle")}</h2>
-              <p className="text-body text-ink-secondary mb-6">
+
+          {/* Banda associazione: reel a sinistra, testo + CTA a destra */}
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+            <div className="order-2 flex justify-center lg:order-1 lg:justify-start">
+              <AssociationDemo />
+            </div>
+            <div className="order-1 text-center lg:order-2 lg:text-left">
+              <h2 className="font-display text-h1 text-navy mb-3">{t("associationTitle")}</h2>
+              <p className="text-body text-ink-secondary mb-6 max-w-md mx-auto lg:mx-0">
                 {t("associationBody")}
               </p>
               <Link
@@ -77,18 +83,20 @@ export default async function HomePage() {
                 {t("associationCta")}
               </Link>
             </div>
-            <div className="rounded-lg border border-border bg-white p-8 text-center">
-              <h2 className="font-display text-h2 text-navy mb-2">{t("companyTitle")}</h2>
-              <p className="text-body text-ink-secondary mb-6">
-                {t("companyBody")}
-              </p>
-              <Link
-                href="/aziende"
-                className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
-              >
-                {t("companyCta")}
-              </Link>
-            </div>
+          </div>
+
+          {/* Azienda: card per ora (il reel dedicato arriverà dopo) */}
+          <div className="mx-auto mt-16 max-w-xl rounded-lg border border-border bg-white p-8 text-center">
+            <h2 className="font-display text-h2 text-navy mb-2">{t("companyTitle")}</h2>
+            <p className="text-body text-ink-secondary mb-6">
+              {t("companyBody")}
+            </p>
+            <Link
+              href="/aziende"
+              className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
+            >
+              {t("companyCta")}
+            </Link>
           </div>
         </div>
       </section>

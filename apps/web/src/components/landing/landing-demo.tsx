@@ -1,31 +1,31 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import {
+  DemoReel,
+  Typewriter,
+  Chip,
+  SectionLabel,
+  Panel,
+  Guide,
+  type SetTarget,
+} from "./demo-reel";
 import {
   studentData,
   studentFrames,
   TOTAL_BLOCKS,
   type Frame,
   type StudentBlock,
-  type CursorTarget,
 } from "./demo-scenario";
 
 /**
- * Reel dimostrativo della landing: un finto telefono in cui gira la meccanica reale
- * di MIRA lato studente — la guida di MIRA, i campi che si compilano da soli, il
- * cursore finto che tocca i bottoni — fino al reveal della MIRA Card completa. Poi
- * riparte in loop.
+ * Scenario STUDENTE del reel della landing (cornice telefono).
  *
- * Principi:
- * - Static-first: senza JS o con prefers-reduced-motion si vede la card completa,
- *   ferma. L'animazione è un enhancement che parte solo dopo il mount e in vista.
- * - Nessun autoplay non fermabile: c'è un controllo pausa (WCAG 2.2.2) e il reel si
- *   ferma quando esce dallo schermo.
- * - Leggero: solo CSS + un piccolo motore a frame, nessuna libreria d'animazione.
- *
- * Il contenuto della card è sempre in inglese; la "cornice" (guida, bottoni) segue
- * la lingua dell'interfaccia via next-intl.
+ * Mostra la meccanica reale dell'onboarding: la guida di MIRA, i campi che si
+ * compilano da soli, il cursore finto che tocca i bottoni, "Migliora con MIRA"
+ * che riscrive il testo grezzo in inglese — fino al reveal della MIRA Card
+ * completa. Il motore (timing, cursore, cornice, pausa, reduced-motion) sta in
+ * `demo-reel.tsx`; qui vivono solo le scene dello studente.
  */
 
 const ORDER: Exclude<StudentBlock, "reveal">[] = [
@@ -46,278 +46,54 @@ const TITLE_KEY: Record<Exclude<StudentBlock, "reveal">, string> = {
   profilo: "profile",
 };
 
-// ---------------------------------------------------------------------------
-// Piccoli helper visivi
-// ---------------------------------------------------------------------------
-
-function Caret() {
-  return (
-    <span
-      className="inline-block w-[2px] h-[1em] -mb-[2px] bg-petrol ml-[1px] align-middle"
-      style={{ animation: "mira-blink 1s step-end infinite" }}
-    />
-  );
-}
-
-/** Testo che si scrive da solo, lettera per lettera, entro una durata. */
-function Typewriter({ text, duration, caret = true, className }: { text: string; duration: number; caret?: boolean; className?: string }) {
-  const [n, setN] = useState(0);
-  useEffect(() => {
-    setN(0);
-    if (!text) return;
-    const per = Math.max(16, duration / text.length);
-    let i = 0;
-    const id = setInterval(() => {
-      i += 1;
-      setN(i);
-      if (i >= text.length) clearInterval(id);
-    }, per);
-    return () => clearInterval(id);
-  }, [text, duration]);
-  return (
-    <span className={className}>
-      {text.slice(0, n)}
-      {caret && n < text.length && <Caret />}
-    </span>
-  );
-}
-
-function Chip({ children, i = 0, tone = "petrol" }: { children: React.ReactNode; i?: number; tone?: "petrol" | "muted" }) {
-  const cls = tone === "petrol" ? "bg-petrol-50 text-petrol-700" : "bg-border/40 text-ink-secondary";
-  return (
-    <span
-      className={`text-[11px] px-2 py-0.5 rounded-full ${cls}`}
-      style={{ animation: "mira-pop .4s var(--ease-out) both", animationDelay: `${i * 70}ms` }}
-    >
-      {children}
-    </span>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <p className="text-[9px] tracking-[0.14em] text-navy/50 uppercase mb-1">{children}</p>;
-}
-
-/** Il pannello bianco che ospita i campi di un blocco. */
-function Panel({ children, i = 0 }: { children: React.ReactNode; i?: number }) {
-  return (
-    <div
-      className="rounded-lg border border-border bg-white px-3.5 py-3 shadow-sm"
-      style={{ animation: "mira-pop .45s var(--ease-out) both", animationDelay: `${i * 60}ms` }}
-    >
-      {children}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Componente principale
-// ---------------------------------------------------------------------------
+type T = ReturnType<typeof useTranslations>;
 
 export function LandingDemo() {
   const t = useTranslations("LandingDemo");
 
-  const rootRef = useRef<HTMLDivElement>(null);
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const targetsRef = useRef<Record<string, HTMLElement | null>>({});
-
-  const [mounted, setMounted] = useState(false);
-  const [reduced, setReduced] = useState(false);
-  const [inView, setInView] = useState(false);
-  const [userPaused, setUserPaused] = useState(false);
-  const [index, setIndex] = useState(0);
-  const [cursor, setCursor] = useState<{ x: number; y: number; visible: boolean; tapping: boolean }>({
-    x: 0,
-    y: 0,
-    visible: false,
-    tapping: false,
-  });
-
-  // Enhancement solo dopo il mount (static-first).
-  useEffect(() => setMounted(true), []);
-
-  // prefers-reduced-motion → card statica.
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const on = () => setReduced(mq.matches);
-    on();
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, []);
-
-  // Gira solo quando è in vista (performance).
-  useEffect(() => {
-    const el = rootRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver((entries) => {
-      const e = entries[0];
-      if (e) setInView(e.isIntersecting);
-    }, { threshold: 0.25 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  const animating = mounted && !reduced;
-  const playing = animating && inView && !userPaused;
-  const REVEAL: Frame = { block: "reveal", phase: "card", approved: TOTAL_BLOCKS, cursor: null, duration: 0 };
-  const frame: Frame = (animating ? studentFrames[index] : undefined) ?? REVEAL;
-
-  // Motore: avanza al frame successivo dopo la sua durata, poi ricomincia.
-  useEffect(() => {
-    if (!playing) return;
-    const id = setTimeout(() => setIndex((i) => (i + 1) % studentFrames.length), frame.duration);
-    return () => clearTimeout(id);
-  }, [index, playing, frame.duration]);
-
-  const setTarget = (name: CursorTarget) => (el: HTMLElement | null) => {
-    if (name) targetsRef.current[name] = el;
-  };
-
-  // Posiziona il cursore finto sul bersaglio del frame e programma il "tap".
-  const measureCursor = useCallback(() => {
-    const container = bodyRef.current;
-    const name = frame.cursor;
-    if (!container || !name) {
-      setCursor((c) => ({ ...c, visible: false, tapping: false }));
-      return;
-    }
-    const el = targetsRef.current[name];
-    if (!el) return;
-    const cr = container.getBoundingClientRect();
-    const tr = el.getBoundingClientRect();
-    setCursor({
-      x: tr.left - cr.left + tr.width / 2,
-      y: tr.top - cr.top + tr.height / 2,
-      visible: true,
-      tapping: false,
-    });
-  }, [frame.cursor]);
-
-  useEffect(() => {
-    if (!animating) return;
-    // doppio rAF: aspetta che l'editor del frame sia dipinto prima di misurare.
-    const raf = requestAnimationFrame(() => requestAnimationFrame(measureCursor));
-    let tapId: ReturnType<typeof setTimeout> | undefined;
-    if (frame.tap && playing) {
-      tapId = setTimeout(() => setCursor((c) => (c.visible ? { ...c, tapping: true } : c)), Math.max(0, frame.duration - 650));
-    }
-    return () => {
-      cancelAnimationFrame(raf);
-      if (tapId) clearTimeout(tapId);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, animating, playing]);
-
-  useEffect(() => {
-    if (!animating) return;
-    const on = () => measureCursor();
-    window.addEventListener("resize", on);
-    return () => window.removeEventListener("resize", on);
-  }, [animating, measureCursor]);
-
-  const approved = frame.approved;
-  const pct = Math.round((approved / TOTAL_BLOCKS) * 100);
-  const isReveal = frame.block === "reveal";
-
-  return (
-    <div ref={rootRef} className="relative mx-auto w-full max-w-[300px]">
-      {/* keyframes locali, così il reel è autosufficiente */}
-      <style>{KEYFRAMES}</style>
-
-      {/* Cornice telefono */}
-      <div className="relative rounded-[2.6rem] bg-navy p-[10px] shadow-2xl ring-1 ring-black/10">
-        {/* notch */}
-        <div className="absolute left-1/2 top-[10px] z-20 h-[22px] w-[110px] -translate-x-1/2 rounded-b-2xl bg-navy" />
-
-        <div className="relative overflow-hidden rounded-[2.05rem] bg-cream" style={{ aspectRatio: "300 / 600" }}>
-          <div className="flex h-full flex-col">
-            {/* Barra di stato / brand */}
-            <div className="flex items-center justify-between px-4 pt-4 pb-2">
-              <span className="font-display text-[15px] tracking-tight text-navy">MIRA</span>
-              {animating && (
-                <button
-                  type="button"
-                  onClick={() => setUserPaused((p) => !p)}
-                  aria-label={userPaused ? t("play") : t("pause")}
-                  className="flex h-6 w-6 items-center justify-center rounded-full bg-white/70 text-navy shadow-sm backdrop-blur transition-colors hover:bg-white"
-                >
-                  {userPaused ? (
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-                  ) : (
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
-                  )}
-                </button>
-              )}
-            </div>
-
-            {/* Avanzamento */}
-            <div className="px-4 pb-2">
-              <div className="mb-1 flex items-center justify-between">
-                <span className="text-[9px] tracking-[0.14em] text-navy/50 uppercase">{t("progressTitle")}</span>
-                <span className="text-[10px] font-semibold text-ink tabular-nums">{pct}%</span>
-              </div>
-              <div className="h-1 w-full overflow-hidden rounded-full bg-border">
-                <div className="h-full rounded-full bg-petrol transition-all duration-700 ease-out" style={{ width: `${pct}%` }} />
-              </div>
-            </div>
-
-            {/* Corpo */}
-            <div ref={bodyRef} className="relative flex-1 overflow-hidden">
-              {isReveal ? (
-                <DemoCard t={t} />
-              ) : (
-                <>
-                  {/* stack ancorato in basso: il blocco attivo resta sempre visibile,
-                      i confermati si accumulano sopra e sfumano in alto */}
-                  <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-3.5">
-                    {ORDER.slice(0, approved).map((b) => (
-                      <ApprovedRow key={b} title={t(`titles.${TITLE_KEY[b]}`)} label={t("confirmed")} />
-                    ))}
-                    <ActiveScene frame={frame} t={t} setTarget={setTarget} />
-                  </div>
-                  {/* sfumatura in alto */}
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-cream to-transparent" />
-                </>
-              )}
-
-              {/* Cursore finto */}
-              {cursor.visible && (
-                <div
-                  className="pointer-events-none absolute z-30"
-                  style={{
-                    left: cursor.x,
-                    top: cursor.y,
-                    transform: "translate(-3px, -2px)",
-                    transition: "left .55s var(--ease-out), top .55s var(--ease-out)",
-                  }}
-                >
-                  {cursor.tapping && (
-                    <span
-                      className="absolute -left-2 -top-2 h-8 w-8 rounded-full bg-petrol/30"
-                      style={{ animation: "mira-ripple .6s var(--ease-out) both" }}
-                    />
-                  )}
-                  <svg
-                    width="22"
-                    height="22"
-                    viewBox="0 0 24 24"
-                    className="drop-shadow-md"
-                    style={{ transform: cursor.tapping ? "scale(.82)" : "scale(1)", transition: "transform .18s var(--ease-out)" }}
-                  >
-                    <path d="M5 3l14 8-6 1.5L10 19z" fill="#0A1F33" stroke="#fff" strokeWidth="1.2" strokeLinejoin="round" />
-                  </svg>
-                </div>
-              )}
-            </div>
-          </div>
+  const renderMeter = (frame: Frame) => {
+    const pct = Math.round((frame.approved / TOTAL_BLOCKS) * 100);
+    return (
+      <div className="px-4 pb-2 pt-1">
+        <div className="mb-1 flex items-center justify-between">
+          <span className="text-[9px] tracking-[0.14em] text-navy/50 uppercase">{t("progressTitle")}</span>
+          <span className="text-[10px] font-semibold text-ink tabular-nums">{pct}%</span>
+        </div>
+        <div className="h-1 w-full overflow-hidden rounded-full bg-border">
+          <div className="h-full rounded-full bg-petrol transition-all duration-700 ease-out" style={{ width: `${pct}%` }} />
         </div>
       </div>
-    </div>
+    );
+  };
+
+  const renderFrame = (frame: Frame, { setTarget }: { setTarget: SetTarget }) => {
+    if (frame.block === "reveal") return <DemoCard />;
+    return (
+      <>
+        <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-3.5">
+          {ORDER.slice(0, frame.approved).map((b) => (
+            <ApprovedRow key={b} title={t(`titles.${TITLE_KEY[b]}`)} label={t("confirmed")} />
+          ))}
+          <ActiveScene frame={frame} t={t} setTarget={setTarget} />
+        </div>
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-cream to-transparent" />
+      </>
+    );
+  };
+
+  return (
+    <DemoReel
+      frames={studentFrames}
+      device="phone"
+      renderMeter={renderMeter}
+      renderFrame={renderFrame}
+      renderStatic={() => <DemoCard />}
+      pauseLabel={t("pause")}
+      playLabel={t("play")}
+    />
   );
 }
 
-// ---------------------------------------------------------------------------
-// Righe confermate
 // ---------------------------------------------------------------------------
 
 function ApprovedRow({ title, label }: { title: string; label: string }) {
@@ -333,26 +109,6 @@ function ApprovedRow({ title, label }: { title: string; label: string }) {
         </svg>
         {label}
       </span>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Scena del blocco attivo
-// ---------------------------------------------------------------------------
-
-type SetTarget = (name: CursorTarget) => (el: HTMLElement | null) => void;
-type T = ReturnType<typeof useTranslations>;
-
-function Guide({ text, typing, duration }: { text: string; typing?: boolean; duration?: number }) {
-  return (
-    <div className="rounded-lg border border-petrol/25 bg-petrol-50/70 px-3.5 py-2.5" style={{ animation: "mira-pop .4s var(--ease-out) both" }}>
-      <p className="mb-1 flex items-center gap-1 text-[9px] tracking-[0.14em] text-petrol uppercase">
-        <span aria-hidden="true">✦</span> MIRA
-      </p>
-      <p className="text-[12px] leading-snug text-ink">
-        {typing ? <Typewriter text={text} duration={duration ?? 900} caret={false} /> : text}
-      </p>
     </div>
   );
 }
@@ -402,7 +158,6 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
         </div>
       );
     }
-    // filled
     return (
       <div className="space-y-2">
         <Guide text={t("guide.headerFilled")} />
@@ -458,7 +213,6 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
         </div>
       );
     }
-    // improved
     return (
       <div className="space-y-2">
         <Guide text={t("guide.expImproved")} />
@@ -568,7 +322,7 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
 // Reveal: MIRA Card completa (statica, in inglese)
 // ---------------------------------------------------------------------------
 
-function DemoCard({ t }: { t: T }) {
+function DemoCard() {
   const d = studentData;
   let step = 0;
   const rise = () => ({ animation: "mira-cardin .5s var(--ease-out) both", animationDelay: `${(step++) * 90}ms` });
@@ -620,11 +374,3 @@ function DemoCard({ t }: { t: T }) {
     </div>
   );
 }
-
-const KEYFRAMES = `
-@keyframes mira-blink { 0%,100%{opacity:1} 50%{opacity:0} }
-@keyframes mira-pop { from{opacity:0;transform:translateY(6px) scale(.97)} to{opacity:1;transform:none} }
-@keyframes mira-scan { from{transform:translateY(-120%)} to{transform:translateY(360%)} }
-@keyframes mira-ripple { from{opacity:.5;transform:scale(.3)} to{opacity:0;transform:scale(1.7)} }
-@keyframes mira-cardin { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
-`;

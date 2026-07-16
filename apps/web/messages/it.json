@@ -101,6 +101,34 @@
       "profile": "Ultima cosa — chi sei oltre al CV."
     }
   },
+  "AssociationDemo": {
+    "pause": "Pausa",
+    "play": "Riprendi",
+    "dashboard": "Dashboard",
+    "newCycle": "Nuove candidature",
+    "positions": "Posizioni",
+    "requirements": "Requisiti",
+    "questions": "Domande",
+    "publish": "Pubblica",
+    "applications": "Candidature",
+    "newCount": "{n} nuove",
+    "match": "match",
+    "motivation": "Motivazione",
+    "aiEvaluation": "Valutazione AI",
+    "strongFit": "Ottimo match",
+    "inviteInterview": "Invita al colloquio",
+    "interviewSent": "Invito al colloquio inviato",
+    "pipelineTitle": "Pipeline di selezione",
+    "colReview": "Da valutare",
+    "colInterview": "Colloquio",
+    "colAccepted": "Accettati",
+    "guide": {
+      "compose": "Dimmi chi stai cercando.",
+      "building": "Ecco il tuo ciclo — posizioni, requisiti, domande.",
+      "candidates": "Stanno arrivando le candidature.",
+      "detail": "L'AI legge ogni profilo — decidi tu."
+    }
+  },
   "LoginPage": {
     "heading": "Accedi",
     "emailPlaceholderCompany": "nome@azienda.com",

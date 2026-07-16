@@ -13,6 +13,8 @@
  * vive nei messaggi i18n, non qui.
  */
 
+import type { CursorTarget } from "./demo-reel";
+
 export type StudentBlock =
   | "header"
   | "esperienze"
@@ -21,9 +23,6 @@ export type StudentBlock =
   | "lingue"
   | "profilo"
   | "reveal";
-
-/** Bersaglio del cursore finto in un frame. */
-export type CursorTarget = "upload" | "confirm" | "improve" | null;
 
 export interface Frame {
   block: StudentBlock;
