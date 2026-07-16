@@ -91,6 +91,18 @@ export async function createCycleFromChat(
 
   if (!canCreate) return { error: "Non hai i permessi" };
 
+  // L'associazione deve essere approvata da MIRA prima di poter operare: senza
+  // questo, un board in attesa potrebbe creare cicli chiamando l'azione a mano,
+  // aggirando il redirect del layout.
+  const { data: assoc } = await (supabase.from("association_profiles") as any)
+    .select("verification_status")
+    .eq("id", associationId)
+    .maybeSingle();
+
+  if (!ctx.isMiraAdmin && assoc?.verification_status !== "verified") {
+    return { error: "L'associazione è ancora in attesa di approvazione da parte di MIRA." };
+  }
+
   const lastAssistantMsg = [...conversation].reverse().find((m) => m.role === "assistant");
   if (!lastAssistantMsg?.content.includes("CICLO_PRONTO")) {
     return { error: "Il ciclo non è ancora stato confermato" };

@@ -26,7 +26,7 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
 
   const { data: association } = await supabase
     .from("association_profiles")
-    .select("id, name, slug, logo_url")
+    .select("id, name, slug, logo_url, verification_status")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -48,6 +48,14 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
   // uses to decide whether to even show "Gestisci"/sidebar entries.
   if (membership && !ctx.isMiraAdmin && !hasWorkspaceAccess(membership)) {
     redirect("/student");
+  }
+
+  // Finché MIRA non approva l'associazione, il board NON entra nella dashboard:
+  // vede la schermata "in attesa di approvazione" — anche cliccando la voce in
+  // sidebar. Stesso principio delle aziende (getCompanyContext → /aziende/pending).
+  // L'admin MIRA è esente, così può vedere e approvare.
+  if (!ctx.isMiraAdmin && association.verification_status !== "verified") {
+    redirect("/associations/in-attesa");
   }
 
   const nav = getAssociationNav(slug);
