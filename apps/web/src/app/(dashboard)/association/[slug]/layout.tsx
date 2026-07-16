@@ -50,12 +50,46 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
     redirect("/student");
   }
 
-  // Finché MIRA non approva l'associazione, il board NON entra nella dashboard:
-  // vede la schermata "in attesa di approvazione" — anche cliccando la voce in
-  // sidebar. Stesso principio delle aziende (getCompanyContext → /aziende/pending).
-  // L'admin MIRA è esente, così può vedere e approvare.
-  if (!ctx.isMiraAdmin && association.verification_status !== "verified") {
-    redirect("/associations/in-attesa");
+  // L'admin MIRA vede sempre la dashboard (deve poter revisionare/approvare).
+  const isPending = !ctx.isMiraAdmin && association.verification_status !== "verified";
+
+  const associationHeader = (
+    <div className="mb-6 flex items-center gap-3">
+      {association.logo_url ? (
+        <img src={association.logo_url} alt="" className="h-10 w-10 rounded-md object-cover" />
+      ) : (
+        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-navy text-white text-label font-semibold">
+          {association.name.charAt(0)}
+        </div>
+      )}
+      <div>
+        <h1 className="font-sans text-h3 text-navy">{association.name}</h1>
+        <p className="text-body-sm text-ink-tertiary">
+          {c.has(`boardRoles.${membership?.role}`) ? c(`boardRoles.${membership?.role}`) : c("boardRoles.association_admin")}
+        </p>
+      </div>
+    </div>
+  );
+
+  // Finché MIRA non approva l'associazione, il board NON vede la dashboard: al suo
+  // posto, inline (stessa pagina, sidebar mantenuta), lo stato "in attesa di
+  // approvazione". Nessun redirect: cliccando la voce in sidebar resta qui.
+  if (isPending) {
+    return (
+      <div>
+        {associationHeader}
+        <div className="rounded-lg border border-petrol/30 bg-petrol-50 p-6">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/70 border border-petrol/20">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-petrol">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
+          <h2 className="font-display text-h2 text-navy mb-2">{t("pendingHeading", { name: association.name })}</h2>
+          <p className="text-body text-ink-secondary max-w-xl">{t("pendingBody")}</p>
+        </div>
+      </div>
+    );
   }
 
   const nav = getAssociationNav(slug);
@@ -79,21 +113,7 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
         </Link>
       )}
 
-      <div className="mb-6 flex items-center gap-3">
-        {association.logo_url ? (
-          <img src={association.logo_url} alt="" className="h-10 w-10 rounded-md object-cover" />
-        ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-navy text-white text-label font-semibold">
-            {association.name.charAt(0)}
-          </div>
-        )}
-        <div>
-          <h1 className="font-sans text-h3 text-navy">{association.name}</h1>
-          <p className="text-body-sm text-ink-tertiary">
-            {c.has(`boardRoles.${membership?.role}`) ? c(`boardRoles.${membership?.role}`) : c("boardRoles.association_admin")}
-          </p>
-        </div>
-      </div>
+      {associationHeader}
 
       <nav className="mb-6 flex gap-1 border-b border-border pb-4 overflow-x-auto">
         {nav.map((item) => (

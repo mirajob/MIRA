@@ -427,6 +427,8 @@
     "todoHeading": "To do",
     "pageNotPublic": "<strong>{name}</strong>'s page isn't public yet",
     "completePageCta": "Complete it →",
+    "associationPending": "<strong>{name}</strong> is awaiting approval",
+    "pendingStatusCta": "View status →",
     "completeProfileCta": "Complete your MiraCard profile (~5 minutes) →",
     "myApplicationsHeading": "Your applications",
     "noApplications": "You don't have any applications yet. Find an association below.",
@@ -576,7 +578,7 @@
   },
   "InAttesaPage": {
     "heading": "Application pending",
-    "body": "We've received your association's application. The MIRA admin will review it within 24-48 hours and you'll receive an email with the outcome.",
+    "body": "We've received your association's application. We'll review it as soon as possible and you'll receive an email with the outcome.",
     "meanwhileLabel": "Meanwhile",
     "meanwhileBody": "Start building your student profile on MIRA — your MiraCard. You don't need to wait for the association's approval to do this.",
     "buildProfileCta": "Build your profile →",
@@ -593,8 +595,10 @@
     "onboardingBanner": "Before continuing, complete your MiraCard profile (~5 minutes) →",
     "navCicli": "Cycles",
     "navCandidati": "Candidates",
-    "navMembri": "Members",
-    "navPaginaPubblica": "Public page"
+    "navMembri": "Board",
+    "navPaginaPubblica": "Public page",
+    "pendingHeading": "{name} is awaiting approval",
+    "pendingBody": "We'll review your association as soon as possible and email you the outcome. You'll get access to the dashboard once it's approved."
   },
   "Board": {
     "heading": "Board",
@@ -608,7 +612,7 @@
   },
   "InviteCodeSection": {
     "heading": "Invite link",
-    "description": "Share this link to invite new members. Whoever uses it can choose to join as a member or apply for the board.",
+    "description": "Share this link to invite people to the board. Whoever uses it sends a join request you can approve below.",
     "copied": "Copied!",
     "copyLink": "Copy link",
     "regenerating": "Generating...",

@@ -99,16 +99,41 @@ export default async function StudentAssociazioniPage() {
       <JoinByCode />
 
       {(() => {
-        const pendingPages = (myMemberships ?? []).filter(
-          (m: any) => WORKSPACE_ROLES.includes(m.role) && m.association_profiles?.public_page_status === "draft"
+        const workspaceMemberships = (myMemberships ?? []).filter((m: any) => WORKSPACE_ROLES.includes(m.role));
+        // Non ancora approvata da MIRA: mostra "in attesa di approvazione" e manda
+        // alla pagina post-invio. La pagina pubblica si completa solo DOPO l'ok.
+        const pendingApproval = workspaceMemberships.filter(
+          (m: any) => m.association_profiles?.verification_status !== "verified"
+        );
+        const pendingPages = workspaceMemberships.filter(
+          (m: any) =>
+            m.association_profiles?.verification_status === "verified" &&
+            m.association_profiles?.public_page_status === "draft"
         );
         const showOnboardingPrompt = (myMemberships ?? []).length > 0 && !studentProfile?.onboarding_completed;
 
-        if (pendingPages.length === 0 && !showOnboardingPrompt) return null;
+        if (pendingApproval.length === 0 && pendingPages.length === 0 && !showOnboardingPrompt) return null;
 
         return (
           <div className="rounded-lg border border-petrol/30 bg-petrol-50 p-5 space-y-3">
             <h2 className="font-sans text-h3 text-navy">{t("todoHeading")}</h2>
+
+            {pendingApproval.map((m: any) => (
+              <div key={m.association_id} className="flex items-center justify-between gap-3 rounded-md bg-white px-4 py-3">
+                <span className="text-body text-ink">
+                  {t.rich("associationPending", {
+                    name: m.association_profiles.name,
+                    strong: (chunks) => <strong className="text-navy">{chunks}</strong>,
+                  })}
+                </span>
+                <Link
+                  href="/associations/in-attesa"
+                  className="flex-shrink-0 bg-navy text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-navy-700 transition-colors duration-100"
+                >
+                  {t("pendingStatusCta")}
+                </Link>
+              </div>
+            ))}
 
             {pendingPages.map((m: any) => (
               <div key={m.association_id} className="flex items-center justify-between gap-3 rounded-md bg-white px-4 py-3">

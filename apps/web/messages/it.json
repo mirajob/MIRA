@@ -427,6 +427,8 @@
     "todoHeading": "Da fare",
     "pageNotPublic": "La pagina di <strong>{name}</strong> non è ancora pubblica",
     "completePageCta": "Completala →",
+    "associationPending": "<strong>{name}</strong> è in attesa di approvazione",
+    "pendingStatusCta": "Vedi stato →",
     "completeProfileCta": "Completa il tuo profilo MiraCard (~5 minuti) →",
     "myApplicationsHeading": "Le tue candidature",
     "noApplications": "Non hai ancora candidature. Trova un'associazione qui sotto.",
@@ -576,7 +578,7 @@
   },
   "InAttesaPage": {
     "heading": "Candidatura in attesa",
-    "body": "Abbiamo ricevuto la candidatura della tua associazione. Il MIRA admin la verificherà entro 24-48 ore e riceverai una email con l'esito.",
+    "body": "Abbiamo ricevuto la candidatura della tua associazione. La verificheremo il prima possibile e riceverai una email con l'esito.",
     "meanwhileLabel": "Nel frattempo",
     "meanwhileBody": "Inizia a costruire il tuo profilo studente su MIRA — la tua MiraCard. Non devi aspettare l'approvazione dell'associazione per farlo.",
     "buildProfileCta": "Costruisci il tuo profilo →",
@@ -593,8 +595,10 @@
     "onboardingBanner": "Prima di continuare, completa il tuo profilo MiraCard (~5 minuti) →",
     "navCicli": "Cicli",
     "navCandidati": "Candidati",
-    "navMembri": "Membri",
-    "navPaginaPubblica": "Pagina pubblica"
+    "navMembri": "Board",
+    "navPaginaPubblica": "Pagina pubblica",
+    "pendingHeading": "{name} è in attesa di approvazione",
+    "pendingBody": "Verificheremo la tua associazione il prima possibile e ti scriveremo l'esito via email. Avrai accesso alla dashboard una volta approvata."
   },
   "Board": {
     "heading": "Board",
@@ -608,7 +612,7 @@
   },
   "InviteCodeSection": {
     "heading": "Link invito",
-    "description": "Condividi questo link per invitare nuovi membri. Chi lo usa potrà scegliere se unirsi come membro o candidarsi al board.",
+    "description": "Condividi questo link per invitare persone nel board. Chi lo usa invia una richiesta di ingresso che potrai approvare qui sotto.",
     "copied": "Copiato!",
     "copyLink": "Copia link",
     "regenerating": "Generazione...",
