@@ -158,12 +158,12 @@ function SignupForm() {
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
-            maxLength={6}
+            maxLength={8}
             autoFocus
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
             placeholder="••••••"
-            className="w-full rounded-md border border-border bg-white px-4 py-3 text-center font-mono text-h2 tracking-[0.4em] text-navy placeholder:text-ink-tertiary focus:border-petrol focus:outline-none focus:ring-2 focus:ring-petrol/20"
+            className="w-full rounded-md border border-border bg-white px-4 py-3 text-center font-mono text-h2 tracking-[0.3em] text-navy placeholder:text-ink-tertiary focus:border-petrol focus:outline-none focus:ring-2 focus:ring-petrol/20"
           />
         </label>
 
