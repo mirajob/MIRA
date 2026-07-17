@@ -41,6 +41,9 @@ function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [code, setCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [resent, setResent] = useState(false);
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -97,9 +100,10 @@ function SignupForm() {
       return;
     }
 
-    // Se la conferma email è richiesta, signUp non restituisce una sessione: mandare comunque
-    // avanti l'utente lo farebbe sbattere contro un login vuoto senza sapere perché — meglio
-    // dirgli subito di controllare la posta, con l'avviso che può volerci qualche minuto.
+    // Se la conferma email è richiesta, signUp non restituisce una sessione. Non
+    // usiamo il link cliccabile (i filtri email tipo Safe Links lo pre-aprono e
+    // bruciano il token monouso): mostriamo l'inserimento del codice a 6 cifre,
+    // che nessuno scanner può "digitare".
     if (!data.session) {
       setEmailSent(true);
       setLoading(false);
@@ -109,19 +113,83 @@ function SignupForm() {
     router.push(redirect);
   }
 
+  async function handleVerifyCode(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    const clean = code.trim();
+    if (clean.length < 6) {
+      setError(t("codeInvalid"));
+      return;
+    }
+    setVerifying(true);
+    const supabase = createBrowserClient();
+    const { error } = await supabase.auth.verifyOtp({ email, token: clean, type: "signup" });
+    if (error) {
+      setError(t("codeInvalid"));
+      setVerifying(false);
+      return;
+    }
+    router.push(redirect);
+  }
+
+  async function handleResendCode() {
+    setError(null);
+    setResent(false);
+    const supabase = createBrowserClient();
+    const { error } = await supabase.auth.resend({ type: "signup", email });
+    if (!error) setResent(true);
+  }
+
   if (emailSent) {
     return (
-      <div className="mt-8 space-y-6 rounded-lg border border-border bg-white p-6 text-center">
-        <h2 className="font-display text-h2 text-navy">{t("emailSentHeading")}</h2>
-        <p className="text-body text-ink-secondary">{t("emailSentBody", { email })}</p>
-        <p className="text-body-sm text-ink-tertiary">{t("emailSentDelayNote")}</p>
-        <Link
-          href="/login"
-          className="inline-block text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2"
+      <form onSubmit={handleVerifyCode} className="mt-8 space-y-6 rounded-lg border border-border bg-white p-6">
+        <div className="space-y-2 text-center">
+          <h2 className="font-display text-h2 text-navy">{t("codeHeading")}</h2>
+          <p className="text-body text-ink-secondary">{t("codeBody", { email })}</p>
+        </div>
+
+        {error && (
+          <div className="rounded-md bg-error-bg p-3 text-center text-body-sm text-error">{error}</div>
+        )}
+
+        <label className="block">
+          <span className="mb-2 block text-label text-navy">{t("codeLabel")}</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            autoFocus
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+            placeholder="••••••"
+            className="w-full rounded-md border border-border bg-white px-4 py-3 text-center font-mono text-h2 tracking-[0.4em] text-navy placeholder:text-ink-tertiary focus:border-petrol focus:outline-none focus:ring-2 focus:ring-petrol/20"
+          />
+        </label>
+
+        <button
+          type="submit"
+          disabled={verifying || code.length < 6}
+          className="w-full rounded-md bg-navy px-6 py-3 text-label text-white transition-colors duration-100 hover:bg-navy-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {t("emailSentBackToLogin")}
-        </Link>
-      </div>
+          {verifying ? t("codeVerifying") : t("codeVerify")}
+        </button>
+
+        <div className="space-y-2 text-center">
+          <p className="text-body-sm text-ink-tertiary">{t("emailSentDelayNote")}</p>
+          {resent ? (
+            <p className="text-body-sm font-medium text-success">{t("codeResent")}</p>
+          ) : (
+            <button
+              type="button"
+              onClick={handleResendCode}
+              className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
+            >
+              {t("codeResend")}
+            </button>
+          )}
+        </div>
+      </form>
     );
   }
 

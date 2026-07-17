@@ -182,6 +182,14 @@
     "emailSentBody": "Ti abbiamo inviato un link di conferma a {email}. Clicca sul link per attivare il tuo account.",
     "emailSentDelayNote": "L'email può richiedere qualche minuto per arrivare — se non la vedi subito, controlla anche lo spam.",
     "emailSentBackToLogin": "Torna al login",
+    "codeHeading": "Inserisci il codice",
+    "codeBody": "Ti abbiamo inviato un codice a 6 cifre a {email}. Inseriscilo qui sotto per confermare l'account.",
+    "codeLabel": "Codice di verifica",
+    "codeVerify": "Verifica e continua",
+    "codeVerifying": "Verifica...",
+    "codeResend": "Non l'hai ricevuto? Reinvia il codice",
+    "codeResent": "Codice reinviato — controlla la posta.",
+    "codeInvalid": "Codice non valido o scaduto. Controlla e riprova.",
     "termsConsent": "Ho letto l''<privacyLink>Informativa Privacy</privacyLink> e accetto i <termsLink>Termini di Servizio</termsLink>."
   },
   "AziendePage": {
