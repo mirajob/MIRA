@@ -52,11 +52,19 @@ export async function GET(request: NextRequest) {
   }
 
   if (roleList.includes("student")) {
-    return NextResponse.redirect(new URL("/student", origin));
+    // Chi non ha ancora completato l'onboarding va dritto all'inizio della card,
+    // non alla home dashboard: è il punto in cui la gente si perde e non completa.
+    const { data: studentProfile } = await (service.from("student_profiles") as any)
+      .select("onboarding_completed")
+      .eq("user_id", profileId)
+      .maybeSingle();
+    const dest = studentProfile?.onboarding_completed ? "/student" : "/student/onboarding";
+    return NextResponse.redirect(new URL(dest, origin));
   }
 
-  // No role assigned — create student profile and role on the fly
+  // No role assigned — create student profile and role on the fly. È per forza un
+  // utente nuovo: mandalo direttamente all'inizio del completamento della card.
   await ensureStudentProfile(service, profileId, user.email);
 
-  return NextResponse.redirect(new URL("/student", origin));
+  return NextResponse.redirect(new URL("/student/onboarding", origin));
 }
