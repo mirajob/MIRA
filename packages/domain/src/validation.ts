@@ -97,6 +97,9 @@ export const ITALIAN_UNIVERSITY_DOMAINS: Array<{ name: string; domain: string }>
   { name: "LIUC - Università Cattaneo (Castellanza)", domain: "liuc.it" },
   { name: "Scuola IMT Alti Studi Lucca", domain: "imtlucca.it" },
   { name: "Gran Sasso Science Institute (GSSI)", domain: "gssi.it" },
+
+  // Estero
+  { name: "ESADE Business & Law School (Barcellona)", domain: "esade.edu" },
 ];
 
 export const ALLOWED_STUDENT_DOMAINS = ITALIAN_UNIVERSITY_DOMAINS.map((u) => u.domain);
