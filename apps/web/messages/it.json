@@ -55,10 +55,14 @@
     }
   },
   "HomePage": {
-    "eyebrow": "La tua MiraCard",
-    "heading": "Il tuo CV racconta cosa hai fatto. MIRA racconta chi sei.",
-    "subhead": "La tua MiraCard ti permette di candidarti alle associazioni e di essere scoperto dalle aziende presenti sulla piattaforma. Un unico profilo che continua ad aprirti nuove opportunità.",
-    "ctaStudent": "Registrati come studente",
+    "eyebrow": "Il recruiting al contrario",
+    "heading": "Non mandi CV. Sono le aziende a scrivere a te.",
+    "subhead": "Rispondi a MIRA in chat e nasce la tua MiraCard: cosa hai fatto davvero, chi sei fuori dal curriculum — interessi, come lavori, dove vuoi arrivare — e la tua disponibilità precisa: quale ambito, in che città, da quando e per quanto. Nessun filtro per parole chiave: qui non vieni scartato da un ATS perché hai usato il termine sbagliato. Più racconti, più le aziende ti trovano.",
+    "step1": "Parli con MIRA, 5 minuti",
+    "step2": "Nasce la tua MiraCard",
+    "step3": "Le aziende compatibili ti scrivono",
+    "ctaStudent": "Crea la tua MiraCard — è gratis",
+    "ctaMicrocopy": "Gratis per gli studenti, sempre.",
     "orgEyebrow": "Sei un'azienda o un'associazione?",
     "associationTitle": "Associazione",
     "associationBody": "Candida la tua associazione: gestisci candidature, board e la tua pagina su MIRA.",

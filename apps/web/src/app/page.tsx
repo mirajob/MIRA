@@ -45,6 +45,13 @@ export default async function HomePage() {
             <p className="mt-6 text-body-lg text-ink-secondary max-w-xl mx-auto lg:mx-0">
               {t("subhead")}
             </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-body-sm text-navy/70 lg:justify-start">
+              <span>{t("step1")}</span>
+              <span aria-hidden className="text-navy/30">·</span>
+              <span>{t("step2")}</span>
+              <span aria-hidden className="text-navy/30">·</span>
+              <span>{t("step3")}</span>
+            </div>
             <div className="mt-10">
               <Link
                 href="/signup"
@@ -52,6 +59,7 @@ export default async function HomePage() {
               >
                 {t("ctaStudent")}
               </Link>
+              <p className="mt-3 text-body-sm text-ink-tertiary">{t("ctaMicrocopy")}</p>
             </div>
           </div>
 

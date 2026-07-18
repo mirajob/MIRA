@@ -55,10 +55,14 @@
     }
   },
   "HomePage": {
-    "eyebrow": "Your MiraCard",
-    "heading": "Your résumé tells what you've done. MIRA tells who you are.",
-    "subhead": "Your MiraCard lets you apply to associations and get discovered by companies on the platform. One profile that keeps opening new opportunities.",
-    "ctaStudent": "Sign up as a student",
+    "eyebrow": "Reverse the recruiting",
+    "heading": "You don't send résumés. Companies reach out to you.",
+    "subhead": "Chat with MIRA and your MiraCard takes shape: what you've actually done, who you are beyond the résumé — interests, how you work, where you want to go — and exactly what you're available for: which field, in which city, from when and for how long. No keyword filters: here you won't get dropped by an ATS for using the wrong term. The more you share, the more companies find you.",
+    "step1": "Chat with MIRA, 5 minutes",
+    "step2": "Your MiraCard takes shape",
+    "step3": "Matching companies reach out",
+    "ctaStudent": "Create your MiraCard — it's free",
+    "ctaMicrocopy": "Free for students, always.",
     "orgEyebrow": "Are you a company or a university association?",
     "associationTitle": "Association",
     "associationBody": "Apply for your association: manage applications, board members, and your MIRA page.",
