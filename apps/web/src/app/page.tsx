@@ -60,6 +60,7 @@ export default async function HomePage() {
                 {t("ctaStudent")}
               </Link>
               <p className="mt-3 text-body-sm text-ink-tertiary">{t("ctaMicrocopy")}</p>
+              <p className="mt-2 text-body-sm text-ink-tertiary max-w-md mx-auto lg:mx-0">{t("ctaAssociations")}</p>
             </div>
           </div>
 
