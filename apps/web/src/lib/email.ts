@@ -309,29 +309,44 @@ export async function sendAssociationDecisionEmail({
   approved: boolean;
   reason?: string | null;
 }) {
+  // Le email di decisione alle associazioni sono sempre in inglese (le associazioni MIRA
+  // operano in inglese sulla piattaforma). Il ramo "approvata" ha un HTML dedicato invece di
+  // riusare invitationEmailHtml: quel template mostrerebbe un footer "il link scade tra 14
+  // giorni" che qui è fuori luogo (non c'è nessun link a scadenza).
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: approved
-      ? `${associationName} è stata approvata su MIRA`
-      : `Aggiornamento sulla richiesta di ${associationName}`,
+      ? `${associationName} has been approved on MIRA`
+      : `Update on your ${associationName} request`,
     html: approved
-      ? invitationEmailHtml({
-          eyebrow: "Richiesta approvata",
-          heading: `${associationName} è attiva`,
-          body: `Buone notizie: la tua richiesta è stata approvata. La pagina di <strong>${associationName}</strong> è ora attiva su MIRA e puoi iniziare a gestirla.`,
-          inviteUrl: "https://mirajob.cloud/api/auth/redirect",
-          note: null,
-        }).replace("Accetta l'invito", "Vai su MIRA")
+      ? `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
+          <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 24px; margin-bottom: 32px;" />
+          <p style="color: #718096; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Request approved</p>
+          <h2 style="color: #0a1628; font-size: 20px; margin-bottom: 8px;">${associationName} is now active</h2>
+          <p style="color: #4a5568; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+            Good news: your request has been approved. The page for <strong>${associationName}</strong> is now active on MIRA and you can start managing it.
+          </p>
+          <a href="https://mirajob.cloud/api/auth/redirect" style="display: inline-block; background: #0a1628; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;">
+            Go to MIRA
+          </a>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
+          <p style="color: #a0aec0; font-size: 12px;">
+            MIRA — University Talent Platform<br/>
+            <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
+          </p>
+        </div>
+      `
       : `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
           <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 24px; margin-bottom: 32px;" />
-          <h2 style="color: #0a1628; font-size: 20px; margin-bottom: 8px;">Richiesta non approvata</h2>
+          <h2 style="color: #0a1628; font-size: 20px; margin-bottom: 8px;">Request not approved</h2>
           <p style="color: #4a5568; font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
-            La richiesta per <strong>${associationName}</strong> non è stata approvata in questo momento.
+            The request for <strong>${associationName}</strong> was not approved at this time.
           </p>
           ${reason ? `<div style="background: #f7f8fa; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; color: #1a202c; font-size: 14px;">${reason}</div>` : ""}
-          <p style="color: #718096; font-size: 13px;">Per domande, rispondi a questa email.</p>
+          <p style="color: #718096; font-size: 13px;">For any questions, just reply to this email.</p>
           <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
           <p style="color: #a0aec0; font-size: 12px;">MIRA — University Talent Platform</p>
         </div>
