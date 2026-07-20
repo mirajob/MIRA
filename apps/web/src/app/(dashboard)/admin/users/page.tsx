@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { CopyLink } from "./copy-link";
 import { DeleteUserButton } from "./delete-user-button";
+import { ReminderButton } from "./reminder-button";
 import { getLocale, getTranslations } from "next-intl/server";
 
 interface StudentRow {
@@ -66,7 +67,7 @@ export default async function AdminUsersPage() {
     return tDegree.has(`degreeLevels.${level}`) ? tDegree(`degreeLevels.${level}`) : level;
   }
 
-  function StudentsTable({ rows }: { rows: StudentRow[] }) {
+  function StudentsTable({ rows, showReminder = false }: { rows: StudentRow[]; showReminder?: boolean }) {
     if (!rows.length) {
       return <p className="px-4 py-4 text-body-sm text-ink-tertiary">{t("noStudentsInSection")}</p>;
     }
@@ -104,10 +105,19 @@ export default async function AdminUsersPage() {
               <td className="py-4 px-4 text-body-sm text-ink">{s.email}</td>
               <td className="py-4 px-4 text-body-sm text-ink">{degreeLevelLabel(s.degreeLevel)}</td>
               <td className="py-4 px-4 text-body-sm text-ink-secondary">
-                {new Date(s.createdAt).toLocaleDateString(dateLocale)}
+                {new Date(s.createdAt).toLocaleString(dateLocale, {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </td>
               <td className="py-4 px-4">
-                <DeleteUserButton profileId={s.id} name={s.fullName ?? s.email} />
+                <div className="flex items-center gap-4">
+                  {showReminder && <ReminderButton profileId={s.id} studentName={s.fullName ?? s.email} />}
+                  <DeleteUserButton profileId={s.id} name={s.fullName ?? s.email} />
+                </div>
               </td>
             </tr>
           ))}
@@ -154,7 +164,7 @@ export default async function AdminUsersPage() {
                     {t("onlyRegistered")} <span className="text-ink-tertiary font-normal">({registered.length})</span>
                   </p>
                 </div>
-                <StudentsTable rows={registered} />
+                <StudentsTable rows={registered} showReminder />
               </div>
 
               <div className="rounded-lg border border-border bg-white overflow-hidden">

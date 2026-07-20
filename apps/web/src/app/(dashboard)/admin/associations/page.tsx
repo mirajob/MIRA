@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { InvitationForm } from "./invitation-form";
 import { ApproveRejectButtons } from "./approve-reject-buttons";
 import { DeleteAssociationButton } from "./delete-association-button";
+import { ReminderButton } from "./reminder-button";
 import { getLocale, getTranslations } from "next-intl/server";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -15,7 +16,7 @@ const STATUS_CLASS: Record<string, string> = {
   suspended: "bg-red-100 text-red-600",
 };
 
-function AssociationRow({ assoc, president, t, statusLabel, dateLocale }: { assoc: any; president: any; t: any; statusLabel: Record<string, string>; dateLocale: string }) {
+function AssociationRow({ assoc, president, t, statusLabel, dateLocale, showReminder }: { assoc: any; president: any; t: any; statusLabel: Record<string, string>; dateLocale: string; showReminder?: boolean }) {
   return (
     <tr className="border-b border-border last:border-0 hover:bg-paper transition-colors">
       <td className="px-4 py-3">
@@ -33,10 +34,11 @@ function AssociationRow({ assoc, president, t, statusLabel, dateLocale }: { asso
         </span>
       </td>
       <td className="px-4 py-3 text-body-sm text-ink-tertiary">
-        {new Date(assoc.created_at).toLocaleDateString(dateLocale, { day: "numeric", month: "short", year: "numeric" })}
+        {new Date(assoc.created_at).toLocaleString(dateLocale, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
+          {showReminder && <ReminderButton associationId={assoc.id} associationName={assoc.name} />}
           <ApproveRejectButtons associationId={assoc.id} status={assoc.verification_status} />
           <DeleteAssociationButton associationId={assoc.id} name={assoc.name} />
         </div>
@@ -45,7 +47,7 @@ function AssociationRow({ assoc, president, t, statusLabel, dateLocale }: { asso
   );
 }
 
-function AssociationTable({ rows, presidentByAssociation, t, statusLabel, dateLocale }: { rows: any[]; presidentByAssociation: Record<string, any>; t: any; statusLabel: Record<string, string>; dateLocale: string }) {
+function AssociationTable({ rows, presidentByAssociation, t, statusLabel, dateLocale, showReminder }: { rows: any[]; presidentByAssociation: Record<string, any>; t: any; statusLabel: Record<string, string>; dateLocale: string; showReminder?: boolean }) {
   if (!rows.length) {
     return <p className="px-4 py-4 text-body-sm text-ink-tertiary">{t("noAssociationsInSection")}</p>;
   }
@@ -63,22 +65,22 @@ function AssociationTable({ rows, presidentByAssociation, t, statusLabel, dateLo
       </thead>
       <tbody>
         {rows.map((assoc) => (
-          <AssociationRow key={assoc.id} assoc={assoc} president={presidentByAssociation[assoc.id]} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
+          <AssociationRow key={assoc.id} assoc={assoc} president={presidentByAssociation[assoc.id]} t={t} statusLabel={statusLabel} dateLocale={dateLocale} showReminder={showReminder} />
         ))}
       </tbody>
     </table>
   );
 }
 
-function AssociationSection({ label, rows, presidentByAssociation, t, statusLabel, dateLocale }: {
-  label: string; rows: any[]; presidentByAssociation: Record<string, any>; t: any; statusLabel: Record<string, string>; dateLocale: string;
+function AssociationSection({ label, rows, presidentByAssociation, t, statusLabel, dateLocale, showReminder }: {
+  label: string; rows: any[]; presidentByAssociation: Record<string, any>; t: any; statusLabel: Record<string, string>; dateLocale: string; showReminder?: boolean;
 }) {
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
       <div className="border-b border-border bg-navy-50/50 px-4 py-2">
         <p className="text-label text-navy">{label}</p>
       </div>
-      <AssociationTable rows={rows} presidentByAssociation={presidentByAssociation} t={t} statusLabel={statusLabel} dateLocale={dateLocale} />
+      <AssociationTable rows={rows} presidentByAssociation={presidentByAssociation} t={t} statusLabel={statusLabel} dateLocale={dateLocale} showReminder={showReminder} />
     </div>
   );
 }
@@ -181,6 +183,7 @@ export default async function AdminAssociationsPage() {
                 t={t}
                 statusLabel={statusLabel}
                 dateLocale={dateLocale}
+                showReminder
               />
               <AssociationSection
                 label={t("publishedHeading", { count: published.length })}

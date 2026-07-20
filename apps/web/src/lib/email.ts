@@ -10,6 +10,107 @@ function getResend(): Resend {
 }
 
 const FROM_EMAIL = "MIRA <noreply@mirajob.cloud>";
+const ADMIN_EMAIL = "dev@mirajob.cloud";
+
+/**
+ * Avvisa l'admin MIRA quando c'è una novità (nuovo studente, associazione o azienda).
+ * È best-effort: non deve mai bloccare o far fallire la registrazione dell'utente, quindi
+ * chi la chiama ignora il risultato.
+ */
+export async function sendAdminNewSignupNotification({
+  kind,
+  name,
+  email,
+  detail,
+}: {
+  kind: "student" | "association" | "company";
+  name: string;
+  email: string;
+  detail?: string | null;
+}) {
+  const label =
+    kind === "student" ? "Nuovo studente" : kind === "association" ? "Nuova associazione" : "Nuova azienda";
+  const now = new Date().toLocaleString("it-IT", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: ADMIN_EMAIL,
+    subject: `${label}: ${name || email}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 520px; margin: 0 auto; padding: 24px 0;">
+        <p style="color: #718096; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">MIRA · Notifica admin</p>
+        <h2 style="color: #0a1628; font-size: 18px; margin: 0 0 16px;">${label}</h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #1a202c;">
+          <tr><td style="padding: 4px 0; color: #718096; width: 120px;">Nome</td><td style="padding: 4px 0;">${name || "—"}</td></tr>
+          <tr><td style="padding: 4px 0; color: #718096;">Email</td><td style="padding: 4px 0;">${email || "—"}</td></tr>
+          ${detail ? `<tr><td style="padding: 4px 0; color: #718096;">Dettagli</td><td style="padding: 4px 0;">${detail}</td></tr>` : ""}
+          <tr><td style="padding: 4px 0; color: #718096;">Quando</td><td style="padding: 4px 0;">${now}</td></tr>
+        </table>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0 12px;" />
+        <p style="color: #a0aec0; font-size: 12px;">
+          <a href="https://mirajob.cloud/admin" style="color: #2b6cb0;">Apri la dashboard admin</a>
+        </p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error("Resend admin notification error:", error);
+    return { error: error.message };
+  }
+  return { success: true };
+}
+
+/**
+ * Email di sollecito inviata dall'admin (es. "completa la MIRA Card" o "pubblica la pagina
+ * associazione"). Oggetto e testo arrivano dalla bozza modificabile dell'admin; il link CTA
+ * è fisso per tipo di sollecito e non è modificabile lato admin.
+ */
+export async function sendReminderEmail({
+  email,
+  subject,
+  message,
+  ctaLabel,
+  ctaUrl,
+}: {
+  email: string;
+  subject: string;
+  message: string;
+  ctaLabel: string;
+  ctaUrl: string;
+}) {
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    subject,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
+        <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 24px; margin-bottom: 32px;" />
+        <div style="color: #1a202c; font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 24px;">${message}</div>
+        <a href="${ctaUrl}" style="display: inline-block; background: #0a1628; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;">
+          ${ctaLabel}
+        </a>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
+        <p style="color: #a0aec0; font-size: 12px;">
+          MIRA — University Talent Platform<br/>
+          <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
+        </p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error("Resend reminder error:", error);
+    return { error: error.message };
+  }
+  return { success: true };
+}
 
 export async function sendInterviewInvite({
   candidateEmail,

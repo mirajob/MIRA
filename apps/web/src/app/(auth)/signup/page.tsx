@@ -5,6 +5,7 @@ import { createBrowserClient } from "@mira/supabase/client";
 import { validateStudentEmail, validatePassword } from "@mira/domain";
 import { UniversityCombobox } from "@/components/university-combobox";
 import { getAuthErrorKey } from "@/lib/auth-error-messages";
+import { notifyAdminNewStudent } from "@/lib/actions/admin-notify";
 import { PasswordInput } from "@/components/password-input";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -98,6 +99,12 @@ function SignupForm() {
       setError(c(`authErrors.${getAuthErrorKey("already registered")}`));
       setLoading(false);
       return;
+    }
+
+    // Novità: avvisa l'admin del nuovo studente (solo signup studente, non gli inviti
+    // azienda/associazione che hanno già le loro notifiche). Best-effort, non blocca il flusso.
+    if (!isInvite) {
+      void notifyAdminNewStudent({ fullName, email, university, degreeLevel });
     }
 
     // Se la conferma email è richiesta, signUp non restituisce una sessione. Non

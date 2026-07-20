@@ -89,7 +89,7 @@ export default async function AdminCompaniesPage() {
           </span>
         </td>
         <td className="px-4 py-3 text-body-sm text-ink-tertiary">
-          {new Date(company.created_at).toLocaleDateString(dateLocale, { day: "numeric", month: "short", year: "numeric" })}
+          {new Date(company.created_at).toLocaleString(dateLocale, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
         </td>
         <td className="px-4 py-3">
           <ApproveRejectButtons
@@ -146,7 +146,7 @@ export default async function AdminCompaniesPage() {
                       ) : <span className="text-body-sm text-ink-tertiary">—</span>}
                     </td>
                     <td className="px-4 py-3 text-body-sm text-ink-tertiary">
-                      {new Date(r.created_at).toLocaleDateString(dateLocale, { day: "numeric", month: "short", year: "numeric" })}
+                      {new Date(r.created_at).toLocaleString(dateLocale, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </td>
                     <td className="px-4 py-3">
                       <AccessRequestButtons requestId={r.id} />

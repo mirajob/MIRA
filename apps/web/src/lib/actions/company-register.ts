@@ -2,7 +2,7 @@
 
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
-import { sendCompanyInvitationEmail, sendCompanyRejectionEmail } from "@/lib/email";
+import { sendCompanyInvitationEmail, sendCompanyRejectionEmail, sendAdminNewSignupNotification } from "@/lib/email";
 import { INVITATION_EXPIRY_DAYS } from "@mira/domain";
 import { revalidatePath } from "next/cache";
 
@@ -48,6 +48,17 @@ export async function requestCompanyAccess(input: {
   });
 
   if (error) return { error: error.message, errorCode: "unknown" as const };
+
+  // Avvisa l'admin della nuova richiesta azienda. Best-effort.
+  await sendAdminNewSignupNotification({
+    kind: "company",
+    name: input.legalName,
+    email: normalizedEmail,
+    detail: [input.contactName ? `Referente: ${input.contactName}` : null, input.sector || null]
+      .filter(Boolean)
+      .join(" · ") || null,
+  }).catch(() => {});
+
   return { success: true };
 }
 

@@ -3,7 +3,7 @@
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { ensureStudentProfile } from "@/lib/student-provisioning";
-import { sendAssociationDecisionEmail } from "@/lib/email";
+import { sendAssociationDecisionEmail, sendAdminNewSignupNotification } from "@/lib/email";
 import { ROLE_PERMISSION_TEMPLATES } from "@mira/domain";
 import { revalidatePath } from "next/cache";
 
@@ -57,7 +57,8 @@ async function createAssociationForProfile(
   profileId: string,
   contactEmail: string | null | undefined,
   university: string,
-  input: { associationName: string; category: string; websiteUrl: string; description: string }
+  input: { associationName: string; category: string; websiteUrl: string; description: string },
+  presidentName?: string | null
 ) {
   const baseSlug = toSlug(input.associationName) || "associazione";
   const slug = await uniqueSlug(supabase, baseSlug);
@@ -97,6 +98,17 @@ async function createAssociationForProfile(
     status: "active",
     joined_at: new Date().toISOString(),
   });
+
+  // Avvisa l'admin della nuova candidatura associazione. Best-effort: non deve mai far
+  // fallire la registrazione se l'email non parte.
+  await sendAdminNewSignupNotification({
+    kind: "association",
+    name: input.associationName,
+    email: contactEmail ?? "—",
+    detail: [presidentName ? `Referente: ${presidentName}` : null, university || null]
+      .filter(Boolean)
+      .join(" · ") || null,
+  }).catch(() => {});
 
   return { success: true as const, slug: association.slug as string, name: association.name as string };
 }
@@ -198,7 +210,7 @@ export async function registerAssociationPresident(input: {
     degreeLevel: input.degreeLevel,
   });
 
-  const result = await createAssociationForProfile(supabase, profileId, email, input.university, input);
+  const result = await createAssociationForProfile(supabase, profileId, email, input.university, input, input.presidentName);
   if (result.error) {
     await supabase.auth.admin.deleteUser(authUserId).catch(() => {});
   }
@@ -232,7 +244,8 @@ export async function attachAssociationToCurrentUser(input: {
     ctx.profile.id,
     ctx.user.email,
     (studentProfile as any)?.university ?? "",
-    input
+    input,
+    (ctx.profile as any)?.full_name ?? null
   );
 }
 
