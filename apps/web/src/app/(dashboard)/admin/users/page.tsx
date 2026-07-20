@@ -69,42 +69,46 @@ export default async function AdminUsersPage() {
 
   function StudentsTable({ rows, showReminder = false }: { rows: StudentRow[]; showReminder?: boolean }) {
     if (!rows.length) {
-      return <p className="px-4 py-4 text-body-sm text-ink-tertiary">{t("noStudentsInSection")}</p>;
+      return <p className="px-3 py-3 text-body-sm text-ink-tertiary">{t("noStudentsInSection")}</p>;
     }
     return (
-      <table className="w-full">
+      // overflow-x-auto sul solo <table>: su mobile la colonna azioni (sollecita/elimina)
+      // era irraggiungibile perché il contenitore esterno è overflow-hidden. L'intestazione
+      // di sezione resta ferma, scorre solo la tabella.
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[720px]">
         <thead>
           <tr className="border-b border-border">
-            <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableName")}</th>
-            <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableEmail")}</th>
-            <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableLevel")}</th>
-            <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableRegistered")}</th>
-            <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableActions")}</th>
+            <th className="text-left text-eyebrow text-navy/60 uppercase py-2 px-3">{t("tableName")}</th>
+            <th className="text-left text-eyebrow text-navy/60 uppercase py-2 px-3">{t("tableEmail")}</th>
+            <th className="text-left text-eyebrow text-navy/60 uppercase py-2 px-3">{t("tableLevel")}</th>
+            <th className="text-left text-eyebrow text-navy/60 uppercase py-2 px-3">{t("tableRegistered")}</th>
+            <th className="text-left text-eyebrow text-navy/60 uppercase py-2 px-3">{t("tableActions")}</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((s) => (
             <tr key={s.id} className="border-b border-border last:border-0 hover:bg-navy-50/50">
-              <td className="py-4 px-4">
+              <td className="py-2 px-3">
                 {s.onboardingCompleted ? (
-                  <Link href={`/admin/users/${s.id}/card`} className="flex items-center gap-3 group">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy text-white text-eyebrow font-semibold">
+                  <Link href={`/admin/users/${s.id}/card`} className="flex items-center gap-2 group">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-navy text-white text-eyebrow font-semibold">
                       {(s.fullName ?? s.email).charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-body font-medium text-navy group-hover:underline underline-offset-2 decoration-1">{s.fullName ?? "—"}</span>
+                    <span className="text-body-sm font-medium text-navy group-hover:underline underline-offset-2 decoration-1">{s.fullName ?? "—"}</span>
                   </Link>
                 ) : (
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy text-white text-eyebrow font-semibold">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-navy text-white text-eyebrow font-semibold">
                       {(s.fullName ?? s.email).charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-body font-medium text-navy">{s.fullName ?? "—"}</span>
+                    <span className="text-body-sm font-medium text-navy">{s.fullName ?? "—"}</span>
                   </div>
                 )}
               </td>
-              <td className="py-4 px-4 text-body-sm text-ink">{s.email}</td>
-              <td className="py-4 px-4 text-body-sm text-ink">{degreeLevelLabel(s.degreeLevel)}</td>
-              <td className="py-4 px-4 text-body-sm text-ink-secondary">
+              <td className="py-2 px-3 text-body-sm text-ink">{s.email}</td>
+              <td className="py-2 px-3 text-body-sm text-ink">{degreeLevelLabel(s.degreeLevel)}</td>
+              <td className="py-2 px-3 text-body-sm text-ink-secondary whitespace-nowrap">
                 {new Date(s.createdAt).toLocaleString(dateLocale, {
                   day: "numeric",
                   month: "short",
@@ -113,8 +117,8 @@ export default async function AdminUsersPage() {
                   minute: "2-digit",
                 })}
               </td>
-              <td className="py-4 px-4">
-                <div className="flex items-center gap-4">
+              <td className="py-2 px-3">
+                <div className="flex items-center gap-3">
                   {showReminder && <ReminderButton profileId={s.id} studentName={s.fullName ?? s.email} />}
                   <DeleteUserButton profileId={s.id} name={s.fullName ?? s.email} />
                 </div>
@@ -123,29 +127,30 @@ export default async function AdminUsersPage() {
           ))}
         </tbody>
       </table>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h1 className="font-display text-h1 text-navy">{t("heading")}</h1>
-        <p className="mt-1 text-body text-ink-secondary">
+        <h1 className="font-display text-h2 text-navy">{t("heading")}</h1>
+        <p className="mt-0.5 text-body-sm text-ink-secondary">
           {t("subhead")}
         </p>
       </div>
 
-      <div className="rounded-lg border border-border bg-white p-5">
-        <p className="text-label text-navy mb-1">{t("signupLinkLabel")}</p>
-        <p className="text-body-sm text-ink-secondary mb-3">
+      <div className="rounded-lg border border-border bg-white p-4">
+        <p className="text-label text-navy mb-0.5">{t("signupLinkLabel")}</p>
+        <p className="text-body-sm text-ink-secondary mb-2">
           {t("signupLinkIntro")}
         </p>
         <CopyLink url="https://mirajob.cloud/signup" />
       </div>
 
       {!students.length ? (
-        <div className="rounded-lg border border-border bg-white p-8 text-center">
-          <p className="text-body text-ink-secondary">{t("noUsers")}</p>
+        <div className="rounded-lg border border-border bg-white p-6 text-center">
+          <p className="text-body-sm text-ink-secondary">{t("noUsers")}</p>
         </div>
       ) : (
         universities.map((university) => {
@@ -153,14 +158,14 @@ export default async function AdminUsersPage() {
           const registered = rows.filter((s) => !s.onboardingCompleted);
           const cardCompleted = rows.filter((s) => s.onboardingCompleted);
           return (
-            <div key={university} className="space-y-3">
-              <h2 className="font-display text-h2 text-navy">
-                {university} <span className="text-body text-ink-tertiary font-normal">({rows.length})</span>
+            <div key={university} className="space-y-2">
+              <h2 className="font-sans text-body font-semibold text-navy">
+                {university} <span className="text-body-sm text-ink-tertiary font-normal">({rows.length})</span>
               </h2>
 
               <div className="rounded-lg border border-border bg-white overflow-hidden">
-                <div className="border-b border-border bg-navy-50/50 px-4 py-2">
-                  <p className="text-label text-navy">
+                <div className="border-b border-border bg-navy-50/50 px-3 py-1.5">
+                  <p className="text-eyebrow uppercase text-navy/70">
                     {t("onlyRegistered")} <span className="text-ink-tertiary font-normal">({registered.length})</span>
                   </p>
                 </div>
@@ -168,8 +173,8 @@ export default async function AdminUsersPage() {
               </div>
 
               <div className="rounded-lg border border-border bg-white overflow-hidden">
-                <div className="border-b border-border bg-navy-50/50 px-4 py-2">
-                  <p className="text-label text-navy">
+                <div className="border-b border-border bg-navy-50/50 px-3 py-1.5">
+                  <p className="text-eyebrow uppercase text-navy/70">
                     {t("cardCompleted")} <span className="text-ink-tertiary font-normal">({cardCompleted.length})</span>
                   </p>
                 </div>

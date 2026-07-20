@@ -24,12 +24,12 @@ export default async function AdminLayout({
 
   return (
     <div>
-      <nav className="mb-6 flex gap-1 border-b border-border pb-4">
+      <nav className="mb-4 flex gap-1 overflow-x-auto border-b border-border pb-2">
         {adminNav.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className="rounded-md px-3 py-2 text-body-sm font-medium text-ink-secondary hover:text-navy hover:bg-navy-50/50 transition-colors duration-100"
+            className="whitespace-nowrap rounded-md px-2.5 py-1.5 text-body-sm font-medium text-ink-secondary hover:text-navy hover:bg-navy-50/50 transition-colors duration-100"
           >
             {item.label}
           </Link>

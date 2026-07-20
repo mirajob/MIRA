@@ -18,9 +18,9 @@ export function InvitationForm() {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-white p-6">
-      <h2 className="font-sans text-h3 text-navy mb-4">{t("inviteCompanyHeading")}</h2>
-      <p className="text-body-sm text-ink-secondary mb-4">
+    <div className="rounded-lg border border-border bg-white p-4">
+      <h2 className="font-sans text-body font-semibold text-navy mb-1">{t("inviteCompanyHeading")}</h2>
+      <p className="text-body-sm text-ink-secondary mb-3">
         {t("inviteCompanyIntro")}
       </p>
 
@@ -41,36 +41,36 @@ export function InvitationForm() {
         </div>
       )}
 
-      <form action={handleSubmit} className="grid gap-4 sm:grid-cols-2">
+      <form action={handleSubmit} className="grid gap-3 sm:grid-cols-2">
         <label className="block">
-          <span className="text-label text-navy mb-2 block">{t("contactEmailLabel")}</span>
+          <span className="text-eyebrow uppercase text-navy mb-1 block">{t("contactEmailLabel")}</span>
           <input
             name="email"
             type="email"
             required
             placeholder={t("contactEmailPlaceholder")}
-            className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
+            className="w-full px-3 py-2 rounded-md bg-white border border-border text-body-sm text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
           />
         </label>
 
         <label className="block">
-          <span className="text-label text-navy mb-2 block">{t("companyNameLabel")}</span>
+          <span className="text-eyebrow uppercase text-navy mb-1 block">{t("companyNameLabel")}</span>
           <input
             name="companyName"
             type="text"
             required
             placeholder={t("companyNamePlaceholder")}
-            className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
+            className="w-full px-3 py-2 rounded-md bg-white border border-border text-body-sm text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
           />
         </label>
 
         <label className="block sm:col-span-2">
-          <span className="text-label text-navy mb-2 block">{t("emailMessageLabel")}</span>
+          <span className="text-eyebrow uppercase text-navy mb-1 block">{t("emailMessageLabel")}</span>
           <textarea
             name="note"
             rows={2}
             placeholder={t("emailMessagePlaceholder")}
-            className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200 resize-none"
+            className="w-full px-3 py-2 rounded-md bg-white border border-border text-body-sm text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200 resize-none"
           />
         </label>
 
@@ -78,7 +78,7 @@ export function InvitationForm() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="bg-navy text-white px-4 py-2 rounded-md text-body-sm font-medium hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? t("sendingInvite") : t("sendInvite")}
           </button>
