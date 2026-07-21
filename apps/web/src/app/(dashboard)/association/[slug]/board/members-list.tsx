@@ -107,27 +107,29 @@ export function MembersList({
           {(p.fullName ?? p.email).charAt(0).toUpperCase()}
         </div>
 
-        <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-2 truncate">
-            <Link
-              href={`/association/${slug}/board/${p.profileId}/card`}
-              className="truncate text-body-sm font-medium text-navy underline-offset-2 hover:underline"
-              title={t("viewCard")}
-            >
-              {p.fullName ?? p.email}
-            </Link>
-            {isAdmin && (
-              <span className="shrink-0 rounded-full bg-petrol-50 px-2 py-0.5 text-eyebrow text-petrol">
-                {t("adminBadge")}
-              </span>
-            )}
-            {p.isSelf && <span className="shrink-0 text-eyebrow text-ink-tertiary">{t("selfBadge")}</span>}
-            {p.title && <span className="shrink-0 text-eyebrow text-ink-tertiary">{p.title}</span>}
-          </p>
-          <p className="truncate text-eyebrow text-ink-tertiary">
+        {/* Tutto su una riga sola: nome, etichette, email, livello, corso. Le colonne
+            si restringono in proporzione invece di andare a capo. */}
+        <div className="flex min-w-0 flex-1 items-baseline gap-2">
+          <Link
+            href={`/association/${slug}/board/${p.profileId}/card`}
+            className="shrink-0 max-w-[180px] truncate text-body-sm font-medium text-navy underline-offset-2 hover:underline"
+            title={t("viewCard")}
+          >
+            {p.fullName ?? p.email}
+          </Link>
+
+          {isAdmin && (
+            <span className="shrink-0 rounded-full bg-petrol-50 px-2 py-0.5 text-eyebrow text-petrol">
+              {t("adminBadge")}
+            </span>
+          )}
+          {p.isSelf && <span className="shrink-0 text-eyebrow text-ink-tertiary">{t("selfBadge")}</span>}
+          {p.title && <span className="shrink-0 text-eyebrow text-ink-tertiary">{p.title}</span>}
+
+          <span className="min-w-0 flex-1 truncate text-eyebrow text-ink-tertiary">
             {p.email}
             {studies && ` · ${studies}`}
-          </p>
+          </span>
         </div>
 
         {membershipEnabled && sections.length > 0 && (

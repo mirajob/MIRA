@@ -37,15 +37,13 @@ export default async function MembersPage({ params }: Props) {
 
   const userIds = (allMemberships ?? []).map((m: any) => m.user_id).filter(Boolean);
 
-  // Il corso e il livello di studi stanno su student_profiles, non su profiles: servono
-  // per mostrare "Magistrale · Economics" accanto a ogni persona.
   const [{ data: profilesData }, { data: studentProfiles }, { data: sectionsData }] = await Promise.all([
     userIds.length
       ? (supabase.from("profiles") as any).select("id, full_name, email").in("id", userIds)
       : Promise.resolve({ data: [] }),
     userIds.length
       ? (supabase.from("student_profiles") as any)
-          .select("user_id, degree_level, degree_program")
+          .select("id, user_id, degree_level, degree_program")
           .in("user_id", userIds)
       : Promise.resolve({ data: [] }),
     (supabase.from("association_sections") as any)
@@ -56,6 +54,27 @@ export default async function MembersPage({ params }: Props) {
 
   const profileMap = new Map<string, any>((profilesData ?? []).map((p: any) => [p.id, p]));
   const studentMap = new Map<string, any>((studentProfiles ?? []).map((s: any) => [s.user_id, s]));
+
+  /**
+   * Corso e livello vengono dal blocco header della MiraCard, non da
+   * student_profiles.degree_program: quel campo e' di fatto abbandonato (valorizzato per
+   * pochissimi profili), mentre la card e' cio' che lo studente compila davvero.
+   *
+   * Solo blocchi "approved": e' esattamente cio' che l'associazione puo' gia' vedere
+   * aprendo la card, quindi la lista non anticipa dati non ancora confermati.
+   */
+  const studentProfileIds = (studentProfiles ?? []).map((s: any) => s.id).filter(Boolean);
+  const { data: headerBlocks } = studentProfileIds.length
+    ? await (supabase.from("card_blocks") as any)
+        .select("student_profile_id, prose_content")
+        .eq("block_type", "header")
+        .eq("status", "approved")
+        .in("student_profile_id", studentProfileIds)
+    : { data: [] };
+
+  const headerByStudentProfile = new Map<string, any>(
+    (headerBlocks ?? []).map((b: any) => [b.student_profile_id, b.prose_content ?? {}])
+  );
 
   function degreeLevelLabel(level: string | null) {
     if (!level) return null;
@@ -71,6 +90,7 @@ export default async function MembersPage({ params }: Props) {
     .map((m: any) => {
       const p = profileMap.get(m.user_id);
       const s = studentMap.get(m.user_id);
+      const header = s?.id ? headerByStudentProfile.get(s.id) : null;
       return {
         membershipId: m.id as string,
         profileId: m.user_id as string,
@@ -80,8 +100,11 @@ export default async function MembersPage({ params }: Props) {
         isSelf: m.user_id === currentUserId,
         fullName: (p?.full_name as string | null) ?? null,
         email: (p?.email as string) ?? "—",
-        degreeLevel: degreeLevelLabel((s?.degree_level as string | null) ?? null),
-        degreeProgram: (s?.degree_program as string | null) ?? null,
+        degreeLevel: degreeLevelLabel(
+          (header?.livello as string | null) || ((s?.degree_level as string | null) ?? null)
+        ),
+        degreeProgram:
+          ((header?.corso as string | null)?.trim() || (s?.degree_program as string | null)) ?? null,
       };
     })
     .sort((a: Person, b: Person) => {
@@ -94,12 +117,8 @@ export default async function MembersPage({ params }: Props) {
   const sections = ((sectionsData ?? []) as any[]).map((s) => ({ id: s.id as string, name: s.name as string }));
 
   return (
+    // Nessun titolo "Membri": lo dice gia' la voce di menu attiva qui sopra.
     <div className="space-y-4">
-      <div>
-        <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
-        <p className="mt-0.5 text-body-sm text-ink-secondary">{t("subhead")}</p>
-      </div>
-
       <InviteCodeSection
         associationId={association.id}
         currentCode={association.invite_code}
