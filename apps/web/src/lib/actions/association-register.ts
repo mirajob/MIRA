@@ -85,15 +85,18 @@ async function createAssociationForProfile(
     return { error: "Errore nella creazione della pagina associazione." as const };
   }
 
+  // Chi crea la pagina nasce amministratore con accesso completo: non esiste piu' un
+  // ruolo "presidente" separato. Chi ha creato l'associazione resta comunque tracciato
+  // in association_profiles.created_by_user_id.
   const permissions: Record<string, boolean> = {};
-  for (const perm of ROLE_PERMISSION_TEMPLATES.association_president) {
+  for (const perm of ROLE_PERMISSION_TEMPLATES.association_admin!) {
     permissions[perm] = true;
   }
 
   await supabase.from("association_memberships").insert({
     association_id: association.id,
     user_id: profileId,
-    role: "association_president",
+    role: "association_admin",
     permissions,
     status: "active",
     joined_at: new Date().toISOString(),

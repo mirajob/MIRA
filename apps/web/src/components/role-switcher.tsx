@@ -26,12 +26,10 @@ export function RoleSwitcher({ isStudent, isMiraAdmin, memberships }: RoleSwitch
 
   for (const m of memberships) {
     if (!m.association_profiles) continue;
-    const roleLabel =
-      m.role === "association_president" ? "Presidente"
-      : m.role === "association_admin" ? "Admin"
-      : m.role === "association_reviewer" ? "Reviewer"
-      : m.role === "association_interviewer" ? "Interviewer"
-      : "Membro";
+    // Due soli livelli: amministratore o membro. I ruoli storici (president, reviewer,
+    // interviewer) sono ritirati; se sopravvivessero su qualche riga valgono come
+    // amministratore, che e' il livello di accesso che avevano.
+    const roleLabel = m.role === "association_member" ? "Membro" : "Amministratore";
 
     roles.push({
       label: `${roleLabel} — ${m.association_profiles.name}`,

@@ -4,23 +4,33 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { generateInviteCode } from "@/lib/actions/board";
 
+/**
+ * Blocco invito guidato. Prima era un riquadro con un link e nessuna spiegazione: non si
+ * capiva cosa succedesse a chi lo usava, ne' che servisse un'approvazione. Ora dice in
+ * chiaro cosa ottiene chi entra e quali sono i tre passi.
+ *
+ * Il testo cambia con la gestione membership: a toggle spento chi entra diventa un
+ * collaboratore con accesso alla dashboard, ad acceso un membro senza accesso.
+ */
 export function InviteCodeSection({
   associationId,
   currentCode,
-  slug,
+  membershipEnabled,
 }: {
   associationId: string;
   currentCode: string | null;
-  slug: string;
+  membershipEnabled: boolean;
 }) {
-  const t = useTranslations("InviteCodeSection");
+  const t = useTranslations("Board");
   const [code, setCode] = useState(currentCode);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [confirmRegen, setConfirmRegen] = useState(false);
 
   async function handleGenerate() {
     if (loading) return;
     setLoading(true);
+    setConfirmRegen(false);
     const res = await generateInviteCode(associationId);
     if (res.code) setCode(res.code);
     setLoading(false);
@@ -28,45 +38,69 @@ export function InviteCodeSection({
 
   function handleCopy() {
     if (!code) return;
-    const url = `${window.location.origin}/join/${code}`;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(`${window.location.origin}/join/${code}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
 
   return (
-    <div className="rounded-lg border border-border bg-white p-6">
-      <h3 className="font-sans text-h3 text-navy mb-2">{t("heading")}</h3>
-      <p className="text-body-sm text-ink-secondary mb-4">
-        {t("description")}
+    <div className="rounded-lg border border-border bg-white p-4">
+      <p className="text-body-sm font-semibold text-navy">{t("collaboratorsTitle")}</p>
+      <p className="mt-1 text-body-sm text-ink-secondary">
+        {membershipEnabled ? t("membershipBodyOn") : t("collaboratorsBody")}
       </p>
 
+      <ol className="mt-3 space-y-0.5">
+        {[t("inviteStep1"), t("inviteStep2"), t("inviteStep3")].map((step) => (
+          <li key={step} className="text-eyebrow text-ink-tertiary">
+            {step}
+          </li>
+        ))}
+      </ol>
+
       {code ? (
-        <div className="flex items-center gap-3 flex-wrap">
-          <code className="flex-1 min-w-0 px-4 py-3 rounded-md bg-paper border border-border text-body font-mono text-navy truncate">
-            {typeof window !== "undefined" ? `${window.location.origin}/join/${code}` : `/join/${code}`}
-          </code>
-          <button
-            onClick={handleCopy}
-            className="bg-petrol text-white px-5 py-3 rounded-md text-label hover:bg-petrol-700 active:scale-[0.98] transition-colors duration-100 whitespace-nowrap"
-          >
-            {copied ? t("copied") : t("copyLink")}
-          </button>
-          <button
-            onClick={handleGenerate}
-            disabled={loading}
-            className="text-body-sm text-ink-secondary hover:text-navy underline underline-offset-2 transition-colors duration-100 disabled:opacity-40"
-          >
-            {loading ? t("regenerating") : t("regenerateCode")}
-          </button>
-        </div>
+        <>
+          <p className="mt-3 mb-1 text-eyebrow uppercase text-navy/70">{t("inviteLinkLabel")}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <code className="min-w-0 flex-1 truncate rounded-md border border-border bg-paper px-3 py-2 font-mono text-body-sm text-navy">
+              {typeof window !== "undefined" ? `${window.location.origin}/join/${code}` : `/join/${code}`}
+            </code>
+            <button
+              onClick={handleCopy}
+              className="whitespace-nowrap rounded-md bg-petrol px-4 py-2 text-body-sm font-medium text-white hover:bg-petrol-700 active:scale-[0.98] transition-colors duration-100"
+            >
+              {copied ? t("copied") : t("copyLink")}
+            </button>
+          </div>
+
+          <div className="mt-2">
+            {confirmRegen ? (
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="text-eyebrow text-ink-secondary">{t("regenerateHint")}</span>
+                <button onClick={handleGenerate} disabled={loading} className="text-eyebrow font-medium text-error">
+                  {t("yes")}
+                </button>
+                <button onClick={() => setConfirmRegen(false)} className="text-eyebrow text-ink-secondary">
+                  {t("no")}
+                </button>
+              </span>
+            ) : (
+              <button
+                onClick={() => setConfirmRegen(true)}
+                className="text-eyebrow text-ink-tertiary underline underline-offset-2 hover:text-navy"
+              >
+                {t("regenerate")}
+              </button>
+            )}
+          </div>
+        </>
       ) : (
         <button
           onClick={handleGenerate}
           disabled={loading}
-          className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
+          className="mt-3 rounded-md bg-navy px-4 py-2 text-body-sm font-medium text-white hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
         >
-          {loading ? t("regenerating") : t("generateLink")}
+          {t("generateFirst")}
         </button>
       )}
     </div>

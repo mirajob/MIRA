@@ -14,13 +14,34 @@ import { canManageMembers } from "@/lib/association-access";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-/** Il presidente non e' retrocedibile ne' rimuovibile da nessuno, nemmeno da un altro admin. */
-async function isPresident(supabase: any, membershipId: string) {
-  const { data } = await (supabase.from("association_memberships") as any)
+const ADMIN_ROLES = ["association_admin", "association_president"];
+
+/**
+ * Gli amministratori sono tutti uguali: nessuno e' intoccabile. L'unico limite e' che
+ * non si puo' svuotare la stanza — se togliessimo l'ultimo amministratore, l'associazione
+ * resterebbe senza nessuno che possa entrare nella dashboard e si sbloccherebbe solo a
+ * mano da MIRA.
+ *
+ * Restituisce un messaggio d'errore se l'operazione lascerebbe zero amministratori,
+ * altrimenti null.
+ */
+async function blocksLastAdmin(supabase: any, associationId: string, membershipId: string) {
+  const { data: target } = await (supabase.from("association_memberships") as any)
     .select("role")
     .eq("id", membershipId)
     .maybeSingle();
-  return data?.role === "association_president";
+
+  if (!target || !ADMIN_ROLES.includes(target.role)) return null;
+
+  const { count } = await (supabase.from("association_memberships") as any)
+    .select("id", { count: "exact", head: true })
+    .eq("association_id", associationId)
+    .eq("status", "active")
+    .in("role", ADMIN_ROLES);
+
+  return (count ?? 0) <= 1
+    ? "Sei rimasto l'unico amministratore: nomina prima qualcun altro."
+    : null;
 }
 
 async function revalidateBoard(supabase: any, associationId: string) {
@@ -148,9 +169,8 @@ export async function removeBoardMember(associationId: string, membershipId: str
     .eq("id", membershipId)
     .single();
 
-  if (target?.role === "association_president") {
-    return { error: "Non puoi rimuovere il presidente" };
-  }
+  const blocked = await blocksLastAdmin(supabase, associationId, membershipId);
+  if (blocked) return { error: blocked };
 
   await supabase
     .from("association_memberships")
@@ -381,9 +401,8 @@ export async function demoteToMember(associationId: string, membershipId: string
     return { error: "Non hai i permessi" };
   }
 
-  if (await isPresident(supabase, membershipId)) {
-    return { error: "Non puoi retrocedere il presidente" };
-  }
+  const blocked = await blocksLastAdmin(supabase, associationId, membershipId);
+  if (blocked) return { error: blocked };
 
   await (supabase.from("association_memberships") as any)
     .update({ role: "association_member", permissions: {} })
@@ -436,9 +455,9 @@ export async function leaveAssociation(associationId: string) {
     .maybeSingle();
 
   if (!membership) return { error: "Non sei membro di questa associazione" };
-  if (membership.role === "association_president") {
-    return { error: "Il presidente non puo' lasciare l'associazione" };
-  }
+
+  const blocked = await blocksLastAdmin(supabase, associationId, membership.id);
+  if (blocked) return { error: blocked };
 
   await (supabase.from("association_memberships") as any)
     .update({ status: "removed" })

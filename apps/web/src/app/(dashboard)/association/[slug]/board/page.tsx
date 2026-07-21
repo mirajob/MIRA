@@ -5,28 +5,20 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { InviteCodeSection } from "./invite-code-section";
 import { PendingBoardRequests } from "./pending-board-requests";
-import { MemberActions } from "./member-actions";
 import { MembershipToggle } from "./membership-toggle";
-import { MembersPanel } from "./members-panel";
-import { WORKSPACE_ROLES } from "@/lib/association-roles";
+import { MembersList, type Person } from "./members-list";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-function isBoard(m: any): boolean {
-  if (WORKSPACE_ROLES.includes(m.role)) return true;
-  const perms = m.permissions as Record<string, boolean> | null;
-  return !!perms && Object.values(perms).some((v) => v === true);
-}
-
-export default async function BoardPage({ params }: Props) {
+export default async function MembersPage({ params }: Props) {
   const { slug } = await params;
   const supabase = await createServiceClient();
   const ctx = await getUserContext();
   const currentUserId = (ctx.profile as any).id as string;
   const t = await getTranslations("Board");
-  const c = await getTranslations("Common");
+  const tDegree = await getTranslations("SignupPage");
 
   const { data: association } = await (supabase.from("association_profiles") as any)
     .select("id, name, slug, invite_code, membership_enabled")
@@ -35,153 +27,111 @@ export default async function BoardPage({ params }: Props) {
 
   if (!association) notFound();
 
+  const membershipEnabled = Boolean(association.membership_enabled);
+
   const { data: allMemberships } = await (supabase.from("association_memberships") as any)
     .select("id, user_id, role, title, permissions, status, section_id, created_at")
     .eq("association_id", association.id)
     .in("status", ["active", "pending_approval"])
     .order("created_at");
 
-  const { data: sectionsData } = await (supabase.from("association_sections") as any)
-    .select("id, name, position")
-    .eq("association_id", association.id)
-    .order("position");
-
   const userIds = (allMemberships ?? []).map((m: any) => m.user_id).filter(Boolean);
-  const { data: profilesData } = userIds.length > 0
-    ? await (supabase.from("profiles") as any)
-        .select("id, full_name, email, avatar_url")
-        .in("id", userIds)
-    : { data: [] };
 
-  const profileMap = new Map<string, any>();
-  for (const p of (profilesData ?? [])) profileMap.set(p.id, p);
+  // Il corso e il livello di studi stanno su student_profiles, non su profiles: servono
+  // per mostrare "Magistrale · Economics" accanto a ogni persona.
+  const [{ data: profilesData }, { data: studentProfiles }, { data: sectionsData }] = await Promise.all([
+    userIds.length
+      ? (supabase.from("profiles") as any).select("id, full_name, email").in("id", userIds)
+      : Promise.resolve({ data: [] }),
+    userIds.length
+      ? (supabase.from("student_profiles") as any)
+          .select("user_id, degree_level, degree_program")
+          .in("user_id", userIds)
+      : Promise.resolve({ data: [] }),
+    (supabase.from("association_sections") as any)
+      .select("id, name, position")
+      .eq("association_id", association.id)
+      .order("position"),
+  ]);
 
-  const allMembers = (allMemberships ?? []).map((m: any) => ({
-    ...m,
-    profiles: profileMap.get(m.user_id) ?? { id: m.user_id, full_name: null, email: "—", avatar_url: null },
-  }));
+  const profileMap = new Map<string, any>((profilesData ?? []).map((p: any) => [p.id, p]));
+  const studentMap = new Map<string, any>((studentProfiles ?? []).map((s: any) => [s.user_id, s]));
 
-  // Due gruppi distinti: chi ha accesso alla dashboard (board) e i membri semplici,
-  // che esistono solo se l'associazione ha acceso la gestione membership.
-  const boardMembers = allMembers.filter((m: any) => m.status === "active" && isBoard(m));
-  const plainMembers = allMembers.filter((m: any) => m.status === "active" && !isBoard(m));
-  const pendingBoardRequests = allMembers.filter((m: any) => m.status === "pending_approval");
-
-  const sections = (sectionsData ?? []) as { id: string; name: string; position: number }[];
-
-  const mapMember = (m: any) => ({
-    id: m.id,
-    role: m.role,
-    title: m.title as string | null,
-    permissions: m.permissions as Record<string, boolean>,
-    profile: m.profiles as { id: string; full_name: string | null; email: string; avatar_url: string | null },
-  });
-
-  function renderMemberRow(m: any) {
-    const profile = m.profiles;
-    const isSelf = m.user_id === currentUserId;
-    const isPresident = m.role === "association_president";
-
-    return (
-      <tr key={m.id} className="border-b border-border last:border-0 hover:bg-navy-50/50">
-        <td className="py-4 px-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full text-eyebrow font-semibold bg-navy text-white">
-              {(profile?.full_name ?? profile?.email ?? "?").charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <p className="text-body font-medium text-navy">{profile?.full_name ?? "—"}</p>
-              <p className="text-body-sm text-ink-tertiary">{profile?.email}</p>
-            </div>
-          </div>
-        </td>
-        <td className="py-4 px-4 text-body-sm text-ink-secondary">
-          {m.title || "—"}
-        </td>
-        <td className="py-4 px-4 text-right">
-          {!isSelf && !isPresident && (
-            <MemberActions
-              membershipId={m.id}
-              associationId={association.id}
-              memberName={profile?.full_name ?? ""}
-              currentTitle={m.title}
-              role={m.role}
-            />
-          )}
-          {isPresident && <span className="text-xs text-ink-tertiary">{c("boardRoles.association_president")}</span>}
-          {isSelf && !isPresident && <span className="text-xs text-ink-tertiary">{t("selfBadge")}</span>}
-        </td>
-      </tr>
-    );
+  function degreeLevelLabel(level: string | null) {
+    if (!level) return null;
+    return tDegree.has(`degreeLevels.${level}`) ? tDegree(`degreeLevels.${level}`) : level;
   }
 
+  const active = (allMemberships ?? []).filter((m: any) => m.status === "active");
+  const pending = (allMemberships ?? []).filter((m: any) => m.status === "pending_approval");
+
+  // Una lista sola: amministratori e membri insieme, gli amministratori in cima cosi'
+  // si vede subito chi ha accesso alla dashboard.
+  const people: Person[] = active
+    .map((m: any) => {
+      const p = profileMap.get(m.user_id);
+      const s = studentMap.get(m.user_id);
+      return {
+        membershipId: m.id as string,
+        profileId: m.user_id as string,
+        role: m.role as string,
+        title: (m.title as string | null) ?? null,
+        sectionId: (m.section_id as string | null) ?? null,
+        isSelf: m.user_id === currentUserId,
+        fullName: (p?.full_name as string | null) ?? null,
+        email: (p?.email as string) ?? "—",
+        degreeLevel: degreeLevelLabel((s?.degree_level as string | null) ?? null),
+        degreeProgram: (s?.degree_program as string | null) ?? null,
+      };
+    })
+    .sort((a: Person, b: Person) => {
+      const adminA = a.role !== "association_member" ? 0 : 1;
+      const adminB = b.role !== "association_member" ? 0 : 1;
+      if (adminA !== adminB) return adminA - adminB;
+      return (a.fullName ?? a.email).localeCompare(b.fullName ?? b.email);
+    });
+
+  const sections = ((sectionsData ?? []) as any[]).map((s) => ({ id: s.id as string, name: s.name as string }));
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <div>
         <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
-        <p className="mt-1 text-body text-ink-secondary">
-          {t("subhead")}
-        </p>
+        <p className="mt-0.5 text-body-sm text-ink-secondary">{t("subhead")}</p>
       </div>
 
       <InviteCodeSection
         associationId={association.id}
         currentCode={association.invite_code}
-        slug={slug}
+        membershipEnabled={membershipEnabled}
       />
 
-      {pendingBoardRequests.length > 0 && (
+      <MembershipToggle associationId={association.id} enabled={membershipEnabled} />
+
+      {pending.length > 0 && (
         <PendingBoardRequests
-          requests={pendingBoardRequests.map(mapMember)}
           associationId={association.id}
+          requests={pending.map((m: any) => {
+            const p = profileMap.get(m.user_id);
+            return {
+              id: m.id as string,
+              title: (m.title as string | null) ?? null,
+              profile: {
+                full_name: (p?.full_name as string | null) ?? null,
+                email: (p?.email as string) ?? "—",
+              },
+            };
+          })}
         />
       )}
 
-      <div>
-        <h3 className="font-sans text-h3 text-navy mb-3">{t("boardCount", { count: boardMembers.length })}</h3>
-        {boardMembers.length === 0 ? (
-          <div className="rounded-lg border border-border bg-white p-6 text-center">
-            <p className="text-body text-ink-secondary">{t("noMembers")}</p>
-          </div>
-        ) : (
-          <div className="rounded-lg border border-border bg-white overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaderMember")}</th>
-                  <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaderRole")}</th>
-                  <th className="text-right text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaderActions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {boardMembers.map((m: any) => renderMemberRow(m))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      <MembershipToggle
+      <MembersList
         associationId={association.id}
-        enabled={Boolean(association.membership_enabled)}
+        slug={slug}
+        sections={sections}
+        people={people}
+        membershipEnabled={membershipEnabled}
       />
-
-      {association.membership_enabled && (
-        <MembersPanel
-          associationId={association.id}
-          sections={sections}
-          members={plainMembers.map((m: any) => ({
-            id: m.id,
-            role: m.role,
-            title: m.title as string | null,
-            sectionId: (m.section_id as string | null) ?? null,
-            profile: {
-              full_name: m.profiles?.full_name ?? null,
-              email: m.profiles?.email ?? "—",
-            },
-          }))}
-        />
-      )}
     </div>
   );
 }
