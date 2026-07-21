@@ -32,7 +32,7 @@ export default function JoinPage() {
           <div className="rounded-lg border border-border bg-white p-6 space-y-3 mt-8">
             <h1 className="font-display text-h2 text-navy">Richiesta inviata!</h1>
             <p className="text-body text-ink-secondary">
-              La tua richiesta di entrare nel board di {result.associationName} è in attesa di approvazione dal presidente.
+              La tua richiesta di entrare in {result.associationName} è in attesa di approvazione. Quando verrà accettata, l&apos;associazione comparirà nella tua pagina Associazioni.
             </p>
             <Link href="/student" className="inline-block mt-4 text-petrol underline underline-offset-2">
               Torna al profilo
@@ -52,9 +52,9 @@ export default function JoinPage() {
         </div>
 
         <div className="rounded-lg border border-border bg-white p-6 space-y-5">
-          <h1 className="font-display text-h2 text-navy">Entra nel board</h1>
+          <h1 className="font-display text-h2 text-navy">Entra nell&apos;associazione</h1>
           <p className="text-body text-ink-secondary">
-            Stai entrando con il codice invito <strong className="text-navy">{code}</strong>. La richiesta va approvata dal presidente prima di darti accesso alla dashboard.
+            Stai entrando con il codice invito <strong className="text-navy">{code}</strong>. La richiesta va approvata da un responsabile dell&apos;associazione.
           </p>
 
           {result?.error && (
@@ -79,7 +79,7 @@ export default function JoinPage() {
             disabled={loading}
             className="w-full bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
           >
-            {loading ? "Invio..." : "Richiedi accesso al board"}
+            {loading ? "Invio..." : "Richiedi di entrare"}
           </button>
         </div>
 

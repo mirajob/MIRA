@@ -13,6 +13,42 @@ import type { AssociationPermission } from "@mira/domain";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+/**
+ * Modello "gruppo WhatsApp": presidente e amministratori possono gestire i membri
+ * (approvare, nominare, retrocedere, rimuovere). Scelta esplicita del founder — un
+ * amministratore puo' nominarne altri, come nei gruppi.
+ *
+ * Il presidente resta il "creatore del gruppo": protetto altrove da assertNotPresident.
+ * Non e' esportata: questo file e' "use server" e puo' esportare solo funzioni async.
+ */
+async function canManageMembers(supabase: any, associationId: string, profileId: string, isMiraAdmin: boolean) {
+  if (isMiraAdmin) return true;
+  const { data: membership } = await (supabase.from("association_memberships") as any)
+    .select("role")
+    .eq("association_id", associationId)
+    .eq("user_id", profileId)
+    .eq("status", "active")
+    .maybeSingle();
+  return membership?.role === "association_president" || membership?.role === "association_admin";
+}
+
+/** Il presidente non e' retrocedibile ne' rimuovibile da nessuno, nemmeno da un altro admin. */
+async function isPresident(supabase: any, membershipId: string) {
+  const { data } = await (supabase.from("association_memberships") as any)
+    .select("role")
+    .eq("id", membershipId)
+    .maybeSingle();
+  return data?.role === "association_president";
+}
+
+async function revalidateBoard(supabase: any, associationId: string) {
+  const { data } = await (supabase.from("association_profiles") as any)
+    .select("slug")
+    .eq("id", associationId)
+    .maybeSingle();
+  if (data?.slug) revalidatePath(`/association/${data.slug}/board`);
+}
+
 export async function inviteBoardMember(associationId: string, formData: FormData) {
   const ctx = await getUserContext();
   const supabase = await createServiceClient();
@@ -119,20 +155,8 @@ export async function removeBoardMember(associationId: string, membershipId: str
   const ctx = await getUserContext();
   const supabase = await createServiceClient();
 
-  const { data: membership } = await supabase
-    .from("association_memberships")
-    .select("role, permissions")
-    .eq("association_id", associationId)
-    .eq("user_id", ctx.profile.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  const canRemove =
-    ctx.isMiraAdmin ||
-    membership?.role === "association_president" ||
-    (membership?.permissions as Record<string, boolean>)?.manage_board_permissions;
-
-  if (!canRemove) {
+  // Modello WhatsApp: qualunque amministratore puo' rimuovere, non solo il presidente.
+  if (!(await canManageMembers(supabase, associationId, ctx.profile.id, ctx.isMiraAdmin))) {
     return { error: "Non hai i permessi" };
   }
 
@@ -262,74 +286,145 @@ export async function joinWithCode(code: string, roleTitle: string) {
   if (!association) return { error: "Codice invito non valido" };
 
   const { data: existing } = await (supabase.from("association_memberships") as any)
-    .select("id")
+    .select("id, status")
     .eq("association_id", association.id)
     .eq("user_id", profileId)
     .maybeSingle();
 
-  if (existing) return { error: "Hai già una richiesta o sei già nel board di questa associazione" };
+  // Chi e' stato rimosso deve poter rientrare col codice, come nei gruppi WhatsApp.
+  // Prima il controllo ignorava lo stato: la riga "removed" restava li' e bloccava per
+  // sempre il rientro con "Hai gia' una richiesta".
+  if (existing && existing.status !== "removed") {
+    return { error: "Hai già una richiesta in corso o sei già in questa associazione" };
+  }
 
-  await (supabase.from("association_memberships") as any).insert({
-    association_id: association.id,
-    user_id: profileId,
+  const pendingRow = {
     role: "association_member",
     title: roleTitle || null,
     permissions: {},
     status: "pending_approval",
     joined_at: null,
-  });
+  };
+
+  if (existing) {
+    await (supabase.from("association_memberships") as any)
+      .update(pendingRow)
+      .eq("id", existing.id);
+  } else {
+    await (supabase.from("association_memberships") as any).insert({
+      association_id: association.id,
+      user_id: profileId,
+      ...pendingRow,
+    });
+  }
 
   return { success: true, associationName: association.name, slug: association.slug };
 }
 
-export async function approveBoardMember(associationId: string, membershipId: string) {
+/**
+ * Approva una richiesta di ingresso: la persona entra come MEMBRO SEMPLICE.
+ *
+ * Prima questa funzione promuoveva chiunque entrasse col codice ad association_admin
+ * con permessi pieni — cioe' accesso a candidature, transcript e valutazioni AI. Era il
+ * ribaltamento del modello voluto: si entra come membro e basta, la nomina ad
+ * amministratore e' un atto separato ed esplicito (promoteToAdmin).
+ *
+ * permissions vuoto => hasWorkspaceAccess() e' false => niente dashboard.
+ */
+export async function approveMember(associationId: string, membershipId: string) {
   const ctx = await getUserContext();
   const supabase = await createServiceClient();
 
-  const { data: membership } = await (supabase.from("association_memberships") as any)
-    .select("role")
-    .eq("association_id", associationId)
-    .eq("user_id", (ctx.profile as any).id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (!ctx.isMiraAdmin && membership?.role !== "association_president") {
+  if (!(await canManageMembers(supabase, associationId, (ctx.profile as any).id, ctx.isMiraAdmin))) {
     return { error: "Non hai i permessi" };
-  }
-
-  const template = ROLE_PERMISSION_TEMPLATES["association_admin"] ?? [];
-  const permissions: Record<string, boolean> = {};
-  for (const perm of template) {
-    permissions[perm] = true;
   }
 
   await (supabase.from("association_memberships") as any)
     .update({
       status: "active",
-      role: "association_admin",
-      permissions,
+      role: "association_member",
+      permissions: {},
       joined_at: new Date().toISOString(),
     })
     .eq("id", membershipId);
 
-  const { data: assocData } = await (supabase.from("association_profiles") as any)
-    .select("slug").eq("id", associationId).single();
-  revalidatePath(`/association/${assocData?.slug}/board`);
+  await (supabase.from("audit_logs") as any).insert({
+    actor_user_id: (ctx.profile as any).id,
+    action: "association_member_approved",
+    entity_type: "association_membership",
+    entity_id: membershipId,
+    metadata: { association_id: associationId },
+  });
+
+  await revalidateBoard(supabase, associationId);
   return { success: true };
 }
 
-export async function rejectBoardMember(associationId: string, membershipId: string) {
+/** Nomina amministratore: da qui in poi vede la dashboard. */
+export async function promoteToAdmin(associationId: string, membershipId: string) {
   const ctx = await getUserContext();
   const supabase = await createServiceClient();
 
-  const { data: membership } = await (supabase.from("association_memberships") as any)
-    .select("role")
-    .eq("association_id", associationId)
-    .eq("user_id", (ctx.profile as any).id)
-    .eq("status", "active")
-    .maybeSingle();
+  if (!(await canManageMembers(supabase, associationId, (ctx.profile as any).id, ctx.isMiraAdmin))) {
+    return { error: "Non hai i permessi" };
+  }
 
-  if (!ctx.isMiraAdmin && membership?.role !== "association_president") {
+  const template = ROLE_PERMISSION_TEMPLATES["association_admin"] ?? [];
+  const permissions: Record<string, boolean> = {};
+  for (const perm of template) permissions[perm] = true;
+
+  await (supabase.from("association_memberships") as any)
+    .update({ role: "association_admin", permissions })
+    .eq("id", membershipId)
+    .eq("status", "active");
+
+  await (supabase.from("audit_logs") as any).insert({
+    actor_user_id: (ctx.profile as any).id,
+    action: "association_admin_promoted",
+    entity_type: "association_membership",
+    entity_id: membershipId,
+    metadata: { association_id: associationId },
+  });
+
+  await revalidateBoard(supabase, associationId);
+  return { success: true };
+}
+
+/** Rimuove da amministratore: torna membro semplice, ma RESTA nell'associazione. */
+export async function demoteToMember(associationId: string, membershipId: string) {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+
+  if (!(await canManageMembers(supabase, associationId, (ctx.profile as any).id, ctx.isMiraAdmin))) {
+    return { error: "Non hai i permessi" };
+  }
+
+  if (await isPresident(supabase, membershipId)) {
+    return { error: "Non puoi retrocedere il presidente" };
+  }
+
+  await (supabase.from("association_memberships") as any)
+    .update({ role: "association_member", permissions: {} })
+    .eq("id", membershipId);
+
+  await (supabase.from("audit_logs") as any).insert({
+    actor_user_id: (ctx.profile as any).id,
+    action: "association_admin_demoted",
+    entity_type: "association_membership",
+    entity_id: membershipId,
+    metadata: { association_id: associationId },
+  });
+
+  await revalidateBoard(supabase, associationId);
+  return { success: true };
+}
+
+/** Rifiuta una richiesta di ingresso in attesa. */
+export async function rejectMember(associationId: string, membershipId: string) {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+
+  if (!(await canManageMembers(supabase, associationId, (ctx.profile as any).id, ctx.isMiraAdmin))) {
     return { error: "Non hai i permessi" };
   }
 
@@ -337,8 +432,36 @@ export async function rejectBoardMember(associationId: string, membershipId: str
     .update({ status: "removed" })
     .eq("id", membershipId);
 
-  const { data: assocData } = await (supabase.from("association_profiles") as any)
-    .select("slug").eq("id", associationId).single();
-  revalidatePath(`/association/${assocData?.slug}/board`);
+  await revalidateBoard(supabase, associationId);
+  return { success: true };
+}
+
+/**
+ * "Esci dall'associazione": lo fa il membro su se stesso, dal blocco nella sua pagina
+ * Associazioni. Il presidente non puo' abbandonare (resterebbe un'associazione senza
+ * creatore): deve prima passare la presidenza.
+ */
+export async function leaveAssociation(associationId: string) {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+  const profileId = (ctx.profile as any).id as string;
+
+  const { data: membership } = await (supabase.from("association_memberships") as any)
+    .select("id, role")
+    .eq("association_id", associationId)
+    .eq("user_id", profileId)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (!membership) return { error: "Non sei membro di questa associazione" };
+  if (membership.role === "association_president") {
+    return { error: "Il presidente non puo' lasciare l'associazione" };
+  }
+
+  await (supabase.from("association_memberships") as any)
+    .update({ status: "removed" })
+    .eq("id", membership.id);
+
+  revalidatePath("/student/associazioni");
   return { success: true };
 }

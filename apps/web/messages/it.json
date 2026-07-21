@@ -645,7 +645,9 @@
     "roleButton": "Ruolo",
     "confirmRemove": "Sicuro?",
     "yes": "Sì",
-    "no": "No"
+    "no": "No",
+    "promote": "Rendi amministratore",
+    "demote": "Rimuovi da amministratore"
   },
   "Cycles": {
     "heading": "Cicli di candidatura",

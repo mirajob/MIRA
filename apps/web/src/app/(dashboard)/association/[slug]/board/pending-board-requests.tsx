@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { approveBoardMember, rejectBoardMember } from "@/lib/actions/board";
+import { approveMember, rejectMember } from "@/lib/actions/board";
 
 interface PendingMember {
   id: string;
@@ -30,14 +30,14 @@ export function PendingBoardRequests({
 
   async function handleApprove(membershipId: string) {
     setProcessingId(membershipId);
-    await approveBoardMember(associationId, membershipId);
+    await approveMember(associationId, membershipId);
     setDismissed((prev) => new Set(prev).add(membershipId));
     setProcessingId(null);
   }
 
   async function handleReject(membershipId: string) {
     setProcessingId(membershipId);
-    await rejectBoardMember(associationId, membershipId);
+    await rejectMember(associationId, membershipId);
     setDismissed((prev) => new Set(prev).add(membershipId));
     setProcessingId(null);
   }

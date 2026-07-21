@@ -95,6 +95,7 @@ export default async function BoardPage({ params }: Props) {
               associationId={association.id}
               memberName={profile?.full_name ?? ""}
               currentTitle={m.title}
+              role={m.role}
             />
           )}
           {isPresident && <span className="text-xs text-ink-tertiary">{c("boardRoles.association_president")}</span>}

@@ -2,18 +2,20 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { removeBoardMember } from "@/lib/actions/board";
+import { removeBoardMember, promoteToAdmin, demoteToMember } from "@/lib/actions/board";
 
 export function MemberActions({
   membershipId,
   associationId,
   memberName,
   currentTitle,
+  role,
 }: {
   membershipId: string;
   associationId: string;
   memberName: string;
   currentTitle: string | null;
+  role: string;
 }) {
   const t = useTranslations("MemberActions");
   const c = useTranslations("Common");
@@ -22,6 +24,21 @@ export function MemberActions({
   const [saving, setSaving] = useState(false);
   const [removed, setRemoved] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const [currentRole, setCurrentRole] = useState(role);
+
+  const isAdmin = currentRole === "association_admin";
+
+  // Nomina/retrocessione, come nei gruppi WhatsApp. Il presidente non arriva qui:
+  // la pagina non gli monta MemberActions.
+  async function handleToggleAdmin() {
+    setSaving(true);
+    const next = isAdmin ? "association_member" : "association_admin";
+    const res = isAdmin
+      ? await demoteToMember(associationId, membershipId)
+      : await promoteToAdmin(associationId, membershipId);
+    if (!res?.error) setCurrentRole(next);
+    setSaving(false);
+  }
 
   async function handleSaveTitle() {
     setSaving(true);
@@ -63,6 +80,14 @@ export function MemberActions({
           {t("roleButton")}
         </button>
       )}
+
+      <button
+        onClick={handleToggleAdmin}
+        disabled={saving}
+        className="text-xs text-petrol hover:text-petrol-700 disabled:opacity-40 whitespace-nowrap"
+      >
+        {isAdmin ? t("demote") : t("promote")}
+      </button>
 
       {confirmRemove ? (
         <span className="flex items-center gap-1">

@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { inviteBoardMember } from "@/lib/actions/board";
 
+// Modello "gruppo WhatsApp": esistono solo membro e amministratore (il presidente e'
+// il creatore, non si assegna). Reviewer e Interviewer sono ritirati: restano nell'enum
+// del database per non rompere le righe storiche, ma non sono piu' assegnabili.
 const ROLE_OPTIONS = [
-  { value: "association_admin", label: "Admin" },
-  { value: "association_reviewer", label: "Reviewer" },
-  { value: "association_interviewer", label: "Interviewer" },
   { value: "association_member", label: "Membro" },
+  { value: "association_admin", label: "Amministratore" },
 ];
 
 export function InviteMemberForm({ associationId, slug }: { associationId: string; slug: string }) {

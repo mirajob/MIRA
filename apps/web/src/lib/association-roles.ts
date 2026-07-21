@@ -1,8 +1,14 @@
+/**
+ * Ruoli che danno accesso alla dashboard dell'associazione.
+ *
+ * Modello "gruppo WhatsApp", tre soli livelli: presidente, amministratore, membro.
+ * association_reviewer e association_interviewer sono stati ritirati — verificato che
+ * nessuna riga li usasse — e non sono piu' assegnabili dalla UI. I valori restano
+ * nell'enum Postgres (toglierli richiederebbe di ricreare il tipo), ma non danno accesso.
+ */
 export const WORKSPACE_ROLES: string[] = [
   "association_president",
   "association_admin",
-  "association_reviewer",
-  "association_interviewer",
 ];
 
 /**

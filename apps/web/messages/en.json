@@ -645,7 +645,9 @@
     "roleButton": "Role",
     "confirmRemove": "Are you sure?",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "promote": "Make admin",
+    "demote": "Dismiss as admin"
   },
   "Cycles": {
     "heading": "Application cycles",
