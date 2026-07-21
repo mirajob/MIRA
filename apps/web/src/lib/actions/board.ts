@@ -10,27 +10,9 @@ function generateToken() {
 }
 import { INVITATION_EXPIRY_DAYS, ROLE_PERMISSION_TEMPLATES, ASSOCIATION_PERMISSIONS } from "@mira/domain";
 import type { AssociationPermission } from "@mira/domain";
+import { canManageMembers } from "@/lib/association-access";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-/**
- * Modello "gruppo WhatsApp": presidente e amministratori possono gestire i membri
- * (approvare, nominare, retrocedere, rimuovere). Scelta esplicita del founder — un
- * amministratore puo' nominarne altri, come nei gruppi.
- *
- * Il presidente resta il "creatore del gruppo": protetto altrove da assertNotPresident.
- * Non e' esportata: questo file e' "use server" e puo' esportare solo funzioni async.
- */
-async function canManageMembers(supabase: any, associationId: string, profileId: string, isMiraAdmin: boolean) {
-  if (isMiraAdmin) return true;
-  const { data: membership } = await (supabase.from("association_memberships") as any)
-    .select("role")
-    .eq("association_id", associationId)
-    .eq("user_id", profileId)
-    .eq("status", "active")
-    .maybeSingle();
-  return membership?.role === "association_president" || membership?.role === "association_admin";
-}
 
 /** Il presidente non e' retrocedibile ne' rimuovibile da nessuno, nemmeno da un altro admin. */
 async function isPresident(supabase: any, membershipId: string) {

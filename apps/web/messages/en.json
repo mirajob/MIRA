@@ -1138,5 +1138,27 @@
     "finalTitle": "You've completed your MIRA Card!",
     "finalBody": "You'll find it in the Profile section, and you can edit it anytime. Good luck with your applications.",
     "redirecting": "Taking you to your Profile..."
+  },
+  "Membership": {
+    "toggleTitle": "Membership management",
+    "toggleHint": "Turn on the member list with sections. Members cannot see the dashboard.",
+    "membersCount": "Members ({count})",
+    "newSection": "+ New section",
+    "sectionNamePlaceholder": "e.g. Marketing",
+    "assignSection": "Assign to a section",
+    "noSection": "None",
+    "noSectionGroup": "No section",
+    "emptySection": "No members in this section",
+    "rename": "Rename",
+    "delete": "Delete",
+    "deleteSectionConfirm": "Delete this section?",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "save": "Save",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No",
+    "noMembers": "No members yet",
+    "noMembersHint": "Share the invite code to let members join."
   }
 }

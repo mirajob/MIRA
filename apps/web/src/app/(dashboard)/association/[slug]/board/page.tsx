@@ -6,6 +6,8 @@ import { getTranslations } from "next-intl/server";
 import { InviteCodeSection } from "./invite-code-section";
 import { PendingBoardRequests } from "./pending-board-requests";
 import { MemberActions } from "./member-actions";
+import { MembershipToggle } from "./membership-toggle";
+import { MembersPanel } from "./members-panel";
 import { WORKSPACE_ROLES } from "@/lib/association-roles";
 
 interface Props {
@@ -27,17 +29,22 @@ export default async function BoardPage({ params }: Props) {
   const c = await getTranslations("Common");
 
   const { data: association } = await (supabase.from("association_profiles") as any)
-    .select("id, name, slug, invite_code")
+    .select("id, name, slug, invite_code, membership_enabled")
     .eq("slug", slug)
     .maybeSingle();
 
   if (!association) notFound();
 
   const { data: allMemberships } = await (supabase.from("association_memberships") as any)
-    .select("id, user_id, role, title, permissions, status, created_at")
+    .select("id, user_id, role, title, permissions, status, section_id, created_at")
     .eq("association_id", association.id)
     .in("status", ["active", "pending_approval"])
     .order("created_at");
+
+  const { data: sectionsData } = await (supabase.from("association_sections") as any)
+    .select("id, name, position")
+    .eq("association_id", association.id)
+    .order("position");
 
   const userIds = (allMemberships ?? []).map((m: any) => m.user_id).filter(Boolean);
   const { data: profilesData } = userIds.length > 0
@@ -54,10 +61,13 @@ export default async function BoardPage({ params }: Props) {
     profiles: profileMap.get(m.user_id) ?? { id: m.user_id, full_name: null, email: "—", avatar_url: null },
   }));
 
-  // Board is the only membership tier now — anything active that isn't
-  // recognized as board (stale data from before this change) is ignored here.
+  // Due gruppi distinti: chi ha accesso alla dashboard (board) e i membri semplici,
+  // che esistono solo se l'associazione ha acceso la gestione membership.
   const boardMembers = allMembers.filter((m: any) => m.status === "active" && isBoard(m));
+  const plainMembers = allMembers.filter((m: any) => m.status === "active" && !isBoard(m));
   const pendingBoardRequests = allMembers.filter((m: any) => m.status === "pending_approval");
+
+  const sections = (sectionsData ?? []) as { id: string; name: string; position: number }[];
 
   const mapMember = (m: any) => ({
     id: m.id,
@@ -150,6 +160,28 @@ export default async function BoardPage({ params }: Props) {
           </div>
         )}
       </div>
+
+      <MembershipToggle
+        associationId={association.id}
+        enabled={Boolean(association.membership_enabled)}
+      />
+
+      {association.membership_enabled && (
+        <MembersPanel
+          associationId={association.id}
+          sections={sections}
+          members={plainMembers.map((m: any) => ({
+            id: m.id,
+            role: m.role,
+            title: m.title as string | null,
+            sectionId: (m.section_id as string | null) ?? null,
+            profile: {
+              full_name: m.profiles?.full_name ?? null,
+              email: m.profiles?.email ?? "—",
+            },
+          }))}
+        />
+      )}
     </div>
   );
 }

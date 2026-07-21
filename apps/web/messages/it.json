@@ -1138,5 +1138,27 @@
     "finalTitle": "Hai completato la tua MIRA Card!",
     "finalBody": "La trovi nella sezione Profilo, e puoi modificarla quando vuoi. In bocca al lupo per le tue candidature.",
     "redirecting": "Ti porto al tuo Profilo..."
+  },
+  "Membership": {
+    "toggleTitle": "Gestione membership",
+    "toggleHint": "Attiva la lista dei membri con sezioni. I membri non vedono la dashboard.",
+    "membersCount": "Membri ({count})",
+    "newSection": "+ Nuova sezione",
+    "sectionNamePlaceholder": "Es. Marketing",
+    "assignSection": "Assegna a una sezione",
+    "noSection": "Nessuna",
+    "noSectionGroup": "Senza sezione",
+    "emptySection": "Nessun membro in questa sezione",
+    "rename": "Rinomina",
+    "delete": "Elimina",
+    "deleteSectionConfirm": "Eliminare la sezione?",
+    "moveUp": "Sposta su",
+    "moveDown": "Sposta giù",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "yes": "Sì",
+    "no": "No",
+    "noMembers": "Nessun membro",
+    "noMembersHint": "Condividi il codice invito per far entrare i membri."
   }
 }

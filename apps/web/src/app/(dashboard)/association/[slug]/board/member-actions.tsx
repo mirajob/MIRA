@@ -42,13 +42,15 @@ export function MemberActions({
 
   async function handleSaveTitle() {
     setSaving(true);
-    await fetch("/api/membership/activity", {
+    const res = await fetch("/api/membership/activity", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ membershipId, title: title.trim() || null }),
     });
     setSaving(false);
-    setEditing(false);
+    // Non chiudere il campo se il salvataggio non e' andato: altrimenti sembra salvato.
+    if (res.ok) setEditing(false);
+    else setTitle(currentTitle ?? "");
   }
 
   async function handleRemove() {
