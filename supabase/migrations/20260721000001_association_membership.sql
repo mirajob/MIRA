@@ -31,6 +31,9 @@ create table if not exists association_sections (
 create index if not exists association_sections_association_idx
   on association_sections(association_id, position);
 
+-- drop preventivo: create trigger/policy non supportano "if not exists", cosi' la
+-- migrazione resta sicura se viene rieseguita.
+drop trigger if exists association_sections_updated_at on association_sections;
 create trigger association_sections_updated_at
   before update on association_sections
   for each row execute function update_updated_at_column();
@@ -49,6 +52,7 @@ alter table association_sections enable row level security;
 -- Le sezioni sono dati interni dell'associazione: nessuna esposizione pubblica.
 -- L'accesso applicativo passa dal service client, che bypassa la RLS; questa policy
 -- copre solo la lettura diretta da parte di chi e' membro attivo dell'associazione.
+drop policy if exists association_sections_read_own on association_sections;
 create policy association_sections_read_own
   on association_sections for select
   using (is_association_member(get_profile_id(), association_id));
