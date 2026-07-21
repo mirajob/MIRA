@@ -452,7 +452,13 @@
     "applicationStatus": "Candidatura: {status}",
     "applyNow": "Candidati",
     "applicationsClosed": "Candidature chiuse",
-    "noAssociationsAvailable": "Nessuna associazione ancora disponibile per la tua università."
+    "noAssociationsAvailable": "Nessuna associazione ancora disponibile per la tua università.",
+    "myMembershipsHeading": "Associazioni di cui sei membro",
+    "memberBadge": "Membro",
+    "leave": "Esci",
+    "leaveConfirm": "Uscire?",
+    "leaveYes": "Sì",
+    "leaveNo": "No"
   },
   "Applications": {
     "backLink": "← Associazioni",

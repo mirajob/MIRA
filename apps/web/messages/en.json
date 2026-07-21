@@ -452,7 +452,13 @@
     "applicationStatus": "Application: {status}",
     "applyNow": "Apply",
     "applicationsClosed": "Applications closed",
-    "noAssociationsAvailable": "No associations available yet for your university."
+    "noAssociationsAvailable": "No associations available yet for your university.",
+    "myMembershipsHeading": "Associations you belong to",
+    "memberBadge": "Member",
+    "leave": "Leave",
+    "leaveConfirm": "Leave?",
+    "leaveYes": "Yes",
+    "leaveNo": "No"
   },
   "Applications": {
     "backLink": "← Associations",

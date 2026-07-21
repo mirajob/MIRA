@@ -7,6 +7,7 @@ import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { JoinByCode } from "@/components/join-by-code";
 import { WORKSPACE_ROLES, hasWorkspaceAccess } from "@/lib/association-roles";
 import { MarkAssociationNotificationsRead } from "./mark-read";
+import { MyMemberships } from "./my-memberships";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-navy-50 text-ink-tertiary",
@@ -97,6 +98,17 @@ export default async function StudentAssociazioniPage() {
       </div>
 
       <JoinByCode />
+
+      {/* Membership semplici: chi ha un ruolo di board compare gia' piu' sotto con la
+          scorciatoia "Gestisci", quindi qui lo escludiamo per non duplicarlo. */}
+      <MyMemberships
+        memberships={(myMemberships ?? [])
+          .filter((m: any) => !hasWorkspaceAccess(m))
+          .map((m: any) => ({
+            associationId: m.association_id as string,
+            name: (m.association_profiles?.name as string) ?? c("associationFallback"),
+          }))}
+      />
 
       {(() => {
         const workspaceMemberships = (myMemberships ?? []).filter((m: any) => WORKSPACE_ROLES.includes(m.role));
