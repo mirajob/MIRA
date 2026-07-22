@@ -17,6 +17,9 @@ interface ChatOptions {
   maxTokens?: number;
   temperature?: number;
   jsonMode?: boolean;
+  /** Timeout in ms: oltre questo la richiesta viene abortita con un errore chiaro invece
+   *  di restare appesa finché la piattaforma non uccide la funzione. Default: nessuno. */
+  timeoutMs?: number;
 }
 
 export async function chatCompletion(
@@ -34,14 +37,28 @@ export async function chatCompletion(
     ...(options.jsonMode ? { response_format: { type: "json_object" } } : {}),
   };
 
-  const response = await fetch(AI_CONFIG.apiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(body),
-  });
+  const controller = options.timeoutMs ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), options.timeoutMs) : null;
+
+  let response: Response;
+  try {
+    response = await fetch(AI_CONFIG.apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(body),
+      ...(controller ? { signal: controller.signal } : {}),
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error(`Timeout: la richiesta AI ha superato ${(options.timeoutMs ?? 0) / 1000}s.`);
+    }
+    throw err;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 
   if (!response.ok) {
     const error = await response.text();

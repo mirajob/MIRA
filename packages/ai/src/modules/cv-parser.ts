@@ -1,5 +1,10 @@
 import { chatCompletion } from "../provider";
 
+// Il parsing di un CV non deve mai restare appeso indefinitamente: se OpenAI non risponde,
+// meglio fallire con un errore chiaro entro il maxDuration della funzione (120s) che farsi
+// uccidere dalla piattaforma e lasciare il client bloccato su "Caricamento".
+const CV_PARSE_TIMEOUT_MS = 90_000;
+
 export interface ParsedCVExperience {
   title: string;
   organization: string;
@@ -60,7 +65,7 @@ async function parseCVImage(base64Data: string, mimeType: string): Promise<Parse
         ],
       },
     ],
-    { temperature: 0.1, maxTokens: 2048, jsonMode: true }
+    { temperature: 0.1, maxTokens: 2048, jsonMode: true, timeoutMs: CV_PARSE_TIMEOUT_MS }
   );
 
   return JSON.parse(result) as ParsedCV;
@@ -89,14 +94,27 @@ async function parseCVPdf(base64Data: string): Promise<ParsedCV> {
     max_output_tokens: 2048,
   };
 
-  const response = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(body),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), CV_PARSE_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error(`Timeout: il parsing del CV ha superato ${CV_PARSE_TIMEOUT_MS / 1000}s.`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!response.ok) {
     const error = await response.text();

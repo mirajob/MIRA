@@ -87,10 +87,21 @@ export async function uploadCV(formData: FormData) {
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : "Errore sconosciuto";
     console.error("CV parse error:", errorMsg);
-    // Still mark as uploaded (file is saved), but without structured data
-    await (supabase.from("student_profiles") as any)
-      .update({ cv_uploaded: true })
-      .eq("id", studentProfile.id);
+    // NON marcare cv_uploaded: il parsing è fallito (spesso un timeout di OpenAI). Se lo
+    // marcassimo, il controllo "CV già caricato" più sopra bloccherebbe per sempre il
+    // riprovare e nella UI il bottone di upload sparirebbe: l'utente resterebbe con un CV
+    // "caricato" ma senza nessuna esperienza estratta e senza via d'uscita. Lasciandolo
+    // false, il bottone resta e un nuovo tentativo può andare a buon fine.
+    await (supabase.from("ai_logs") as any).insert({
+      module: "cv_parser",
+      provider: "openai",
+      model: "gpt-4o",
+      entity_type: "student_profile",
+      user_id: profileId,
+      input_metadata: { file_name: file.name, file_size: file.size, file_type: file.type },
+      status: "error",
+      error_message: errorMsg,
+    });
     return { error: `Errore parsing CV: ${errorMsg}` };
   }
 }

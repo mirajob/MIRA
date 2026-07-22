@@ -201,21 +201,31 @@ export function OnboardingFlow({ userName }: { userName: string }) {
     if (!file) return;
     setUploading(true);
     setUploadError(null);
-    const formData = new FormData();
-    formData.append("file", file);
-    const result = await uploadCV(formData);
-    if (result.error) {
-      setUploadError(t("cvReadError"));
-    }
-    // Anche con parsing parziale: riversa quello che c'è nel blocco Esperienze.
+    // try/finally intorno a TUTTO: se uploadCV va in timeout o in errore (il parsing PDF
+    // via OpenAI è lento e la funzione serverless può essere uccisa), la promise viene
+    // rifiutata. Senza il finally, setUploading(false) non verrebbe mai eseguito e la
+    // schermata resterebbe bloccata su "Caricamento" — il problema segnalato dagli utenti.
     try {
-      await prefillEsperienzeFromCV();
+      const formData = new FormData();
+      formData.append("file", file);
+      const result = await uploadCV(formData);
+      if (result?.error) {
+        setUploadError(t("cvReadError"));
+      }
+      // Anche con parsing parziale: riversa quello che c'è nel blocco Esperienze.
+      try {
+        await prefillEsperienzeFromCV();
+      } catch (err) {
+        console.error("[MIRA] prefillEsperienzeFromCV failed:", err);
+      }
+      await refresh();
     } catch (err) {
-      console.error("[MIRA] prefillEsperienzeFromCV failed:", err);
+      console.error("[MIRA] uploadCV failed:", err);
+      setUploadError(t("cvReadError"));
+    } finally {
+      setUploading(false);
+      if (cvFileRef.current) cvFileRef.current.value = "";
     }
-    await refresh();
-    setUploading(false);
-    if (cvFileRef.current) cvFileRef.current.value = "";
   }
 
   async function handleStartFaseB() {
