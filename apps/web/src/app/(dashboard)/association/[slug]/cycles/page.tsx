@@ -49,7 +49,7 @@ export default async function CyclesPage({ params }: Props) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="font-sans text-h3 text-navy">{cycle.title}</h3>
+              <h3 className="font-sans text-h3 text-navy">{cycle.title || t("untitledDraft")}</h3>
               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${
                 isOpen ? "bg-success-bg text-success" : "bg-navy-50 text-ink-tertiary"
               }`}>

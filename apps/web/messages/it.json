@@ -712,6 +712,75 @@
       "open": "Aperto",
       "draft": "Bozza",
       "closed": "Chiuso"
+    },
+    "untitledDraft": "Ciclo senza nome"
+  },
+  "CycleCard": {
+    "startIntro": "Costruiamo insieme il vostro ciclo di candidatura. Ti faccio una domanda alla volta e vedi la card riempirsi sotto: sono sei blocchi, poi decidete voi quando aprire le candidature.",
+    "startButton": "Inizia a costruire",
+    "starting": "Un attimo...",
+    "startError": "Non è stato possibile creare il ciclo. Riprova.",
+    "buildingTitle": "Costruzione del ciclo",
+    "done": "Fatto",
+    "edit": "Modifica",
+    "confirmBlock": "Conferma",
+    "emptyBlock": "Non compilato",
+    "internalBadge": "Interno",
+    "previewAsCandidate": "Anteprima candidato",
+    "backToBoardView": "Torna alla vista board",
+    "candidateViewHint": "Stai vedendo il ciclo come lo vede uno studente.",
+    "boardViewHint": "Vista completa: include anche quello che gli studenti non vedono.",
+    "dateRange": "Dal {from} al {to}",
+    "noDates": "Nessuna data impostata",
+    "genericApplication": "Candidatura generica, senza ruoli specifici",
+    "noQuestions": "Nessuna domanda specifica",
+    "opensLabel": "Apre il",
+    "closesLabel": "Chiude il",
+    "genericLabel": "Candidatura generica, senza ruoli specifici",
+    "addPosition": "+ Aggiungi posizione",
+    "removePosition": "Rimuovi posizione",
+    "addQuestion": "+ Aggiungi domanda",
+    "removeQuestion": "Rimuovi domanda",
+    "suggestQuestions": "Fattele proporre da MIRA",
+    "suggesting": "MIRA sta pensando...",
+    "noQuestionsLabel": "Non vogliamo fare domande specifiche",
+    "readyToPublish": "La card è completa. Quando aprite il ciclo, gli studenti lo vedono e possono candidarsi.",
+    "publish": "Apri le candidature",
+    "discard": "Elimina la bozza",
+    "discardConfirm": "Vuoi eliminare questa bozza di ciclo?",
+    "blocks": {
+      "nome": "Nome del ciclo",
+      "descrizione": "Descrizione per i candidati",
+      "date": "Date di apertura e chiusura",
+      "posizioni": "Posizioni aperte",
+      "profilo": "Profilo cercato",
+      "domande": "Domande ai candidati"
+    },
+    "guide": {
+      "nome": "Iniziamo dal nome. Come volete chiamare questo ciclo di {association}? Lo vedono anche gli studenti: di solito bastano il tipo di selezione e il periodo, tipo «Recruiting Autunno 2026».",
+      "descrizione": "Ora scrivete cosa deve sapere uno studente prima di candidarsi: chi siete, cosa cercate in questo ciclo, come funziona la selezione. Se preferite potete lasciarlo vuoto e andare avanti.",
+      "date": "Quando aprite e quando chiudete? Alla data di chiusura il ciclo si chiude da solo e non si può più candidare nessuno.",
+      "posizioni": "Aprite per posizioni specifiche o è una candidatura aperta a tutti? Se avete ruoli precisi elencateli: MIRA può suggerire a ogni candidato quello più adatto a lui.",
+      "profilo": "Questo blocco è il più importante e lo vedete solo voi. Descrivete il candidato ideale: interessi, competenze, anno di corso, esperienze utili, attitudini. MIRA usa questa descrizione per valutare chi si candida.",
+      "domande": "Ultimo blocco: volete fare domande specifiche ai candidati? Le risposte arrivano insieme alla loro MIRA Card. Se non vi servono, spuntate la casella e abbiamo finito."
+    },
+    "visibility": {
+      "candidate": "Gli studenti vedono questo blocco.",
+      "internal": "Solo per voi: gli studenti non lo vedono."
+    },
+    "status": {
+      "draft": "Bozza",
+      "open": "Aperto",
+      "closed": "Chiuso",
+      "archived": "Archiviato"
+    },
+    "placeholders": {
+      "nome": "Recruiting Autunno 2026",
+      "descrizione": "Cosa deve sapere uno studente prima di candidarsi...",
+      "positionName": "Nome della posizione",
+      "positionDescription": "Di cosa si occupa (facoltativo)",
+      "profilo": "Interessi, competenze, anno di corso, esperienze utili, attitudini...",
+      "question": "Scrivi la domanda..."
     }
   },
   "NewCycleWizard": {

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { CycleEditor } from "./cycle-editor";
 import { QuestionBuilder } from "./question-builder";
+import { CycleCardFlow } from "./cycle-card-flow";
+import { loadCycleCard } from "@/lib/actions/cycle-card";
 
 interface Props {
   params: Promise<{ slug: string; cycleId: string }>;
@@ -23,10 +25,27 @@ export default async function CycleDetailPage({ params }: Props) {
 
   if (!cycle) notFound();
 
+  // select("*") e non la sola colonna: finche' la migration del flag non e' applicata la
+  // colonna non esiste, e chiederla per nome farebbe fallire la query invece di ricadere
+  // sul vecchio percorso.
   const { data: association } = await (supabase.from("association_profiles") as any)
-    .select("id")
+    .select("*")
     .eq("slug", slug)
     .single();
+
+  // Associazioni in beta: il ciclo si vede e si modifica come card, in una schermata sola.
+  if (association?.beta_dashboard) {
+    const { state, error } = await loadCycleCard(cycleId);
+    if (error) {
+      return (
+        <div className="rounded-md border border-error/30 bg-error-bg px-4 py-3">
+          <p className="text-body-sm text-error">{error}</p>
+        </div>
+      );
+    }
+    if (!state) notFound();
+    return <CycleCardFlow initialState={state} />;
+  }
 
   const { data: questions } = await (supabase.from("application_questions") as any)
     .select("*")

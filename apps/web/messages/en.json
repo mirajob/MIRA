@@ -712,6 +712,75 @@
       "open": "Open",
       "draft": "Draft",
       "closed": "Closed"
+    },
+    "untitledDraft": "Untitled cycle"
+  },
+  "CycleCard": {
+    "startIntro": "Let's build your application cycle together. I'll ask one question at a time and you'll watch the card fill in below: six blocks, then you decide when to open applications.",
+    "startButton": "Start building",
+    "starting": "One moment...",
+    "startError": "The cycle could not be created. Please try again.",
+    "buildingTitle": "Building the cycle",
+    "done": "Done",
+    "edit": "Edit",
+    "confirmBlock": "Confirm",
+    "emptyBlock": "Not filled in",
+    "internalBadge": "Internal",
+    "previewAsCandidate": "Preview as candidate",
+    "backToBoardView": "Back to board view",
+    "candidateViewHint": "You're seeing the cycle the way a student sees it.",
+    "boardViewHint": "Full view: includes what students don't see.",
+    "dateRange": "From {from} to {to}",
+    "noDates": "No dates set",
+    "genericApplication": "Open application, no specific roles",
+    "noQuestions": "No specific questions",
+    "opensLabel": "Opens on",
+    "closesLabel": "Closes on",
+    "genericLabel": "Open application, no specific roles",
+    "addPosition": "+ Add position",
+    "removePosition": "Remove position",
+    "addQuestion": "+ Add question",
+    "removeQuestion": "Remove question",
+    "suggestQuestions": "Have MIRA suggest them",
+    "suggesting": "MIRA is thinking...",
+    "noQuestionsLabel": "We don't want to ask specific questions",
+    "readyToPublish": "The card is complete. Once you open the cycle, students can see it and apply.",
+    "publish": "Open applications",
+    "discard": "Delete draft",
+    "discardConfirm": "Delete this draft cycle?",
+    "blocks": {
+      "nome": "Cycle name",
+      "descrizione": "Description for candidates",
+      "date": "Opening and closing dates",
+      "posizioni": "Open positions",
+      "profilo": "Profile you're looking for",
+      "domande": "Questions for candidates"
+    },
+    "guide": {
+      "nome": "Let's start with the name. What do you want to call this {association} cycle? Students see it too: the type of selection and the period usually do the job, like “Fall 2026 Recruiting”.",
+      "descrizione": "Now write what a student should know before applying: who you are, what you're looking for in this cycle, how the selection works. You can leave it empty and move on.",
+      "date": "When do you open and when do you close? On the closing date the cycle closes by itself and no one can apply anymore.",
+      "posizioni": "Are you opening for specific positions, or is this open to everyone? If you have defined roles, list them: MIRA can suggest the best fit to each candidate.",
+      "profilo": "This is the most important block, and only you can see it. Describe your ideal candidate: interests, skills, year of study, useful experience, attitude. MIRA uses this to evaluate applicants.",
+      "domande": "Last block: do you want to ask candidates specific questions? Their answers arrive together with their MIRA Card. If you don't need any, tick the box and we're done."
+    },
+    "visibility": {
+      "candidate": "Students see this block.",
+      "internal": "For your eyes only: students don't see this."
+    },
+    "status": {
+      "draft": "Draft",
+      "open": "Open",
+      "closed": "Closed",
+      "archived": "Archived"
+    },
+    "placeholders": {
+      "nome": "Fall 2026 Recruiting",
+      "descrizione": "What a student should know before applying...",
+      "positionName": "Position name",
+      "positionDescription": "What it involves (optional)",
+      "profilo": "Interests, skills, year of study, useful experience, attitude...",
+      "question": "Write the question..."
     }
   },
   "NewCycleWizard": {
