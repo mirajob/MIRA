@@ -956,6 +956,61 @@
     "publishPage": "Pubblica pagina",
     "viewPublicPage": "Vedi pagina pubblica →"
   },
+  "PageCard": {
+    "heading": "La tua pagina pubblica",
+    "buildingTitle": "Costruzione della pagina",
+    "yourAssociation": "la tua associazione",
+    "done": "Fatto",
+    "edit": "Modifica",
+    "confirmBlock": "Conferma",
+    "emptyBlock": "Non compilato",
+    "statusPublished": "Pubblicata",
+    "statusDraft": "Bozza",
+    "previewAsStudent": "Anteprima studente",
+    "backToEdit": "Torna alla modifica",
+    "previewHint": "Stai vedendo la pagina come la vede uno studente.",
+    "boardHint": "La pagina che gli studenti vedono quando cercano la tua associazione.",
+    "readyToPublish": "La pagina è pronta. Pubblicandola, gli studenti possono trovarti e candidarsi ai tuoi cicli.",
+    "publish": "Pubblica la pagina",
+    "publishedInfo": "La pagina è pubblicata e visibile agli studenti.",
+    "viewPublicPage": "Vedi la pagina pubblica →",
+    "uploadLogo": "Carica il logo",
+    "changeLogo": "Cambia logo",
+    "uploadingLogo": "Caricamento...",
+    "logoHelper": "PNG, JPG o WEBP. Quadrato, meglio se almeno 200×200.",
+    "nameLabel": "Nome dell'associazione",
+    "categoryLabel": "Categoria",
+    "categoryPlaceholder": "Scegli una categoria",
+    "shortLabel": "Descrizione breve",
+    "longLabel": "Descrizione estesa",
+    "sectorsLabel": "Settori e aree",
+    "sectorsHelper": "Separali con una virgola. Es. Finanza, Consulenza, Marketing",
+    "websiteLabel": "Sito web",
+    "emailLabel": "Email di contatto",
+    "blocks": {
+      "identita": "Logo, nome e categoria",
+      "descrizione": "Descrizione",
+      "settori": "Settori e aree",
+      "contatti": "Sito e contatti"
+    },
+    "guide": {
+      "identita": "Partiamo dall'identità di {name}: carica il logo, controlla il nome e scegli la categoria. È la prima cosa che vede uno studente.",
+      "descrizione": "Raccontate chi siete. La descrizione breve è la frase che compare per prima; quella estesa è lo spazio per spiegare cosa fate, i progetti, com'è entrare a farne parte.",
+      "settori": "Quali settori o aree vi rappresentano? Servono agli studenti per capire a colpo d'occhio di cosa vi occupate. Se non ne avete, potete saltare.",
+      "contatti": "Ultimo blocco: dove possono trovarvi? Sito e un'email di contatto. Potete lasciarli vuoti e aggiungerli dopo."
+    },
+    "placeholders": {
+      "nome": "Nome dell'associazione",
+      "short": "Una frase che vi descrive...",
+      "long": "Chi siete, cosa fate, i vostri progetti, com'è farne parte...",
+      "sectors": "Finanza, Consulenza, Marketing",
+      "email": "contatti@associazione.it"
+    },
+    "preview": {
+      "website": "Sito web",
+      "contact": "Contatta"
+    }
+  },
   "CompanyLayout": {
     "searchNav": "Cerca talenti",
     "contactsNav": "Contatti",

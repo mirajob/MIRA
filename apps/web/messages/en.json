@@ -956,6 +956,61 @@
     "publishPage": "Publish page",
     "viewPublicPage": "View public page →"
   },
+  "PageCard": {
+    "heading": "Your public page",
+    "buildingTitle": "Building the page",
+    "yourAssociation": "your association",
+    "done": "Done",
+    "edit": "Edit",
+    "confirmBlock": "Confirm",
+    "emptyBlock": "Not filled in",
+    "statusPublished": "Published",
+    "statusDraft": "Draft",
+    "previewAsStudent": "Preview as student",
+    "backToEdit": "Back to editing",
+    "previewHint": "You're seeing the page the way a student sees it.",
+    "boardHint": "The page students see when they look up your association.",
+    "readyToPublish": "The page is ready. Once published, students can find you and apply to your cycles.",
+    "publish": "Publish the page",
+    "publishedInfo": "The page is published and visible to students.",
+    "viewPublicPage": "View public page →",
+    "uploadLogo": "Upload logo",
+    "changeLogo": "Change logo",
+    "uploadingLogo": "Uploading...",
+    "logoHelper": "PNG, JPG or WEBP. Square, ideally at least 200×200.",
+    "nameLabel": "Association name",
+    "categoryLabel": "Category",
+    "categoryPlaceholder": "Choose a category",
+    "shortLabel": "Short description",
+    "longLabel": "Full description",
+    "sectorsLabel": "Sectors and areas",
+    "sectorsHelper": "Separate them with a comma. E.g. Finance, Consulting, Marketing",
+    "websiteLabel": "Website",
+    "emailLabel": "Contact email",
+    "blocks": {
+      "identita": "Logo, name and category",
+      "descrizione": "Description",
+      "settori": "Sectors and areas",
+      "contatti": "Website and contacts"
+    },
+    "guide": {
+      "identita": "Let's start with {name}'s identity: upload the logo, check the name and pick a category. It's the first thing a student sees.",
+      "descrizione": "Tell them who you are. The short description is the line that shows first; the full one is where you explain what you do, your projects, what it's like to join.",
+      "settori": "Which sectors or areas represent you? They help students grasp at a glance what you're about. If you don't have any, you can skip.",
+      "contatti": "Last block: where can they find you? A website and a contact email. You can leave them empty and add them later."
+    },
+    "placeholders": {
+      "nome": "Association name",
+      "short": "A line that describes you...",
+      "long": "Who you are, what you do, your projects, what it's like to be part of it...",
+      "sectors": "Finance, Consulting, Marketing",
+      "email": "contact@association.com"
+    },
+    "preview": {
+      "website": "Website",
+      "contact": "Contact"
+    }
+  },
   "CompanyLayout": {
     "searchNav": "Search talent",
     "contactsNav": "Contacts",
