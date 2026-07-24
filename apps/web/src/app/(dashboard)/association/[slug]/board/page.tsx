@@ -7,6 +7,8 @@ import { InviteCodeSection } from "./invite-code-section";
 import { PendingBoardRequests } from "./pending-board-requests";
 import { MembershipToggle } from "./membership-toggle";
 import { MembersList, type Person } from "./members-list";
+import { MemberCardsGrid } from "./member-cards-grid";
+import { MiraGuide } from "@/components/mira-guide";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -21,13 +23,14 @@ export default async function MembersPage({ params }: Props) {
   const tDegree = await getTranslations("SignupPage");
 
   const { data: association } = await (supabase.from("association_profiles") as any)
-    .select("id, name, slug, invite_code, membership_enabled")
+    .select("id, name, slug, invite_code, membership_enabled, beta_dashboard")
     .eq("slug", slug)
     .maybeSingle();
 
   if (!association) notFound();
 
   const membershipEnabled = Boolean(association.membership_enabled);
+  const isBeta = Boolean(association.beta_dashboard);
 
   const { data: allMemberships } = await (supabase.from("association_memberships") as any)
     .select("id, user_id, role, title, permissions, status, section_id, created_at")
@@ -116,6 +119,43 @@ export default async function MembersPage({ params }: Props) {
 
   const sections = ((sectionsData ?? []) as any[]).map((s) => ({ id: s.id as string, name: s.name as string }));
 
+  const pendingRequests = pending.map((m: any) => {
+    const p = profileMap.get(m.user_id);
+    return {
+      id: m.id as string,
+      title: (m.title as string | null) ?? null,
+      profile: {
+        full_name: (p?.full_name as string | null) ?? null,
+        email: (p?.email as string) ?? "—",
+      },
+    };
+  });
+
+  // Dashboard beta: MIRA introduce in cima e i membri sono card, come pagina pubblica e cicli.
+  // Niente sezioni/toggle qui: rendevano la pagina confusa e non servono al primo utilizzo.
+  if (isBeta) {
+    return (
+      <div className="space-y-4">
+        <MiraGuide text={t("guideMembers")} />
+
+        <InviteCodeSection
+          associationId={association.id}
+          currentCode={association.invite_code}
+          membershipEnabled={membershipEnabled}
+        />
+
+        {pending.length > 0 && (
+          <PendingBoardRequests associationId={association.id} requests={pendingRequests} />
+        )}
+
+        <div>
+          <p className="mb-2 text-eyebrow uppercase text-navy/60">{t("listHeading", { count: people.length })}</p>
+          <MemberCardsGrid associationId={association.id} slug={slug} people={people} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     // Nessun titolo "Membri": lo dice gia' la voce di menu attiva qui sopra.
     <div className="space-y-4">
@@ -128,20 +168,7 @@ export default async function MembersPage({ params }: Props) {
       <MembershipToggle associationId={association.id} enabled={membershipEnabled} />
 
       {pending.length > 0 && (
-        <PendingBoardRequests
-          associationId={association.id}
-          requests={pending.map((m: any) => {
-            const p = profileMap.get(m.user_id);
-            return {
-              id: m.id as string,
-              title: (m.title as string | null) ?? null,
-              profile: {
-                full_name: (p?.full_name as string | null) ?? null,
-                email: (p?.email as string) ?? "—",
-              },
-            };
-          })}
-        />
+        <PendingBoardRequests associationId={association.id} requests={pendingRequests} />
       )}
 
       <MembersList

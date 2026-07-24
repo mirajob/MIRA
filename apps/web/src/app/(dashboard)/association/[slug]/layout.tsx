@@ -17,7 +17,9 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
   const t = await getTranslations("AssociationLayout");
   const c = await getTranslations("Common");
 
-  const getAssociationNav = (slug: string) => [
+  const getAssociationNav = (slug: string, beta: boolean) => [
+    // La Panoramica (percorso guidato) esiste solo nella dashboard beta.
+    ...(beta ? [{ label: t("navPanoramica"), href: `/association/${slug}` }] : []),
     { label: t("navCicli"), href: `/association/${slug}/cycles` },
     { label: t("navCandidati"), href: `/association/${slug}/candidates` },
     { label: t("navMembri"), href: `/association/${slug}/board` },
@@ -26,7 +28,7 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
 
   const { data: association } = await supabase
     .from("association_profiles")
-    .select("id, name, slug, logo_url, verification_status, public_page_status")
+    .select("id, name, slug, logo_url, verification_status, public_page_status, beta_dashboard")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -92,7 +94,7 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
     );
   }
 
-  const nav = getAssociationNav(slug);
+  const nav = getAssociationNav(slug, Boolean((association as any).beta_dashboard));
 
   const { data: studentProfile } = await supabase
     .from("student_profiles")
