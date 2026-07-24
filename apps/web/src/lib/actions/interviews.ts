@@ -28,6 +28,7 @@ export async function sendInterviewInvite(applicationId: string, formData: FormD
   const canInvite =
     ctx.isMiraAdmin ||
     membership?.role === "association_president" ||
+    membership?.role === "association_admin" ||
     (membership?.permissions as Record<string, boolean>)?.send_interview_invites;
 
   if (!canInvite) return { error: "Non hai i permessi" };

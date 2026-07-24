@@ -34,6 +34,7 @@ export async function changeCandidateStatus(
   const canChange =
     ctx.isMiraAdmin ||
     membership?.role === "association_president" ||
+    membership?.role === "association_admin" ||
     (membership?.permissions as Record<string, boolean>)?.change_candidate_status;
 
   if (!canChange) return { error: "Non hai i permessi" };
@@ -119,6 +120,7 @@ export async function addCandidateNote(applicationId: string, noteText: string) 
   const canNote =
     ctx.isMiraAdmin ||
     membership?.role === "association_president" ||
+    membership?.role === "association_admin" ||
     (membership?.permissions as Record<string, boolean>)?.add_internal_candidate_notes;
 
   if (!canNote) return { error: "Non hai i permessi" };

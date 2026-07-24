@@ -19,6 +19,7 @@ export async function updateAssociationProfile(associationId: string, formData: 
   const canEdit =
     ctx.isMiraAdmin ||
     membership?.role === "association_president" ||
+    membership?.role === "association_admin" ||
     (membership?.permissions as Record<string, boolean>)?.manage_association_profile;
 
   if (!canEdit) {
@@ -92,6 +93,7 @@ export async function publishAssociationPage(associationId: string) {
   const canPublish =
     ctx.isMiraAdmin ||
     membership?.role === "association_president" ||
+    membership?.role === "association_admin" ||
     (membership?.permissions as Record<string, boolean>)?.manage_public_page;
 
   if (!canPublish) {

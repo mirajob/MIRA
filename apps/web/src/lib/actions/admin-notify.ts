@@ -77,11 +77,15 @@ export async function remindAssociationPage(input: { associationId: string; subj
 
   if (!association) return { error: "Associazione non trovata." };
 
-  // Preferisci l'email del presidente (membership) al contact_email della pagina.
+  // Preferisci l'email di chi gestisce (membership) al contact_email della pagina. Nel
+  // modello unificato i gestori sono association_admin (o il legacy association_president),
+  // non piu' solo president: filtrare per il solo president non trovava piu' nessuno.
   const { data: membership } = await (supabase.from("association_memberships") as any)
     .select("profiles!association_memberships_user_id_fkey(email)")
     .eq("association_id", input.associationId)
-    .eq("role", "association_president")
+    .in("role", ["association_admin", "association_president"])
+    .eq("status", "active")
+    .limit(1)
     .maybeSingle();
 
   const email = (membership as any)?.profiles?.email ?? association.contact_email;

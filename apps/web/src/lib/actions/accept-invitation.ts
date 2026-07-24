@@ -119,15 +119,19 @@ async function acceptPresidentInvitation(
     return { error: `Errore: ${assocError.message}` };
   }
 
+  // Modello unificato: chi accetta l'invito nasce association_admin (accesso completo), come
+  // chi registra un'associazione da solo. Non creiamo piu' il ruolo legacy
+  // association_president. Il tipo di invito resta "association_president" (e' il tipo di
+  // invito, non il ruolo). I due template sono comunque identici.
   const permissions: Record<string, boolean> = {};
-  for (const perm of ROLE_PERMISSION_TEMPLATES.association_president) {
+  for (const perm of ROLE_PERMISSION_TEMPLATES.association_admin) {
     permissions[perm] = true;
   }
 
   await supabase.from("association_memberships").insert({
     association_id: association.id,
     user_id: profileId,
-    role: "association_president",
+    role: "association_admin",
     permissions,
     status: "active",
     joined_at: new Date().toISOString(),

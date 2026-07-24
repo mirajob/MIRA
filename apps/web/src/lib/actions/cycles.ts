@@ -19,6 +19,7 @@ async function checkCyclePermission(associationId: string, permission: string) {
   return (
     ctx.isMiraAdmin ||
     membership?.role === "association_president" ||
+    membership?.role === "association_admin" ||
     (membership?.permissions as Record<string, boolean>)?.[permission]
   );
 }

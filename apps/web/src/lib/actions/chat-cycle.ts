@@ -87,6 +87,7 @@ export async function createCycleFromChat(
   const canCreate =
     ctx.isMiraAdmin ||
     membership?.role === "association_president" ||
+    membership?.role === "association_admin" ||
     (membership?.permissions as Record<string, boolean>)?.manage_application_cycles;
 
   if (!canCreate) return { error: "Non hai i permessi" };
