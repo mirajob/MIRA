@@ -621,46 +621,6 @@
     "publicPageBannerCta": "Complete the page →",
     "navPanoramica": "Overview"
   },
-  "GuidedHome": {
-    "intro": "Hi! I'm MIRA. Let's build {name}'s presence on MIRA together, one step at a time. I'll walk you through it: finish one step and we move to the next. You can skip anything and come back later.",
-    "introDone": "All set, {name}! Your presence on MIRA is complete. From here you can always update the page, manage members and open new application cycles.",
-    "progressTitle": "Where you're at",
-    "statusDone": "Done",
-    "statusSkipped": "Skipped",
-    "statusTodo": "To do",
-    "skip": "Skip for now",
-    "resume": "Resume this step",
-    "dismiss": "Hide the guide",
-    "reopen": "Reopen the guide",
-    "someSkipped": "You skipped some steps: you can resume them anytime from here.",
-    "dismissedBar": "Intro guide hidden · {pct}% complete",
-    "steps": {
-      "public_page": {
-        "title": "Build your public page",
-        "body": "It's the showcase students see when they look up your association. It's built like a card.",
-        "cta": "Build the page",
-        "ctaDone": "Edit the page"
-      },
-      "collaborators": {
-        "title": "Invite collaborators",
-        "body": "The other board people who'll run the dashboard alongside you.",
-        "cta": "Invite collaborators",
-        "ctaDone": "Manage collaborators"
-      },
-      "members": {
-        "title": "Invite members",
-        "body": "Add your association's members: manage them here, each with their MiraCard.",
-        "cta": "Invite members",
-        "ctaDone": "Manage members"
-      },
-      "cycles": {
-        "title": "Set up applications",
-        "body": "Create your first application cycle: MIRA guides you through building it.",
-        "cta": "Create a cycle",
-        "ctaDone": "Manage cycles"
-      }
-    }
-  },
   "Board": {
     "heading": "Members",
     "subhead": "Who works with you and who belongs to the association",
@@ -713,7 +673,29 @@
     "viewCard": "View MiraCard",
     "noCard": "This person doesn't have a MiraCard yet.",
     "guideMembers": "Now invite your members and manage them from here. Share the link below: whoever joins appears among the association's people, each with their MiraCard. You can appoint other admins or give each one a role.",
-    "openCard": "Open card →"
+    "openCard": "Open card →",
+    "guideTeam": "Here you manage your team. Share the invite link below: whoever joins becomes a member of the association, with their MiraCard. Anyone you make an admin gets access to your same dashboard and can do everything you can; the others you organize into sections by role, area or team."
+  },
+  "AssociationOnboarding": {
+    "stepCounter": "Step {current} of {total}",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "finishNow": "Skip and finish",
+    "loadError": "This section couldn't be loaded. Please reload the page.",
+    "steps": {
+      "public_page": {
+        "intro": "Hi! I'm MIRA. Let's build {name}'s presence on MIRA together, one step at a time. Let's start with your public page: it's the showcase students see. Fill it in below, block by block."
+      },
+      "team": {
+        "intro": "Now your team. Invite collaborators and members from the link below: whoever you make an admin runs the dashboard with you, the others you organize into sections. You can also skip and do this later."
+      },
+      "cycles": {
+        "intro": "Last step: set up applications. Create your first cycle — I'll guide you through building it, like the page. If it's not the moment, you can finish and do it later.",
+        "empty": "You don't have an application cycle yet.",
+        "create": "Create the first cycle"
+      }
+    }
   },
   "InviteCodeSection": {
     "heading": "Invite link",

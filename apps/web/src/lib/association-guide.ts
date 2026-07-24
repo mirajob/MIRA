@@ -1,30 +1,42 @@
 /**
- * Le tappe del percorso guidato dell'associazione (Panoramica), in ordine. Il completamento
- * di ciascuna e' derivato dai dati reali (vedi /association/[slug]/page.tsx); qui c'e' solo
- * l'elenco e i tipi, condivisi tra server action e UI.
+ * L'onboarding guidato dell'associazione: la prima volta che il board entra, MIRA lo
+ * accompagna a costruire le sezioni una alla volta e in ordine — come l'onboarding della
+ * MiraCard. Finito (o saltato tutto), l'onboarding sparisce e restano le sezioni normali.
  *
- * Modulo separato e non "use server": i file "use server" non possono esportare costanti.
+ * Le tappe si costruiscono inline: pagina pubblica, team (collaboratori + membri), cicli.
+ *
+ * Modulo separato e non "use server": esporta costanti e tipi condivisi tra server e UI.
  */
-export const GUIDE_STEPS = ["public_page", "collaborators", "members", "cycles"] as const;
-export type GuideStep = (typeof GUIDE_STEPS)[number];
+export const ONBOARDING_STEPS = ["public_page", "team", "cycles"] as const;
+export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 
-export interface GuideStepState {
-  step: GuideStep;
-  /** Condizione reale soddisfatta (pagina pubblicata, cicli creati, ...). */
-  done: boolean;
-  /** Il board ha scelto di saltarla. */
-  skipped: boolean;
-  /** Dove porta la tappa. */
-  href: string;
+export interface OnboardingState {
+  /** L'onboarding e' in corso: si mostra solo il percorso guidato, non le tab. */
+  active: boolean;
+  /** Indice della tappa corrente in ONBOARDING_STEPS. */
+  step: number;
+  completed: boolean;
 }
 
-export function guideProgressPct(steps: GuideStepState[]): number {
-  if (steps.length === 0) return 0;
-  const settled = steps.filter((s) => s.done || s.skipped).length;
-  return Math.round((settled / steps.length) * 100);
+/**
+ * Legge lo stato dell'onboarding dal profilo associazione.
+ *
+ * Regola per le associazioni gia' esistenti prima di questa feature: hanno onboarding_state
+ * vuoto ({}) e NON devono essere buttate in un onboarding — hanno gia' i loro contenuti. Solo
+ * le associazioni che nascono con {step, completed} (vedi trigger) entrano nel percorso.
+ */
+export function readOnboardingState(raw: unknown): OnboardingState {
+  const obj = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const hasStep = typeof obj.step === "number";
+  const completed = Boolean(obj.completed);
+  const step = hasStep ? (obj.step as number) : 0;
+  return {
+    active: hasStep && !completed,
+    step: Math.max(0, Math.min(step, ONBOARDING_STEPS.length)),
+    completed,
+  };
 }
 
-/** La prima tappa non ancora fatta ne' saltata: quella che la guida evidenzia. */
-export function nextGuideStep(steps: GuideStepState[]): GuideStep | null {
-  return steps.find((s) => !s.done && !s.skipped)?.step ?? null;
+export function onboardingProgressPct(step: number): number {
+  return Math.round((Math.min(step, ONBOARDING_STEPS.length) / ONBOARDING_STEPS.length) * 100);
 }

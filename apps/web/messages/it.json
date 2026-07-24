@@ -621,46 +621,6 @@
     "publicPageBannerCta": "Completa la pagina →",
     "navPanoramica": "Panoramica"
   },
-  "GuidedHome": {
-    "intro": "Ciao! Sono MIRA. Costruiamo insieme la presenza di {name} su MIRA, un passo alla volta. Ti accompagno: quando finisci una tappa passiamo alla successiva. Puoi saltare quello che vuoi e riprenderlo dopo.",
-    "introDone": "Tutto pronto, {name}! La vostra presenza su MIRA è completa. Da qui puoi sempre aggiornare la pagina, gestire i membri e aprire nuove candidature.",
-    "progressTitle": "A che punto siete",
-    "statusDone": "Fatto",
-    "statusSkipped": "Saltato",
-    "statusTodo": "Da fare",
-    "skip": "Salta per ora",
-    "resume": "Riprendi questa tappa",
-    "dismiss": "Nascondi la guida",
-    "reopen": "Riapri la guida",
-    "someSkipped": "Hai saltato qualche tappa: puoi riprenderla quando vuoi da qui.",
-    "dismissedBar": "Guida introduttiva nascosta · {pct}% completato",
-    "steps": {
-      "public_page": {
-        "title": "Costruisci la pagina pubblica",
-        "body": "È la vetrina che vedono gli studenti quando cercano la vostra associazione. Si costruisce come una card.",
-        "cta": "Costruisci la pagina",
-        "ctaDone": "Modifica la pagina"
-      },
-      "collaborators": {
-        "title": "Invita i collaboratori",
-        "body": "Le altre persone del board che gestiranno la dashboard insieme a te.",
-        "cta": "Invita i collaboratori",
-        "ctaDone": "Gestisci i collaboratori"
-      },
-      "members": {
-        "title": "Invita i membri",
-        "body": "Aggiungi i membri dell'associazione: li gestisci da qui, ognuno con la sua MiraCard.",
-        "cta": "Invita i membri",
-        "ctaDone": "Gestisci i membri"
-      },
-      "cycles": {
-        "title": "Prepara le candidature",
-        "body": "Crea il vostro primo ciclo di candidatura: MIRA ti guida nella costruzione.",
-        "cta": "Crea un ciclo",
-        "ctaDone": "Gestisci i cicli"
-      }
-    }
-  },
   "Board": {
     "heading": "Membri",
     "subhead": "Chi collabora con te e chi fa parte dell'associazione",
@@ -713,7 +673,29 @@
     "viewCard": "Vedi MiraCard",
     "noCard": "Questa persona non ha ancora una MiraCard.",
     "guideMembers": "Ora invita i tuoi membri e gestiscili da qui. Condividi il link qui sotto: chi entra compare tra le persone dell'associazione, ognuno con la sua MiraCard. Puoi nominare altri amministratori o assegnare un ruolo a ciascuno.",
-    "openCard": "Apri la scheda →"
+    "openCard": "Apri la scheda →",
+    "guideTeam": "Qui gestisci il tuo team. Condividi il link d'invito qui sotto: chi entra diventa un membro dell'associazione, con la sua MiraCard. Chi rendi amministratore ha accesso alla tua stessa dashboard e può svolgere le tue stesse funzioni; gli altri li organizzi in sezioni per ruolo, area o team."
+  },
+  "AssociationOnboarding": {
+    "stepCounter": "Passo {current} di {total}",
+    "back": "Indietro",
+    "next": "Avanti",
+    "finish": "Concludi",
+    "finishNow": "Salta e concludi",
+    "loadError": "Non è stato possibile caricare questa sezione. Ricarica la pagina.",
+    "steps": {
+      "public_page": {
+        "intro": "Ciao! Sono MIRA. Costruiamo insieme la presenza di {name} su MIRA, un passo alla volta. Partiamo dalla pagina pubblica: è la vetrina che vedono gli studenti. Compilala qui sotto, blocco per blocco."
+      },
+      "team": {
+        "intro": "Ora il tuo team. Invita i collaboratori e i membri dal link qui sotto: chi rendi amministratore gestisce la dashboard con te, gli altri li organizzi in sezioni. Puoi anche saltare e farlo più avanti."
+      },
+      "cycles": {
+        "intro": "Ultima tappa: prepara le candidature. Crea il vostro primo ciclo — ti guido nella costruzione, come per la pagina. Se non è il momento, puoi concludere e farlo dopo.",
+        "empty": "Non hai ancora un ciclo di candidatura.",
+        "create": "Crea il primo ciclo"
+      }
+    }
   },
   "InviteCodeSection": {
     "heading": "Link invito",

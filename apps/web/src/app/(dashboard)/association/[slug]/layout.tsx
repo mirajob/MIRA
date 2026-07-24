@@ -4,6 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { hasWorkspaceAccess } from "@/lib/association-roles";
+import { readOnboardingState } from "@/lib/association-guide";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -17,9 +18,7 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
   const t = await getTranslations("AssociationLayout");
   const c = await getTranslations("Common");
 
-  const getAssociationNav = (slug: string, beta: boolean) => [
-    // La Panoramica (percorso guidato) esiste solo nella dashboard beta.
-    ...(beta ? [{ label: t("navPanoramica"), href: `/association/${slug}` }] : []),
+  const getAssociationNav = (slug: string) => [
     { label: t("navCicli"), href: `/association/${slug}/cycles` },
     { label: t("navCandidati"), href: `/association/${slug}/candidates` },
     { label: t("navMembri"), href: `/association/${slug}/board` },
@@ -28,7 +27,7 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
 
   const { data: association } = await supabase
     .from("association_profiles")
-    .select("id, name, slug, logo_url, verification_status, public_page_status, beta_dashboard")
+    .select("id, name, slug, logo_url, verification_status, public_page_status, beta_dashboard, onboarding_state")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -94,7 +93,22 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
     );
   }
 
-  const nav = getAssociationNav(slug, Boolean((association as any).beta_dashboard));
+  const nav = getAssociationNav(slug);
+
+  // Durante l'onboarding guidato il board vede "solo MIRA": niente tab, niente banner. Le
+  // sezioni ricompaiono quando il percorso e' concluso.
+  const onboardingActive =
+    Boolean((association as any).beta_dashboard) &&
+    readOnboardingState((association as any).onboarding_state).active;
+
+  if (onboardingActive) {
+    return (
+      <div>
+        {associationHeader}
+        {children}
+      </div>
+    );
+  }
 
   const { data: studentProfile } = await supabase
     .from("student_profiles")
