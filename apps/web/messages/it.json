@@ -781,6 +781,12 @@
       "positionDescription": "Di cosa si occupa (facoltativo)",
       "profilo": "Interessi, competenze, anno di corso, esperienze utili, attitudini...",
       "question": "Scrivi la domanda..."
+    },
+    "preview": {
+      "eyebrow": "Candidatura",
+      "closesOn": "Scadenza: {date}",
+      "positionsHeading": "Posizioni aperte",
+      "questionsHeading": "Domande a cui risponderai"
     }
   },
   "NewCycleWizard": {

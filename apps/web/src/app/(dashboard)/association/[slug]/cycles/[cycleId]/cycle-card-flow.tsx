@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   saveCycleBlock,
   reopenCycleBlock,
   closeCycleEditing,
   publishCycleCard,
   discardCycleDraft,
-  suggestCycleQuestions,
   loadCycleCard,
 } from "@/lib/actions/cycle-card";
 import {
@@ -20,6 +19,18 @@ import {
 import type { CycleBlock, CycleCardState, CyclePosition } from "@/lib/cycle-card";
 import type { CycleBlockPayload } from "@/lib/actions/cycle-card";
 
+/** Data leggibile ("31 luglio 2026") invece dell'ISO grezzo. */
+function formatDate(iso: string, locale: string): string {
+  if (!iso) return "";
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString(locale === "it" ? "it-IT" : "en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 /**
  * La card del ciclo: si costruisce come la MIRA Card dello studente (MIRA guida sopra, un
  * blocco alla volta sotto) e, a blocchi completati, resta consultabile tutta in una
@@ -28,6 +39,7 @@ import type { CycleBlockPayload } from "@/lib/actions/cycle-card";
 export function CycleCardFlow({ initialState }: { initialState: CycleCardState }) {
   const t = useTranslations("CycleCard");
   const c = useTranslations("Common");
+  const locale = useLocale();
   const router = useRouter();
 
   const [state, setState] = useState<CycleCardState>(initialState);
@@ -114,52 +126,56 @@ export function CycleCardFlow({ initialState }: { initialState: CycleCardState }
         </div>
       )}
 
-      {CYCLE_BLOCK_ORDER.map((block) => {
-        const isActive = block === state.phase;
-        const isApproved = state.approved.includes(block);
-        const internal = CYCLE_BLOCK_VISIBILITY[block] === "internal";
+      {/* Anteprima candidato: NON i blocchi del board, ma una copia fedele della vera pagina
+          di candidatura — sezioni vuote omesse, niente etichette interne, date leggibili. */}
+      {!isBuilding && candidateView ? (
+        <CandidatePreview state={state} locale={locale} t={t} />
+      ) : (
+        CYCLE_BLOCK_ORDER.map((block) => {
+          const isActive = block === state.phase;
+          const isApproved = state.approved.includes(block);
 
-        // In costruzione si vede solo il blocco attivo piu' quelli gia' confermati: i
-        // futuri compaiono quando arriva il loro turno.
-        if (isBuilding && !isActive && !isApproved) return null;
-        // In anteprima candidato spariscono i blocchi interni.
-        if (!isBuilding && candidateView && internal) return null;
+          // In costruzione si vede solo il blocco attivo piu' quelli gia' confermati: i
+          // futuri compaiono quando arriva il loro turno.
+          if (isBuilding && !isActive && !isApproved) return null;
 
-        if (isActive) {
+          if (isActive) {
+            return (
+              <div key={block} className="space-y-2.5">
+                <MiraGuide text={t(`guide.${block}`, { association: state.associationName })} />
+                <BlockEditor
+                  block={block}
+                  state={state}
+                  busy={busy}
+                  onSave={(payload) => handleSave(block, payload)}
+                  onCancel={isBuilding ? undefined : handleCloseEditing}
+                  t={t}
+                  c={c}
+                />
+              </div>
+            );
+          }
+
+          if (isBuilding) {
+            return <CollapsedRow key={block} label={t(`blocks.${block}`)} doneLabel={t("done")} />;
+          }
+
           return (
-            <div key={block} className="space-y-2.5">
-              <MiraGuide text={t(`guide.${block}`, { association: state.associationName })} />
-              <BlockEditor
-                block={block}
-                state={state}
-                busy={busy}
-                onSave={(payload) => handleSave(block, payload)}
-                onCancel={isBuilding ? undefined : handleCloseEditing}
-                t={t}
-                c={c}
-              />
-            </div>
+            <CardSection
+              key={block}
+              block={block}
+              state={state}
+              locale={locale}
+              canEdit={!readOnly}
+              busy={busy}
+              onEdit={() => handleReopen(block)}
+              t={t}
+            />
           );
-        }
+        })
+      )}
 
-        if (isBuilding) {
-          return <CollapsedRow key={block} label={t(`blocks.${block}`)} doneLabel={t("done")} />;
-        }
-
-        return (
-          <CardSection
-            key={block}
-            block={block}
-            state={state}
-            canEdit={!candidateView && !readOnly}
-            busy={busy}
-            onEdit={() => handleReopen(block)}
-            t={t}
-          />
-        );
-      })}
-
-      {!isBuilding && (
+      {!isBuilding && !candidateView && (
         <Footer
           state={state}
           busy={busy}
@@ -270,6 +286,7 @@ function VisibilityNote({ block, t }: { block: CycleBlock; t: ReturnType<typeof 
 function CardSection({
   block,
   state,
+  locale,
   canEdit,
   busy,
   onEdit,
@@ -277,6 +294,7 @@ function CardSection({
 }: {
   block: CycleBlock;
   state: CycleCardState;
+  locale: string;
   canEdit: boolean;
   busy: boolean;
   onEdit: () => void;
@@ -306,7 +324,7 @@ function CardSection({
         )}
       </div>
       <div className="mt-1.5">
-        <BlockSummary block={block} state={state} t={t} />
+        <BlockSummary block={block} state={state} locale={locale} t={t} />
       </div>
     </div>
   );
@@ -315,10 +333,12 @@ function CardSection({
 function BlockSummary({
   block,
   state,
+  locale,
   t,
 }: {
   block: CycleBlock;
   state: CycleCardState;
+  locale: string;
   t: ReturnType<typeof useTranslations>;
 }) {
   const d = state.data;
@@ -334,12 +354,18 @@ function BlockSummary({
         empty
       );
     case "date":
+      if (!d.opensAt && !d.closesAt) return <p className="text-body text-ink">{t("noDates")}</p>;
       return (
-        <p className="text-body text-ink tabular-nums">
-          {d.opensAt || d.closesAt
-            ? t("dateRange", { from: d.opensAt || "—", to: d.closesAt || "—" })
-            : t("noDates")}
-        </p>
+        <div className="space-y-0.5 text-body text-ink">
+          <p>
+            <span className="text-ink-tertiary">{t("opensLabel")}: </span>
+            {d.opensAt ? formatDate(d.opensAt, locale) : "—"}
+          </p>
+          <p>
+            <span className="text-ink-tertiary">{t("closesLabel")}: </span>
+            {d.closesAt ? formatDate(d.closesAt, locale) : "—"}
+          </p>
+        </div>
       );
     case "posizioni":
       if (d.candidaturaGenerica) return <p className="text-body text-ink">{t("genericApplication")}</p>;
@@ -373,6 +399,72 @@ function BlockSummary({
         </ol>
       );
   }
+}
+
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Anteprima fedele della vera pagina di candidatura (apply/page.tsx): niente etichette da
+ * board, niente blocchi interni, e le sezioni vuote (descrizione assente, candidatura
+ * generica, nessuna domanda) semplicemente non compaiono.
+ */
+function CandidatePreview({
+  state,
+  locale,
+  t,
+}: {
+  state: CycleCardState;
+  locale: string;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  const d = state.data;
+  const positions = d.candidaturaGenerica ? [] : d.posizioni.filter((p) => p.name.trim());
+  const questions = d.nessunaDomanda ? [] : d.domande.filter((q) => q.text.trim());
+
+  return (
+    <div className="rounded-lg border border-border bg-white px-6 py-8">
+      <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("preview.eyebrow")}</p>
+      <h3 className="font-display text-h1 text-navy">{state.associationName}</h3>
+      {d.nome && <p className="mt-1 text-body text-ink-secondary">{d.nome}</p>}
+
+      {d.descrizione && (
+        <p className="mt-4 text-body text-ink whitespace-pre-wrap">{d.descrizione}</p>
+      )}
+
+      {d.closesAt && (
+        <p className="mt-3 text-body-sm text-ink-tertiary">
+          {t("preview.closesOn", { date: formatDate(d.closesAt, locale) })}
+        </p>
+      )}
+
+      {positions.length > 0 && (
+        <div className="mt-6">
+          <h4 className="text-label text-navy mb-3">{t("preview.positionsHeading")}</h4>
+          <div className="space-y-2">
+            {positions.map((p, i) => (
+              <div key={i} className="rounded-md border border-border bg-paper px-4 py-3">
+                <p className="text-body font-medium text-navy">{p.name}</p>
+                {p.description && <p className="text-body-sm text-ink-secondary mt-1">{p.description}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {questions.length > 0 && (
+        <div className="mt-6">
+          <h4 className="text-label text-navy mb-3">{t("preview.questionsHeading")}</h4>
+          <ol className="space-y-2 list-decimal list-inside">
+            {questions.map((q) => (
+              <li key={q.id} className="text-body text-ink">
+                {q.text}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </div>
+  );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -412,20 +504,6 @@ function BlockEditor({
     d.domande.length > 0 ? d.domande.map((q) => ({ text: q.text, required: q.required })) : [{ text: "", required: true }]
   );
   const [nessunaDomanda, setNessunaDomanda] = useState(d.nessunaDomanda);
-  const [suggesting, setSuggesting] = useState(false);
-  const [suggestError, setSuggestError] = useState<string | null>(null);
-
-  async function handleSuggest() {
-    setSuggesting(true);
-    setSuggestError(null);
-    const result = await suggestCycleQuestions(state.cycleId);
-    if (result?.error) setSuggestError(result.error);
-    else if (result?.domande) {
-      setDomande(result.domande.map((text: string) => ({ text, required: true })));
-      setNessunaDomanda(false);
-    }
-    setSuggesting(false);
-  }
 
   function submit() {
     switch (block) {
@@ -582,22 +660,12 @@ function BlockEditor({
                   )}
                 </div>
               ))}
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => setDomande((prev) => [...prev, { text: "", required: true }])}
-                  className="text-body-sm text-petrol hover:text-petrol-700 transition-colors"
-                >
-                  {t("addQuestion")}
-                </button>
-                <button
-                  onClick={handleSuggest}
-                  disabled={suggesting}
-                  className="text-body-sm text-petrol hover:text-petrol-700 transition-colors disabled:opacity-40"
-                >
-                  {suggesting ? t("suggesting") : t("suggestQuestions")}
-                </button>
-              </div>
-              {suggestError && <p className="text-body-sm text-error">{suggestError}</p>}
+              <button
+                onClick={() => setDomande((prev) => [...prev, { text: "", required: true }])}
+                className="text-body-sm text-petrol hover:text-petrol-700 transition-colors"
+              >
+                {t("addQuestion")}
+              </button>
             </div>
           )}
         </div>

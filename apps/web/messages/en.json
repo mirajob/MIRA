@@ -781,6 +781,12 @@
       "positionDescription": "What it involves (optional)",
       "profilo": "Interests, skills, year of study, useful experience, attitude...",
       "question": "Write the question..."
+    },
+    "preview": {
+      "eyebrow": "Application",
+      "closesOn": "Deadline: {date}",
+      "positionsHeading": "Open positions",
+      "questionsHeading": "Questions you'll answer"
     }
   },
   "NewCycleWizard": {
