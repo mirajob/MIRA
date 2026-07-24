@@ -397,7 +397,7 @@
     "competenze": {
       "testoLabel": "Skill (one line)",
       "testoPlaceholder": "e.g. Financial statement analysis",
-      "evidenzaLabel": "Evidence (related exam or experience)",
+      "evidenzaLabel": "Where you gained it",
       "evidenzaPlaceholder": "e.g. Financial Accounting",
       "emptyView": "No skills yet.",
       "academicSkills": "Academic skills ({count})",
@@ -410,7 +410,12 @@
         "beginner": "Beginner",
         "intermediate": "Intermediate",
         "advanced": "Advanced"
-      }
+      },
+      "livelloLabel": "Level",
+      "evidenzaHintHard": "From a project, an internship or hands-on practice — it's the proof of the skill",
+      "evidenzaHintAcademic": "In which exams or courses you gained it — it's the proof of the skill",
+      "evidenzaPlaceholderHard": "e.g. consulting internship, personal project",
+      "evidenzaPlaceholderAcademic": "e.g. Financial Accounting course"
     },
     "lingue": {
       "linguaLabel": "Language",

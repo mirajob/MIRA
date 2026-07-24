@@ -101,23 +101,30 @@ export function CompetenzeBlock({
                   className={fieldClass}
                 />
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <select
-                    value={item.livello ?? "intermediate"}
-                    onChange={(e) => updateHard(index, "livello", e.target.value)}
-                    className={fieldClass}
-                  >
-                    {LIVELLO_KEYS.map((lvl) => (
-                      <option key={lvl} value={lvl}>{t(`competenze.livelloLabels.${lvl}`)}</option>
-                    ))}
-                  </select>
-                  <input
-                    type="text"
-                    value={item.evidenza_ref ?? ""}
-                    placeholder={t("competenze.evidenzaPlaceholder")}
-                    onChange={(e) => updateHard(index, "evidenza_ref", e.target.value)}
-                    className={fieldClass}
-                  />
+                  <label className="block space-y-1">
+                    <span className="text-eyebrow text-ink-tertiary uppercase">{t("competenze.livelloLabel")}</span>
+                    <select
+                      value={item.livello ?? "intermediate"}
+                      onChange={(e) => updateHard(index, "livello", e.target.value)}
+                      className={fieldClass}
+                    >
+                      {LIVELLO_KEYS.map((lvl) => (
+                        <option key={lvl} value={lvl}>{t(`competenze.livelloLabels.${lvl}`)}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block space-y-1">
+                    <span className="text-eyebrow text-ink-tertiary uppercase">{t("competenze.evidenzaLabel")}</span>
+                    <input
+                      type="text"
+                      value={item.evidenza_ref ?? ""}
+                      placeholder={t("competenze.evidenzaPlaceholderHard")}
+                      onChange={(e) => updateHard(index, "evidenza_ref", e.target.value)}
+                      className={fieldClass}
+                    />
+                  </label>
                 </div>
+                <p className="text-[11px] leading-snug text-ink-tertiary">{t("competenze.evidenzaHintHard")}</p>
               </div>
             ))}
           </div>
@@ -154,13 +161,17 @@ export function CompetenzeBlock({
                   rows={1}
                   className={fieldClass}
                 />
-                <input
-                  type="text"
-                  value={item.evidenza_ref ?? ""}
-                  placeholder={t("competenze.evidenzaPlaceholder")}
-                  onChange={(e) => updateAcademic(index, "evidenza_ref", e.target.value)}
-                  className={fieldClass}
-                />
+                <label className="block space-y-1">
+                  <span className="text-eyebrow text-ink-tertiary uppercase">{t("competenze.evidenzaLabel")}</span>
+                  <input
+                    type="text"
+                    value={item.evidenza_ref ?? ""}
+                    placeholder={t("competenze.evidenzaPlaceholderAcademic")}
+                    onChange={(e) => updateAcademic(index, "evidenza_ref", e.target.value)}
+                    className={fieldClass}
+                  />
+                </label>
+                <p className="text-[11px] leading-snug text-ink-tertiary">{t("competenze.evidenzaHintAcademic")}</p>
               </div>
             ))}
           </div>

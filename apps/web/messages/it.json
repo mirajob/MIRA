@@ -397,7 +397,7 @@
     "competenze": {
       "testoLabel": "Competenza (una riga)",
       "testoPlaceholder": "es. Financial statement analysis",
-      "evidenzaLabel": "Evidenza (esame o esperienza collegata)",
+      "evidenzaLabel": "Dove l'hai acquisita",
       "evidenzaPlaceholder": "es. Financial Accounting",
       "emptyView": "Nessuna competenza ancora.",
       "academicSkills": "Competenze accademiche ({count})",
@@ -410,7 +410,12 @@
         "beginner": "Base",
         "intermediate": "Intermedio",
         "advanced": "Avanzato"
-      }
+      },
+      "livelloLabel": "Livello",
+      "evidenzaHintHard": "Da un progetto, uno stage o la pratica — è la prova della competenza",
+      "evidenzaHintAcademic": "In quali esami o corsi l'hai acquisita — è la prova della competenza",
+      "evidenzaPlaceholderHard": "es. stage in consulting, progetto personale",
+      "evidenzaPlaceholderAcademic": "es. esame di Financial Accounting"
     },
     "lingue": {
       "linguaLabel": "Lingua",
