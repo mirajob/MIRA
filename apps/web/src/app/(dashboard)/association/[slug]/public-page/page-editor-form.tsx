@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { updateAssociationProfile, publishAssociationPage } from "@/lib/actions/associations";
-import { ASSOCIATION_CATEGORIES } from "@mira/domain";
+import { ASSOCIATION_CATEGORIES, associationCategoryLabel } from "@mira/domain";
 
 interface AssociationData {
   id: string;
@@ -120,7 +120,7 @@ export function PageEditorForm({ association }: { association: AssociationData }
               <option value="">{t("categoryPlaceholder")}</option>
               {ASSOCIATION_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
-                  {cat.charAt(0).toUpperCase() + cat.slice(1).replace("_", " ")}
+                  {associationCategoryLabel(cat)}
                 </option>
               ))}
             </select>

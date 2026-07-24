@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ASSOCIATION_CATEGORIES } from "@mira/domain";
+import { ASSOCIATION_CATEGORIES, associationCategoryLabel } from "@mira/domain";
 import {
   savePageBlock,
   reopenPageBlock,
@@ -365,7 +365,7 @@ function Logo({ url, name, size = "md" }: { url: string | null; name: string; si
 }
 
 function categoryLabel(cat: string): string {
-  return cat.charAt(0).toUpperCase() + cat.slice(1).replace(/_/g, " ");
+  return associationCategoryLabel(cat);
 }
 
 /* ------------------------------------------------------------------------- */

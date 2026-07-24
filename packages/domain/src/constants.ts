@@ -1,15 +1,53 @@
+// Aree delle associazioni universitarie. MIRA non e' limitata alla Bocconi: la lista copre
+// anche atenei tecnici (Politecnico), di comunicazione e moda (IULM) e generalisti.
+// Sono slug testuali, non un enum del DB: aggiungerne di nuovi non richiede migrazioni e non
+// invalida i valori gia' salvati. Mostrati "prettificati" (underscore -> spazio).
 export const ASSOCIATION_CATEGORIES = [
   "finance",
   "consulting",
+  "economics",
   "entrepreneurship",
-  "tech",
   "marketing",
-  "social_impact",
-  "politics",
+  "tech",
+  "data_ai",
+  "engineering",
+  "design",
+  "architecture",
+  "communication",
+  "media_journalism",
+  "fashion",
+  "arts",
+  "music",
   "culture",
+  "law",
+  "politics",
+  "public_policy",
+  "social_impact",
+  "sustainability",
+  "sciences",
+  "health",
+  "languages",
+  "debate",
   "sports",
   "other",
 ] as const;
+
+// Etichette per gli slug che "prettificati" verrebbero male (Data ai, Media journalism...).
+// Gli altri ricadono sulla prettificazione automatica.
+const ASSOCIATION_CATEGORY_LABELS: Record<string, string> = {
+  data_ai: "Data & AI",
+  media_journalism: "Media & Journalism",
+  public_policy: "Public Policy",
+  social_impact: "Social Impact",
+};
+
+export function associationCategoryLabel(slug: string): string {
+  if (!slug) return "";
+  return (
+    ASSOCIATION_CATEGORY_LABELS[slug] ??
+    slug.charAt(0).toUpperCase() + slug.slice(1).replace(/_/g, " ")
+  );
+}
 
 export const APPLICATION_STATUS_LABELS: Record<string, string> = {
   draft: "Bozza",

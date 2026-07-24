@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
+import { associationCategoryLabel } from "@mira/domain";
 
 /**
  * Corpo della pagina vetrina di un'associazione, senza chrome attorno: usato sia
@@ -38,7 +39,7 @@ export async function AssociationPublicProfile({
           <h1 className="font-display text-display-md text-navy">{association.name}</h1>
           {association.category && (
             <p className="text-body text-ink-secondary mt-1">
-              {association.category.charAt(0).toUpperCase() + association.category.slice(1).replace("_", " ")}
+              {associationCategoryLabel(association.category)}
             </p>
           )}
         </div>

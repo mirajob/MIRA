@@ -2,6 +2,7 @@ import { createServerClient } from "@mira/supabase/server";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { PublicHeader } from "@/components/public-header";
+import { associationCategoryLabel } from "@mira/domain";
 
 export default async function AssociationsPage() {
   const supabase = await createServerClient();
@@ -68,7 +69,7 @@ export default async function AssociationsPage() {
                     <h2 className="font-sans text-h3 text-navy">{assoc.name}</h2>
                     {assoc.category && (
                       <p className="text-body-sm text-ink-tertiary">
-                        {assoc.category.charAt(0).toUpperCase() + assoc.category.slice(1).replace("_", " ")}
+                        {associationCategoryLabel(assoc.category)}
                       </p>
                     )}
                   </div>

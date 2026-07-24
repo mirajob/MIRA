@@ -3,7 +3,7 @@ import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { APPLICATION_STATUS_LABELS } from "@mira/domain";
+import { APPLICATION_STATUS_LABELS, associationCategoryLabel } from "@mira/domain";
 import { JoinByCode } from "@/components/join-by-code";
 import { WORKSPACE_ROLES, hasWorkspaceAccess } from "@/lib/association-roles";
 import { MarkAssociationNotificationsRead } from "./mark-read";
@@ -280,7 +280,7 @@ export default async function StudentAssociazioniPage() {
                     </div>
                     {assoc.category && (
                       <p className="text-body-sm text-ink-tertiary">
-                        {assoc.category.charAt(0).toUpperCase() + assoc.category.slice(1).replace("_", " ")}
+                        {associationCategoryLabel(assoc.category)}
                       </p>
                     )}
                   </div>
