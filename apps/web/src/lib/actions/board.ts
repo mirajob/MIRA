@@ -67,6 +67,7 @@ export async function inviteBoardMember(associationId: string, formData: FormDat
   const canInvite =
     ctx.isMiraAdmin ||
     membership?.role === "association_president" ||
+    membership?.role === "association_admin" ||
     (membership?.permissions as Record<string, boolean>)?.invite_board_members;
 
   if (!canInvite) {
@@ -214,6 +215,7 @@ export async function updateMemberPermissions(
   const canManage =
     ctx.isMiraAdmin ||
     membership?.role === "association_president" ||
+    membership?.role === "association_admin" ||
     (membership?.permissions as Record<string, boolean>)?.manage_board_permissions;
 
   if (!canManage) {
@@ -254,8 +256,14 @@ export async function generateInviteCode(associationId: string) {
     .eq("status", "active")
     .maybeSingle();
 
-  if (!ctx.isMiraAdmin && membership?.role !== "association_president") {
-    return { error: "Solo il presidente può generare codici invito" };
+  // Nel modello unificato il creatore e' association_admin (non piu' association_president):
+  // entrambi i ruoli di gestione possono generare il codice.
+  const canManage =
+    ctx.isMiraAdmin ||
+    membership?.role === "association_president" ||
+    membership?.role === "association_admin";
+  if (!canManage) {
+    return { error: "Non hai i permessi per generare il link d'invito" };
   }
 
   const { data: assoc } = await (supabase.from("association_profiles") as any)

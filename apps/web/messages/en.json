@@ -674,7 +674,8 @@
     "noCard": "This person doesn't have a MiraCard yet.",
     "guideMembers": "Now invite your members and manage them from here. Share the link below: whoever joins appears among the association's people, each with their MiraCard. You can appoint other admins or give each one a role.",
     "openCard": "Open card →",
-    "guideTeam": "Here you manage your team. Share the invite link below: whoever joins becomes a member of the association, with their MiraCard. Anyone you make an admin gets access to your same dashboard and can do everything you can; the others you organize into sections by role, area or team."
+    "guideTeam": "Here you manage your team. Share the invite link below: whoever joins becomes a member of the association, with their MiraCard. Anyone you make an admin gets access to your same dashboard and can do everything you can; the others you organize into sections by role, area or team.",
+    "generating": "Generating..."
   },
   "AssociationOnboarding": {
     "stepCounter": "Step {current} of {total}",

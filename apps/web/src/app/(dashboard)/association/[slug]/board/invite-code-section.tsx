@@ -30,13 +30,16 @@ export function InviteCodeSection({
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirmRegen, setConfirmRegen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleGenerate() {
     if (loading) return;
     setLoading(true);
     setConfirmRegen(false);
+    setError(null);
     const res = await generateInviteCode(associationId);
     if (res.code) setCode(res.code);
+    else if (res.error) setError(res.error);
     setLoading(false);
   }
 
@@ -106,11 +109,13 @@ export function InviteCodeSection({
         <button
           onClick={handleGenerate}
           disabled={loading}
-          className="mt-3 rounded-md bg-navy px-4 py-2 text-body-sm font-medium text-white hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40"
+          className={`rounded-md bg-navy px-4 py-2 text-body-sm font-medium text-white hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40 ${compact ? "" : "mt-3"}`}
         >
-          {t("generateFirst")}
+          {loading ? t("generating") : t("generateFirst")}
         </button>
       )}
+
+      {error && <p className="mt-2 text-body-sm text-error">{error}</p>}
     </div>
   );
 }

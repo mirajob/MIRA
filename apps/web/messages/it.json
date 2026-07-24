@@ -674,7 +674,8 @@
     "noCard": "Questa persona non ha ancora una MiraCard.",
     "guideMembers": "Ora invita i tuoi membri e gestiscili da qui. Condividi il link qui sotto: chi entra compare tra le persone dell'associazione, ognuno con la sua MiraCard. Puoi nominare altri amministratori o assegnare un ruolo a ciascuno.",
     "openCard": "Apri la scheda →",
-    "guideTeam": "Qui gestisci il tuo team. Condividi il link d'invito qui sotto: chi entra diventa un membro dell'associazione, con la sua MiraCard. Chi rendi amministratore ha accesso alla tua stessa dashboard e può svolgere le tue stesse funzioni; gli altri li organizzi in sezioni per ruolo, area o team."
+    "guideTeam": "Qui gestisci il tuo team. Condividi il link d'invito qui sotto: chi entra diventa un membro dell'associazione, con la sua MiraCard. Chi rendi amministratore ha accesso alla tua stessa dashboard e può svolgere le tue stesse funzioni; gli altri li organizzi in sezioni per ruolo, area o team.",
+    "generating": "Generazione..."
   },
   "AssociationOnboarding": {
     "stepCounter": "Passo {current} di {total}",
