@@ -16,10 +16,14 @@ export function InviteCodeSection({
   associationId,
   currentCode,
   membershipEnabled,
+  compact = false,
 }: {
   associationId: string;
   currentCode: string | null;
   membershipEnabled: boolean;
+  /** Solo il link (copia + rigenera), senza titolo/descrizione/passi: quando sopra c'e' gia'
+   *  la nota di MIRA che spiega la sezione (TeamPanel/onboarding). */
+  compact?: boolean;
 }) {
   const t = useTranslations("Board");
   const [code, setCode] = useState(currentCode);
@@ -45,22 +49,26 @@ export function InviteCodeSection({
 
   return (
     <div className="rounded-lg border border-border bg-white p-4">
-      <p className="text-body-sm font-semibold text-navy">{t("collaboratorsTitle")}</p>
-      <p className="mt-1 text-body-sm text-ink-secondary">
-        {membershipEnabled ? t("membershipBodyOn") : t("collaboratorsBody")}
-      </p>
+      {!compact && (
+        <>
+          <p className="text-body-sm font-semibold text-navy">{t("collaboratorsTitle")}</p>
+          <p className="mt-1 text-body-sm text-ink-secondary">
+            {membershipEnabled ? t("membershipBodyOn") : t("collaboratorsBody")}
+          </p>
 
-      <ol className="mt-3 space-y-0.5">
-        {[t("inviteStep1"), t("inviteStep2"), t("inviteStep3")].map((step) => (
-          <li key={step} className="text-eyebrow text-ink-tertiary">
-            {step}
-          </li>
-        ))}
-      </ol>
+          <ol className="mt-3 space-y-0.5">
+            {[t("inviteStep1"), t("inviteStep2"), t("inviteStep3")].map((step) => (
+              <li key={step} className="text-eyebrow text-ink-tertiary">
+                {step}
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
 
       {code ? (
         <>
-          <p className="mt-3 mb-1 text-eyebrow uppercase text-navy/70">{t("inviteLinkLabel")}</p>
+          <p className={`mb-1 text-eyebrow uppercase text-navy/70 ${compact ? "" : "mt-3"}`}>{t("inviteLinkLabel")}</p>
           <div className="flex flex-wrap items-center gap-2">
             <code className="min-w-0 flex-1 truncate rounded-md border border-border bg-paper px-3 py-2 font-mono text-body-sm text-navy">
               {typeof window !== "undefined" ? `${window.location.origin}/join/${code}` : `/join/${code}`}

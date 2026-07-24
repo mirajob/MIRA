@@ -219,7 +219,7 @@ export function TeamPanel({
     <div className="space-y-4">
       <MiraGuide text={t("guideTeam")} />
 
-      <InviteCodeSection associationId={associationId} currentCode={currentCode} membershipEnabled />
+      <InviteCodeSection associationId={associationId} currentCode={currentCode} membershipEnabled compact />
 
       {pendingRequests.length > 0 && (
         <PendingBoardRequests associationId={associationId} requests={pendingRequests} />

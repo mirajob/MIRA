@@ -110,19 +110,28 @@ export default async function AdminAssociationsPage() {
 
   if (associationsErr) console.error("admin associations query error:", associationsErr);
 
-  // Fetch president memberships separately to avoid ambiguous FK (user_id vs invited_by_user_id → profiles)
-  const associationIds = (associations ?? []).map((a: any) => a.id);
-  const { data: memberships, error: membershipsErr } = associationIds.length
-    ? await (supabase.from("association_memberships") as any)
-        .select("association_id, role, profiles!association_memberships_user_id_fkey(full_name, email)")
-        .in("association_id", associationIds)
-        .eq("role", "association_president")
+  // Chi controlla l'associazione = chi l'ha creata (created_by_user_id). Il vecchio modello
+  // aveva un ruolo "association_president"; ora i creatori sono "association_admin", quindi
+  // filtrare per quel ruolo restituiva vuoto e la colonna mostrava "—" (o l'email di
+  // contatto della pagina, non un account). Risolviamo direttamente dal creatore.
+  const creatorIds = Array.from(
+    new Set((associations ?? []).map((a: any) => a.created_by_user_id).filter(Boolean))
+  );
+  const { data: creators, error: creatorsErr } = creatorIds.length
+    ? await (supabase.from("profiles") as any).select("id, full_name, email").in("id", creatorIds)
     : { data: [], error: null };
 
-  if (membershipsErr) console.error("admin association memberships query error:", membershipsErr);
+  if (creatorsErr) console.error("admin association creators query error:", creatorsErr);
+
+  const creatorById: Record<string, any> = {};
+  for (const p of creators ?? []) creatorById[p.id] = p;
 
   const presidentByAssociation: Record<string, any> = {};
-  for (const m of memberships ?? []) presidentByAssociation[m.association_id] = m.profiles;
+  for (const a of associations ?? []) {
+    if (a.created_by_user_id && creatorById[a.created_by_user_id]) {
+      presidentByAssociation[a.id] = creatorById[a.created_by_user_id];
+    }
+  }
 
   // Richieste in attesa e associazioni accettate — raggruppate per università, con
   // sottosezioni per stato del percorso (richiesta → accettata → pagina pubblica).
