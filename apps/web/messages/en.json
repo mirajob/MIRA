@@ -70,7 +70,43 @@
     "associationCta": "Apply for your association →",
     "companyTitle": "Company",
     "companyBody": "Don't wait for applications. Find the right candidates: describe who you're looking for, MIRA shows you who really fits.",
-    "companyCta": "Register your company →"
+    "companyCta": "Register your company →",
+    "faqEyebrow": "For students",
+    "faqHeading": "Frequently asked questions",
+    "faq": [
+      {
+        "q": "Why should I use MIRA if I already have LinkedIn?",
+        "a": "LinkedIn is a social network. You sign up, you're faced with a thousand things, you don't really know what to write or where, you scroll through other people's posts, and in the end your profile just sits there, often filled in badly, because no one guided you. Companies don't know who you really are, or what and when you'd be available for, and being contacted by companies almost never happens. On MIRA it's the opposite: MIRA guides you step by step and in no time your card is ready, capturing who you are, what you've done and in which field, where and when you want to be available."
+      },
+      {
+        "q": "What do associations have to do with it?",
+        "a": "The associations at your university run their selections on MIRA. Once your MiraCard is complete you can apply directly here: they receive your application together with your profile, they can invite you to an interview and update the status of your application step by step, so you always know where you stand."
+      },
+      {
+        "q": "Who sees my MiraCard?",
+        "a": "Companies registered on MIRA see it anonymously, without anything that identifies you. If one wants to talk to you it sends a contact request: you see who they are, what they're looking for, and you decide. Your identity is revealed only if you accept. Associations see your card only if you apply to them yourself."
+      },
+      {
+        "q": "I'm a first-year with no experience. Does it still make sense?",
+        "a": "Yes, and probably more than anywhere else. The MiraCard isn't a list of internships: MIRA's questions bring out personal projects, competitions, competitive sport, summer jobs — things you'd never put on a CV that actually say a lot about you."
+      },
+      {
+        "q": "How long does it take?",
+        "a": "About five minutes for the essentials. Then you can complete the card at your own pace: the more you share, the more likely a company finds you for the right thing."
+      },
+      {
+        "q": "Do I need a CV ready?",
+        "a": "No. If you have one you upload it and MIRA starts from there to save you time. If you don't, the card is built by talking."
+      },
+      {
+        "q": "What happens if a company contacts me?",
+        "a": "You get a request and you see everything: who the company is, what they're looking for and why they chose your profile. You decide whether to accept or decline. If you accept you can chat on the platform, and you choose when to share your contact details. From there the company can invite you to an interview and move the process forward. If you decline, nothing happens: you stay anonymous."
+      },
+      {
+        "q": "Is it really free?",
+        "a": "For students yes, and it stays free. We don't sell your data and we don't give it to anyone outside the platform."
+      }
+    ]
   },
   "LandingDemo": {
     "progressTitle": "Your MIRA Card",

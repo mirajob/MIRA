@@ -70,7 +70,43 @@
     "associationCta": "Candida la tua associazione →",
     "companyTitle": "Azienda",
     "companyBody": "Non aspettare candidature. Trova i candidati giusti: descrivi chi cerchi, MIRA ti mostra chi si adatta davvero.",
-    "companyCta": "Registra la tua azienda →"
+    "companyCta": "Registra la tua azienda →",
+    "faqEyebrow": "Per gli studenti",
+    "faqHeading": "Domande frequenti",
+    "faq": [
+      {
+        "q": "Perché dovrei usare MIRA se ho già LinkedIn?",
+        "a": "LinkedIn è un social. Ti iscrivi, ti ritrovi mille cose davanti, non capisci bene cosa devi scrivere e dove, scorri i post degli altri, e alla fine il tuo profilo resta lì fermo, spesso compilato male, perché nessuno ti ha guidato. Le aziende non sanno chi sei davvero, né per cosa e quando saresti disponibile, e di essere contattati dalle aziende non capita quasi mai. Su MIRA è l'opposto: MIRA ti guida passo passo e in poco tempo hai la card pronta, con dentro chi sei, cosa hai fatto e in che ambito, dove e quando vuoi essere disponibile."
+      },
+      {
+        "q": "Cosa c'entrano le associazioni?",
+        "a": "Le associazioni della tua università gestiscono le loro selezioni su MIRA. Completando la MiraCard puoi candidarti direttamente qui: loro ricevono la tua candidatura insieme al tuo profilo, possono convocarti a colloquio e aggiornano lo stato della candidatura passo dopo passo, così sai sempre a che punto sei."
+      },
+      {
+        "q": "Chi vede la mia MiraCard?",
+        "a": "Le aziende registrate su MIRA la vedono in forma anonima, senza riferimenti che ti identifichino. Se una vuole parlarti ti manda una richiesta di contatto: vedi chi è, per cosa ti cerca, e decidi tu. La tua identità viene rivelata solo se accetti. Le associazioni vedono la tua card solo se sei tu a candidarti da loro."
+      },
+      {
+        "q": "Sono al primo anno e non ho esperienze. Ha senso lo stesso?",
+        "a": "Sì, e probabilmente più che altrove. La MiraCard non è una lista di stage: le domande di MIRA fanno emergere progetti personali, competizioni, sport a livello agonistico, lavori estivi, cose che non metteresti mai su un CV e che invece dicono molto di te."
+      },
+      {
+        "q": "Quanto tempo ci vuole?",
+        "a": "Circa cinque minuti per la parte essenziale. Poi puoi completare la card con calma: più cose racconti, più è probabile che un'azienda ti trovi per la cosa giusta."
+      },
+      {
+        "q": "Devo avere un CV pronto?",
+        "a": "No. Se ce l'hai lo carichi e MIRA parte da lì per farti risparmiare tempo. Se non ce l'hai, la card si costruisce parlando."
+      },
+      {
+        "q": "Cosa succede se un'azienda mi contatta?",
+        "a": "Ti arriva una richiesta e vedi tutto: chi è l'azienda, cosa sta cercando e perché ha scelto il tuo profilo. Decidi tu se accettare o rifiutare. Se accetti potete parlare in chat sulla piattaforma, e sei tu a scegliere quando dare i tuoi recapiti. Da lì l'azienda può invitarti a un colloquio e portare avanti il processo. Se rifiuti non succede niente: resti anonimo."
+      },
+      {
+        "q": "È davvero gratis?",
+        "a": "Per gli studenti sì, e resta gratis. Non vendiamo i tuoi dati e non li diamo a nessuno al di fuori della piattaforma."
+      }
+    ]
   },
   "LandingDemo": {
     "progressTitle": "La tua MIRA Card",

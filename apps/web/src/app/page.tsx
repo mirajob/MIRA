@@ -17,6 +17,7 @@ export default async function HomePage() {
 
   const t = await getTranslations("HomePage");
   const c = await getTranslations("Common");
+  const faq = t.raw("faq") as { q: string; a: string }[];
 
   return (
     <div className="min-h-screen bg-cream">
@@ -112,6 +113,32 @@ export default async function HomePage() {
             <div className="flex justify-center lg:justify-end">
               <CompanyDemo />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ studenti: accordion nativo <details>, nessun JS lato client. Larghezza da
+          lettura, una domanda per riga, la crocetta ruota all'apertura. */}
+      <section className="border-t border-border px-6 lg:px-12 py-16">
+        <div className="mx-auto max-w-3xl">
+          <p className="text-eyebrow text-navy/60 uppercase text-center mb-3">{t("faqEyebrow")}</p>
+          <h2 className="font-display text-h1 text-navy text-center mb-10">{t("faqHeading")}</h2>
+
+          <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-white">
+            {faq.map((item, i) => (
+              <details key={i} className="group">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 hover:bg-cream/40 transition-colors [&::-webkit-details-marker]:hidden">
+                  <span className="text-body font-medium text-navy">{item.q}</span>
+                  <span
+                    aria-hidden
+                    className="shrink-0 text-2xl leading-none text-navy/40 transition-transform duration-200 group-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="px-5 pb-5 -mt-1 text-body text-ink-secondary">{item.a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
