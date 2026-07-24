@@ -711,7 +711,8 @@
     "statusLabels": {
       "open": "Aperto",
       "draft": "Bozza",
-      "closed": "Chiuso"
+      "closed": "Chiuso",
+      "scheduled": "Programmato"
     },
     "untitledDraft": "Ciclo senza nome"
   },
@@ -772,7 +773,8 @@
       "draft": "Bozza",
       "open": "Aperto",
       "closed": "Chiuso",
-      "archived": "Archiviato"
+      "archived": "Archiviato",
+      "scheduled": "Programmato"
     },
     "placeholders": {
       "nome": "Recruiting Autunno 2026",
@@ -786,7 +788,8 @@
       "eyebrow": "Candidatura",
       "closesOn": "Scadenza: {date}",
       "positionsHeading": "Posizioni aperte",
-      "questionsHeading": "Domande a cui risponderai"
+      "questionsHeading": "Domande a cui risponderai",
+      "opensOn": "Le candidature aprono il {date}."
     }
   },
   "NewCycleWizard": {

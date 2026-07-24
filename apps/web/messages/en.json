@@ -711,7 +711,8 @@
     "statusLabels": {
       "open": "Open",
       "draft": "Draft",
-      "closed": "Closed"
+      "closed": "Closed",
+      "scheduled": "Scheduled"
     },
     "untitledDraft": "Untitled cycle"
   },
@@ -772,7 +773,8 @@
       "draft": "Draft",
       "open": "Open",
       "closed": "Closed",
-      "archived": "Archived"
+      "archived": "Archived",
+      "scheduled": "Scheduled"
     },
     "placeholders": {
       "nome": "Fall 2026 Recruiting",
@@ -786,7 +788,8 @@
       "eyebrow": "Application",
       "closesOn": "Deadline: {date}",
       "positionsHeading": "Open positions",
-      "questionsHeading": "Questions you'll answer"
+      "questionsHeading": "Questions you'll answer",
+      "opensOn": "Applications open on {date}."
     }
   },
   "NewCycleWizard": {

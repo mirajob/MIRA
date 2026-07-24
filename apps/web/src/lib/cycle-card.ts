@@ -85,6 +85,25 @@ export function cycleProgressPct(approved: CycleBlock[]): number {
   return Math.round((done / CYCLE_BLOCK_ORDER.length) * 100);
 }
 
+export type CycleDisplayStatus = "draft" | "scheduled" | "open" | "closed" | "archived";
+
+/**
+ * Stato mostrato, distinto da quello salvato. Un ciclo "open" con data di apertura nel futuro
+ * e' pubblicato ma non ancora aperto alle candidature: e' "programmato". Rispecchia il gate
+ * gia' applicato in apply/page.tsx (opens_at > now => lo studente non puo' candidarsi),
+ * cosi' l'etichetta non dice "aperto" quando in realta' non lo e' ancora.
+ */
+export function displayCycleStatus(
+  status: string,
+  opensAt: string | null | undefined
+): CycleDisplayStatus {
+  if (status === "open" && opensAt) {
+    const opens = new Date(opensAt);
+    if (!Number.isNaN(opens.getTime()) && opens > new Date()) return "scheduled";
+  }
+  return status as CycleDisplayStatus;
+}
+
 /** Il primo blocco non ancora confermato, o "done". Regola l'avanzamento del percorso. */
 export function nextPhase(approved: CycleBlock[]): CycleBlock | "done" {
   return CYCLE_BLOCK_ORDER.find((b) => !approved.includes(b)) ?? "done";

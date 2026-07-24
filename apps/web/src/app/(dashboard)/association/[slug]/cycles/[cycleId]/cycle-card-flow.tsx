@@ -15,6 +15,7 @@ import {
   CYCLE_BLOCK_ORDER,
   CYCLE_BLOCK_VISIBILITY,
   cycleProgressPct,
+  displayCycleStatus,
 } from "@/lib/cycle-card";
 import type { CycleBlock, CycleCardState, CyclePosition } from "@/lib/cycle-card";
 import type { CycleBlockPayload } from "@/lib/actions/cycle-card";
@@ -222,7 +223,13 @@ function Header({
     );
   }
 
-  const isOpen = state.status === "open";
+  const displayStatus = displayCycleStatus(state.status, state.data.opensAt);
+  const badgeClass =
+    displayStatus === "open"
+      ? "bg-success-bg text-success"
+      : displayStatus === "scheduled"
+        ? "bg-warning-bg text-warning"
+        : "bg-navy-50 text-ink-tertiary";
 
   return (
     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -230,11 +237,9 @@ function Header({
         <div className="flex items-center gap-2">
           <h2 className="font-display text-h2 text-navy truncate">{state.data.nome}</h2>
           <span
-            className={`inline-flex shrink-0 items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${
-              isOpen ? "bg-success-bg text-success" : "bg-navy-50 text-ink-tertiary"
-            }`}
+            className={`inline-flex shrink-0 items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${badgeClass}`}
           >
-            {t(`status.${state.status}`)}
+            {t(`status.${displayStatus}`)}
           </span>
         </div>
         <p className="mt-0.5 text-body-sm text-ink-secondary">
@@ -420,6 +425,7 @@ function CandidatePreview({
   const d = state.data;
   const positions = d.candidaturaGenerica ? [] : d.posizioni.filter((p) => p.name.trim());
   const questions = d.nessunaDomanda ? [] : d.domande.filter((q) => q.text.trim());
+  const scheduled = displayCycleStatus(state.status, d.opensAt) === "scheduled";
 
   return (
     <div className="rounded-lg border border-border bg-white px-6 py-8">
@@ -431,13 +437,20 @@ function CandidatePreview({
         <p className="mt-4 text-body text-ink whitespace-pre-wrap">{d.descrizione}</p>
       )}
 
-      {d.closesAt && (
-        <p className="mt-3 text-body-sm text-ink-tertiary">
-          {t("preview.closesOn", { date: formatDate(d.closesAt, locale) })}
+      {/* Ciclo programmato: lo studente vedrebbe l'avviso di apertura, non il form. */}
+      {scheduled ? (
+        <p className="mt-4 rounded-md bg-warning-bg text-warning text-body-sm px-4 py-2.5">
+          {t("preview.opensOn", { date: formatDate(d.opensAt, locale) })}
         </p>
+      ) : (
+        d.closesAt && (
+          <p className="mt-3 text-body-sm text-ink-tertiary">
+            {t("preview.closesOn", { date: formatDate(d.closesAt, locale) })}
+          </p>
+        )
       )}
 
-      {positions.length > 0 && (
+      {!scheduled && positions.length > 0 && (
         <div className="mt-6">
           <h4 className="text-label text-navy mb-3">{t("preview.positionsHeading")}</h4>
           <div className="space-y-2">
@@ -451,7 +464,7 @@ function CandidatePreview({
         </div>
       )}
 
-      {questions.length > 0 && (
+      {!scheduled && questions.length > 0 && (
         <div className="mt-6">
           <h4 className="text-label text-navy mb-3">{t("preview.questionsHeading")}</h4>
           <ol className="space-y-2 list-decimal list-inside">

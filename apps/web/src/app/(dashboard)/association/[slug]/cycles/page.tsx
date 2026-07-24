@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { CycleStatusButton } from "./cycle-status-button";
+import { displayCycleStatus } from "@/lib/cycle-card";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -43,6 +44,13 @@ export default async function CyclesPage({ params }: Props) {
     const questionCount = (cycle.application_questions as unknown[])?.length ?? 0;
     const applicationCount = (cycle.applications as unknown[])?.length ?? 0;
     const isOpen = cycle.status === "open";
+    const displayStatus = displayCycleStatus(cycle.status, cycle.opens_at);
+    const badgeClass =
+      displayStatus === "open"
+        ? "bg-success-bg text-success"
+        : displayStatus === "scheduled"
+          ? "bg-warning-bg text-warning"
+          : "bg-navy-50 text-ink-tertiary";
 
     return (
       <div key={cycle.id} className={`rounded-lg border bg-white p-5 ${isOpen ? "border-petrol/30" : "border-border"}`}>
@@ -50,10 +58,8 @@ export default async function CyclesPage({ params }: Props) {
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h3 className="font-sans text-h3 text-navy">{cycle.title || t("untitledDraft")}</h3>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${
-                isOpen ? "bg-success-bg text-success" : "bg-navy-50 text-ink-tertiary"
-              }`}>
-                {t(`statusLabels.${cycle.status}`)}
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${badgeClass}`}>
+                {t(`statusLabels.${displayStatus}`)}
               </span>
             </div>
             <div className="mt-1 flex gap-3 text-body-sm text-ink-tertiary">
