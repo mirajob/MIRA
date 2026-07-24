@@ -141,7 +141,16 @@ function LoginForm() {
 
       <p className="text-center text-body-sm text-ink-secondary">
         {c("dontHaveAccount")}{" "}
-        <Link href={isCompany ? "/aziende" : "/signup"} className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2">
+        <Link
+          href={
+            isCompany
+              ? "/aziende"
+              : rawRedirect
+                ? `/signup?redirect=${encodeURIComponent(rawRedirect)}`
+                : "/signup"
+          }
+          className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2"
+        >
           {c("signUp")}
         </Link>
       </p>
