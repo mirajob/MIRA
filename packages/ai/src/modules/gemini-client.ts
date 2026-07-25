@@ -5,15 +5,24 @@
 // step. Used for now only by the /admin/ai-test playground while we benchmark
 // Gemini against the current OpenAI parsers for speed and accuracy.
 
-export type GeminiModel = "gemini-2.5-flash" | "gemini-2.5-pro";
+// The `-latest` aliases always point to the current-generation Flash/Pro. We use
+// them (rather than a pinned 2.5/3.x id) because Google gates specific versions
+// by account: the 2.5 series returns 404 "no longer available to new users" on
+// newer accounts, while `-latest` resolves to whatever that account can call.
+export type GeminiModel = "gemini-flash-latest" | "gemini-pro-latest";
 
-export const GEMINI_MODELS: GeminiModel[] = ["gemini-2.5-flash", "gemini-2.5-pro"];
+export const GEMINI_MODELS: GeminiModel[] = ["gemini-flash-latest", "gemini-pro-latest"];
+
+// Gemini 3.x replaced the numeric `thinkingBudget` with a coarse `thinkingLevel`.
+// The current Flash rejects `thinkingBudget` outright (400), so we drive thinking
+// with the level: "low" for speed, "high" for accuracy on delicate data (grades).
+export type ThinkingLevel = "low" | "high";
 
 interface GeminiOptions {
   /** Abort the request after this many ms with a clear error instead of hanging. */
   timeoutMs?: number;
-  /** "high" reasoning ≈ larger thinkingBudget. Default keeps thinking low for speed. */
-  thinkingBudget?: number;
+  /** Reasoning depth. "low" = fastest, "high" = most accurate. Default: "low". */
+  thinkingLevel?: ThinkingLevel;
 }
 
 /**
@@ -31,12 +40,6 @@ export async function geminiGenerateJson(
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
 
-  // Flash can disable thinking entirely (budget 0); Pro cannot — asking Pro for
-  // 0 is rejected. For Pro, fall back to -1 (dynamic: the model decides) whenever
-  // a caller requests 0, so the same call works on both models.
-  const requestedBudget = options.thinkingBudget ?? 0;
-  const thinkingBudget = model === "gemini-2.5-pro" && requestedBudget <= 0 ? -1 : requestedBudget;
-
   const body = {
     systemInstruction: { parts: [{ text: systemPrompt }] },
     contents: [
@@ -52,9 +55,7 @@ export async function geminiGenerateJson(
       responseMimeType: "application/json",
       temperature: 0.1,
       maxOutputTokens: 16384,
-      // thinkingBudget 0 disables Gemini's internal reasoning tokens = fastest.
-      // Bump it for accuracy on dense transcripts. -1 lets the model decide.
-      thinkingConfig: { thinkingBudget },
+      thinkingConfig: { thinkingLevel: options.thinkingLevel ?? "low" },
     },
   };
 

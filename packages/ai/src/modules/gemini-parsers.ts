@@ -10,11 +10,10 @@ import { CV_EXTRACTION_PROMPT, type ParsedCV } from "./cv-parser";
 
 const GEMINI_TIMEOUT_MS = 90_000;
 
-// Grades are the most delicate data on the card: give the transcript parse a
-// real thinking budget for accuracy. The CV is lower-stakes, so keep it at 0 for
-// maximum speed. Both stay well under the timeout.
-const TRANSCRIPT_THINKING_BUDGET = 4096;
-const CV_THINKING_BUDGET = 0;
+// Grades are the most delicate data on the card: parse the transcript with "high"
+// thinking for accuracy. The CV is lower-stakes, so keep it "low" for speed.
+const TRANSCRIPT_THINKING: "high" = "high";
+const CV_THINKING: "low" = "low";
 
 export interface GeminiParseResult<T> {
   parsed: T;
@@ -34,7 +33,7 @@ export async function parseTranscriptWithGemini(
     "Estrai tutti i dati da questo libretto universitario. SOLO esami completati con data e voto.",
     base64Data,
     mimeType,
-    { timeoutMs: GEMINI_TIMEOUT_MS, thinkingBudget: TRANSCRIPT_THINKING_BUDGET }
+    { timeoutMs: GEMINI_TIMEOUT_MS, thinkingLevel: TRANSCRIPT_THINKING }
   );
   const parsed = JSON.parse(raw) as ParsedTranscript;
   return { parsed, elapsedMs: Date.now() - start, model };
@@ -52,7 +51,7 @@ export async function parseCVWithGemini(
     "Estrai le informazioni da questo CV. Ignora la sezione Education.",
     base64Data,
     mimeType,
-    { timeoutMs: GEMINI_TIMEOUT_MS, thinkingBudget: CV_THINKING_BUDGET }
+    { timeoutMs: GEMINI_TIMEOUT_MS, thinkingLevel: CV_THINKING }
   );
   const parsed = JSON.parse(raw) as ParsedCV;
   return { parsed, elapsedMs: Date.now() - start, model };

@@ -26,7 +26,7 @@ export type CvTestResult =
 
 function resolveModel(raw: FormDataEntryValue | null): GeminiModel {
   const m = String(raw ?? "");
-  return (GEMINI_MODELS as string[]).includes(m) ? (m as GeminiModel) : "gemini-2.5-flash";
+  return (GEMINI_MODELS as string[]).includes(m) ? (m as GeminiModel) : "gemini-flash-latest";
 }
 
 async function readFile(formData: FormData): Promise<{ base64: string; type: string } | { error: string }> {

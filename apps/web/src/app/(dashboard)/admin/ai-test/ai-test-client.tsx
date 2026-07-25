@@ -4,11 +4,11 @@ import { useState } from "react";
 import { testTranscriptGemini, testCvGemini, type TranscriptTestResult, type CvTestResult } from "@/lib/actions/ai-test";
 
 const MODELS = [
-  { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash (veloce)" },
-  { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro (accurato)" },
+  { value: "gemini-flash-latest", label: "Gemini Flash (veloce)" },
+  { value: "gemini-pro-latest", label: "Gemini Pro (accurato)" },
 ];
 
-const DEFAULT_MODEL = "gemini-2.5-flash";
+const DEFAULT_MODEL = "gemini-flash-latest";
 
 const fileInputClass =
   "w-full text-body-sm text-ink file:mr-4 file:rounded-md file:border-0 file:bg-navy file:px-4 file:py-2 file:text-sm file:text-white hover:file:bg-navy-700";
@@ -24,7 +24,7 @@ function Timing({ ms, model }: { ms: number; model: string }) {
         slow ? "bg-warning-bg text-warning" : "bg-success-bg text-success"
       }`}
     >
-      ⏱ {s}s · {model.replace("gemini-2.5-", "")}
+      ⏱ {s}s · {model.replace("gemini-", "").replace("-latest", "")}
     </span>
   );
 }
