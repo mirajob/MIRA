@@ -1,6 +1,11 @@
 "use server";
 
-import { parseTranscriptFile, formatTranscriptForChat, TRANSCRIPT_MODEL, type ParsedCourse } from "@mira/ai";
+import { parseTranscriptWithGemini, formatTranscriptForChat, type ParsedCourse } from "@mira/ai";
+
+// Modello di produzione per la lettura del libretto: Gemini Flash (alias -latest,
+// così resta sul modello corrente disponibile). Scelto per velocità — il parser
+// OpenAI su gpt-5.4 con reasoning high superava i 30s e la gente abbandonava.
+const TRANSCRIPT_MODEL = "gemini-flash-latest" as const;
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -75,7 +80,7 @@ export async function uploadTranscript(formData: FormData) {
 
   try {
     const base64 = buffer.toString("base64");
-    const parsed = await parseTranscriptFile(base64, file.type);
+    const { parsed } = await parseTranscriptWithGemini(base64, file.type, TRANSCRIPT_MODEL);
 
     // Recalculate weighted average in code (AI math is unreliable)
     let weightedSum = 0;
@@ -213,7 +218,7 @@ export async function uploadTranscript(formData: FormData) {
 
     await (supabase.from("ai_logs") as any).insert({
       module: "transcript_parser",
-      provider: "openai",
+      provider: "google",
       model: TRANSCRIPT_MODEL,
       entity_type: "student_transcript",
       entity_id: transcript!.id,

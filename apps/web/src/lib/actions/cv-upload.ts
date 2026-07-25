@@ -1,8 +1,11 @@
 "use server";
 
-import { parseCVFile, formatCVForChat } from "@mira/ai";
+import { parseCVWithGemini, formatCVForChat } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
+
+// Stesso modello del libretto: Gemini Flash per velocità (vedi transcript-upload.ts).
+const CV_MODEL = "gemini-flash-latest" as const;
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/webp"];
@@ -59,7 +62,7 @@ export async function uploadCV(formData: FormData) {
 
   try {
     const base64 = buffer.toString("base64");
-    const parsed = await parseCVFile(base64, file.type);
+    const { parsed } = await parseCVWithGemini(base64, file.type, CV_MODEL);
 
     await (supabase.from("student_profiles") as any)
       .update({
@@ -70,8 +73,8 @@ export async function uploadCV(formData: FormData) {
 
     await (supabase.from("ai_logs") as any).insert({
       module: "cv_parser",
-      provider: "openai",
-      model: "gpt-4o",
+      provider: "google",
+      model: CV_MODEL,
       entity_type: "student_profile",
       user_id: profileId,
       input_metadata: { file_name: file.name, file_size: file.size, file_type: file.type },
@@ -87,15 +90,15 @@ export async function uploadCV(formData: FormData) {
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : "Errore sconosciuto";
     console.error("CV parse error:", errorMsg);
-    // NON marcare cv_uploaded: il parsing è fallito (spesso un timeout di OpenAI). Se lo
+    // NON marcare cv_uploaded: il parsing è fallito (es. un timeout del modello). Se lo
     // marcassimo, il controllo "CV già caricato" più sopra bloccherebbe per sempre il
     // riprovare e nella UI il bottone di upload sparirebbe: l'utente resterebbe con un CV
     // "caricato" ma senza nessuna esperienza estratta e senza via d'uscita. Lasciandolo
     // false, il bottone resta e un nuovo tentativo può andare a buon fine.
     await (supabase.from("ai_logs") as any).insert({
       module: "cv_parser",
-      provider: "openai",
-      model: "gpt-4o",
+      provider: "google",
+      model: CV_MODEL,
       entity_type: "student_profile",
       user_id: profileId,
       input_metadata: { file_name: file.name, file_size: file.size, file_type: file.type },
