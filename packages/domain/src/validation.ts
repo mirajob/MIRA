@@ -1,14 +1,24 @@
-// Institutional email domains for Italian universities. Students authenticate
-// with a `nome.cognome@<domain>` (or a subdomain of it, e.g. `studenti.<domain>`)
-// address issued by their university — this is how MIRA verifies someone is a
-// real enrolled student without requiring manual review.
+// Institutional email domains for the universities MIRA recognizes. Students
+// authenticate with a `nome.cognome@<domain>` (or a subdomain of it, e.g.
+// `studenti.<domain>`) address issued by their university — this is how MIRA
+// verifies someone is a real enrolled student without requiring manual review.
 //
-// Sourced from the CRUI (Conferenza dei Rettori delle Università Italiane)
-// institutional contact list, cross-checked against each university's own IT
-// services pages for the exact student-facing domain. Two universities issue
-// students a domain that is NOT a subdomain of their institutional domain
-// (Bocconi, Cattolica) — those are listed with their student-specific domain
-// directly, matching is still a plain suffix check against the value below.
+// The Italian block is sourced from the CRUI (Conferenza dei Rettori delle
+// Università Italiane) institutional contact list, cross-checked against each
+// university's own IT services pages for the exact student-facing domain. Two
+// universities issue students a domain that is NOT a subdomain of their
+// institutional domain (Bocconi, Cattolica) — those are listed with their
+// student-specific domain directly. Matching is always a plain suffix check
+// against the value below, so the institutional domain also covers student
+// subdomains (e.g. `student.ethz.ch` matches `ethz.ch`).
+//
+// The international block covers selected top European institutions plus a few
+// global peers, using each school's primary institutional domain.
+//
+// NOTE: this list is kept in sync BY HAND with the SQL `handle_new_user`
+// trigger (latest: supabase/migrations/*_university_domains.sql). Any change
+// here must ship a matching migration, or new signups from the added domain
+// won't get a student profile auto-provisioned.
 export const ITALIAN_UNIVERSITY_DOMAINS: Array<{ name: string; domain: string }> = [
   // Milano
   { name: "Università Bocconi", domain: "studbocconi.it" },
@@ -98,8 +108,91 @@ export const ITALIAN_UNIVERSITY_DOMAINS: Array<{ name: string; domain: string }>
   { name: "Scuola IMT Alti Studi Lucca", domain: "imtlucca.it" },
   { name: "Gran Sasso Science Institute (GSSI)", domain: "gssi.it" },
 
-  // Estero
+  // Estero — Regno Unito
+  { name: "London School of Economics (LSE)", domain: "lse.ac.uk" },
+  { name: "University of Oxford", domain: "ox.ac.uk" },
+  { name: "University of Cambridge", domain: "cam.ac.uk" },
+  { name: "Imperial College London", domain: "imperial.ac.uk" },
+  { name: "University College London (UCL)", domain: "ucl.ac.uk" },
+  { name: "King's College London", domain: "kcl.ac.uk" },
+  { name: "University of Warwick", domain: "warwick.ac.uk" },
+  { name: "University of Edinburgh", domain: "ed.ac.uk" },
+  { name: "London Business School", domain: "london.edu" },
+
+  // Estero — Francia
+  { name: "HEC Paris", domain: "hec.edu" },
+  { name: "INSEAD", domain: "insead.edu" },
+  { name: "Sciences Po", domain: "sciencespo.fr" },
+  { name: "ESSEC Business School", domain: "essec.edu" },
+  { name: "ESCP Business School", domain: "escp.eu" },
+  { name: "EDHEC Business School", domain: "edhec.com" },
+  { name: "École Polytechnique", domain: "polytechnique.edu" },
+  { name: "emlyon business school", domain: "emlyon.com" },
+  { name: "Sorbonne Université", domain: "sorbonne-universite.fr" },
+
+  // Estero — Spagna
   { name: "ESADE Business & Law School (Barcellona)", domain: "esade.edu" },
+  { name: "IE University", domain: "ie.edu" },
+  { name: "IESE Business School", domain: "iese.edu" },
+  { name: "Universitat Pompeu Fabra (Barcellona)", domain: "upf.edu" },
+
+  // Estero — Austria
+  { name: "WU Vienna (Wirtschaftsuniversität Wien)", domain: "wu.ac.at" },
+  { name: "Universität Wien", domain: "univie.ac.at" },
+
+  // Estero — Germania
+  { name: "Ludwig-Maximilians-Universität München (LMU)", domain: "lmu.de" },
+  { name: "Technische Universität München (TUM)", domain: "tum.de" },
+  { name: "Universität Mannheim", domain: "uni-mannheim.de" },
+  { name: "Frankfurt School of Finance & Management", domain: "fs.de" },
+  { name: "WHU – Otto Beisheim School of Management", domain: "whu.edu" },
+  { name: "ESMT Berlin", domain: "esmt.org" },
+  { name: "Humboldt-Universität zu Berlin", domain: "hu-berlin.de" },
+
+  // Estero — Svizzera
+  { name: "ETH Zürich", domain: "ethz.ch" },
+  { name: "EPFL (École polytechnique fédérale de Lausanne)", domain: "epfl.ch" },
+  { name: "Università di San Gallo (HSG)", domain: "unisg.ch" },
+  { name: "IMD Lausanne", domain: "imd.org" },
+  { name: "Universität Zürich", domain: "uzh.ch" },
+
+  // Estero — Paesi Bassi
+  { name: "Erasmus University Rotterdam (RSM)", domain: "eur.nl" },
+  { name: "University of Amsterdam", domain: "uva.nl" },
+  { name: "Tilburg University", domain: "tilburguniversity.edu" },
+  { name: "TU Delft", domain: "tudelft.nl" },
+
+  // Estero — Belgio
+  { name: "KU Leuven", domain: "kuleuven.be" },
+  { name: "Vlerick Business School", domain: "vlerick.com" },
+
+  // Estero — Svezia
+  { name: "Stockholm School of Economics", domain: "hhs.se" },
+  { name: "KTH Royal Institute of Technology", domain: "kth.se" },
+  { name: "Lund University", domain: "lu.se" },
+
+  // Estero — Danimarca
+  { name: "Copenhagen Business School (CBS)", domain: "cbs.dk" },
+  { name: "University of Copenhagen", domain: "ku.dk" },
+
+  // Estero — Irlanda
+  { name: "Trinity College Dublin", domain: "tcd.ie" },
+  { name: "University College Dublin (Smurfit)", domain: "ucd.ie" },
+
+  // Estero — Portogallo
+  { name: "Nova School of Business & Economics", domain: "novasbe.pt" },
+  { name: "Católica Lisbon School of Business & Economics", domain: "ucp.pt" },
+
+  // Estero — Stati Uniti
+  { name: "Harvard University", domain: "harvard.edu" },
+  { name: "Massachusetts Institute of Technology (MIT)", domain: "mit.edu" },
+  { name: "Stanford University", domain: "stanford.edu" },
+  { name: "University of Pennsylvania (Wharton)", domain: "upenn.edu" },
+  { name: "Columbia University", domain: "columbia.edu" },
+  { name: "University of Chicago (Booth)", domain: "uchicago.edu" },
+  { name: "Yale University", domain: "yale.edu" },
+  { name: "Princeton University", domain: "princeton.edu" },
+  { name: "University of California, Berkeley", domain: "berkeley.edu" },
 ];
 
 export const ALLOWED_STUDENT_DOMAINS = ITALIAN_UNIVERSITY_DOMAINS.map((u) => u.domain);
