@@ -21,7 +21,7 @@ export interface ParsedCV {
   raw_text_summary: string;
 }
 
-const CV_EXTRACTION_PROMPT = `Sei un parser di CV universitari italiani.
+export const CV_EXTRACTION_PROMPT = `Sei un parser di CV universitari italiani.
 
 Estrai dal CV le seguenti informazioni — ignora completamente la sezione Education (quella viene dal libretto universitario):
 

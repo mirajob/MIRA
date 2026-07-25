@@ -20,7 +20,7 @@ export interface ParsedTranscript {
   pass_fail_credits: number;
 }
 
-const EXTRACTION_PROMPT = `Sei un parser di libretti universitari italiani, specializzato in Bocconi.
+export const EXTRACTION_PROMPT = `Sei un parser di libretti universitari italiani, specializzato in Bocconi.
 
 REGOLA FONDAMENTALE: estrai TUTTI gli esami GIÀ COMPLETATI — quelli che hanno SIA una data di superamento SIA un voto o esito (es. "TWENTY-SEVEN", "PASS", "THIRTY.="). Ignora completamente le righe senza data e senza voto: sono esami futuri pianificati, NON ancora sostenuti.
 

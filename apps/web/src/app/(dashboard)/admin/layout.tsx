@@ -20,6 +20,8 @@ export default async function AdminLayout({
     { label: t("companiesLink"), href: "/admin/companies" },
     { label: t("usersLink"), href: "/admin/users" },
     { label: t("teamLink"), href: "/admin/team" },
+    // Strumento dev interno (solo admin MIRA): banco di prova per il parsing AI.
+    { label: "AI Test", href: "/admin/ai-test" },
   ];
 
   return (

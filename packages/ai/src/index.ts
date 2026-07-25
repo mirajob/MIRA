@@ -7,3 +7,11 @@ export type { ParsedTranscript, ParsedCourse } from "./modules/transcript-parser
 export { parseCVFile, formatCVForChat } from "./modules/cv-parser";
 export type { ParsedCV, ParsedCVExperience } from "./modules/cv-parser";
 export { syncCardBlockStructuredData } from "./modules/card-block-sync";
+export { GEMINI_MODELS } from "./modules/gemini-client";
+export type { GeminiModel } from "./modules/gemini-client";
+export {
+  parseTranscriptWithGemini,
+  parseCVWithGemini,
+  recomputeTranscriptAverages,
+} from "./modules/gemini-parsers";
+export type { GeminiParseResult } from "./modules/gemini-parsers";
