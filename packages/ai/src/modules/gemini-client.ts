@@ -31,6 +31,12 @@ export async function geminiGenerateJson(
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
 
+  // Flash can disable thinking entirely (budget 0); Pro cannot — asking Pro for
+  // 0 is rejected. For Pro, fall back to -1 (dynamic: the model decides) whenever
+  // a caller requests 0, so the same call works on both models.
+  const requestedBudget = options.thinkingBudget ?? 0;
+  const thinkingBudget = model === "gemini-2.5-pro" && requestedBudget <= 0 ? -1 : requestedBudget;
+
   const body = {
     systemInstruction: { parts: [{ text: systemPrompt }] },
     contents: [
@@ -48,7 +54,7 @@ export async function geminiGenerateJson(
       maxOutputTokens: 16384,
       // thinkingBudget 0 disables Gemini's internal reasoning tokens = fastest.
       // Bump it for accuracy on dense transcripts. -1 lets the model decide.
-      thinkingConfig: { thinkingBudget: options.thinkingBudget ?? 0 },
+      thinkingConfig: { thinkingBudget },
     },
   };
 
