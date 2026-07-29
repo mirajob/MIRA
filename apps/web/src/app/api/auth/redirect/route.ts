@@ -55,16 +55,39 @@ export async function GET(request: NextRequest) {
     // Chi non ha ancora completato l'onboarding va dritto all'inizio della card,
     // non alla home dashboard: è il punto in cui la gente si perde e non completa.
     const { data: studentProfile } = await (service.from("student_profiles") as any)
-      .select("onboarding_completed")
+      .select("onboarding_completed, university")
       .eq("user_id", profileId)
       .maybeSingle();
+
+    // L'accesso con Google non porta l'università (Google dà solo nome, email e foto)
+    // e senza ateneo lo studente non vede associazioni a cui candidarsi, perché sono
+    // scopate per università. Glielo chiediamo prima della card — solo a chi non l'ha
+    // ancora finita, così nessun utente già a posto viene rimbalzato.
+    if (!studentProfile?.onboarding_completed && !hasUniversity(studentProfile?.university)) {
+      return NextResponse.redirect(new URL("/completa-profilo", origin));
+    }
+
     const dest = studentProfile?.onboarding_completed ? "/student" : "/student/onboarding";
     return NextResponse.redirect(new URL(dest, origin));
   }
 
-  // No role assigned — create student profile and role on the fly. È per forza un
-  // utente nuovo: mandalo direttamente all'inizio del completamento della card.
-  await ensureStudentProfile(service, profileId, user.email);
+  // Nessun ruolo: profilo studente creato al volo. Il trigger DB provisiona solo i
+  // domini universitari, quindi da qui passa chi si è registrato con Gmail o simili —
+  // i dati che ha già dato al form di registrazione stanno nei metadata auth, e li
+  // riusiamo invece di richiederglieli.
+  const metadata = (user.user_metadata ?? {}) as { university?: string; degree_level?: string };
+  await ensureStudentProfile(service, profileId, user.email, {
+    university: metadata.university,
+    degreeLevel: metadata.degree_level,
+  });
 
-  return NextResponse.redirect(new URL("/student/onboarding", origin));
+  const dest = hasUniversity(metadata.university) ? "/student/onboarding" : "/completa-profilo";
+  return NextResponse.redirect(new URL(dest, origin));
+}
+
+/** "Non specificata" è il fallback di ensureStudentProfile quando il dominio email non
+ * dice nulla: vale come università mancante, non come scelta dello studente. */
+function hasUniversity(university: string | null | undefined): boolean {
+  const value = (university ?? "").trim();
+  return value.length > 0 && value.toLowerCase() !== "non specificata";
 }

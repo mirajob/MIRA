@@ -7,6 +7,7 @@ import { UniversityCombobox } from "@/components/university-combobox";
 import { getAuthErrorKey } from "@/lib/auth-error-messages";
 import { notifyAdminNewStudent } from "@/lib/actions/admin-notify";
 import { PasswordInput } from "@/components/password-input";
+import { GoogleSignInButton } from "@/components/google-signin-button";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -52,9 +53,13 @@ function SignupForm() {
     setError(null);
 
     if (!isInvite) {
+      // L'email istituzionale è un consiglio, non un vincolo (decisione founder
+      // 2026-07-29): il dominio bloccava iscrizioni che non ci possiamo permettere di
+      // perdere. Il dato che conta per il matching è l'università dichiarata qui sotto,
+      // che resta obbligatoria. Solo il formato dell'email va ancora controllato.
       const emailValidation = validateStudentEmail(email);
-      if (!emailValidation.valid) {
-        setError(v(`studentEmail.${emailValidation.errorCode}`));
+      if (emailValidation.errorCode === "invalid_format") {
+        setError(v("studentEmail.invalid_format"));
         return;
       }
       if (!university || !degreeLevel) {
@@ -212,6 +217,10 @@ function SignupForm() {
             {error}
           </div>
         )}
+
+        {/* Gli inviti azienda/associazione sono legati a un'email precisa: lì Google
+            non c'entra e il bottone confonderebbe soltanto. */}
+        {!isInvite && <GoogleSignInButton redirect={redirect} />}
 
         <label className="block">
           <span className="text-label text-navy mb-2 block">{t("fullNameLabel")}</span>

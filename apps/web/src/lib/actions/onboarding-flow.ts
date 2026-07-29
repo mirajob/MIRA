@@ -47,9 +47,9 @@ export interface OnboardingBlocksState {
 }
 
 export type OnboardingFlowPhase =
-  | "header"
-  | "esperienze"
   | "disponibilita"
+  | "esperienze"
+  | "header"
   | "gate"
   | "competenze"
   | "lingue"
@@ -143,10 +143,16 @@ function computePctFromBlocks(blocks: OnboardingBlocksState): number {
   return Math.round((approved / 6) * 100);
 }
 
+// Ordine della Fase A invertito (2026-07-29): si parte da "cosa cerchi", cioè la domanda
+// per cui lo studente è arrivato su MIRA, e l'Header viene per ultimo — università e livello
+// li abbiamo già dalla registrazione, quindi sono pochi campi. Il libretto NON è più uno step
+// del percorso obbligatorio: si carica dal blocco Header, dal gate o dal passo Competenze,
+// dove serve davvero (proposta delle academic skill dai voti). Motivo: chiedere il transcript
+// come primissima schermata faceva abbandonare la maggior parte dei registrati.
 function derivePhase(blocks: OnboardingBlocksState, faseBStarted: boolean): OnboardingFlowPhase {
-  if (blocks.header.status !== "approved") return "header";
-  if (blocks.esperienze.status !== "approved") return "esperienze";
   if (!(blocks.disponibilita.status === "approved" && blocks.piano_carriera.status === "approved")) return "disponibilita";
+  if (blocks.esperienze.status !== "approved") return "esperienze";
+  if (blocks.header.status !== "approved") return "header";
 
   const faseBDone =
     blocks.competenze.status === "approved" &&
@@ -279,6 +285,77 @@ const ACADEMIC_SKILLS_PATTERN_PROMPT = `Ti do la lista di tutti gli esami sosten
 
 Ogni competenza ha un'evidenza BREVE: il nome dell'area tematica (es. "Quantitative finance"), MAI un elenco di esami o il testo completo. Vietati aggettivi vaghi tipo "conoscenza della materia" — sii specifico (es. "Corporate valuation techniques", non "financial knowledge"). La MIRA card è sempre in inglese: scrivi "testo" ed "evidenza_ref" in inglese anche se i nomi degli esami sono in italiano. Rispondi SOLO in JSON: {"items":[{"testo":"","evidenza_ref":""}]}`;
 
+/** Le academic skill proposte dai voti. Ritorna [] se l'AI fallisce: la proposta è un
+ * aiuto, mai un blocco — lo studente può sempre scriverle a mano. */
+async function proposeAcademicFromExams(
+  examItems: Array<{ esame: string; voto: string | null }>
+): Promise<CompetenzaItem[]> {
+  try {
+    const extracted = await chatCompletion(
+      [
+        { role: "system", content: ACADEMIC_SKILLS_PATTERN_PROMPT },
+        { role: "user", content: examItems.map((i) => `${i.esame}: ${i.voto ?? "idoneo"}`).join("\n") },
+      ],
+      { temperature: 0.3, maxTokens: 600, jsonMode: true }
+    );
+    const parsed = JSON.parse(extracted);
+    return (parsed.items ?? [])
+      .filter((it: any) => (it.testo ?? "").trim())
+      .map((it: any) => ({
+        id: crypto.randomUUID(),
+        testo: it.testo,
+        categoria: "academic" as const,
+        livello: null,
+        evidenza_ref: it.evidenza_ref || null,
+        verified: false,
+        origin: "onboarding" as const,
+      }));
+  } catch (err) {
+    console.error("[MIRA] academic proposal failed:", err);
+    return [];
+  }
+}
+
+/**
+ * Ripropone le academic skill dai voti su richiesta esplicita: si chiama dopo OGNI
+ * caricamento del libretto fatto fuori dal passo Competenze (gate, chiusura, Fase B),
+ * perché `startFaseBFlow` gira una volta sola e da solo non coprirebbe chi carica il
+ * libretto dopo aver già finito la card. Le nuove proposte entrano come bozza: il blocco
+ * torna in "draft" perché niente entra nella card senza la conferma dello studente.
+ */
+export async function proposeAcademicSkillsFromTranscript(): Promise<{ proposed: number }> {
+  const { supabase, studentProfileId, blocks } = await getOnboardingContext();
+
+  const examItems = blocks.formazione.data.items;
+  if (examItems.length === 0) return { proposed: 0 };
+
+  const existingItems = blocks.competenze.data.items;
+  const seen = new Set(existingItems.map((i) => i.testo.toLowerCase().trim()));
+  const newItems = (await proposeAcademicFromExams(examItems)).filter((it) => {
+    const key = it.testo.toLowerCase().trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  if (newItems.length === 0) return { proposed: 0 };
+
+  const { error } = await (supabase.from("card_blocks") as any)
+    .update({
+      prose_content: {
+        items: [...existingItems, ...newItems],
+        soft_skills: blocks.competenze.data.soft_skills ?? [],
+      },
+      status: "draft",
+    })
+    .eq("student_profile_id", studentProfileId)
+    .eq("block_type", "competenze");
+  if (error) throw error;
+
+  revalidatePath("/student/onboarding");
+  revalidatePath("/student");
+  return { proposed: newItems.length };
+}
+
 export async function startFaseBFlow(): Promise<{ proposedAcademic: number; prefilledHard: number }> {
   const { supabase, profileId, studentProfileId, student, blocks } = await getOnboardingContext();
 
@@ -288,33 +365,10 @@ export async function startFaseBFlow(): Promise<{ proposedAcademic: number; pref
   const hasAcademic = existingItems.some((i) => i.categoria === "academic" || i.tipo === "teorica");
   const examItems = blocks.formazione.data.items;
 
-  let academicItems: CompetenzaItem[] = [];
-  if (!hasAcademic && examItems.length > 0) {
-    try {
-      const extracted = await chatCompletion(
-        [
-          { role: "system", content: ACADEMIC_SKILLS_PATTERN_PROMPT },
-          { role: "user", content: examItems.map((i) => `${i.esame}: ${i.voto ?? "idoneo"}`).join("\n") },
-        ],
-        { temperature: 0.3, maxTokens: 600, jsonMode: true }
-      );
-      const parsed = JSON.parse(extracted);
-      academicItems = (parsed.items ?? [])
-        .filter((it: any) => (it.testo ?? "").trim())
-        .map((it: any) => ({
-          id: crypto.randomUUID(),
-          testo: it.testo,
-          categoria: "academic" as const,
-          livello: null,
-          evidenza_ref: it.evidenza_ref || null,
-          verified: false,
-          origin: "onboarding" as const,
-        }));
-    } catch (err) {
-      // La proposta è un aiuto, mai un blocco: se l'AI fallisce lo studente inserisce a mano.
-      console.error("[MIRA] startFaseBFlow academic proposal failed:", err);
-    }
-  }
+  // Senza libretto non proponiamo nulla: la sezione academic resta vuota e compilabile
+  // a mano, e si riempie da sola quando (e se) il libretto arriva.
+  const academicItems: CompetenzaItem[] =
+    !hasAcademic && examItems.length > 0 ? await proposeAcademicFromExams(examItems) : [];
 
   // Hard skill dal CV (il parser le estrae già): prefill dedup, livello prudente.
   const cv = student.cv_summary as { skills?: string[] } | null;
@@ -414,7 +468,7 @@ export async function miraImproveProfilo(input: { testo: string }): Promise<{ te
 // Gate e chiusura
 // ---------------------------------------------------------------------------
 
-/** Chiamata dopo la conferma congiunta di Disponibilità e piano: sblocca la candidatura. */
+/** Chiamata alla conferma dell'Header, ultimo blocco della Fase A: sblocca la candidatura. */
 export async function completeGateFlow(): Promise<{ progressPct: number }> {
   const { supabase, studentProfileId, blocks } = await getOnboardingContext();
 

@@ -10,6 +10,7 @@ import {
   startFaseBFlow,
   completeGateFlow,
   forceCompleteOnboarding,
+  proposeAcademicSkillsFromTranscript,
 } from "@/lib/actions/onboarding-flow";
 import type { OnboardingFlowState, OnboardingFlowPhase, OnboardingBlocksState } from "@/lib/actions/onboarding-flow";
 import { uploadTranscript } from "@/lib/actions/transcript-upload";
@@ -31,7 +32,10 @@ import type { CardBlockStatus } from "@mira/types";
 // confermati (riga chiusa): i blocchi futuri compaiono quando arriva il loro turno.
 type FlowBlock = "header" | "esperienze" | "disponibilita_piano" | "competenze" | "lingue" | "profilo_personale";
 
-const BLOCK_ORDER: FlowBlock[] = ["header", "esperienze", "disponibilita_piano", "competenze", "lingue", "profilo_personale"];
+// Fase A: disponibilità → esperienze → header (gate). Si apre con la domanda per cui lo
+// studente è qui — cosa cerca — e non con il libretto, che è la richiesta che faceva
+// abbandonare. L'ordine server-side vive in derivePhase(): i due devono restare allineati.
+const BLOCK_ORDER: FlowBlock[] = ["disponibilita_piano", "esperienze", "header", "competenze", "lingue", "profilo_personale"];
 
 const PHASE_TO_BLOCK: Partial<Record<OnboardingFlowPhase, FlowBlock>> = {
   header: "header",
@@ -81,6 +85,41 @@ function MiraGuide({ text, children }: { text: string; children?: React.ReactNod
   );
 }
 
+/** La proposta di caricare il libretto una volta che la card è già in piedi. */
+function TranscriptPrompt({
+  title,
+  body,
+  uploadLabel,
+  disabled,
+  onUpload,
+  children,
+}: {
+  title: string;
+  body: string;
+  uploadLabel: string;
+  disabled: boolean;
+  onUpload: () => void;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border border-petrol/25 bg-petrol-50/60 px-5 py-4">
+      {children}
+      <p className="text-eyebrow text-petrol uppercase mb-1.5 flex items-center gap-1.5">
+        <span aria-hidden="true">✦</span> MIRA
+      </p>
+      <p className="text-body font-medium text-ink">{title}</p>
+      <p className="mt-1 text-body-sm text-ink-secondary whitespace-pre-line">{body}</p>
+      <button
+        onClick={onUpload}
+        disabled={disabled}
+        className="mt-3 text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
+      >
+        {uploadLabel}
+      </button>
+    </div>
+  );
+}
+
 function CollapsedRow({ title, approvedLabel }: { title: string; approvedLabel: string }) {
   return (
     <div className="rounded-lg border border-border bg-white px-5 py-3 flex items-center justify-between">
@@ -105,6 +144,7 @@ export function OnboardingFlow({ userName }: { userName: string }) {
   const [transcriptStats, setTranscriptStats] = useState<{ courses: number; credits: number; avg: number | null } | null>(null);
   const [skippedTranscript, setSkippedTranscript] = useState(false);
   const [skippedCV, setSkippedCV] = useState(false);
+  const [linkedinOpen, setLinkedinOpen] = useState(false);
   const [gatePct, setGatePct] = useState<number | null>(null);
   const [complete, setComplete] = useState(false);
   const transcriptFileRef = useRef<HTMLInputElement>(null);
@@ -142,7 +182,9 @@ export function OnboardingFlow({ userName }: { userName: string }) {
     (async () => {
       const fresh = await refresh();
       // Card già completa (es. rientro dopo la chiusura): mostra il finale e torna al Profilo.
-      if (fresh?.phase === "chiusura") finishAndRedirect(2500);
+      // Se il libretto manca ancora, la chiusura si ferma e lo propone: è l'ultimo momento
+      // utile per prenderlo, e senza di lui non possiamo proporre le academic skill.
+      if (fresh?.phase === "chiusura" && fresh.transcriptUploaded) finishAndRedirect(2500);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -159,8 +201,8 @@ export function OnboardingFlow({ userName }: { userName: string }) {
 
   /** Dopo il Conferma di un blocco (il salvataggio+approvazione è già avvenuto lì). */
   async function handleBlockApproved(block: FlowBlock) {
-    if (block === "disponibilita_piano") {
-      // Gate: candidatura sbloccata.
+    // L'Header è l'ultimo blocco della Fase A: qui scatta il gate.
+    if (block === "header") {
       try {
         const { progressPct } = await completeGateFlow();
         setGatePct(progressPct);
@@ -171,7 +213,7 @@ export function OnboardingFlow({ userName }: { userName: string }) {
       return;
     }
     const fresh = await refresh();
-    if (fresh?.phase === "chiusura") finishAndRedirect(3000);
+    if (fresh?.phase === "chiusura" && fresh.transcriptUploaded) finishAndRedirect(3000);
   }
 
   async function handleTranscriptFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -190,6 +232,16 @@ export function OnboardingFlow({ userName }: { userName: string }) {
         credits: result.parsed.total_credits,
         avg: result.parsed.weighted_average,
       });
+      // Libretto caricato oltre l'Header (gate, Competenze, chiusura): è arrivato proprio
+      // per questo — proporre le academic skill dai voti. La proposta entra come bozza e
+      // riporta il flusso sul blocco Competenze, dove lo studente la conferma.
+      if (flow?.phase !== "header") {
+        try {
+          await proposeAcademicSkillsFromTranscript();
+        } catch (err) {
+          console.error("[MIRA] proposeAcademicSkillsFromTranscript failed:", err);
+        }
+      }
       await refresh();
     }
     setUploading(false);
@@ -273,28 +325,30 @@ export function OnboardingFlow({ userName }: { userName: string }) {
   function guideText(): string {
     if (!flow || !blocks) return "";
     switch (phase) {
+      case "disponibilita":
+        // Primo blocco: qui MIRA si presenta.
+        return t("guideDisponibilitaIntro", { name: firstName });
+      case "esperienze": {
+        if (flow.cvUploaded) return t("guideEsperienzeAfterCV", { count: blocks.esperienze.data.items.length });
+        if (skippedCV) return t("guideEsperienzeManual");
+        return t("guideEsperienze");
+      }
       case "header": {
         if (transcriptStats) {
           const avg = transcriptStats.avg ? t("avgSuffix", { avg: transcriptStats.avg.toFixed(1) }) : "";
           return t("guideHeaderAfterUpload", { courses: transcriptStats.courses, credits: transcriptStats.credits, avg });
         }
         if (flow.transcriptUploaded) return t("guideHeaderUploaded");
-        if (skippedTranscript) return t("guideHeaderManual");
-        return t("guideHeaderIntro", {
-          name: firstName,
-          hint: flow.isBocconi ? t("hintBocconi") : t("hintGeneric"),
-        });
+        return t("guideHeader");
       }
-      case "esperienze": {
-        if (flow.cvUploaded) return t("guideEsperienzeAfterCV", { count: blocks.esperienze.data.items.length });
-        if (skippedCV) return t("guideEsperienzeManual");
-        return t("guideEsperienze");
-      }
-      case "disponibilita":
-        return t("guideDisponibilita");
       case "competenze": {
         const hasAcademic = blocks.competenze.data.items.some((i) => getCompetenzaCategoria(i) === "academic");
-        return hasAcademic ? t("guideCompetenzeProposed") : t("guideCompetenzeManual");
+        if (hasAcademic) return t("guideCompetenzeProposed");
+        // Senza libretto le academic skill non le proponiamo: o lo carica ora, o le scrive lui.
+        if (!flow.transcriptUploaded && !skippedTranscript) {
+          return t("guideCompetenzeNoTranscript", { hint: flow.isBocconi ? t("hintBocconi") : t("hintGeneric") });
+        }
+        return t("guideCompetenzeManual");
       }
       case "lingue":
         return blocks.lingue.data.items.length > 0 ? t("guideLingueWithCV") : t("guideLingue");
@@ -305,10 +359,58 @@ export function OnboardingFlow({ userName }: { userName: string }) {
     }
   }
 
-  /** I bottoni contestuali dentro la guida (upload libretto/CV con relativo Salta). */
+  /** I bottoni contestuali dentro la guida (upload CV/libretto con relativo Salta). */
   function guideActions(): React.ReactNode {
     if (!flow) return null;
-    if (phase === "header" && !flow.transcriptUploaded && !skippedTranscript) {
+
+    // Esperienze: tre strade, perché "non ho un CV pronto" è il muro più comune.
+    // Il PDF di LinkedIn è la scorciatoia — lo legge lo stesso parser del CV.
+    if (phase === "esperienze" && !flow.cvUploaded && !skippedCV) {
+      return (
+        <div className="w-full space-y-3">
+          <input ref={cvFileRef} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleCVFile} className="hidden" />
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => cvFileRef.current?.click()}
+              disabled={uploading}
+              className="text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
+            >
+              {uploading ? t("uploadingLabel") : t("uploadCV")}
+            </button>
+            <button
+              onClick={() => setLinkedinOpen((o) => !o)}
+              disabled={uploading}
+              className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
+            >
+              {t("linkedinOption")}
+            </button>
+            <button
+              onClick={() => setSkippedCV(true)}
+              disabled={uploading}
+              className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
+            >
+              {t("manualOption")}
+            </button>
+          </div>
+          {linkedinOpen && (
+            <div className="rounded-md border border-border bg-white px-4 py-3">
+              <p className="text-body-sm text-ink whitespace-pre-line">{t("linkedinSteps")}</p>
+              <button
+                onClick={() => cvFileRef.current?.click()}
+                disabled={uploading}
+                className="mt-3 text-body-sm font-medium text-petrol hover:text-petrol-700 transition-colors disabled:opacity-40"
+              >
+                {uploading ? t("uploadingLabel") : t("linkedinUpload")}
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Competenze: è il punto in cui il libretto serve davvero (proposta academic skill
+    // dai voti), quindi è qui che lo chiediamo — non più come primissima schermata.
+    if (phase === "competenze" && !flow.transcriptUploaded && !skippedTranscript) {
       return (
         <>
           <input ref={transcriptFileRef} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleTranscriptFile} className="hidden" />
@@ -324,28 +426,7 @@ export function OnboardingFlow({ userName }: { userName: string }) {
             disabled={uploading}
             className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
           >
-            {t("skip")}
-          </button>
-        </>
-      );
-    }
-    if (phase === "esperienze" && !flow.cvUploaded && !skippedCV) {
-      return (
-        <>
-          <input ref={cvFileRef} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleCVFile} className="hidden" />
-          <button
-            onClick={() => cvFileRef.current?.click()}
-            disabled={uploading}
-            className="text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
-          >
-            {uploading ? t("uploadingLabel") : t("uploadCV")}
-          </button>
-          <button
-            onClick={() => setSkippedCV(true)}
-            disabled={uploading}
-            className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
-          >
-            {t("skip")}
+            {t("skipTranscript")}
           </button>
         </>
       );
@@ -523,13 +604,40 @@ export function OnboardingFlow({ userName }: { userName: string }) {
             </div>
           )}
 
-          {/* Chiusura */}
+
+          {/* Chiusura. Senza libretto non si reindirizza da soli: si lascia la scelta
+              esplicita, così la proposta qui sopra ha il tempo di essere letta. */}
           {(phase === "chiusura" || complete) && (
             <div className="rounded-lg border border-border bg-white p-5">
               <h2 className="font-display text-h3 text-navy">{t("finalTitle")}</h2>
               <p className="mt-1 text-body text-ink-secondary">{t("finalBody")}</p>
-              <p className="mt-3 text-body-sm text-success font-medium">{t("redirecting")}</p>
+              {flow && !flow.transcriptUploaded && !complete ? (
+                <button
+                  onClick={() => finishAndRedirect(0)}
+                  disabled={uploading}
+                  className="mt-4 text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
+                >
+                  {t("goToProfile")}
+                </button>
+              ) : (
+                <p className="mt-3 text-body-sm text-success font-medium">{t("redirecting")}</p>
+              )}
             </div>
+          )}
+
+          {/* Libretto: proposto al gate e alla chiusura, cioè quando la card è già in piedi
+              e caricarlo è un guadagno (media + esami + competenze accademiche proposte),
+              non un pedaggio all'ingresso. Sempre in coda, dopo il messaggio della fase. */}
+          {(phase === "gate" || phase === "chiusura" || complete) && flow && !flow.transcriptUploaded && (
+            <TranscriptPrompt
+              title={t("transcriptPromptTitle")}
+              body={t("transcriptPromptBody", { hint: flow.isBocconi ? t("hintBocconi") : t("hintGeneric") })}
+              uploadLabel={uploading ? t("uploadingLabel") : t("uploadTranscript")}
+              disabled={uploading}
+              onUpload={() => transcriptFileRef.current?.click()}
+            >
+              <input ref={transcriptFileRef} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleTranscriptFile} className="hidden" />
+            </TranscriptPrompt>
           )}
         </div>
       </div>

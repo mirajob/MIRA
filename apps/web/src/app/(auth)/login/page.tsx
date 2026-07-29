@@ -6,6 +6,7 @@ import { checkPendingCompanyRequest } from "@/lib/actions/company-register";
 import { checkAccountType } from "@/lib/actions/auth";
 import { getAuthErrorKey } from "@/lib/auth-error-messages";
 import { PasswordInput } from "@/components/password-input";
+import { GoogleSignInButton } from "@/components/google-signin-button";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -112,6 +113,9 @@ function LoginForm() {
             {error}
           </div>
         )}
+
+        {/* Solo lato studente: gli account azienda passano dall'invito, non da Google. */}
+        {!isCompany && <GoogleSignInButton redirect={redirect} />}
 
         <label className="block">
           <span className="text-label text-navy mb-2 block">{c("email")}</span>
