@@ -12,77 +12,20 @@
   "university": "Università Bocconi",
   "associations": [
     {
-      "name": "Bocconi Students Investment Club",
-      "slug": "bocconi-students-investment-club",
-      "category": "finance",
-      "sectors": [
-        "Corporate Finance",
-        "Markets",
-        "Quant",
-        "Research"
-      ],
-      "short_description": "We are the oldest finance association at Bocconi. Since 2010 we have been writing research on the markets, and we still do, every week.",
-      "long_description": "We started in 2010 and received the University's official recognition in April 2011, which makes us the oldest finance student association at Bocconi.\n\nAround 60 of us are active at any given time, working across three divisions.\n\nCORPORATE FINANCE\nDeal analysis and company valuation, from the mechanics of a transaction to the numbers behind it.\n\nMARKETS\nCoverage of what moves global markets, published as research on our website.\n\nQUANT\nQuantitative approaches to pricing, strategy and risk, for members who want the technical side of finance.\n\nWe recruit several times during the academic year, and we are open to any student enrolled at Bocconi.",
-      "website_url": "https://bsic.it/",
-      "recruiting_timeline": "Several recruiting sessions during the academic year.",
-      "source_urls": [
-        "https://bsic.it/about-us/",
-        "https://bsic.it/join-us/"
-      ]
-    },
-    {
-      "name": "Bocconi Students Consulting Club",
-      "slug": "bocconi-students-consulting-club",
-      "category": "management",
-      "sectors": [
-        "Strategy Consulting",
-        "Business Cases",
-        "Networking"
-      ],
-      "short_description": "The oldest and largest consulting club in Italy. We train our members to crack cases and to land the job they are aiming for.",
-      "long_description": "We are the association for students who want a career in strategy consulting, and we are the oldest and largest consulting club in Italy.\n\nWhat we actually do:\n\nWe visit consulting firms and meet the people who work there.\nWe run training sessions on frameworks, models and the skills you need to crack a business case.\nWe organise networking events with professionals in the industry.\n\nWe are 70 members from ten different nationalities. Getting in means passing our selection, which we run twice a year, around September and March.",
-      "website_url": "https://www.bsccmilan.com/",
-      "recruiting_timeline": "Two selection rounds a year, usually in September and March.",
-      "source_urls": [
-        "https://www.bsccmilan.com/",
-        "https://www.unibocconi.it/it/news/bocconi-students-consulting-club-cercasi-nuovi-membri"
-      ]
-    },
-    {
-      "name": "Minerva Investment Management Society",
-      "slug": "minerva-investment-management-society",
+      "name": "Bocconi Students Asset Management Club",
+      "slug": "bocconi-students-asset-management-club",
       "category": "finance",
       "sectors": [
         "Asset Management",
-        "Equity Research",
-        "Quant",
-        "Macro"
+        "Research",
+        "Markets"
       ],
-      "short_description": "The first asset management society at Bocconi. We run three proprietary funds and produce the research behind them.",
-      "long_description": "We are the first and leading asset management student association at Bocconi University. Around 70 of us work across five divisions, and the divisions feed each other: the research decides what the funds do.\n\nPORTFOLIO MANAGEMENT\nWe manage three proprietary funds across a wide range of asset classes and investment products, applying our own macro outlooks and investment strategies, with the aim of stable income and long-term capital growth.\n\nQUANTITATIVE\nWe measure the risk sitting inside our portfolios, using VaR methodologies, bootstrapping and portfolio optimisation.\n\nEQUITY RESEARCH\nWe value companies across a wide pool of names, with DCF, multiples, DDM and LBO models.\n\nMACRO RESEARCH\nWe follow macroeconomic news and market trends, and turn them into a view.\n\nINVESTMENT RESEARCH\nWe identify the most attractive asset classes given current conditions, and publish monthly outlooks and reports.",
-      "website_url": "https://minervaims.it/",
+      "short_description": "We research the asset management industry and publish what we find, across two divisions: Market Insights and Asset Management.",
+      "long_description": "We started in 2020, founded by international students, and that mix of backgrounds is still the thing we rely on most.\n\nOur work is research, and two divisions produce it.\n\nMARKET INSIGHTS\nWhat is moving equity markets, and why it matters to somebody managing money.\n\nASSET MANAGEMENT\nInvestment strategies, client profiling and asset allocation, taken apart in detail.\n\nBoth publish articles and reports regularly, written hands-on rather than summarised from somewhere else. What we are building around the research is a network of students and professionals in the industry that reaches well outside Italy.",
+      "website_url": "https://www.bsamc.org/",
       "recruiting_timeline": null,
       "source_urls": [
-        "https://minervaims.org/divisions/investment",
-        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/minerva-investment-management-society"
-      ]
-    },
-    {
-      "name": "Bocconi Students M&A Circle",
-      "slug": "bocconi-students-ma-circle",
-      "category": "finance",
-      "sectors": [
-        "M&A",
-        "Investment Banking",
-        "Valuation"
-      ],
-      "short_description": "Since 2014 we have done one thing: mergers and acquisitions. Deal analysis, valuation workshops, and the preparation that gets you through an interview.",
-      "long_description": "We have been running since 2014, entirely student-led, for people who want to work in mergers and acquisitions.\n\nWe take apart recent deals and rebuild the reasoning behind them. We run valuation workshops where you do the work rather than watch it. We bring in guests from the industry, and we sit down with members on CVs, cover letters and interview preparation, the unglamorous part that decides most outcomes.\n\nWe are around 35 students, split evenly between bachelor and master, with eleven nationalities among us. We recruit twice a year, in October and in March.",
-      "website_url": "https://bsmac.org/",
-      "recruiting_timeline": "Two recruiting rounds a year, in October and March.",
-      "source_urls": [
-        "https://bsmac.org/about-us/",
-        "https://bsmac.org/join-us/"
+        "https://www.bsamc.org/"
       ]
     },
     {
@@ -104,19 +47,38 @@
       ]
     },
     {
-      "name": "Bocconi Students Private Equity Club",
-      "slug": "bocconi-students-private-equity-club",
+      "name": "Bocconi Students Consulting Club",
+      "slug": "bocconi-students-consulting-club",
+      "category": "management",
+      "sectors": [
+        "Strategy Consulting",
+        "Business Cases",
+        "Networking"
+      ],
+      "short_description": "The oldest and largest consulting club in Italy. We train our members to crack cases and to land the job they are aiming for.",
+      "long_description": "We are the association for students who want a career in strategy consulting, and we are the oldest and largest consulting club in Italy.\n\nWhat we actually do:\n\nWe visit consulting firms and meet the people who work there.\nWe run training sessions on frameworks, models and the skills you need to crack a business case.\nWe organise networking events with professionals in the industry.\n\nWe are 70 members from ten different nationalities. Getting in means passing our selection, which we run twice a year, around September and March.",
+      "website_url": "https://www.bsccmilan.com/",
+      "recruiting_timeline": "Two selection rounds a year, usually in September and March.",
+      "source_urls": [
+        "https://www.bsccmilan.com/",
+        "https://www.unibocconi.it/it/news/bocconi-students-consulting-club-cercasi-nuovi-membri"
+      ]
+    },
+    {
+      "name": "Bocconi Students Distressed Investing & Restructuring Society",
+      "slug": "bocconi-students-distressed-investing-and-restructuring-soci",
       "category": "finance",
       "sectors": [
-        "Private Equity",
-        "Venture Capital"
+        "Distressed Investing",
+        "Restructuring",
+        "Credit"
       ],
-      "short_description": "One of the oldest associations at Bocconi, focused on private equity and venture capital in Italy and abroad.",
-      "long_description": "We are one of the oldest and most active student associations at Bocconi, and our attention sits on two industries: private equity and venture capital, in Italy and internationally.\n\nWe publish articles on private equity and venture capital.\nWe interview professionals who work in the industry.\nWe run events with funds, advisors and academics.\nWe hold educational workshops for our members.\n\nOur meetings run throughout the academic year, and most of them come back to the same question: what has actually changed in this industry recently, and why.",
-      "website_url": "https://bspeclub.com/",
+      "short_description": "Europe's first undergraduate club focused on restructuring and distressed investments.",
+      "long_description": "We are the first undergraduate club in Europe built around restructuring and distressed investing: the part of finance that deals with companies under pressure rather than companies where everything is going well.\n\nCORPORATE FINANCE\nCapital markets, mergers and acquisitions, valuation.\n\nSPECIAL SITUATIONS & PRIVATE EQUITY\nLeveraged buyouts and turnaround strategies.\n\nCREDIT INVESTMENTS\nFixed income and credit risk.\n\nAround the divisions we run technical training led by the division heads, mock interviews, workshops with firms in the sector and networking with people who do this for a living.",
+      "website_url": "https://bdrxeu.com/",
       "recruiting_timeline": null,
       "source_urls": [
-        "https://bspeclub.com/about-us/"
+        "https://bdrxeu.com/"
       ]
     },
     {
@@ -135,6 +97,129 @@
       "source_urls": [
         "https://www.bsfs.it/",
         "https://www.bsfs.it/events/"
+      ]
+    },
+    {
+      "name": "Bocconi Students Fintech Society",
+      "slug": "bocconi-students-fintech-society",
+      "category": "finance",
+      "sectors": [
+        "Fintech",
+        "Research",
+        "Finance"
+      ],
+      "short_description": "The leading fintech association at Bocconi. We research the companies that are changing financial services, and we work entirely in English.",
+      "long_description": "We bring together students who want to understand where finance is going, and we do it by researching the companies that are changing financial services rather than discussing them in the abstract.\n\nWhat we produce is high-level research on fintech topics, shared inside and outside the association. Around it we build relationships with the fintech ecosystem, so that curiosity turns into something usable when it is time to choose a career.\n\nAll our activities run in English.",
+      "website_url": "https://www.bsfintechsociety.com/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.bsfintechsociety.com/",
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/bocconi-students-fintech-society"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Alternative Investments",
+      "slug": "bocconi-students-for-alternative-investments",
+      "category": "finance",
+      "sectors": [
+        "Alternative Investments",
+        "Hedge Funds",
+        "Private Credit"
+      ],
+      "short_description": "Founded in 2023 and already the largest alternative investments association at Bocconi: 72 members across nine divisions.",
+      "long_description": "We started in 2023, and in two years we have become the largest association at Bocconi dedicated to alternative investments: 72 members, nine divisions, more than fifty reports published.\n\nThe divisions are Hedge Funds, Private Equity, Private Credit, Real Estate, Venture Capital, Quant, Energy and Infrastructure, Media and Operations.\n\nFour things hold the work together. We connect students to the industry through events, seminars and workshops. We build the technical and analytical skills that each sector actually asks for. We put educational resources and mentorship in front of people who are starting out. And we keep a community where you can work out whether this career is for you before committing to it.",
+      "website_url": "https://bsai.it/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://bsai.it/"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Machine Learning",
+      "slug": "bocconi-students-for-machine-learning",
+      "category": "tech",
+      "sectors": [
+        "Machine Learning",
+        "Projects",
+        "Research"
+      ],
+      "short_description": "The machine learning association at Bocconi. We build a network across tech companies, funds and research labs, and we ship projects.",
+      "long_description": "We are the leading machine learning student association at Bocconi. Our aim is a network of minds spanning the best tech companies, investment funds and research labs, and using it to accelerate the careers of the people in it.\n\nWe design and run events: research talks, company sessions, project showcases, dinners with guests.\nWe set up partnerships: talks, hackathons, projects, interviews.\nWe publish what comes out of it, as articles, videos and presentations.\n\nIf you are working on something of your own, we help you carry it through: the code, the way you tell it, and getting it published.",
+      "website_url": "https://bsmachinelearning.com/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://bsmachinelearning.com/",
+        "https://github.com/bs-machinelearning"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Real Estate",
+      "slug": "bocconi-students-for-real-estate",
+      "category": "finance",
+      "sectors": [
+        "Real Estate",
+        "Investments"
+      ],
+      "short_description": "Real estate at Bocconi: virtual investment portfolios, simulations, and events with the people who work in the market.",
+      "long_description": "We work on the real estate market, and we do it practically. We plan investments and build virtual property portfolios, and we run simulations of the decisions people in this industry make for real.\n\nAlongside that we open educational events with specialists in the market to the whole Bocconi community, not only to our own members.\n\nWe are around twenty, with a board of nine.",
+      "website_url": "https://www.bsrealestate.it",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/bocconi-students-real-estate"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Venture Capital",
+      "slug": "bocconi-students-for-venture-capital",
+      "category": "finance",
+      "sectors": [
+        "Venture Capital",
+        "Startups",
+        "Innovation"
+      ],
+      "short_description": "Venture capital, startups and innovation. We connect Bocconi students to the people who fund and build companies.",
+      "long_description": "We work on venture capital, startups and the innovation landscape around them, with one aim: getting Bocconi students genuinely connected to the VC ecosystem rather than reading about it.\n\nBUSINESS DEVELOPMENT\nPartnerships with funds, startups and accelerators, and the events, webinars and competitions that come out of them.\n\nVENTURE CAPITAL\nProjects with players in the industry, advising early-stage startups, supporting VCs on their own work.\n\nARTICLES\nAnalysis of where venture capital is heading.\n\nMEDIA\nOur channels, the weekly newsletter and the website.\n\nWe recruit on a rolling basis.",
+      "website_url": "https://www.bsvc.club/",
+      "recruiting_timeline": "Rolling recruiting through the year.",
+      "source_urls": [
+        "https://www.bsvc.club/"
+      ]
+    },
+    {
+      "name": "Bocconi Students Investment Club",
+      "slug": "bocconi-students-investment-club",
+      "category": "finance",
+      "sectors": [
+        "Corporate Finance",
+        "Markets",
+        "Quant",
+        "Research"
+      ],
+      "short_description": "We are the oldest finance association at Bocconi. Since 2010 we have been writing research on the markets, and we still do, every week.",
+      "long_description": "We started in 2010 and received the University's official recognition in April 2011, which makes us the oldest finance student association at Bocconi.\n\nAround 60 of us are active at any given time, working across three divisions.\n\nCORPORATE FINANCE\nDeal analysis and company valuation, from the mechanics of a transaction to the numbers behind it.\n\nMARKETS\nCoverage of what moves global markets, published as research on our website.\n\nQUANT\nQuantitative approaches to pricing, strategy and risk, for members who want the technical side of finance.\n\nWe recruit several times during the academic year, and we are open to any student enrolled at Bocconi.",
+      "website_url": "https://bsic.it/",
+      "recruiting_timeline": "Several recruiting sessions during the academic year.",
+      "source_urls": [
+        "https://bsic.it/about-us/",
+        "https://bsic.it/join-us/"
+      ]
+    },
+    {
+      "name": "Bocconi Students M&A Circle",
+      "slug": "bocconi-students-ma-circle",
+      "category": "finance",
+      "sectors": [
+        "M&A",
+        "Investment Banking",
+        "Valuation"
+      ],
+      "short_description": "Since 2014 we have done one thing: mergers and acquisitions. Deal analysis, valuation workshops, and the preparation that gets you through an interview.",
+      "long_description": "We have been running since 2014, entirely student-led, for people who want to work in mergers and acquisitions.\n\nWe take apart recent deals and rebuild the reasoning behind them. We run valuation workshops where you do the work rather than watch it. We bring in guests from the industry, and we sit down with members on CVs, cover letters and interview preparation, the unglamorous part that decides most outcomes.\n\nWe are around 35 students, split evenly between bachelor and master, with eleven nationalities among us. We recruit twice a year, in October and in March.",
+      "website_url": "https://bsmac.org/",
+      "recruiting_timeline": "Two recruiting rounds a year, in October and March.",
+      "source_urls": [
+        "https://bsmac.org/about-us/",
+        "https://bsmac.org/join-us/"
       ]
     },
     {
@@ -157,21 +242,55 @@
       ]
     },
     {
-      "name": "Bocconi Students for Machine Learning",
-      "slug": "bocconi-students-for-machine-learning",
-      "category": "tech",
+      "name": "Bocconi Students Private Equity Club",
+      "slug": "bocconi-students-private-equity-club",
+      "category": "finance",
       "sectors": [
-        "Machine Learning",
-        "Projects",
-        "Research"
+        "Private Equity",
+        "Venture Capital"
       ],
-      "short_description": "The machine learning association at Bocconi. We build a network across tech companies, funds and research labs, and we ship projects.",
-      "long_description": "We are the leading machine learning student association at Bocconi. Our aim is a network of minds spanning the best tech companies, investment funds and research labs, and using it to accelerate the careers of the people in it.\n\nWe design and run events: research talks, company sessions, project showcases, dinners with guests.\nWe set up partnerships: talks, hackathons, projects, interviews.\nWe publish what comes out of it, as articles, videos and presentations.\n\nIf you are working on something of your own, we help you carry it through: the code, the way you tell it, and getting it published.",
-      "website_url": "https://bsmachinelearning.com/",
+      "short_description": "One of the oldest associations at Bocconi, focused on private equity and venture capital in Italy and abroad.",
+      "long_description": "We are one of the oldest and most active student associations at Bocconi, and our attention sits on two industries: private equity and venture capital, in Italy and internationally.\n\nWe publish articles on private equity and venture capital.\nWe interview professionals who work in the industry.\nWe run events with funds, advisors and academics.\nWe hold educational workshops for our members.\n\nOur meetings run throughout the academic year, and most of them come back to the same question: what has actually changed in this industry recently, and why.",
+      "website_url": "https://bspeclub.com/",
       "recruiting_timeline": null,
       "source_urls": [
-        "https://bsmachinelearning.com/",
-        "https://github.com/bs-machinelearning"
+        "https://bspeclub.com/about-us/"
+      ]
+    },
+    {
+      "name": "Bocconi Students Women in Finance",
+      "slug": "bocconi-students-women-in-finance",
+      "category": "finance",
+      "sectors": [
+        "Finance",
+        "Networking",
+        "Mentorship"
+      ],
+      "short_description": "A platform for female students heading into financial services, and a network of more than 80 alumnae already working in the industry.",
+      "long_description": "We exist to make collaboration easier among female students who want a career in financial services, and to turn it into something that lasts beyond university: more than eighty of our alumnae now work in leading financial institutions across Europe, North America and Asia.\n\nWe meet weekly to discuss markets, present to each other and spend time together. Around that we run events with professionals from the industry, networking sessions, and workshops and mentoring programmes on both technical and soft skills.\n\nWhat we care about is cooperation rather than competition. Applications open at the start of each semester and are welcome from any major, as long as the interest in finance is real.",
+      "website_url": "https://wif-bocconi.com",
+      "recruiting_timeline": "Applications open at the beginning of each semester.",
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/bocconi-students-women-finance"
+      ]
+    },
+    {
+      "name": "Minerva Investment Management Society",
+      "slug": "minerva-investment-management-society",
+      "category": "finance",
+      "sectors": [
+        "Asset Management",
+        "Equity Research",
+        "Quant",
+        "Macro"
+      ],
+      "short_description": "The first asset management society at Bocconi. We run three proprietary funds and produce the research behind them.",
+      "long_description": "We are the first and leading asset management student association at Bocconi University. Around 70 of us work across five divisions, and the divisions feed each other: the research decides what the funds do.\n\nPORTFOLIO MANAGEMENT\nWe manage three proprietary funds across a wide range of asset classes and investment products, applying our own macro outlooks and investment strategies, with the aim of stable income and long-term capital growth.\n\nQUANTITATIVE\nWe measure the risk sitting inside our portfolios, using VaR methodologies, bootstrapping and portfolio optimisation.\n\nEQUITY RESEARCH\nWe value companies across a wide pool of names, with DCF, multiples, DDM and LBO models.\n\nMACRO RESEARCH\nWe follow macroeconomic news and market trends, and turn them into a view.\n\nINVESTMENT RESEARCH\nWe identify the most attractive asset classes given current conditions, and publish monthly outlooks and reports.",
+      "website_url": "https://minervaims.it/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://minervaims.org/divisions/investment",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/minerva-investment-management-society"
       ]
     }
   ]

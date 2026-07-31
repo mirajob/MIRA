@@ -83,11 +83,6 @@ export async function approveAssociationClaimRequest(requestId: string) {
 
   if (!request) return { error: "Richiesta non trovata." };
 
-  const { data: association } = await (supabase.from("association_profiles") as any)
-    .select("public_page_status")
-    .eq("id", request.association_id)
-    .maybeSingle();
-
   const permissions: Record<string, boolean> = {};
   for (const perm of ROLE_PERMISSION_TEMPLATES.association_admin!) {
     permissions[perm] = true;
@@ -109,19 +104,17 @@ export async function approveAssociationClaimRequest(requestId: string) {
 
   if (membershipError) return { error: membershipError.message };
 
-  // Il percorso guidato parte dalla costruzione della pagina pubblica. Se la pagina
-  // l'abbiamo già scritta e pubblicata noi, rimandarceli sopra è una tappa finta:
-  // si parte dalla seconda, i collaboratori. Se invece è ancora in bozza la pagina
-  // la deve davvero fare il board, e il percorso resta intero.
-  const pageAlreadyDone = association?.public_page_status === "published";
-
+  // Il percorso guidato parte dalla costruzione della pagina pubblica, ma qui quella
+  // pagina l'abbiamo già scritta e pubblicata noi: una richiesta di gestione può
+  // nascere solo da una pagina pubblicata, perché le bozze le vede solo l'admin.
+  // Quindi la prima tappa è sempre già fatta e si parte dalla seconda, i collaboratori.
   const { error: associationError } = await (supabase.from("association_profiles") as any)
     .update({
       claim_status: "claimed",
       created_by_user_id: request.user_id,
       approved_by_user_id: ctx.profile.id,
       approved_at: new Date().toISOString(),
-      onboarding_state: { step: pageAlreadyDone ? 1 : 0, completed: false },
+      onboarding_state: { step: 1, completed: false },
     })
     .eq("id", request.association_id);
 
