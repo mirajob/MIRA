@@ -1458,7 +1458,8 @@
     "claimApprove": "Approve",
     "claimReject": "Reject",
     "claimApproveConfirm": "Hand over the page of {name}? The requester becomes an administrator of the association.",
-    "claimRejectPrompt": "Reason for rejection (optional, shown to the requester):"
+    "claimRejectPrompt": "Reason for rejection (optional, shown to the requester):",
+    "studentPreviewCta": "View as a student"
   },
   "AssociationClaim": {
     "prompt": "Are you on the board of {name}?",

@@ -27,7 +27,9 @@ export default async function StudentAssociazioniPage({
   searchParams: Promise<{ ateneo?: string }>;
 }) {
   const ctx = await getUserContext();
-  if (!ctx.isStudent) redirect("/api/auth/redirect");
+  // L'admin MIRA passa anche senza profilo studente: è l'unico modo per rivedere
+  // questa schermata com'è fatta davvero prima di pubblicare le pagine.
+  if (!ctx.isStudent && !ctx.isMiraAdmin) redirect("/api/auth/redirect");
 
   const { ateneo } = await searchParams;
 
@@ -49,8 +51,19 @@ export default async function StudentAssociazioniPage({
   // con dentro anche le pagine ancora in bozza e con la possibilità di cambiare
   // ateneo. Serve a giudicare l'insieme prima di pubblicare, non solo la singola pagina.
   const isAdminPreview = ctx.isMiraAdmin;
+
+  // Atenei disponibili per il selettore dell'anteprima admin.
+  const { data: allUniversities } = isAdminPreview
+    ? await (supabase.from("association_profiles") as any).select("university")
+    : { data: [] };
+  const universityOptions = [
+    ...new Set(((allUniversities ?? []) as any[]).map((a) => a.university).filter(Boolean)),
+  ].sort((a: string, b: string) => a.localeCompare(b));
+
+  // L'account admin può non avere un profilo studente: senza un ripiego sul primo
+  // ateneo disponibile la schermata risulterebbe vuota e sembrerebbe rotta.
   const university = isAdminPreview
-    ? (ateneo || studentProfile?.university || "")
+    ? (ateneo || studentProfile?.university || universityOptions[0] || "")
     : (studentProfile?.university ?? "");
 
   // Ogni associazione eredita l'università del presidente che l'ha candidata: uno
@@ -63,14 +76,6 @@ export default async function StudentAssociazioniPage({
     associationsQuery = associationsQuery.eq("public_page_status", "published");
   }
   const { data: associations } = await associationsQuery;
-
-  // Atenei disponibili per il selettore dell'anteprima admin.
-  const { data: allUniversities } = isAdminPreview
-    ? await (supabase.from("association_profiles") as any).select("university")
-    : { data: [] };
-  const universityOptions = [
-    ...new Set(((allUniversities ?? []) as any[]).map((a) => a.university).filter(Boolean)),
-  ].sort((a: string, b: string) => a.localeCompare(b));
 
   const { data: openCycles } = await (supabase.from("application_cycles") as any)
     .select("id, title, closes_at, association_id")

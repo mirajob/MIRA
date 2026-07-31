@@ -1458,7 +1458,8 @@
     "claimApprove": "Approva",
     "claimReject": "Rifiuta",
     "claimApproveConfirm": "Consegnare la pagina di {name}? Chi ha fatto richiesta diventa amministratore dell'associazione.",
-    "claimRejectPrompt": "Motivo del rifiuto (facoltativo, lo vede il richiedente):"
+    "claimRejectPrompt": "Motivo del rifiuto (facoltativo, lo vede il richiedente):",
+    "studentPreviewCta": "Vedi come uno studente"
   },
   "AssociationClaim": {
     "prompt": "Fai parte del board di {name}?",

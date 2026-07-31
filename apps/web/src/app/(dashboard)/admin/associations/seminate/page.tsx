@@ -156,9 +156,22 @@ export default async function AdminSeededAssociationsPage({ searchParams }: Prop
           />
         </div>
 
+        {/* La revisione vera si fa sull'elenco come lo vede uno studente, non su
+            questa tabella: qui si controlla lo stato, lì si giudica l'insieme. */}
+        <Link
+          href={
+            uni
+              ? `/student/associazioni?ateneo=${encodeURIComponent(uni)}`
+              : "/student/associazioni"
+          }
+          className="ml-auto rounded-md bg-navy px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-navy-700"
+        >
+          {t("studentPreviewCta")}
+        </Link>
+
         <Link
           href="/admin/associations"
-          className="ml-auto text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
+          className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
         >
           {t("backToAssociations")}
         </Link>
