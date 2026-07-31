@@ -1167,6 +1167,16 @@
         "https://www.instagram.com/salsabocconi/",
         "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
       ]
+    },
+    {
+      "name": "JEME Bocconi Studenti",
+      "slug": "jeme-bocconi-studenti",
+      "category": "management",
+      "website_url": "https://jeme.it/",
+      "source_urls": [
+        "https://jeme.it/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
     }
   ]
 }

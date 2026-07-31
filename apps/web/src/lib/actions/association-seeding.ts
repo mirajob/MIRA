@@ -50,12 +50,6 @@ export async function publishSeededAssociation(associationId: string) {
     return { error: `${association.name}: manca l'università, la pagina non sarebbe visibile a nessuno.` };
   }
 
-  // Le righe nascono con solo nome, ambito e sito: la scheda si scrive dopo. Una
-  // pagina senza descrizione non va pubblicata, sarebbe una riga vuota nell'elenco.
-  if (!association.short_description) {
-    return { error: `${association.name}: manca la descrizione, la scheda non è ancora scritta.` };
-  }
-
   const { error } = await (supabase.from("association_profiles") as any)
     .update({ public_page_status: "published" })
     .eq("id", associationId);
@@ -104,13 +98,6 @@ export async function publishSeededAssociations(associationIds: string[]) {
   if (missingUniversity.length) {
     return {
       error: `Manca l'università per: ${missingUniversity.map((r: any) => r.name).join(", ")}.`,
-    };
-  }
-
-  const missingDescription = (rows ?? []).filter((r: any) => !r.short_description);
-  if (missingDescription.length) {
-    return {
-      error: `Scheda non ancora scritta per: ${missingDescription.map((r: any) => r.name).join(", ")}.`,
     };
   }
 

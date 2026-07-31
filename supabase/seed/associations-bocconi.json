@@ -12,6 +12,108 @@
   "university": "Università Bocconi",
   "associations": [
     {
+      "name": "Aleph - Analisi Strategiche",
+      "slug": "aleph-analisi-strategiche",
+      "category": "politics",
+      "sectors": [
+        "Geopolitics",
+        "Intelligence",
+        "Defence"
+      ],
+      "short_description": "Founded in 2013, the first association in Italy dedicated to foreign policy, intelligence and defence.",
+      "long_description": "We were founded in 2013 and we are the first association in Italy dedicated to foreign policy, intelligence and defence, subjects that are usually discussed everywhere except where students can practise them.\n\nWhat we are after is four things. Building real methodological skills through training, seminars and research. Partnerships with companies working on security. Contact with research centres, institutions and specialist media. And a generation that understands both the opportunities and the dangers of an increasingly multipolar world.\n\nMembers develop their analysis through our own publication, online debates and regular meetings.",
+      "website_url": "https://www.alephas.org",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/aleph-analisi-strategiche"
+      ]
+    },
+    {
+      "name": "Associazione Studentesca Letteraria Bocconi d'Inchiostro",
+      "slug": "associazione-studentesca-letteraria-bocconi-dinchiostro",
+      "category": "arts",
+      "sectors": [
+        "Literature",
+        "Writing",
+        "Culture"
+      ],
+      "short_description": "Literature at Bocconi since 2012, including a national poetry competition and the first literary prize run by an Italian student association.",
+      "long_description": "We were founded in 2012 around reading and the critical analysis of texts, in prose and in verse, and around what literature has to say about civil society and even about legal and economic questions.\n\nWe run seminars and conferences, present books and host their authors. Every year we hold a national poetry competition. We run Biblioscambio, a book exchange inside the university. And we award the Dante d'Oro, the first literary prize created by an Italian student association.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/associazione-studentesca-letteraria-bocconi-dinchiostro"
+      ]
+    },
+    {
+      "name": "Bocconi Economics Student Association",
+      "slug": "bocconi-economics-student-association",
+      "category": "economics",
+      "sectors": [
+        "Economics",
+        "Research",
+        "Debate"
+      ],
+      "short_description": "The main economics association at Bocconi. We argue about global news and publish original research every week.",
+      "long_description": "We are the main economics association at Bocconi, for students interested in international economics, finance and politics, and in the places where the three meet.\n\nMost of what we do starts as an argument: global news, social issues, economic questions where the answer is not obvious. What comes out of it gets written up as original research and published weekly on our website.\n\nAlongside that we bring in prominent economists and faculty for events open to anyone who wants to come.",
+      "website_url": "https://asbesa.wixsite.com/bocconi-economics",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/bocconi-economics-student-association"
+      ]
+    },
+    {
+      "name": "Bocconi Student Association for Mathematical Sciences",
+      "slug": "bocconi-student-association-for-mathematical-sciences",
+      "category": "tech",
+      "sectors": [
+        "Mathematics",
+        "Statistics",
+        "Research"
+      ],
+      "short_description": "The first mathematics association at Bocconi, building a community around maths and the research that comes out of it.",
+      "long_description": "We are the first mathematics association at Bocconi, and what we are building is a community for students who are serious about maths, connected to the Decision Sciences department and to research opportunities.\n\nWe are organised in four divisions, each with its own board and its own activities: Mathematics, Statistics, Applied Mathematics, covering decision theory, game theory and mathematical economics, and Physics.\n\nWe also run preparation sessions for mathematics competitions such as the ICMC, so that Bocconi can compete against universities that have been doing this far longer.\n\nApplications go through a form on our site, and the selection asks candidates exactly one question.",
+      "website_url": "https://mathematicalsciencesbocconi.org/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://mathematicalsciencesbocconi.org/"
+      ]
+    },
+    {
+      "name": "Bocconi Students - Advocacy & Litigation",
+      "slug": "bocconi-students-advocacy-and-litigation",
+      "category": "law",
+      "sectors": [
+        "Moot Courts",
+        "Litigation",
+        "Law"
+      ],
+      "short_description": "The largest law association at Bocconi, running since 2012. Moot courts, real trials, and the gap between law in books and law in action.",
+      "long_description": "We started in 2012 and we are the largest and most active law students association at Bocconi. The idea we work from is the distance between law in books and law in action, and how to cross it while still at university.\n\nMoot courts are the core: students argue simulated proceedings against each other, properly. Around them we run conferences with experts across commercial, criminal, intellectual property and international law, publish articles and essays, meet lawyers, judges and corporate legal teams, and run workshops inside law firms.\n\nWe also go and watch real trials at the Milan courthouse, and every year around fifteen of us spend five days at a university abroad studying a specific area of law.\n\nUnderneath all of it we are a group of friends with the same interests, and that is not a detail.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/bocconi-students-advocacy-litigation"
+      ]
+    },
+    {
+      "name": "Bocconi Students against Organized Crime",
+      "slug": "bocconi-students-against-organized-crime",
+      "category": "social_impact",
+      "sectors": [
+        "Organised Crime",
+        "Law",
+        "Activism"
+      ],
+      "short_description": "The first association at Bocconi dedicated to organised crime and what it does to the economy, politics and society.",
+      "long_description": "We are the first association at Bocconi built specifically around organised crime, and what it does to economies, politics and societies in Italy and internationally.\n\nWe want to be the place where Bocconi students can put their own skills into projects, studies and serious research on this subject, instead of treating it as somebody else's field.\n\nIn practice that means initiatives and events, debates with people who work on this professionally, and research we carry out ourselves. The subject sits across economics, law and social activism.\n\nWe select new members twice a year, and what we care about is what each member can actually do inside the association.",
+      "website_url": "https://bsocbocconi.it",
+      "recruiting_timeline": "New members selected twice a year.",
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/bocconi-students-against-organized-crime"
+      ]
+    },
+    {
       "name": "Bocconi Students Asset Management Club",
       "slug": "bocconi-students-asset-management-club",
       "category": "finance",
@@ -135,6 +237,57 @@
       ]
     },
     {
+      "name": "Bocconi Students for ESG",
+      "slug": "bocconi-students-for-esg",
+      "category": "social_impact",
+      "sectors": [
+        "ESG",
+        "Sustainability",
+        "Finance"
+      ],
+      "short_description": "We study how ESG principles get built into financial, corporate and legislative models, rather than bolted onto them.",
+      "long_description": "We started from a conviction: sustainable development only happens if non-financial ESG principles are actually included in how decisions are made, not added at the end as a report.\n\nSo our work is study. How ESG principles get integrated into financial models, into how companies are run, and into legislation. And discussion of how firms can genuinely become more sustainable inside an economy that keeps shifting under them.\n\nWhat we are after is that the people who will be leading tomorrow understand why this matters before it is their decision to make.",
+      "website_url": "https://asstudents4esg.wixsite.com/my-site",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/bocconi-students-esg"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Fashion and Luxury",
+      "slug": "bocconi-students-for-fashion-and-luxury",
+      "category": "management",
+      "sectors": [
+        "Fashion",
+        "Consulting",
+        "Design"
+      ],
+      "short_description": "Since 2013 we connect Bocconi students to the fashion industry, including a consulting team that works with fashion firms.",
+      "long_description": "We started in September 2013 as the first student organisation at Bocconi dedicated to fashion, and the aim has not changed: connect students to the industry, and give them the professional skills and the critical eye that working in it requires.\n\nWe run conferences, workshops, company visits and networking events with people from the industry. We also have a consulting team that supports fashion firms on research projects, which is where the learning gets real.\n\nWe are around thirty students, and we publish business analysis on our blog.",
+      "website_url": "https://bocconistudentsforfashion.com",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/bocconi-students-fashion"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Hospitality Management",
+      "slug": "bocconi-students-for-hospitality-management",
+      "category": "management",
+      "sectors": [
+        "Hospitality",
+        "Food & Beverage",
+        "Tourism"
+      ],
+      "short_description": "Hospitality in all its forms: hotels, food and beverage, tourism. Founded in 2025, organised in four departments.",
+      "long_description": "We work on the hospitality industry in all its forms: hotels, food and beverage, tourism. We were founded in 2025, so we are among the newest associations at Bocconi.\n\nINDUSTRY ANALYSIS, HOTELLERIE\nResearch on how the hotel industry actually works.\n\nINDUSTRY ANALYSIS, F&B\nThe food and beverage side, analysed the same way.\n\nEVENTS\nWhat we open to our members and to the wider university.\n\nSOCIAL MEDIA\nHow our work reaches people.\n\nWhat we produce ranges from case studies and articles to events with professionals, and the point of all of it is getting our members into real contact with companies and the people inside them.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/bocconi-students-hospitality-management-bshm"
+      ]
+    },
+    {
       "name": "Bocconi Students for Machine Learning",
       "slug": "bocconi-students-for-machine-learning",
       "category": "tech",
@@ -183,6 +336,23 @@
       "recruiting_timeline": "Rolling recruiting through the year.",
       "source_urls": [
         "https://www.bsvc.club/"
+      ]
+    },
+    {
+      "name": "Bocconi Students International Law Society",
+      "slug": "bocconi-students-international-law-society",
+      "category": "law",
+      "sectors": [
+        "International Law",
+        "Seminars",
+        "Interdisciplinary"
+      ],
+      "short_description": "The first law society in Italy focused on the international side of law, and on the bridge between legal and economic subjects.",
+      "long_description": "We are the first law students society in Italy built around the international dimension of law, for people who want to do something with that interest rather than keep it theoretical.\n\nWe work as an interdisciplinary bridge between the traditional subjects of legal study and economics, which is the same approach the Bocconi law degree itself takes.\n\nIn practice that means academic seminars and conferences, international events run together with the Bocconi School of Law, and initiatives for students aiming at international careers. And a place where ideas about multidisciplinary approaches to law can be shared without formality.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/bils-bocconi-student-international-law-society"
       ]
     },
     {
@@ -275,6 +445,211 @@
       ]
     },
     {
+      "name": "Build Sustainable Innovation",
+      "slug": "build-sustainable-innovation",
+      "category": "tech",
+      "sectors": [
+        "Innovation",
+        "Data Analytics",
+        "Consulting"
+      ],
+      "short_description": "Students working on the economics and management of innovation, across five divisions including consulting for startups and SMEs.",
+      "long_description": "We are a group of students interested in the economics and management of innovation and technology, and our job is connecting students, faculty and companies around it.\n\nCONSULTING\nProjects for startups and SMEs on market analysis, business planning, marketing strategy and user experience testing. Each project has a lead and four or five members.\n\nTECH\nData analytics in real settings: sentiment analysis, machine learning, IoT, business intelligence. We support multinationals on big data work and run crash courses with technology companies.\n\nEVENTS\nConferences with outside speakers, company visits and private workshops, built on a network of tech companies and entrepreneurs.\n\nDIGITAL\nMarketing and branding, from web editing to graphic design and social media.\n\nNIMS\nThe Italian chapter of an international network, with seminars, workshops and career-focused projects for master students in innovation management.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/build-sustainable-innovation"
+      ]
+    },
+    {
+      "name": "Business&Arts",
+      "slug": "business-and-arts",
+      "category": "arts",
+      "sectors": [
+        "Art Market",
+        "Culture",
+        "Management"
+      ],
+      "short_description": "Where art meets management and finance: how works get valued, and who the economic players in the art world actually are.",
+      "long_description": "We look at the point where art, management and finance meet, which is a place most people interested in art never get shown.\n\nWe run conferences with people from cultural institutions, galleries and auction houses, and we publish on the subjects that come out of them: the relationship between artists and curators, how a work of art gets valued, and who the economic actors in this market really are.\n\nWe are a group of international students held together by an interest in the business of art, and what we organise is open to the whole Bocconi community.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/business-arts"
+      ]
+    },
+    {
+      "name": "Dawn Advisory",
+      "slug": "dawn-advisory",
+      "category": "management",
+      "sectors": [
+        "Consulting",
+        "Startups",
+        "International"
+      ],
+      "short_description": "Student consulting for startups, across three campuses: Milan, Barcelona and Hong Kong. 85 members, more than 30 nationalities.",
+      "long_description": "We bring student consulting to startups, and we do it from three places at once: Bocconi in Milan, ESADE in Barcelona and HKUST in Hong Kong.\n\nOur work sits in four areas: market validation, industry analysis, growth strategy, and evaluating funding options.\n\nWe are 85 active members representing more than thirty nationalities, and we have worked with companies including Bitpanda, N26 and Nike.\n\nWe recruit continuously, with applications handled separately by each of the three branches.",
+      "website_url": "https://www.dawnadvisory.com/",
+      "recruiting_timeline": "Rolling recruiting, handled by each branch.",
+      "source_urls": [
+        "https://www.dawnadvisory.com/"
+      ]
+    },
+    {
+      "name": "Economic Society for Bocconi Students",
+      "slug": "economic-society-for-bocconi-students",
+      "category": "economics",
+      "sectors": [
+        "Economics",
+        "Seminars",
+        "Research"
+      ],
+      "short_description": "Around sixty students who take economics seriously. Weekly internal seminars, open seminars with faculty, and a thesis award.",
+      "long_description": "We exist to push critical, rigorous but genuinely innovative thinking in the social sciences, and to get people arguing about economics properly rather than casually.\n\nEvery week we run an internal seminar where members present economic work to each other. Alongside those we hold open seminars with Bocconi professors and outside guests, public events with economists and policy-makers, and initiatives such as the Economic Society Thesis Award.\n\nWe are a community of around sixty undergraduate and graduate students. We take in new members twice a year, at the start of each academic semester, and anyone who wants to discuss economics in an informal but demanding environment is welcome.",
+      "website_url": "https://www.economicsocietybocconi.org",
+      "recruiting_timeline": "New members twice a year, at the start of each semester.",
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/economic-society-bocconi-students"
+      ]
+    },
+    {
+      "name": "Entrepreneurship Club Bocconi Students",
+      "slug": "entrepreneurship-club-bocconi-students",
+      "category": "management",
+      "sectors": [
+        "Entrepreneurship",
+        "Startups",
+        "Innovation"
+      ],
+      "short_description": "The association of Bocconi students who are building something. A place to develop your project surrounded by people doing the same.",
+      "long_description": "We are the association of student entrepreneurs at Bocconi. The point is to have an environment where people building something can support each other and experiment freely, instead of doing it alone.\n\nOur members work at startups, run their own projects, or are involved in a family business. Our themes sit across economics and management, entrepreneurship, and technology and innovation.\n\nIf you are not building anything yet there is still plenty to do: organising activities, planning events, keeping the network in the local ecosystem alive. Active participation is what makes this club work.",
+      "website_url": "https://eclubbocconi.com",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/entrepreneurship-club"
+      ]
+    },
+    {
+      "name": "ESN Milano Bocconi - Erasmus Student Network",
+      "slug": "esn-milano-bocconi-erasmus-student-network",
+      "category": "international",
+      "sectors": [
+        "Erasmus",
+        "Exchange",
+        "Community"
+      ],
+      "short_description": "The Bocconi section of the Erasmus Student Network: we welcome exchange students and get them into the life of the city.",
+      "long_description": "We are the Bocconi section of an international network that exists for exchange students. When someone arrives here on Erasmus, we are the people who help them work out both the university and the city.\n\nThat splits in two. There is the practical support, academic and otherwise, for students who have just landed. And there is everything that turns arriving into belonging: social events, cultural activities, sport, and trips around Italy.\n\nWe are Italian and international students together, and a good part of us joined after our own exchange, because it is a way of staying inside that kind of environment instead of leaving it behind.",
+      "website_url": "https://www.esnbocconi.it",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/esn-bocconi-erasmus-student-network"
+      ]
+    },
+    {
+      "name": "European Generation",
+      "slug": "european-generation",
+      "category": "politics",
+      "sectors": [
+        "Europe",
+        "Geopolitics",
+        "Public Policy"
+      ],
+      "short_description": "Founded in 2013 to understand how the European Union actually works, and to argue about where it should go.",
+      "long_description": "We were founded in 2013 to do something that sounds simple and is not: understand how the European Union is actually built and governed, and rediscover the ideas the whole project started from.\n\nWe work through debates, events, publications and multimedia projects, across current affairs and geopolitics, public administration and the non-profit sector, and economic and political thought.\n\nWhat we are is a multicultural community, and also a training ground: the debate is the point, but so is what it does to the people taking part in it.",
+      "website_url": "https://www.europeangeneration.eu",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/european-generation"
+      ]
+    },
+    {
+      "name": "Family Business Association",
+      "slug": "family-business-association",
+      "category": "management",
+      "sectors": [
+        "Family Business",
+        "Consulting",
+        "Governance"
+      ],
+      "short_description": "Around 90% of Italian companies are family-run. We are the reference point at Bocconi for understanding how they work.",
+      "long_description": "Roughly nine out of ten Italian companies are family-run, and that fact shapes an enormous part of the economy our members will work in. We exist to make that subject something you can actually study and practise at Bocconi.\n\nWe work on strategic and managerial advisory, and on the legal and tax side of family companies. We run public events, meetings with academics and professionals, and company visits.\n\nThe topics we keep returning to are governance, internationalisation and generational handover, the moment where most family companies either grow or break.\n\nOne thing we care about: what our members contribute along the way counts as much as the final result.",
+      "website_url": "https://fbabocconi.com",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/family-business-association"
+      ]
+    },
+    {
+      "name": "Green Light for Business",
+      "slug": "green-light-for-business",
+      "category": "social_impact",
+      "sectors": [
+        "Sustainability",
+        "Green Business",
+        "Research"
+      ],
+      "short_description": "The main sustainability association at Bocconi, founded in 2008 by international students. Four divisions, from research to campus projects.",
+      "long_description": "We are the main sustainability association at Bocconi. We were founded in 2008 by international students, and we work on circular economy, green innovation and the companies trying to build businesses around both.\n\nKNOWLEDGE & RESEARCH\nThe research itself.\n\nBLOGS & REPORTS\nGetting it out in a form people read.\n\nGREEN CAMPUS & EVENTS\nConferences, workshops and projects that change something on campus rather than only on paper.\n\nSOCIAL MEDIA\nOur voice outside the university.\n\nWhat we want is to get people genuinely involved in green business, and to prepare the ones who will be making these decisions with both the economic and the environmental side in view.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/green-light-business"
+      ]
+    },
+    {
+      "name": "IUS@B",
+      "slug": "iusb",
+      "category": "law",
+      "sectors": [
+        "Law",
+        "Events",
+        "Peer support"
+      ],
+      "short_description": "The only association at Bocconi dedicated exclusively to law students, run peer to peer.",
+      "long_description": "We were born in March 2019 as the representative list for law students and became an official association that September. We are the only one at Bocconi dedicated exclusively to the needs of its law students.\n\nWe promote interest in law through events, conferences, seminars, debates and networking, including on subjects that are in the news right now rather than only in the syllabus.\n\nThe way we work is peer to peer: students in different years supporting each other, which for a degree like this one turns out to matter more than any single event we organise.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/iusb"
+      ]
+    },
+    {
+      "name": "JEME Bocconi Studenti",
+      "slug": "jeme-bocconi-studenti",
+      "category": "management",
+      "sectors": [
+        "Consulting",
+        "Projects",
+        "Training"
+      ],
+      "short_description": "The first junior enterprise in Italy, running since 1988. We do consulting work for real clients, done by students.",
+      "long_description": "We were founded in 1988 and we are the first junior enterprise in Italy. What we do is consulting: real projects for real clients, run in teams, where what you studied has to survive contact with a company that is paying for an answer.\n\nAlongside the projects we run training aimed at the two things the work demands: the technical side, and the ability to deal with people. More than three decades in, that combination is still the reason people join.\n\nWe recruit twice a year, in autumn and in spring, through our website. What we look for is passion, willingness to be challenged, and the ability to work with others.",
+      "website_url": "https://jeme.it/",
+      "recruiting_timeline": "Two recruiting rounds a year, in autumn and in spring.",
+      "source_urls": [
+        "https://jeme.it/en/join-us/",
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/jeme-bocconi-studenti"
+      ]
+    },
+    {
+      "name": "Luxury Bocconi Students Society",
+      "slug": "luxury-bocconi-students-society",
+      "category": "management",
+      "sectors": [
+        "Luxury",
+        "Fashion",
+        "Lifestyle"
+      ],
+      "short_description": "The only association at Bocconi dedicated entirely to the luxury industry, in all its forms. Around 50 members across five divisions.",
+      "long_description": "We are the first and only association at Bocconi dedicated entirely and exclusively to the luxury industry. What we try to do is put the people leading that industry today in the same room as the people who will lead it next.\n\nWe are around fifty, organised in divisions by sector: Fashion & Accessories, Watches, Jewellery & Arts, Cars & Transports, and Lifestyle.\n\nOn top of the divisions, members can work in three cross-cutting departments: Communications, Events and Public Relations.",
+      "website_url": "https://www.lbss.it",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/luxury-bocconi-students-society"
+      ]
+    },
+    {
       "name": "Minerva Investment Management Society",
       "slug": "minerva-investment-management-society",
       "category": "finance",
@@ -291,6 +666,57 @@
       "source_urls": [
         "https://minervaims.org/divisions/investment",
         "https://www.unibocconi.it/it/studenti-iscritti/campus-life/minerva-investment-management-society"
+      ]
+    },
+    {
+      "name": "Students for Humanity",
+      "slug": "students-for-humanity",
+      "category": "social_impact",
+      "sectors": [
+        "Volunteering",
+        "Social Impact",
+        "Fundraising"
+      ],
+      "short_description": "Since 2011 the platform for every socially minded initiative at Bocconi: volunteering, fundraising, awareness campaigns.",
+      "long_description": "We were founded in 2011 to carry solidarity and social responsibility inside Bocconi, and over time we became the platform through which most socially minded initiatives here happen.\n\nWe organise events, fundraising and awareness campaigns, and forums on the social questions that are pressing right now. We run the permanent volunteering guidance desk together with CIESSEVI, we support the projects of international NGOs in developing countries, and we bring in leaders from international cooperation to speak.\n\nWe are open to everyone. There is no profile you need to match, only an interest in the subject.",
+      "website_url": "https://studentsforhumanity.it",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/students-humanity"
+      ]
+    },
+    {
+      "name": "Tortuga Studenti Bocconi",
+      "slug": "tortuga-studenti-bocconi",
+      "category": "economics",
+      "sectors": [
+        "Public Policy",
+        "Research",
+        "Think Tank"
+      ],
+      "short_description": "The first Italian think tank made of young researchers and students. Over 400 articles and 40 projects on Italian policy.",
+      "long_description": "We are the first Italian think tank made up of young researchers and students in economics and the social sciences, and we work on Italian policy questions: labour, public finance, education, environment, territorial development, thirteen subject areas in all.\n\nWhat we produce is independent analysis, written to be rigorous and readable at the same time, and concrete policy proposals that could actually be implemented. We also take on research and advisory work for institutions, companies and policy-makers.\n\nSo far that has meant more than 400 articles and over 40 projects, alongside events, a policy paper competition and a newsletter. We are around thirty active members with sixty alumni.",
+      "website_url": "https://www.tortuga-econ.it/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.tortuga-econ.it/"
+      ]
+    },
+    {
+      "name": "Women in Business",
+      "slug": "women-in-business",
+      "category": "management",
+      "sectors": [
+        "Consulting",
+        "Finance",
+        "Entrepreneurship"
+      ],
+      "short_description": "The first women's association at Bocconi, connecting current students and alumnae into one professional network.",
+      "long_description": "We are the first women's association at Bocconi, and our work is to raise awareness of women empowerment by building a professional network that connects students now with alumnae already in the industry.\n\nWe do it three ways. We bring in entrepreneurs and leaders to tell their stories in person. We organise visits to companies that take this subject seriously. And we run the association through the active participation of our members at every level, which is itself the training.\n\nThe fields we focus on are consulting, finance and entrepreneurship.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/corsi-di-studio/area-studenti-iscritti/campus-life/women-business"
       ]
     }
   ]
