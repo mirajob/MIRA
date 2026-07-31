@@ -22,7 +22,6 @@ import { revalidatePath } from "next/cache";
  */
 export async function submitAssociationClaimRequest(input: {
   associationId: string;
-  requestType: "claim" | "removal";
   roleInAssociation: string;
   note?: string;
 }) {
@@ -38,7 +37,7 @@ export async function submitAssociationClaimRequest(input: {
   if (association.claim_status !== "seeded") {
     return { error: "Questa pagina è già gestita dall'associazione." };
   }
-  if (input.requestType === "claim" && !input.roleInAssociation.trim()) {
+  if (!input.roleInAssociation.trim()) {
     return { error: "Indica il tuo ruolo nell'associazione." };
   }
 
@@ -48,8 +47,8 @@ export async function submitAssociationClaimRequest(input: {
     {
       association_id: input.associationId,
       user_id: ctx.profile.id,
-      request_type: input.requestType,
-      role_in_association: input.roleInAssociation.trim() || null,
+      request_type: "claim",
+      role_in_association: input.roleInAssociation.trim(),
       note: input.note?.trim() || null,
       status: "pending",
       rejected_reason: null,
@@ -78,14 +77,11 @@ export async function approveAssociationClaimRequest(requestId: string) {
   const supabase = await createServiceClient();
 
   const { data: request } = await (supabase.from("association_claim_requests") as any)
-    .select("id, association_id, user_id, request_type")
+    .select("id, association_id, user_id")
     .eq("id", requestId)
     .maybeSingle();
 
   if (!request) return { error: "Richiesta non trovata." };
-  if (request.request_type !== "claim") {
-    return { error: "Questa è una richiesta di rimozione, non di gestione." };
-  }
 
   const permissions: Record<string, boolean> = {};
   for (const perm of ROLE_PERMISSION_TEMPLATES.association_admin!) {

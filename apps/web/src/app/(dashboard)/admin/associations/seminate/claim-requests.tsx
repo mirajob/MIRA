@@ -15,7 +15,6 @@ export interface ClaimRequestRow {
   associationSlug: string;
   requesterName: string | null;
   requesterEmail: string | null;
-  requestType: "claim" | "removal";
   roleInAssociation: string | null;
   note: string | null;
 }
@@ -74,26 +73,14 @@ export function ClaimRequests({ rows }: { rows: ClaimRequestRow[] }) {
               {row.roleInAssociation && (
                 <span className="text-body-sm text-ink-secondary">{row.roleInAssociation}</span>
               )}
-              <span
-                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                  row.requestType === "removal"
-                    ? "bg-error-bg text-error"
-                    : "bg-white text-navy"
-                }`}
-              >
-                {row.requestType === "removal" ? t("claimTypeRemoval") : t("claimTypeClaim")}
-              </span>
-
               <div className="ml-auto flex items-center gap-3">
-                {row.requestType === "claim" && (
-                  <button
-                    onClick={() => handleApprove(row)}
-                    disabled={busyId === row.id}
-                    className="text-body-sm font-medium text-success hover:underline disabled:opacity-40"
-                  >
-                    {t("claimApprove")}
-                  </button>
-                )}
+                <button
+                  onClick={() => handleApprove(row)}
+                  disabled={busyId === row.id}
+                  className="text-body-sm font-medium text-success hover:underline disabled:opacity-40"
+                >
+                  {t("claimApprove")}
+                </button>
                 <button
                   onClick={() => handleReject(row)}
                   disabled={busyId === row.id}

@@ -522,8 +522,6 @@
     "leaveNo": "No",
     "notOnMiraYet": "Not on MIRA yet",
     "claimRequestsHeading": "Your management requests",
-    "claimTypeClaim": "Management request",
-    "claimTypeRemoval": "Removal request",
     "claimStatusPending": "Pending",
     "claimStatusApproved": "Approved",
     "claimStatusRejected": "Not approved"
@@ -1459,28 +1457,23 @@
     "claimApprove": "Approve",
     "claimReject": "Reject",
     "claimApproveConfirm": "Hand over the page of {name}? The requester becomes an administrator of the association.",
-    "claimRejectPrompt": "Reason for rejection (optional, shown to the requester):",
-    "claimTypeClaim": "Management",
-    "claimTypeRemoval": "Removal"
+    "claimRejectPrompt": "Reason for rejection (optional, shown to the requester):"
   },
   "AssociationClaim": {
     "prompt": "Are you on the board of {name}?",
     "openCta": "Request to manage it",
     "formHeading": "Request for {name}",
-    "typeClaim": "I want to manage this page on behalf of the association",
-    "typeRemoval": "I am asking for this page to be removed",
     "roleLabel": "Your role in the association",
     "rolePlaceholder": "President, recruiting lead, board member...",
     "noteLabel": "Anything to add? (optional)",
     "continueCta": "Continue",
     "cancel": "Cancel",
     "confirmClaim": "You are asking to manage the page of {name} as {role}. Confirm and send?",
-    "confirmRemoval": "You are asking for the page of {name} to be removed. Confirm and send?",
     "confirmCta": "Confirm and send",
     "sending": "Sending...",
     "back": "Back",
     "pendingTitle": "Request sent.",
-    "pendingBody": "You can follow its status under Associations — we will get back to you once we have reviewed it.",
+    "pendingBody": "You can follow its status under Associations. We will get back to you once we have reviewed it.",
     "rejectedNote": "Your previous request was not approved."
   }
 }

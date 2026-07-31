@@ -82,16 +82,12 @@ export default async function AssociationPublicPage({ params }: Props) {
     // qui sull'utente corrente.
     const service = await createServiceClient();
     const { data: request } = await (service.from("association_claim_requests") as any)
-      .select("status, request_type, rejected_reason")
+      .select("status, rejected_reason")
       .eq("association_id", association.id)
       .eq("user_id", profileId)
       .maybeSingle();
     if (request) {
-      existingRequest = {
-        status: request.status,
-        requestType: request.request_type,
-        rejectedReason: request.rejected_reason,
-      };
+      existingRequest = { status: request.status, rejectedReason: request.rejected_reason };
     }
   }
 

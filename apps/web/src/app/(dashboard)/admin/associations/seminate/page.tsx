@@ -49,7 +49,7 @@ export default async function AdminSeededAssociationsPage({ searchParams }: Prop
   // Richieste di gestione ancora aperte: sono la coda che conta, e stanno in cima
   // perché consegnare una pagina al suo board vale più che pubblicarne un'altra.
   const { data: claimRequests } = await (supabase.from("association_claim_requests") as any)
-    .select("id, request_type, role_in_association, note, association_id, user_id")
+    .select("id, role_in_association, note, association_id, user_id")
     .eq("status", "pending")
     .order("created_at", { ascending: true });
 
@@ -71,7 +71,6 @@ export default async function AdminSeededAssociationsPage({ searchParams }: Prop
         associationSlug: association.slug,
         requesterName: requester?.full_name ?? null,
         requesterEmail: requester?.email ?? null,
-        requestType: r.request_type,
         roleInAssociation: r.role_in_association,
         note: r.note,
       };

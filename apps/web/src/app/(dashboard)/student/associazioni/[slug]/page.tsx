@@ -49,16 +49,12 @@ export default async function StudentAssociationPage({ params }: Props) {
   if (isSeeded) {
     const service = await createServiceClient();
     const { data: request } = await (service.from("association_claim_requests") as any)
-      .select("status, request_type, rejected_reason")
+      .select("status, rejected_reason")
       .eq("association_id", association.id)
       .eq("user_id", ctx.profile.id)
       .maybeSingle();
     if (request) {
-      existingRequest = {
-        status: request.status,
-        requestType: request.request_type,
-        rejectedReason: request.rejected_reason,
-      };
+      existingRequest = { status: request.status, rejectedReason: request.rejected_reason };
     }
   }
 

@@ -70,7 +70,7 @@ export default async function StudentAssociazioniPage() {
   // si legge col service client filtrando sull'utente corrente.
   const service = await createServiceClient();
   const { data: myClaimRequests } = await (service.from("association_claim_requests") as any)
-    .select("id, status, request_type, rejected_reason, association_profiles(name, slug)")
+    .select("id, status, rejected_reason, association_profiles(name, slug)")
     .eq("user_id", profileId)
     .order("created_at", { ascending: false });
 
@@ -196,9 +196,6 @@ export default async function StudentAssociazioniPage() {
               <div key={req.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5">
                 <p className="text-body-sm text-navy font-medium">
                   {req.association_profiles?.name ?? c("associationFallback")}
-                </p>
-                <p className="text-body-sm text-ink-tertiary">
-                  {req.request_type === "removal" ? t("claimTypeRemoval") : t("claimTypeClaim")}
                 </p>
                 <span
                   className={`ml-auto rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${

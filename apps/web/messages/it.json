@@ -522,8 +522,6 @@
     "leaveNo": "No",
     "notOnMiraYet": "Non ancora su MIRA",
     "claimRequestsHeading": "Le tue richieste di gestione",
-    "claimTypeClaim": "Richiesta di gestione",
-    "claimTypeRemoval": "Richiesta di rimozione",
     "claimStatusPending": "In attesa",
     "claimStatusApproved": "Approvata",
     "claimStatusRejected": "Non approvata"
@@ -1459,23 +1457,18 @@
     "claimApprove": "Approva",
     "claimReject": "Rifiuta",
     "claimApproveConfirm": "Consegnare la pagina di {name}? Chi ha fatto richiesta diventa amministratore dell'associazione.",
-    "claimRejectPrompt": "Motivo del rifiuto (facoltativo, lo vede il richiedente):",
-    "claimTypeClaim": "Gestione",
-    "claimTypeRemoval": "Rimozione"
+    "claimRejectPrompt": "Motivo del rifiuto (facoltativo, lo vede il richiedente):"
   },
   "AssociationClaim": {
     "prompt": "Fai parte del board di {name}?",
     "openCta": "Richiedi di gestirla",
     "formHeading": "Richiesta per {name}",
-    "typeClaim": "Voglio gestire questa pagina per conto dell'associazione",
-    "typeRemoval": "Chiedo che la pagina venga rimossa",
     "roleLabel": "Il tuo ruolo nell'associazione",
     "rolePlaceholder": "Presidente, responsabile recruiting, membro del board...",
     "noteLabel": "Vuoi aggiungere qualcosa? (facoltativo)",
     "continueCta": "Continua",
     "cancel": "Annulla",
     "confirmClaim": "Stai chiedendo di gestire la pagina di {name} come {role}. Confermi l'invio?",
-    "confirmRemoval": "Stai chiedendo la rimozione della pagina di {name}. Confermi l'invio?",
     "confirmCta": "Conferma e invia",
     "sending": "Invio...",
     "back": "Torna indietro",

@@ -6,11 +6,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { submitAssociationClaimRequest } from "@/lib/actions/association-claim";
 
-type RequestType = "claim" | "removal";
-
 export interface ExistingClaimRequest {
   status: "pending" | "approved" | "rejected";
-  requestType: RequestType;
   rejectedReason: string | null;
 }
 
@@ -18,8 +15,8 @@ export interface ExistingClaimRequest {
  * Su una pagina non ancora gestita dall'associazione, l'unica azione offerta è
  * questa: se fai parte del board, chiedi di prenderla in gestione.
  *
- * L'invio richiede due passaggi espliciti — si compila, poi si conferma — perché
- * una richiesta partita per sbaglio costa una revisione manuale e una risposta
+ * L'invio richiede due passaggi espliciti (si compila, poi si conferma) perché una
+ * richiesta partita per sbaglio costa una revisione manuale e una risposta
  * all'associazione. Dopo l'invio lo stato si segue dalla sezione Associazioni.
  */
 export function AssociationClaimBanner({
@@ -37,7 +34,6 @@ export function AssociationClaimBanner({
 }) {
   const t = useTranslations("AssociationClaim");
   const [step, setStep] = useState<"closed" | "form" | "confirm">("closed");
-  const [requestType, setRequestType] = useState<RequestType>("claim");
   const [role, setRole] = useState("");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
@@ -59,7 +55,6 @@ export function AssociationClaimBanner({
     setLoading(true);
     const result = await submitAssociationClaimRequest({
       associationId,
-      requestType,
       roleInAssociation: role,
       note,
     });
@@ -100,34 +95,15 @@ export function AssociationClaimBanner({
         <div className="space-y-3">
           <p className="text-body-sm font-medium text-navy">{t("formHeading", { name: associationName })}</p>
 
-          <div className="space-y-1.5">
-            {(["claim", "removal"] as RequestType[]).map((option) => (
-              <label key={option} className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="requestType"
-                  checked={requestType === option}
-                  onChange={() => setRequestType(option)}
-                  className="mt-1"
-                />
-                <span className="text-body-sm text-ink">
-                  {option === "claim" ? t("typeClaim") : t("typeRemoval")}
-                </span>
-              </label>
-            ))}
+          <div>
+            <label className="block text-eyebrow uppercase text-navy/60 mb-1">{t("roleLabel")}</label>
+            <input
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder={t("rolePlaceholder")}
+              className="w-full rounded-md border border-border px-3 py-1.5 text-body-sm focus:border-petrol focus:outline-none"
+            />
           </div>
-
-          {requestType === "claim" && (
-            <div>
-              <label className="block text-eyebrow uppercase text-navy/60 mb-1">{t("roleLabel")}</label>
-              <input
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                placeholder={t("rolePlaceholder")}
-                className="w-full rounded-md border border-border px-3 py-1.5 text-body-sm focus:border-petrol focus:outline-none"
-              />
-            </div>
-          )}
 
           <div>
             <label className="block text-eyebrow uppercase text-navy/60 mb-1">{t("noteLabel")}</label>
@@ -142,7 +118,7 @@ export function AssociationClaimBanner({
           <div className="flex items-center gap-3">
             <button
               onClick={() => setStep("confirm")}
-              disabled={requestType === "claim" && !role.trim()}
+              disabled={!role.trim()}
               className="rounded-md bg-navy px-4 py-1.5 text-body-sm text-white hover:bg-navy-700 transition-colors duration-100 disabled:opacity-40"
             >
               {t("continueCta")}
@@ -159,11 +135,7 @@ export function AssociationClaimBanner({
 
       {step === "confirm" && (
         <div className="space-y-3">
-          <p className="text-body-sm text-ink">
-            {requestType === "claim"
-              ? t("confirmClaim", { name: associationName, role })
-              : t("confirmRemoval", { name: associationName })}
-          </p>
+          <p className="text-body-sm text-ink">{t("confirmClaim", { name: associationName, role })}</p>
           <div className="flex items-center gap-3">
             <button
               onClick={handleSubmit}
