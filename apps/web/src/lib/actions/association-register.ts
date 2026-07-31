@@ -4,7 +4,7 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { ensureStudentProfile } from "@/lib/student-provisioning";
 import { sendAssociationDecisionEmail, sendAdminNewSignupNotification } from "@/lib/email";
-import { ROLE_PERMISSION_TEMPLATES } from "@mira/domain";
+import { ROLE_PERMISSION_TEMPLATES, rankAssociationMatches } from "@mira/domain";
 import { revalidatePath } from "next/cache";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -52,6 +52,43 @@ async function waitForProfile(supabase: any, authUserId: string): Promise<string
  * candidano solo alle associazioni della propria università (vedi i controlli in
  * student/associazioni/page.tsx, associations/[slug]/apply/page.tsx e applications.ts).
  */
+/**
+ * La rete di sicurezza sui doppioni, lato server.
+ *
+ * Il controllo nel form è solo esperienza d'uso: basta una sessione non risolta, un ateneo
+ * scritto diverso o un deploy a metà e la pagina doppia nasce senza che nessuno lo sappia.
+ * Questo invece gira SEMPRE, sull'inserimento vero, e almeno lascia il riferimento alla
+ * gemella: in admin la riga arriva con l'avviso e il pulsante Unisci.
+ */
+async function findDuplicateCandidate(
+  supabase: any,
+  name: string,
+  university: string
+): Promise<string | null> {
+  const trimmed = (name ?? "").trim();
+  if (trimmed.length < 2) return null;
+
+  // Con l'ateneo si confronta dentro l'ateneo; senza (dato mancante sul profilo) si
+  // confronta ovunque, perché un avviso in più costa una spunta e un doppione non visto
+  // costa una pagina sbagliata in produzione.
+  let query = supabase
+    .from("association_profiles")
+    .select("id, name, university, verification_status");
+  if (university) query = query.eq("university", university);
+
+  const { data: rows, error } = await query;
+  if (error) {
+    console.error("[MIRA] duplicate lookup failed:", error);
+    return null;
+  }
+
+  const candidates = (rows ?? []).filter(
+    (r: any) => !["rejected", "suspended"].includes(r.verification_status)
+  );
+  const ranked = rankAssociationMatches(trimmed, candidates);
+  return ranked[0]?.candidate.id ?? null;
+}
+
 async function createAssociationForProfile(
   supabase: any,
   profileId: string,
@@ -62,6 +99,10 @@ async function createAssociationForProfile(
 ) {
   const baseSlug = toSlug(input.associationName) || "associazione";
   const slug = await uniqueSlug(supabase, baseSlug);
+
+  // Quello che dice il client vale come suggerimento; la verifica la rifacciamo qui.
+  const duplicateOf =
+    input.possibleDuplicateOf || (await findDuplicateCandidate(supabase, input.associationName, university));
 
   const { data: association, error: assocErr } = await supabase
     .from("association_profiles")
@@ -78,7 +119,7 @@ async function createAssociationForProfile(
       created_by_user_id: profileId,
       // Somiglia a una pagina che esiste già ma non abbastanza da collegarla da soli:
       // la pagina nasce comunque e in admin arriva con l'avviso e il pulsante Unisci.
-      possible_duplicate_of: input.possibleDuplicateOf || null,
+      possible_duplicate_of: duplicateOf,
     })
     .select("id, slug, name")
     .single();

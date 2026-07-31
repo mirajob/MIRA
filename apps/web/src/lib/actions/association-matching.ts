@@ -49,16 +49,26 @@ export async function lookupAssociationMatches(input: {
       // Form pubblico senza sessione: senza ateneo non si confronta niente.
     }
   }
-  if (!university) return { matches: [] };
+  // Senza ateneo non ci si ferma: si confronta ovunque e la scelta mostra l'ateneo di
+  // ogni pagina. Fermarsi qui vorrebbe dire non controllare affatto, ed è esattamente
+  // il caso in cui nascevano i doppioni.
+  let query = (supabase.from("association_profiles") as any)
+    .select("id, name, slug, university, claim_status, public_page_status, verification_status");
+  if (university) query = query.eq("university", university);
+
+  const { data: rows, error } = await query;
+  if (error) {
+    console.error("[MIRA] lookupAssociationMatches failed:", error);
+    return { matches: [] };
+  }
 
   // Si escludono le pagine rifiutate o sospese: proporre di prendere in gestione una
   // pagina che abbiamo già scartato non ha senso.
-  const { data: rows } = await (supabase.from("association_profiles") as any)
-    .select("id, name, slug, university, claim_status, public_page_status, verification_status")
-    .eq("university", university)
-    .not("verification_status", "in", "(rejected,suspended)");
+  const candidates = ((rows ?? []) as any[]).filter(
+    (r) => !["rejected", "suspended"].includes(r.verification_status)
+  );
 
-  const ranked = rankAssociationMatches(name, (rows ?? []) as any[]);
+  const ranked = rankAssociationMatches(name, candidates);
 
   return {
     matches: ranked.slice(0, 3).map(({ candidate, match }) => ({

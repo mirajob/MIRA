@@ -195,6 +195,7 @@ export default function CandidatiAssociazionePage() {
                   >
                     <span className="block text-body-sm font-medium text-navy">{m.name}</span>
                     <span className="block text-body-sm text-ink-tertiary">
+                      {m.university ? `${m.university} · ` : ""}
                       {m.claimStatus === "seeded" ? t("duplicateSeeded") : t("duplicateClaimed")}
                     </span>
                   </button>
