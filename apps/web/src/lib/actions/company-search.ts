@@ -24,6 +24,7 @@ Aiuti le aziende a trovare studenti Bocconi con i profili più adatti alle loro 
 
 COMPORTAMENTO:
 - Analizza davvero il contenuto delle card rispetto a quello che l'azienda cerca. Non fare matching per parole chiave isolate: ragiona su cosa significa davvero la richiesta e confrontala con l'evidenza in ogni card.
+- Le due fonti sulle competenze vanno lette insieme: gli ESAMI SOSTENUTI dicono cosa lo studente ha studiato sul piano teorico (chi ha dato Financial Accounting ha basi di bilancio anche se non lo ha riscritto altrove), le HARD SKILL dicono cosa sa usare in pratica (strumenti, software, metodi). Non pretendere che una competenza teorica sia ripetuta tra le hard skill per considerarla presente.
 - Valuta due dimensioni separate: "competenze" (esperienze/competenze/formazione coerenti col ruolo) e "disponibilita" (periodo, ambito, tipo di opportunità compatibili con quanto richiesto). Un candidato può essere fortissimo su una dimensione e debole sull'altra: segnalalo sempre, non nasconderlo e non appiattire tutto in un punteggio unico.
 - Se un candidato è forte su entrambe le dimensioni, usa "entrambe".
 - IMPORTANTE: restituisci SEMPRE i migliori candidati disponibili (fino a 6), anche se nessuno soddisfa tutti i criteri alla perfezione. Un'azienda che cerca "Excel avanzato" preferisce vedere il candidato più vicino con questo gap segnalato onestamente nel "reason" (es. "forte in finanza e contabilità, ma la card non riporta competenze Excel specifiche"), piuttosto che non vedere nessuno. Restituisci un array vuoto SOLO se non c'è alcuno studente onboardato, oppure se il messaggio dell'azienda è una domanda di chiarimento e non una vera richiesta di ricerca.
@@ -51,6 +52,7 @@ function buildCandidateContext(
     const disp = blocks.disponibilita?.prose_content ?? {};
     const esperienze = blocks.esperienze?.prose_content?.items ?? [];
     const competenze = blocks.competenze?.prose_content?.items ?? [];
+    const esami = blocks.formazione?.prose_content?.items ?? [];
     const lingue = blocks.lingue?.prose_content?.items ?? [];
     const autodescrizione = blocks.autodescrizione?.prose_content?.testo ?? null;
     const pianoCarriera = blocks.piano_carriera?.prose_content?.testo ?? null;
@@ -61,10 +63,23 @@ function buildCandidateContext(
       ? `NON in cerca al momento${disp.periodo ? ` (${disp.periodo})` : ""}`
       : `${disp.cosa_cerca ?? "n/d"}, ambito: ${disp.ambito ?? "n/d"}, periodo: ${disp.periodo ?? "n/d"}${disp.durata ? `, durata: ${disp.durata}` : ""}${disp.dove ? `, dove: ${disp.dove}` : ""}`;
 
+    // Gli esami sono la prova di cosa lo studente ha studiato davvero: dal rework di luglio
+    // sostituiscono le "competenze accademiche" generate dall'AI, quindi il matching DEVE
+    // vederli (un'azienda che chiede "basi di bilancio" deve trovare chi ha dato Financial
+    // Accounting, anche se non lo ha riscritto tra le competenze). I voti restano coperti
+    // dall'interruttore di visibilità dell'Header: senza consenso passano solo i nomi.
+    const mostraVoti = blocks.header?.visibility?.media_voti?.aziende === true;
+    const esamiLine = esami.length
+      ? esami
+          .map((e: any) => `${e.esame}${mostraVoti && e.voto ? ` (${e.voto})` : ""}${e.cfu ? ` [${e.cfu} CFU]` : ""}`)
+          .join(", ")
+      : "n/d (nessun libretto caricato)";
+
     return `student_id: ${s.id}
 - Corso: ${header.corso ?? s.degree_program ?? "n/d"} (${header.livello ?? s.degree_level ?? "n/d"}, anno ${header.anno ?? s.current_year ?? "n/d"})
 - Cerca: ${disponibilitaLine}
-- Competenze: ${competenze.map((c: any) => c.testo).filter(Boolean).join(", ") || "n/d"}
+- Esami sostenuti: ${esamiLine}
+- Competenze pratiche (hard skill): ${competenze.map((c: any) => c.testo).filter(Boolean).join(", ") || "n/d"}
 - Esperienze: ${esperienze.map((e: any) => `${e.ruolo || e.titolo || ""} @ ${e.organizzazione ?? ""} — ${e.descrizione ?? ""}`.trim()).filter((x: string) => x !== "@") .join(" | ") || "n/d"}
 - Lingue: ${lingue.map((l: any) => `${l.lingua} (${l.livello})${l.certificazione ? ` [${l.certificazione}]` : ""}`).join(", ") || "n/d"}
 - Profilo personale: ${autodescrizione ?? "n/d"}
@@ -133,7 +148,7 @@ export async function sendSearchMessage(
 
   const { data: blockRows } = studentIds.length
     ? await (supabase.from("card_blocks") as any)
-        .select("student_profile_id, block_type, prose_content")
+        .select("student_profile_id, block_type, prose_content, visibility")
         .in("student_profile_id", studentIds)
         .eq("status", "approved")
     : { data: [] };

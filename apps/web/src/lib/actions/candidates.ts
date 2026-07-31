@@ -218,7 +218,7 @@ Corso: ${header.corso || "?"} (${header.livello || "?"}, anno ${header.anno || "
 Disponibilità: ${disponibilitaText}
 Esami: ${formazione.map((e) => `${e.esame} (${e.voto})`).join(", ") || "nessuno approvato"}
 Esperienze: ${esperienze.map((e) => `${e.titolo || e.organizzazione}: ${e.descrizione}`).join("\n") || "nessuna approvata"}
-Competenze: ${competenze.map((c) => `${c.testo}${c.evidenza_ref ? ` (${c.evidenza_ref})` : ""}`).join("; ") || "nessuna approvata"}
+Competenze pratiche (strumenti e metodi che sa usare; cosa ha studiato sul piano teorico lo dicono gli esami qui sopra): ${competenze.map((c) => `${c.testo}${c.evidenza_ref ? ` (${c.evidenza_ref})` : ""}`).join("; ") || "nessuna approvata"}
 Profilo personale: ${profiloPersonale || "non specificato"}${interessiLegacy ? `\nInteressi (profilo pre-rework): ${interessiLegacy}` : ""}
 Piano e direzione: ${pianoCarriera.testo || "non specificato"} (${pianoCarriera.stato || "?"})`;
 

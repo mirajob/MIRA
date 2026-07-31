@@ -341,10 +341,12 @@
   },
   "StudentHome": {
     "greeting": "Hi",
-    "completeCardCta": "Complete your card: skills, languages and personal profile are missing (~5 minutes) →",
     "autodescrizioneIntro": "Written in your own words — feel free to edit it, it's the most personal part of the card.",
     "editCard": "Edit card",
-    "backToCard": "Back to card"
+    "backToCard": "Back to card",
+    "cardPurpose": "Your MIRA Card is the profile you apply to associations with, and the one companies read when they look for a candidate.",
+    "incompleteTitle": "{count, plural, one {1 section left} other {# sections left}} to complete your card",
+    "incompleteBody": "Still to do: {sections}. The more complete your card, the more searches find you."
   },
   "CardDocument": {
     "empty": "This student has no approved card blocks yet.",
@@ -352,7 +354,8 @@
     "close": "Close",
     "zoomIn": "Tap the card to zoom in",
     "zoomOut": "View full card",
-    "moreItems": "+{count} more"
+    "moreItems": "+{count} more",
+    "andMore": "and {count} more"
   },
   "CardBlocks": {
     "titles": {
@@ -366,7 +369,8 @@
       "interessi": "Interests",
       "pianoCarriera": "Career plan",
       "disponibilitaEPiano": "Availability & plans",
-      "profiloPersonale": "Personal profile"
+      "profiloPersonale": "Personal profile",
+      "esami": "Exams"
     },
     "approved": "Approved",
     "pendingConfirmation": "Pending confirmation",
@@ -417,7 +421,11 @@
       "reuploadTranscriptLabel": "Re-upload transcript",
       "uploadingTranscript": "Uploading...",
       "transcriptUploadError": "Upload error: {error}",
-      "reuploadTranscriptNote": "Re-uploading refreshes exams and GPA from scratch based on the new transcript."
+      "reuploadTranscriptNote": "Re-uploading refreshes exams and GPA from scratch based on the new transcript.",
+      "transcriptPurpose": "Your transcript shows what you studied: your exams tell readers which topics you know. Your GPA stays hidden unless you turn on the toggle below.",
+      "uploadPreviousTranscriptLabel": "Upload your Bachelor's transcript",
+      "reuploadPreviousTranscriptLabel": "Re-upload your Bachelor's transcript",
+      "previousTranscriptNote": "If you have just started a Master's, most of your exams are there. They stay separate from your current degree and do not change your GPA."
     },
     "disponibilita": {
       "cosaCercaLabel": "Looking for",
@@ -452,16 +460,13 @@
     },
     "competenze": {
       "testoLabel": "Skill (one line)",
-      "testoPlaceholder": "e.g. Financial statement analysis",
+      "testoPlaceholder": "e.g. Excel, Python, corporate valuation",
       "evidenzaLabel": "Where you gained it",
       "evidenzaPlaceholder": "e.g. Financial Accounting",
       "emptyView": "No skills yet.",
-      "academicSkills": "Academic skills ({count})",
       "hardSkillsCount": "Hard skills ({count})",
       "hardHeading": "Hard skills",
       "hardEmpty": "No hard skills yet.",
-      "academicHeading": "Academic skills",
-      "academicEmpty": "No academic skills yet.",
       "livelloLabels": {
         "beginner": "Beginner",
         "intermediate": "Intermediate",
@@ -469,9 +474,8 @@
       },
       "livelloLabel": "Level",
       "evidenzaHintHard": "From a project, an internship or hands-on practice — it's the proof of the skill",
-      "evidenzaHintAcademic": "In which exams or courses you gained it — it's the proof of the skill",
       "evidenzaPlaceholderHard": "e.g. consulting internship, personal project",
-      "evidenzaPlaceholderAcademic": "e.g. Financial Accounting course"
+      "intro": "What you studied comes from your transcript: here you only list what you can actually use."
     },
     "lingue": {
       "linguaLabel": "Language",
@@ -486,7 +490,15 @@
     "prose": {
       "notSpecified": "Not specified yet."
     },
-    "profiloPersonalePlaceholder": "How you present yourself beyond exams and experiences: real interests, habits, priorities..."
+    "profiloPersonalePlaceholder": "How you present yourself beyond exams and experiences: real interests, habits, priorities...",
+    "saveChanges": "Save changes",
+    "notPublishedEmpty": "Empty section: whoever reads your card sees nothing here. Open it and fill it in.",
+    "notPublishedDraft": "Not confirmed yet: this content does not reach associations and companies. Open it and press Confirm.",
+    "formazione": {
+      "cicloAttuale": "Current degree",
+      "cicloPrecedente": "Previous degree",
+      "seeAll": "All exams ({count})"
+    }
   },
   "JoinByCode": {
     "prompt": "Are you a member of an association? Enter your invite code",
@@ -541,8 +553,8 @@
   "AziendeStudent": {
     "tabRequests": "Requests",
     "tabChats": "Chat ({count})",
-    "noRequestsTitle": "No contact requests received.",
-    "noRequestsBody": "Companies will reach out once they find your profile interesting.",
+    "noRequestsTitle": "No contact requests yet.",
+    "noRequestsBody": "You do not apply here: companies do the searching, and you decide whether to reply.",
     "statusPending": "Pending",
     "statusAccepted": "Accepted",
     "statusRejected": "Rejected",
@@ -579,7 +591,11 @@
     "nameLabel": "Name",
     "emailLabel": "Email",
     "phoneLabel": "Phone",
-    "share": "Share"
+    "share": "Share",
+    "howItWorksTitle": "How it works",
+    "howItWorks1": "A company describes the profile it is looking for. MIRA reads student cards and suggests the closest candidates.",
+    "howItWorks2": "If they pick you, the request lands here. Meanwhile the company sees your card without your name or contacts.",
+    "howItWorks3": "The chat opens only if you accept. Name, email and phone are shared whenever you want, even later on."
   },
   "PublicHeader": {
     "associationsLink": "Associations",
@@ -1398,16 +1414,14 @@
     "avgSuffix": ", average {avg}/30",
     "hintBocconi": "You can download it from you@b: in the certificates/self-certifications section you'll find the self-certification with your exam list.",
     "hintGeneric": "You can usually find it on your university's website or student portal, under documents and certificates.",
-    "guideHeader": "Last step to unlock applications: your degree details. I already have your university and level from sign-up — check they're right and add your program and years, then press Confirm.\n\nIf you have your transcript handy you can upload it right here and I'll fill in your average and exams. It's not required: I'll offer it again later.",
-    "guideHeaderAfterUpload": "Done: I read {courses} exams, {credits} credits{avg}. Check the fields below — fix anything you want, then press Confirm.",
+    "guideHeader": "Last step to unlock applications: your degree details. I already took university and level from your sign-up, check they are right and add course and years, then press Confirm.\n\nIf you have your transcript at hand you can upload it here: it shows what you studied, and you share your GPA only if you want to. Not mandatory, I will offer it again later.",
+    "guideHeaderAfterUpload": "Done: I read {courses} exams, {credits} credits{avg}. Your exams go on your card and show what you studied. Check the fields below, fix anything you want, then press Confirm.",
     "guideHeaderUploaded": "Your transcript is already uploaded: check the fields below, fix anything you want, then press Confirm.",
     "guideEsperienze": "Now your experiences: this is the part that weighs most for whoever reads you. You have three routes — upload your CV and I'll prepare them in English, or download your LinkedIn profile as a PDF (I'll show you how, it takes 10 seconds), or add them by hand below. Personal projects, competitions, competitive sports, volunteering and student association activities all count — anything you think represents you. Write descriptions however they come: ✦ Improve with MIRA rewrites them in CV-style English.",
     "guideEsperienzeManual": "Alright, let's build them by hand: add your experiences below. Personal projects, competitions, competitive sports, volunteering and student association activities all count. Write descriptions however they come — ✦ Improve with MIRA rewrites them in CV-style English. Then press Confirm.",
     "guideEsperienzeAfterCV": "I found {count, plural, =0 {your experiences} one {1 experience} other {# experiences}} in your CV and prepared them below in English. Review them, fix them or add more — including the ones you'd never put on a CV (projects, sports, volunteering, association activities). Then press Confirm.",
     "guideDisponibilitaIntro": "Hi {name}! I'm MIRA: let's build your MIRA Card together — you need it to apply to associations, and it's the profile companies will use to find and contact you. It will be written in English, I'll take care of the translation.\n\nLet's start with what actually matters: what you're looking for. Use the toggle to tell me if you're searching or open to opportunities, and fill in the fields — what kind of experience, in which field, from when, for how long and where. Below, tell me your plans for the coming months/years (exchange, graduation, Master's, work, certifications...) and whether you already have a clear direction or are still exploring: that's perfectly fine too. Write the way you speak, ✦ Improve with MIRA turns it into proper English. Then press Confirm.",
-    "guideCompetenzeProposed": "From your exams I've already proposed some academic skills below — confirm, fix or remove them. Then add your hard skills: tools, software, methodologies or practical abilities you can really use (if I found any in your CV, they're already in). When everything looks right, press Confirm.",
-    "guideCompetenzeNoTranscript": "Now your skills. If you upload your transcript I'll propose your academic skills myself, starting from your exams and grades — it takes seconds. {hint}\n\nOtherwise just type them below: academic skills are the areas you've studied in theory (e.g. financial statement analysis, accounting, statistics, marketing), hard skills are tools and practical abilities you can use (e.g. Excel, Python).",
-    "guideCompetenzeManual": "Now your skills. Academic: what you've studied and acquired in theory (e.g. financial statement analysis, accounting, statistics, marketing). Hard: tools and practical abilities you can use (e.g. Excel, Python). Add them below in English — that's the card's format. Then press Confirm.",
+    "guideCompetenzeNoTranscript": "One thing first: upload your transcript and your exams go on your card, telling on their own what you studied. That is how a company looking for specific theoretical grounding finds you, without you listing everything. {hint}\n\nBelow goes what you can use instead: software and tools (Excel, Python, SQL), methods you have actually applied (company valuation, financial statement analysis), techniques picked up on the job. For each one tell me how well you know it and where you learned it. Then press Confirm.",
     "guideLingue": "Which languages do you know? Add them below with level and any certification (e.g. English — C1 — IELTS 7.5). Then press Confirm.",
     "guideLingueWithCV": "I've already added the languages found in your CV below: check levels and certifications, add any missing ones, then press Confirm.",
     "guideProfilo": "Now the part that's usually missing from CVs: how you present yourself beyond exams and experiences. No hobby lists, no interview-style lines — tell me something authentic:\n— What do you follow on your own, outside your course syllabi?\n— Outside your studies, what do you do consistently?\n— How would people who know you well describe you?\n— What can't you stand at work or in your studies, or what would you never give up?\n— What's the most \"you\" thing you've done in the last year?\nWrite the way you speak, Italian is fine too: ✦ Improve with MIRA turns it into a first-person text in English. Then press Confirm.",
@@ -1416,12 +1430,17 @@
     "gateWarning": "NOTE: The more complete your profile, the more you attract companies' attention!",
     "gateContinue": "Complete now (5 min)",
     "gateExit": "Exit and apply",
-    "transcriptPromptTitle": "Want to enrich your card with exams and average?",
-    "transcriptPromptBody": "Upload your transcript and I'll do three things at once: add your average and credits to the card, attach your exam list, and propose your academic skills based on your grades — you confirm them afterwards. {hint}",
+    "transcriptPromptTitle": "Want to show what you studied?",
+    "transcriptPromptBody": "Upload your transcript and your exams go on your card: they prove which topics you know, and that is what a company checks when it needs specific theoretical grounding. Your GPA stays yours, shared only if you turn on the toggle. {hint}",
     "preparingLabel": "Preparing your skills...",
     "finalTitle": "You've completed your MIRA Card!",
-    "finalBody": "You'll find it in the Profile section, and you can edit it anytime. Good luck with your applications.",
-    "redirecting": "Taking you to your Profile..."
+    "finalBody": "You will find it in the Profile section and you can edit it whenever you want.",
+    "redirecting": "Taking you to your Profile...",
+    "guideCompetenze": "What you studied comes from your transcript, no need to rewrite it here.\n\nThis section is for what you can use: software and tools (Excel, Python, SQL, Bloomberg, Figma), methods you have actually applied (company valuation, financial statement analysis, A/B testing), techniques picked up on the job. For each one tell me how well you know it and where you learned it. Companies search using exactly these words. Then press Confirm.",
+    "finalNextTitle": "What happens now",
+    "finalNext1": "You can apply to associations at your university: instead of a CV, they read your MIRA Card.",
+    "finalNext2": "Companies search on MIRA by describing the profile they want. If your card matches they find you, but they see an anonymous profile: your name and contacts are yours to share, only if you accept the request.",
+    "finalNext3": "The more complete your card, the more searches find you. Update it when you pass an exam or start something new."
   },
   "AdminSeededAssociations": {
     "eyebrow": "Seeded pages",

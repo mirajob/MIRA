@@ -59,16 +59,18 @@ export function CardBlockHeader({
         {localStatus === "draft" && (
           <span className="text-xs px-2 py-0.5 rounded bg-warning-bg text-warning font-medium">{t("pendingConfirmation")}</span>
         )}
-        {/* Conferma = salva + approva. Visibile anche su blocco ancora "empty" quando c'è un
-            editor con salvataggio (onBeforeApprove): nel flusso form-first lo studente compila
-            i campi e preme direttamente Conferma, senza un passaggio "Salva" obbligato. */}
-        {(localStatus === "draft" || (localStatus === "empty" && onBeforeApprove)) && (
+        {/* Un solo pulsante per blocco (rework 2026-07-31): il "Salva" separato dentro i
+            blocchi è stato tolto perché due pulsanti facevano credere che Conferma non
+            salvasse. Conferma = salva + approva; su un blocco già confermato la stessa
+            azione resta l'unico modo per salvare le modifiche successive, quindi cambia
+            solo etichetta e non fa retrocedere lo stato. */}
+        {onBeforeApprove && (
           <button
             onClick={handleApprove}
             disabled={pending}
             className="text-xs font-medium text-white bg-petrol rounded-md px-3 py-1.5 hover:bg-petrol-700 transition-colors disabled:opacity-50"
           >
-            {t("confirm")}
+            {localStatus === "approved" ? t("saveChanges") : t("confirm")}
           </button>
         )}
       </div>

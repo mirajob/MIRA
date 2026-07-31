@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { getCompetenzaCategoria } from "@mira/types";
+import { isLegacyAcademic, getCicloEsame } from "@mira/types";
 import { disponibilitaPills } from "@/components/card/disponibilita-block";
 import type {
   HeaderProseContent,
@@ -135,10 +135,11 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
   const dispMotivo = dispNotActive ? props.disponibilita?.data.periodo ?? null : null;
   const esperienze = props.esperienze?.data.items ?? [];
   const competenze = props.competenze?.data;
-  const hardItems = competenze?.items.filter((it) => getCompetenzaCategoria(it) === "hard") ?? [];
-  const academicItems = competenze?.items.filter((it) => getCompetenzaCategoria(it) === "academic") ?? [];
-  // Le soft skill non compaiono più nella MIRA Card (rework 2026-07): i dati legacy
-  // restano nel DB ma non vengono renderizzati.
+  // Solo hard skill (rework 2026-07-31): le academic sono state cancellate dalle card e la
+  // parte teorica la mostra la sezione Esami. Le soft skill erano già uscite a luglio.
+  const hardItems = competenze?.items.filter((it) => !isLegacyAcademic(it)) ?? [];
+  const esamiAttuali = formazioneItems.filter((it) => getCicloEsame(it) === "attuale");
+  const esamiPrecedenti = formazioneItems.filter((it) => getCicloEsame(it) === "precedente");
   const lingue = props.lingue?.data.items ?? [];
   const autodescrizione = props.autodescrizione?.data.testo ?? null;
   const interessi = props.interessi?.data.testo ?? null;
@@ -148,24 +149,49 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
   const visibleEsperienze = esperienze.slice(0, MAX_ESPERIENZE);
   const hiddenEsperienze = esperienze.length - visibleEsperienze.length;
 
+  // In anteprima solo i nomi, il corso attuale per primo: voti e CFU stanno nell'overlay,
+  // dove l'interruttore di visibilità decide se mostrarli.
+  const MAX_ESAMI = 12;
+  const visibleEsami = [...esamiAttuali, ...esamiPrecedenti].slice(0, MAX_ESAMI);
+  const hiddenEsami = formazioneItems.length - visibleEsami.length;
+
+  /** Un gruppo di esami nell'overlay. I voti seguono l'interruttore di visibilità della media. */
+  function examRows(items: FormazioneItem[]) {
+    return (
+      <div className="space-y-1.5">
+        {items.map((it) => (
+          <div key={it.id} className="flex items-center justify-between gap-3 text-body-sm">
+            <span className="text-ink">{it.esame}</span>
+            {showMedia && (
+              <span className="text-ink-secondary whitespace-nowrap">
+                {it.voto ?? "—"}
+                {it.cfu != null && <span className="text-xs text-ink-tertiary">{t("header.cfuSuffix", { cfu: it.cfu })}</span>}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   function openEsami() {
     setOverlay({
       title: t("header.esami", { count: formazioneItems.length }),
-      content: (
-        <div className="space-y-1.5">
-          {formazioneItems.map((it) => (
-            <div key={it.id} className="flex items-center justify-between gap-3 text-body-sm">
-              <span className="text-ink">{it.esame}</span>
-              {showMedia && (
-                <span className="text-ink-secondary whitespace-nowrap">
-                  {it.voto ?? "—"}
-                  {it.cfu != null && <span className="text-xs text-ink-tertiary">{t("header.cfuSuffix", { cfu: it.cfu })}</span>}
-                </span>
-              )}
+      content:
+        esamiPrecedenti.length === 0 ? (
+          examRows(esamiAttuali)
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <SectionTitle>{t("formazione.cicloAttuale")}</SectionTitle>
+              {examRows(esamiAttuali)}
             </div>
-          ))}
-        </div>
-      ),
+            <div>
+              <SectionTitle>{t("formazione.cicloPrecedente")}</SectionTitle>
+              {examRows(esamiPrecedenti)}
+            </div>
+          </div>
+        ),
     });
   }
 
@@ -225,22 +251,6 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                 </span>
               )}
               {it.evidenza_ref && <span className="text-xs text-ink-tertiary">· {it.evidenza_ref}</span>}
-            </div>
-          ))}
-        </div>
-      ),
-    });
-  }
-
-  function openAcademic() {
-    setOverlay({
-      title: t("competenze.academicHeading"),
-      content: (
-        <div className="space-y-1.5">
-          {academicItems.map((it) => (
-            <div key={it.id} className="text-body-sm text-ink">
-              {it.testo}
-              {it.evidenza_ref && <span className="text-xs text-ink-tertiary"> · {it.evidenza_ref}</span>}
             </div>
           ))}
         </div>
@@ -315,21 +325,13 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                           ) : (
                             <span className="italic text-ink-tertiary text-[11px]">{t("header.mediaNotShared")}</span>
                           ))}
-                        {formazioneItems.length > 0 && (
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); openEsami(); }}
-                            className="text-petrol hover:text-petrol-700 transition-colors"
-                          >
-                            {t("header.esami", { count: formazioneItems.length })} ▸
-                          </button>
-                        )}
                       </div>
                       {fp && (fp.corso || fp.universita) && (
                         <p className="mt-1 text-[11px] text-ink-tertiary">
                           {t("header.previousDegreeSummaryPrefix")} {fp.corso ?? "—"}
                           {fp.universita ? ` — ${fp.universita}` : ""}
                           {fp.voto_laurea ? ` (${fp.voto_laurea})` : ""}
+                          {showMedia && fp.media_voti != null ? ` · ${Number(fp.media_voti).toFixed(1)}/30` : ""}
                         </p>
                       )}
                     </>
@@ -408,32 +410,39 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                     )}
                   </div>
                 )}
+
+                {/* Esami: dal rework 2026-07-31 sono una sezione vera della card, non più un
+                    dettaglio nascosto sotto l'Header. Sono la prova di cosa lo studente ha
+                    studiato davvero, al posto delle vecchie "competenze accademiche". */}
+                {formazioneItems.length > 0 && (
+                  <div>
+                    <SectionTitle>{t("titles.esami")}</SectionTitle>
+                    <p className="text-[12px] leading-relaxed text-ink">
+                      {visibleEsami.map((it) => it.esame).join(" · ")}
+                      {hiddenEsami > 0 && <span className="text-ink-tertiary"> {d("andMore", { count: hiddenEsami })}</span>}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); openEsami(); }}
+                      className="mt-0.5 text-[11px] text-petrol hover:text-petrol-700 transition-colors"
+                    >
+                      {t("formazione.seeAll", { count: formazioneItems.length })} ▸
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="min-w-0 space-y-5 border-l border-border pl-6">
-                {(hardItems.length > 0 || academicItems.length > 0) && (
+                {hardItems.length > 0 && (
                   <div>
                     <SectionTitle>{t("titles.competenze")}</SectionTitle>
-                    <div className="space-y-1.5">
-                      {hardItems.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); openHard(); }}
-                          className="block text-[12px] text-petrol hover:text-petrol-700 transition-colors"
-                        >
-                          {t("competenze.hardSkillsCount", { count: hardItems.length })} ▸
-                        </button>
-                      )}
-                      {academicItems.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); openAcademic(); }}
-                          className="block text-[12px] text-petrol hover:text-petrol-700 transition-colors"
-                        >
-                          {t("competenze.academicSkills", { count: academicItems.length })} ▸
-                        </button>
-                      )}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); openHard(); }}
+                      className="block text-[12px] text-petrol hover:text-petrol-700 transition-colors"
+                    >
+                      {t("competenze.hardSkillsCount", { count: hardItems.length })} ▸
+                    </button>
                   </div>
                 )}
 

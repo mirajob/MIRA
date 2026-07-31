@@ -32,12 +32,10 @@ export function DisponibilitaEPianoBlock({
   onApproved?: () => void;
 }) {
   const t = useTranslations("CardBlocks");
-  const c = useTranslations("Common");
   const [form, setForm] = useState(disponibilita);
   const [pianoTesto, setPianoTesto] = useState(piano.testo ?? "");
   const [pianoStato, setPianoStato] = useState<PianoCarrieraStato>(piano.stato ?? "esplorazione");
   const [dirty, setDirty] = useState(false);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!dirty) setForm(disponibilita);
@@ -54,7 +52,6 @@ export function DisponibilitaEPianoBlock({
   }
 
   async function handleSave() {
-    setSaving(true);
     // Se non attiva, i dettagli della ricerca non hanno senso e vengono azzerati —
     // mai lasciare tag residui tipo "not looking" nei campi testuali.
     const attiva = form.attiva !== false;
@@ -63,7 +60,6 @@ export function DisponibilitaEPianoBlock({
       : { attiva: false, cosa_cerca: null, ambito: null, periodo: form.periodo ?? null, durata: null, dove: null };
     await updateCardBlockProseContent("disponibilita", cleaned);
     await updateCardBlockProseContent("piano_carriera", { stato: pianoStato, testo: pianoTesto });
-    setSaving(false);
     setDirty(false);
   }
 
@@ -155,15 +151,6 @@ export function DisponibilitaEPianoBlock({
           </div>
         </div>
 
-        {dirty && (
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="text-body-sm font-medium text-white bg-petrol rounded-md px-4 py-2 hover:bg-petrol-700 transition-colors disabled:opacity-50"
-          >
-            {saving ? c("saving") : c("save")}
-          </button>
-        )}
       </div>
     </div>
   );

@@ -148,9 +148,20 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
       {activeTab === "requests" && (
         <div className="max-w-3xl mx-auto space-y-3">
           {requests.length === 0 ? (
-            <div className="rounded-lg border border-border bg-white p-8 text-center">
-              <p className="text-body text-ink-secondary">{t("noRequestsTitle")}</p>
-              <p className="text-body-sm text-ink-tertiary mt-1">{t("noRequestsBody")}</p>
+            /* Lo stato vuoto è la prima cosa che vede chi ha appena finito la card: invece di
+               dire solo "non c'è niente", spiega come funziona la parte aziende. */
+            <div className="rounded-lg border border-border bg-white p-6">
+              <p className="text-body font-medium text-ink">{t("noRequestsTitle")}</p>
+              <p className="text-body-sm text-ink-secondary mt-1">{t("noRequestsBody")}</p>
+              <div className="mt-4 border-t border-border pt-4 space-y-2.5">
+                <p className="text-eyebrow text-navy/60 uppercase">{t("howItWorksTitle")}</p>
+                {["howItWorks1", "howItWorks2", "howItWorks3"].map((key, i) => (
+                  <div key={key} className="flex gap-2.5">
+                    <span className="text-body-sm text-petrol font-semibold tabular-nums shrink-0">{i + 1}</span>
+                    <p className="text-body-sm text-ink-secondary">{t(key)}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : requests.map((req: any) => {
             const company = req.company_profiles;

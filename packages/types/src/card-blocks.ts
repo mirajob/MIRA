@@ -21,6 +21,8 @@ export interface FormazionePrecedente {
   corso: string | null;
   voto_laurea: string | null;
   tema_tesi: string | null;
+  /** Media del corso precedente, scritta solo caricandone il libretto. */
+  media_voti?: number | null;
 }
 
 export interface HeaderProseContent {
@@ -75,6 +77,9 @@ export interface EsperienzeProseContent {
   items: EsperienzaItem[];
 }
 
+/** Da quale libretto arriva un esame. Assente = corso attuale (righe pre 2026-07-31). */
+export type CicloEsame = "attuale" | "precedente";
+
 export interface FormazioneItem {
   id: string;
   esame: string;
@@ -84,31 +89,41 @@ export interface FormazioneItem {
   semestre: string | null;
   verified: boolean;
   origin: ItemOrigin;
+  /** Chi è appena passato alla magistrale può caricare anche il libretto della triennale:
+   * i due elenchi convivono nello stesso blocco, distinti da qui. */
+  ciclo?: CicloEsame;
+}
+
+export function getCicloEsame(item: FormazioneItem): CicloEsame {
+  return item.ciclo === "precedente" ? "precedente" : "attuale";
 }
 
 export interface FormazioneProseContent {
   items: FormazioneItem[];
 }
 
-export type CompetenzaCategoria = "hard" | "academic";
 export type HardSkillLivello = "beginner" | "intermediate" | "advanced";
 
+/**
+ * Una competenza della card. Dal 2026-07-31 esistono SOLO hard skill: cosa lo studente sa
+ * usare (strumenti, software, metodi applicati). La parte teorica non si dichiara più qui,
+ * la certifica l'elenco esami del blocco `formazione`.
+ */
 export interface CompetenzaItem {
   id: string;
   testo: string;
-  /** Sostituisce `tipo` (deprecato) — "hard" = strumenti/tecnologie, "academic" = da pattern sui voti. */
-  categoria?: CompetenzaCategoria;
-  /** Solo per le hard skill; null per le academic. */
   livello?: HardSkillLivello | null;
   evidenza_ref: string | null;
   verified: boolean;
   origin: ItemOrigin;
-  /** @deprecated pre-redesign — righe vecchie hanno questo invece di `categoria`, mai scritto da codice nuovo. */
+  /** @deprecated righe non ancora ripulite dalla migrazione 20260731000004 — vedi isLegacyAcademic(). */
+  categoria?: string;
+  /** @deprecated pre-redesign, sostituito da `categoria` e a sua volta abbandonato. */
   tipo?: "teorica" | "applicata" | null;
 }
 
 export interface CompetenzeProseContent {
-  /** Solo hard + academic — le soft skill non fanno più parte della MIRA Card (rework 2026-07). */
+  /** Solo hard skill: niente academic (rework 2026-07-31), niente soft (rework 2026-07). */
   items: CompetenzaItem[];
   /** @deprecated card rework 2026-07: il quiz soft skill è stato rimosso; le soft skill non
    * compaiono più nella card. Righe legacy possono ancora avere valori — mai scritto/mostrato da codice nuovo. */
@@ -117,10 +132,13 @@ export interface CompetenzeProseContent {
   soft_skills_testo?: string | null;
 }
 
-/** Righe pre-redesign hanno `tipo` ma non `categoria` — normalizza in lettura, nessuna migrazione DB necessaria (prose_content è jsonb). */
-export function getCompetenzaCategoria(item: CompetenzaItem): CompetenzaCategoria {
-  if (item.categoria) return item.categoria;
-  return item.tipo === "teorica" ? "academic" : "hard";
+/**
+ * Vecchia "competenza accademica", cancellata dalle card dalla migrazione 20260731000004.
+ * Serve solo come rete di sicurezza in lettura: se il deploy precede l'esecuzione della
+ * migrazione, o se una riga sfugge, non deve ricomparire tra le hard skill.
+ */
+export function isLegacyAcademic(item: CompetenzaItem): boolean {
+  return item.categoria === "academic" || item.tipo === "teorica";
 }
 
 export interface LinguaItem {

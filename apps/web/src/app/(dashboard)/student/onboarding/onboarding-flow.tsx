@@ -10,7 +10,6 @@ import {
   startFaseBFlow,
   completeGateFlow,
   forceCompleteOnboarding,
-  proposeAcademicSkillsFromTranscript,
 } from "@/lib/actions/onboarding-flow";
 import type { OnboardingFlowState, OnboardingFlowPhase, OnboardingBlocksState } from "@/lib/actions/onboarding-flow";
 import { uploadTranscript } from "@/lib/actions/transcript-upload";
@@ -23,7 +22,6 @@ import { DisponibilitaEPianoBlock } from "@/components/card/disponibilita-block"
 import { CompetenzeBlock } from "@/components/card/competenze-block";
 import { LingueBlock } from "@/components/card/lingue-block";
 import { ProseBlock } from "@/components/card/prose-block";
-import { getCompetenzaCategoria } from "@mira/types";
 import type { CardBlockStatus } from "@mira/types";
 
 // I 6 blocchi visibili della card, nell'ordine del flusso. Due sono "virtuali" rispetto
@@ -179,13 +177,7 @@ export function OnboardingFlow({ userName }: { userName: string }) {
   }
 
   useEffect(() => {
-    (async () => {
-      const fresh = await refresh();
-      // Card già completa (es. rientro dopo la chiusura): mostra il finale e torna al Profilo.
-      // Se il libretto manca ancora, la chiusura si ferma e lo propone: è l'ultimo momento
-      // utile per prenderlo, e senza di lui non possiamo proporre le academic skill.
-      if (fresh?.phase === "chiusura" && fresh.transcriptUploaded) finishAndRedirect(2500);
-    })();
+    refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -212,8 +204,9 @@ export function OnboardingFlow({ userName }: { userName: string }) {
       await refresh();
       return;
     }
-    const fresh = await refresh();
-    if (fresh?.phase === "chiusura" && fresh.transcriptUploaded) finishAndRedirect(3000);
+    // Niente redirect automatico alla chiusura: la schermata finale spiega cosa succede
+    // adesso, e va letta. Al Profilo ci si va con il pulsante.
+    await refresh();
   }
 
   async function handleTranscriptFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -232,16 +225,6 @@ export function OnboardingFlow({ userName }: { userName: string }) {
         credits: result.parsed.total_credits,
         avg: result.parsed.weighted_average,
       });
-      // Libretto caricato oltre l'Header (gate, Competenze, chiusura): è arrivato proprio
-      // per questo — proporre le academic skill dai voti. La proposta entra come bozza e
-      // riporta il flusso sul blocco Competenze, dove lo studente la conferma.
-      if (flow?.phase !== "header") {
-        try {
-          await proposeAcademicSkillsFromTranscript();
-        } catch (err) {
-          console.error("[MIRA] proposeAcademicSkillsFromTranscript failed:", err);
-        }
-      }
       await refresh();
     }
     setUploading(false);
@@ -342,13 +325,13 @@ export function OnboardingFlow({ userName }: { userName: string }) {
         return t("guideHeader");
       }
       case "competenze": {
-        const hasAcademic = blocks.competenze.data.items.some((i) => getCompetenzaCategoria(i) === "academic");
-        if (hasAcademic) return t("guideCompetenzeProposed");
-        // Senza libretto le academic skill non le proponiamo: o lo carica ora, o le scrive lui.
+        // La parte teorica la coprono gli esami del libretto: qui si chiede solo cosa lo
+        // studente sa usare. Se il libretto manca, questo resta il punto in cui proporlo,
+        // perché è dove la differenza tra "cosa ho studiato" e "cosa so fare" si spiega da sé.
         if (!flow.transcriptUploaded && !skippedTranscript) {
           return t("guideCompetenzeNoTranscript", { hint: flow.isBocconi ? t("hintBocconi") : t("hintGeneric") });
         }
-        return t("guideCompetenzeManual");
+        return t("guideCompetenze");
       }
       case "lingue":
         return blocks.lingue.data.items.length > 0 ? t("guideLingueWithCV") : t("guideLingue");
@@ -408,8 +391,8 @@ export function OnboardingFlow({ userName }: { userName: string }) {
       );
     }
 
-    // Competenze: è il punto in cui il libretto serve davvero (proposta academic skill
-    // dai voti), quindi è qui che lo chiediamo — non più come primissima schermata.
+    // Competenze: è qui che si spiega la differenza tra cosa hai studiato (gli esami del
+    // libretto) e cosa sai usare (queste), quindi è qui che il libretto si chiede.
     if (phase === "competenze" && !flow.transcriptUploaded && !skippedTranscript) {
       return (
         <>
@@ -605,23 +588,31 @@ export function OnboardingFlow({ userName }: { userName: string }) {
           )}
 
 
-          {/* Chiusura. Senza libretto non si reindirizza da soli: si lascia la scelta
-              esplicita, così la proposta qui sopra ha il tempo di essere letta. */}
+          {/* Chiusura: prima si spiega cosa succede adesso, poi si va al Profilo. Il redirect
+              automatico è stato tolto — chi finiva la card veniva spostato senza sapere a
+              cosa servisse quello che aveva appena costruito. */}
           {(phase === "chiusura" || complete) && (
             <div className="rounded-lg border border-border bg-white p-5">
               <h2 className="font-display text-h3 text-navy">{t("finalTitle")}</h2>
               <p className="mt-1 text-body text-ink-secondary">{t("finalBody")}</p>
-              {flow && !flow.transcriptUploaded && !complete ? (
-                <button
-                  onClick={() => finishAndRedirect(0)}
-                  disabled={uploading}
-                  className="mt-4 text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
-                >
-                  {t("goToProfile")}
-                </button>
-              ) : (
-                <p className="mt-3 text-body-sm text-success font-medium">{t("redirecting")}</p>
-              )}
+
+              <div className="mt-4 border-t border-border pt-4 space-y-3">
+                <p className="text-eyebrow text-navy/60 uppercase">{t("finalNextTitle")}</p>
+                {["finalNext1", "finalNext2", "finalNext3"].map((key, i) => (
+                  <div key={key} className="flex gap-3">
+                    <span className="text-body-sm font-semibold text-petrol tabular-nums shrink-0">{i + 1}</span>
+                    <p className="text-body-sm text-ink-secondary">{t(key)}</p>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => finishAndRedirect(0)}
+                disabled={uploading || complete}
+                className="mt-4 text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
+              >
+                {complete ? t("redirecting") : t("goToProfile")}
+              </button>
             </div>
           )}
 

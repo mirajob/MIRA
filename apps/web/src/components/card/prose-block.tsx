@@ -21,12 +21,9 @@ interface ProseBlockProps {
 }
 
 export function ProseBlock({ blockType, title, testo, status, serif, stato, intro, placeholder, onApproved }: ProseBlockProps) {
-  const t = useTranslations("CardBlocks");
-  const c = useTranslations("Common");
   const [text, setText] = useState(testo ?? "");
   const [statoValue, setStatoValue] = useState<PianoCarrieraStato | undefined>(stato ?? "esplorazione");
   const [dirty, setDirty] = useState(false);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!dirty) setText(testo ?? "");
@@ -38,10 +35,8 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
   }, [stato]);
 
   async function handleSave() {
-    setSaving(true);
     const payload = blockType === "piano_carriera" ? { stato: statoValue, testo: text } : { testo: text };
     await updateCardBlockProseContent(blockType, payload);
-    setSaving(false);
     setDirty(false);
   }
 
@@ -73,15 +68,6 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
               setDirty(true);
             }}
           />
-        )}
-        {dirty && (
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="text-body-sm font-medium text-white bg-petrol rounded-md px-4 py-2 hover:bg-petrol-700 transition-colors disabled:opacity-50"
-          >
-            {saving ? c("saving") : c("save")}
-          </button>
         )}
       </div>
     </div>

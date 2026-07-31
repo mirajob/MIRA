@@ -45,10 +45,8 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
   itemExtra,
 }: ListBlockProps<T>) {
   const t = useTranslations("CardBlocks");
-  const c = useTranslations("Common");
   const [items, setItems] = useState<T[]>(initialItems);
   const [dirty, setDirty] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
@@ -74,9 +72,7 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
   }
 
   async function handleSave() {
-    setSaving(true);
     await updateCardBlockProseContent(blockType as Exclude<CardBlockType, "formazione">, { items });
-    setSaving(false);
     setDirty(false);
   }
 
@@ -157,23 +153,12 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
           </button>
         )}
         {!readOnly && (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={addItem}
-              className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
-            >
-              {t("addItem")}
-            </button>
-            {dirty && (
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="text-body-sm font-medium text-white bg-petrol rounded-md px-4 py-2 hover:bg-petrol-700 transition-colors disabled:opacity-50"
-              >
-                {saving ? c("saving") : c("save")}
-              </button>
-            )}
-          </div>
+          <button
+            onClick={addItem}
+            className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
+          >
+            {t("addItem")}
+          </button>
         )}
       </div>
     </div>

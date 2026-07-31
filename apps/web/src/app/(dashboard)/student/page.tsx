@@ -85,10 +85,19 @@ export default async function StudentHomePage() {
   const interessi = blocks.get("interessi");
   const pianoCarriera = blocks.get("piano_carriera");
 
-  // Fase B del rework: competenze, lingue, profilo personale (riga autodescrizione).
-  // interessi è legacy e piano_carriera fa ormai parte della Fase A.
-  const faseBBlocks = [competenze, lingue, autodescrizione];
-  const faseBIncomplete = faseBBlocks.some((b) => b?.status !== "approved");
+  const cardT = await getTranslations("CardBlocks");
+
+  // Cosa manca davvero, sezione per sezione: prima c'era un solo avviso generico che
+  // nominava sempre le stesse tre sezioni, anche quando il buco era altrove.
+  const missingSections: string[] = [];
+  if (header?.status !== "approved") missingSections.push(cardT("titles.header"));
+  if (!(disponibilita?.status === "approved" && pianoCarriera?.status === "approved")) {
+    missingSections.push(cardT("titles.disponibilitaEPiano"));
+  }
+  if (esperienze?.status !== "approved") missingSections.push(cardT("titles.esperienze"));
+  if (competenze?.status !== "approved") missingSections.push(cardT("titles.competenze"));
+  if (lingue?.status !== "approved") missingSections.push(cardT("titles.lingue"));
+  if (autodescrizione?.status !== "approved") missingSections.push(cardT("titles.profiloPersonale"));
 
   const esperienzeItems = (esperienze?.prose_content as EsperienzeProseContent | undefined)?.items ?? [];
   const competenzeData = (competenze?.prose_content as CompetenzeProseContent | undefined) ?? { items: [], soft_skills: [] };
@@ -98,18 +107,25 @@ export default async function StudentHomePage() {
   const pianoData = pianoCarriera?.prose_content as PianoCarrieraProseContent | undefined;
 
   const t = await getTranslations("StudentHome");
-  const cardT = await getTranslations("CardBlocks");
 
   return (
     <div className="mx-auto max-w-4xl px-0 py-0 sm:px-6 sm:py-6 space-y-5">
-      <h1 className="font-display text-h2 text-navy">{t("greeting")}{name ? `, ${name}` : ""}</h1>
+      <div>
+        <h1 className="font-display text-h2 text-navy">{t("greeting")}{name ? `, ${name}` : ""}</h1>
+        <p className="mt-1 text-body-sm text-ink-secondary">{t("cardPurpose")}</p>
+      </div>
 
-      {faseBIncomplete && (
+      {missingSections.length > 0 && (
         <Link
           href="/student/onboarding"
-          className="block rounded-lg border border-petrol/30 bg-petrol-50 px-4 py-3 text-body-sm text-petrol-700 hover:bg-petrol-100 transition-colors"
+          className="block rounded-lg border border-petrol/30 bg-petrol-50 px-4 py-3 hover:bg-petrol-100 transition-colors"
         >
-          {t("completeCardCta")}
+          <p className="text-body-sm font-medium text-petrol-700">
+            {t("incompleteTitle", { count: missingSections.length })}
+          </p>
+          <p className="mt-0.5 text-body-sm text-petrol-700/80">
+            {t("incompleteBody", { sections: missingSections.join(", ") })}
+          </p>
         </Link>
       )}
 
@@ -136,6 +152,7 @@ export default async function StudentHomePage() {
           <>
             {header && (
               <EditableSection
+                status={header.status}
                 view={
                   <HeaderView
                     data={header.prose_content as HeaderProseContent}
@@ -148,12 +165,20 @@ export default async function StudentHomePage() {
                     visibility={header.visibility as HeaderVisibility}
                     status={header.status}
                     formazioneItems={(formazione?.prose_content as FormazioneProseContent | undefined)?.items ?? []}
+                    allowPreviousDegree
                   />
                 }
               />
             )}
             {disponibilita && (
               <EditableSection
+                status={
+                  disponibilita.status === "approved" && pianoCarriera?.status === "approved"
+                    ? "approved"
+                    : disponibilita.status === "empty" && (pianoCarriera?.status ?? "empty") === "empty"
+                      ? "empty"
+                      : "draft"
+                }
                 view={
                   <DisponibilitaEPianoView
                     disponibilita={disponibilita.prose_content as DisponibilitaProseContent}
@@ -181,6 +206,7 @@ export default async function StudentHomePage() {
           <>
             {autodescrizione && (
               <EditableSection
+                status={autodescrizione.status}
                 view={<ProseView title={cardT("titles.profiloPersonale")} testo={autodescrizioneTesto} serif />}
                 edit={
                   <ProseBlock
@@ -197,6 +223,7 @@ export default async function StudentHomePage() {
             )}
             {esperienze && (
               <EditableSection
+                status={esperienze.status}
                 view={<EsperienzeView items={esperienzeItems} />}
                 edit={<EsperienzeBlock items={esperienzeItems} status={esperienze.status} />}
               />
@@ -207,12 +234,14 @@ export default async function StudentHomePage() {
           <>
             {competenze && (
               <EditableSection
+                status={competenze.status}
                 view={<CompetenzeView data={competenzeData} />}
                 edit={<CompetenzeBlock data={competenzeData} status={competenze.status} />}
               />
             )}
             {lingue && (
               <EditableSection
+                status={lingue.status}
                 view={
                   <div className="p-4">
                     <p className="text-eyebrow text-navy/60 uppercase mb-2">{cardT("titles.lingue")}</p>

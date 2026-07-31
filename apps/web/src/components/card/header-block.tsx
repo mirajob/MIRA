@@ -6,7 +6,8 @@ import { useTranslations } from "next-intl";
 import { updateCardBlockProseContent, updateHeaderVisibility } from "@/lib/actions/card-blocks";
 import { uploadTranscript } from "@/lib/actions/transcript-upload";
 import { CardBlockHeader } from "./card-block-header";
-import type { CardBlockStatus, FormazioneItem, HeaderProseContent, HeaderVisibility } from "@mira/types";
+import { getCicloEsame } from "@mira/types";
+import type { CardBlockStatus, CicloEsame, FormazioneItem, HeaderProseContent, HeaderVisibility } from "@mira/types";
 
 const LEVEL_KEYS = ["triennale", "magistrale", "ciclo_unico", "phd"] as const;
 
@@ -15,6 +16,7 @@ export function HeaderBlock({
   visibility,
   status,
   formazioneItems,
+  allowPreviousDegree = false,
   onApproved,
 }: {
   proseContent: HeaderProseContent;
@@ -22,21 +24,26 @@ export function HeaderBlock({
   status: CardBlockStatus;
   /** Esami dal libretto, mostrati come sezione espandibile qui — non un blocco a sé (spec: un solo Conferma per Header+Formazione). */
   formazioneItems: FormazioneItem[];
+  /** Il libretto del corso precedente si carica solo dal Profilo, a card già costruita:
+   * dentro l'onboarding sarebbe una richiesta in più proprio dove si abbandona. */
+  allowPreviousDegree?: boolean;
   onApproved?: () => void;
 }) {
   const t = useTranslations("CardBlocks");
-  const c = useTranslations("Common");
   const router = useRouter();
   const [form, setForm] = useState(proseContent);
   const [vis, setVis] = useState<HeaderVisibility>(
     visibility?.media_voti ? visibility : { media_voti: { associazioni: false, aziende: false } }
   );
   const [dirty, setDirty] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [esamiExpanded, setEsamiExpanded] = useState(false);
-  const [transcriptUploading, setTranscriptUploading] = useState(false);
+  const [transcriptUploading, setTranscriptUploading] = useState<CicloEsame | null>(null);
   const [transcriptError, setTranscriptError] = useState<string | null>(null);
   const transcriptFileRef = useRef<HTMLInputElement>(null);
+  const previousFileRef = useRef<HTMLInputElement>(null);
+
+  const esamiAttuali = formazioneItems.filter((it) => getCicloEsame(it) === "attuale");
+  const esamiPrecedenti = formazioneItems.filter((it) => getCicloEsame(it) === "precedente");
 
   // In onboarding proseContent arriva in modo asincrono (es. dopo il parsing del libretto):
   // se non c'è un edit locale in corso, riflette sempre l'ultimo dato dal server.
@@ -69,9 +76,7 @@ export function HeaderBlock({
   }
 
   async function handleSave() {
-    setSaving(true);
     await updateCardBlockProseContent("header", form);
-    setSaving(false);
     setDirty(false);
   }
 
@@ -81,17 +86,18 @@ export function HeaderBlock({
     await updateHeaderVisibility(next);
   }
 
-  // Il libretto sostituisce sempre l'intero elenco esami (mai un merge): un libretto è per
-  // natura cumulativo, quindi ricaricarlo copre già i vecchi esami più gli eventuali nuovi —
-  // niente rischio di duplicati, perché la lista precedente viene sempre rimpiazzata di netto.
-  async function handleTranscriptFile(e: React.ChangeEvent<HTMLInputElement>) {
+  // Il libretto sostituisce sempre l'intero elenco esami del SUO ciclo (mai un merge): un
+  // libretto è per natura cumulativo, quindi ricaricarlo copre già i vecchi esami più gli
+  // eventuali nuovi. Gli esami dell'altro ciclo restano dove sono.
+  async function handleTranscriptFile(e: React.ChangeEvent<HTMLInputElement>, ciclo: CicloEsame) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setTranscriptUploading(true);
+    setTranscriptUploading(ciclo);
     setTranscriptError(null);
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("ciclo", ciclo);
     const result = await uploadTranscript(formData);
 
     if (result.error) {
@@ -99,8 +105,9 @@ export function HeaderBlock({
     } else {
       router.refresh();
     }
-    setTranscriptUploading(false);
-    if (transcriptFileRef.current) transcriptFileRef.current.value = "";
+    setTranscriptUploading(null);
+    const ref = ciclo === "precedente" ? previousFileRef : transcriptFileRef;
+    if (ref.current) ref.current.value = "";
   }
 
   return (
@@ -185,56 +192,100 @@ export function HeaderBlock({
         </div>
 
         <div className="border-t border-border pt-4">
+          <p className="text-body-sm text-ink-secondary">{t("header.transcriptPurpose")}</p>
+
           {formazioneItems.length > 0 && (
             <button
               type="button"
               onClick={() => setEsamiExpanded((e) => !e)}
-              className="flex items-center gap-2 text-body-sm font-medium text-ink hover:text-petrol transition-colors"
+              className="mt-3 flex items-center gap-2 text-body-sm font-medium text-ink hover:text-petrol transition-colors"
             >
               <span>{esamiExpanded ? "▾" : "▸"}</span>
               <span>{t("header.esami", { count: formazioneItems.length })}</span>
             </button>
           )}
           {esamiExpanded && formazioneItems.length > 0 && (
-            <div className="mt-3 space-y-1">
-              {formazioneItems.map((it) => (
-                <div key={it.id} className="flex items-center justify-between gap-2 text-body-sm">
-                  <span className="text-ink truncate">{it.esame}</span>
-                  <span className="text-ink-secondary whitespace-nowrap">
-                    {it.voto ?? "—"}
-                    {it.cfu != null && <span className="text-xs text-ink-tertiary">{t("header.cfuSuffix", { cfu: it.cfu })}</span>}
-                    <span className="ml-2 text-xs text-success font-medium">{t("header.examVerified")}</span>
-                  </span>
-                </div>
-              ))}
+            <div className="mt-3 space-y-3">
+              {[
+                { ciclo: "attuale" as const, items: esamiAttuali },
+                { ciclo: "precedente" as const, items: esamiPrecedenti },
+              ]
+                .filter((g) => g.items.length > 0)
+                .map((g) => (
+                  <div key={g.ciclo}>
+                    {esamiPrecedenti.length > 0 && (
+                      <p className="text-eyebrow text-navy/60 uppercase mb-1">
+                        {t(g.ciclo === "attuale" ? "formazione.cicloAttuale" : "formazione.cicloPrecedente")}
+                      </p>
+                    )}
+                    <div className="space-y-1">
+                      {g.items.map((it) => (
+                        <div key={it.id} className="flex items-center justify-between gap-2 text-body-sm">
+                          <span className="text-ink truncate">{it.esame}</span>
+                          <span className="text-ink-secondary whitespace-nowrap">
+                            {it.voto ?? "—"}
+                            {it.cfu != null && <span className="text-xs text-ink-tertiary">{t("header.cfuSuffix", { cfu: it.cfu })}</span>}
+                            <span className="ml-2 text-xs text-success font-medium">{t("header.examVerified")}</span>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
             </div>
           )}
 
-          <div className={formazioneItems.length > 0 ? "mt-3" : ""}>
+          <div className="mt-3">
             <input
               ref={transcriptFileRef}
               type="file"
               accept="application/pdf,image/png,image/jpeg,image/webp"
-              onChange={handleTranscriptFile}
+              onChange={(e) => handleTranscriptFile(e, "attuale")}
               className="hidden"
             />
             <button
               type="button"
               onClick={() => transcriptFileRef.current?.click()}
-              disabled={transcriptUploading}
+              disabled={transcriptUploading !== null}
               className="text-body-sm font-medium text-petrol hover:text-petrol-700 transition-colors disabled:opacity-50"
             >
-              {transcriptUploading
+              {transcriptUploading === "attuale"
                 ? t("header.uploadingTranscript")
-                : t(formazioneItems.length > 0 ? "header.reuploadTranscriptLabel" : "header.uploadTranscriptLabel")}
+                : t(esamiAttuali.length > 0 ? "header.reuploadTranscriptLabel" : "header.uploadTranscriptLabel")}
             </button>
-            {formazioneItems.length > 0 && (
+            {esamiAttuali.length > 0 && (
               <p className="mt-1 text-xs text-ink-tertiary">{t("header.reuploadTranscriptNote")}</p>
             )}
-            {transcriptError && (
-              <p className="mt-1 text-xs text-error">{t("header.transcriptUploadError", { error: transcriptError })}</p>
-            )}
           </div>
+
+          {/* Chi ha appena iniziato la magistrale ha quasi tutti gli esami nella triennale:
+              senza questo caricamento la sua card sembrerebbe vuota di studi. */}
+          {allowPreviousDegree && (form.livello === "magistrale" || form.livello === "phd" || esamiPrecedenti.length > 0) && (
+            <div className="mt-3 border-t border-border pt-3">
+              <input
+                ref={previousFileRef}
+                type="file"
+                accept="application/pdf,image/png,image/jpeg,image/webp"
+                onChange={(e) => handleTranscriptFile(e, "precedente")}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => previousFileRef.current?.click()}
+                disabled={transcriptUploading !== null}
+                className="text-body-sm font-medium text-petrol hover:text-petrol-700 transition-colors disabled:opacity-50"
+              >
+                {transcriptUploading === "precedente"
+                  ? t("header.uploadingTranscript")
+                  : t(esamiPrecedenti.length > 0 ? "header.reuploadPreviousTranscriptLabel" : "header.uploadPreviousTranscriptLabel")}
+              </button>
+              <p className="mt-1 text-xs text-ink-tertiary">{t("header.previousTranscriptNote")}</p>
+            </div>
+          )}
+
+          {transcriptError && (
+            <p className="mt-2 text-xs text-error">{t("header.transcriptUploadError", { error: transcriptError })}</p>
+          )}
         </div>
 
         {(form.livello === "magistrale" || form.formazione_precedente) && (
@@ -271,16 +322,6 @@ export function HeaderBlock({
               />
             </div>
           </div>
-        )}
-
-        {dirty && (
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="text-body-sm font-medium text-white bg-petrol rounded-md px-4 py-2 hover:bg-petrol-700 transition-colors disabled:opacity-50"
-          >
-            {saving ? c("saving") : c("save")}
-          </button>
         )}
 
         <div className="border-t border-border pt-4 space-y-3">
@@ -368,7 +409,9 @@ export function HeaderView({
 
       {fp && (fp.corso || fp.universita) && (
         <p className="mt-2 text-xs text-ink-tertiary">
-          {t("header.previousDegreeSummaryPrefix")} {fp.corso ?? "—"}{fp.universita ? ` — ${fp.universita}` : ""}{fp.voto_laurea ? ` (${fp.voto_laurea})` : ""}
+          {t("header.previousDegreeSummaryPrefix")} {fp.corso ?? "—"}{fp.universita ? ` — ${fp.universita}` : ""}
+          {fp.voto_laurea ? ` (${fp.voto_laurea})` : ""}
+          {showMedia && fp.media_voti != null ? ` · ${Number(fp.media_voti).toFixed(1)}/30` : ""}
         </p>
       )}
 

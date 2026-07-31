@@ -10,7 +10,8 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { ensureCardBlocksExist } from "./card-blocks";
-import type { HeaderProseContent, FormazioneItem } from "@mira/types";
+import { getCicloEsame } from "@mira/types";
+import type { HeaderProseContent, FormazioneItem, CicloEsame } from "@mira/types";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
@@ -18,10 +19,20 @@ const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "application/pdf
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type AnyRow = Record<string, any>;
 
+/**
+ * Carica e legge un libretto. `ciclo` distingue il corso attuale dal corso precedente (la
+ * triennale di chi ha appena iniziato la magistrale): i due elenchi di esami convivono nella
+ * card, ognuno sostituisce solo se stesso a ogni nuovo caricamento. Solo il libretto del corso
+ * attuale scrive media, corso e livello sull'Header; quello precedente alimenta la sezione
+ * "formazione precedente" e basta.
+ */
 export async function uploadTranscript(formData: FormData) {
   const ctx = await getUserContext();
   const profileId = (ctx.profile as any).id as string;
   const supabase = await createServiceClient();
+
+  const isPrevious = formData.get("ciclo") === "precedente";
+  const coursePhase = isPrevious ? "previous" : "current";
 
   const file = formData.get("file") as File | null;
   if (!file) return { error: "Nessun file selezionato." };
@@ -74,6 +85,7 @@ export async function uploadTranscript(formData: FormData) {
       student_profile_id: studentProfile.id,
       uploaded_file_id: uploadedFile?.id ?? null,
       extraction_status: "processing",
+      phase: coursePhase,
     })
     .select("id")
     .single() as { data: AnyRow | null };
@@ -111,10 +123,12 @@ export async function uploadTranscript(formData: FormData) {
       .eq("id", transcript!.id);
 
     if (parsed.courses.length > 0) {
-      // Delete old courses before inserting new ones (re-upload scenario)
+      // Un libretto è cumulativo: sostituisce sempre l'intero elenco della SUA fase, mai un
+      // merge (produrrebbe duplicati). La fase opposta non si tocca.
       await (supabase.from("student_courses") as any)
         .delete()
-        .eq("student_profile_id", studentProfile.id);
+        .eq("student_profile_id", studentProfile.id)
+        .eq("phase", coursePhase);
 
       await (supabase.from("student_courses") as any).insert(
         parsed.courses.map((c: ParsedCourse) => ({
@@ -128,27 +142,32 @@ export async function uploadTranscript(formData: FormData) {
           academic_year: c.academic_year || null,
           semester: c.semester || null,
           source: "transcript",
+          phase: coursePhase,
         }))
       );
     }
 
     // LEGACY-WRITE(card-rework): rimuovere in Step 5/6 quando pathway.ts e la vista associazione
     // leggeranno direttamente da card_blocks invece che da queste colonne.
-    await (supabase.from("student_profiles") as any)
-      .update({
-        degree_program: parsed.degree_program || null,
-        degree_level: parsed.degree_level || null,
-        transcript_uploaded: true,
-        transcript_summary: parsed,
-      })
-      .eq("id", studentProfile.id);
+    // Il libretto del corso precedente non tocca nulla di questo: corso, livello, media e il
+    // flag "ha caricato il libretto" descrivono il percorso attuale.
+    if (!isPrevious) {
+      await (supabase.from("student_profiles") as any)
+        .update({
+          degree_program: parsed.degree_program || null,
+          degree_level: parsed.degree_level || null,
+          transcript_uploaded: true,
+          transcript_summary: parsed,
+        })
+        .eq("id", studentProfile.id);
+    }
 
     // Transcript-only write path for header.media_voti and formazione.items — the one
     // legitimate way these fields change (spec: "si aggiornano ricaricando il libretto").
     await ensureCardBlocksExist(studentProfile.id);
 
     const { data: headerRow } = await (supabase.from("card_blocks") as any)
-      .select("prose_content")
+      .select("prose_content, status")
       .eq("student_profile_id", studentProfile.id)
       .eq("block_type", "header")
       .single();
@@ -158,10 +177,35 @@ export async function uploadTranscript(formData: FormData) {
       throw new Error("Riga Header non trovata per questo studente.");
     }
 
+    // Un blocco già confermato NON torna mai in bozza per un caricamento del libretto: il dato
+    // che arriva qui è verificato e l'ha chiesto lo studente stesso. Retrocederlo lo faceva
+    // sparire dalla card vista da associazioni/aziende/admin (che leggono solo i blocchi
+    // approvati) senza che lo studente se ne accorgesse, perché sul suo Profilo vede tutto.
+    const keepApproved = (status: string | null | undefined) => (status === "approved" ? "approved" : "draft");
+
     const existingHeader = (headerRow.prose_content ?? {}) as Partial<HeaderProseContent>;
-    const { data: headerUpdatedRows, error: headerWriteError } = await (supabase.from("card_blocks") as any)
-      .update({
-        prose_content: {
+    const fp = existingHeader.formazione_precedente ?? null;
+
+    const nextHeader: HeaderProseContent = isPrevious
+      ? {
+          // Libretto della triennale: l'anagrafica del corso attuale resta intatta, si
+          // completa solo la formazione precedente con quello che il libretto sa dire.
+          universita: existingHeader.universita ?? null,
+          corso: existingHeader.corso ?? null,
+          livello: existingHeader.livello ?? null,
+          anno: existingHeader.anno ?? null,
+          anno_inizio: existingHeader.anno_inizio ?? null,
+          laurea_anno: existingHeader.laurea_anno ?? null,
+          media_voti: existingHeader.media_voti ?? null,
+          formazione_precedente: {
+            universita: fp?.universita ?? parsed.university_name ?? null,
+            corso: fp?.corso ?? parsed.degree_program ?? null,
+            voto_laurea: fp?.voto_laurea ?? null,
+            tema_tesi: fp?.tema_tesi ?? null,
+            media_voti: parsed.weighted_average,
+          },
+        }
+      : {
           universita: existingHeader.universita ?? parsed.university_name ?? null,
           corso: existingHeader.corso ?? parsed.degree_program ?? null,
           livello: existingHeader.livello ?? parsed.degree_level ?? null,
@@ -169,10 +213,14 @@ export async function uploadTranscript(formData: FormData) {
           anno_inizio: existingHeader.anno_inizio ?? null,
           laurea_anno: existingHeader.laurea_anno ?? null,
           media_voti: parsed.weighted_average,
-          formazione_precedente: existingHeader.formazione_precedente ?? null,
-        },
-        status: "draft",
-        structured_data: { media_voti: parsed.weighted_average, cfu: parsed.total_credits },
+          formazione_precedente: fp,
+        };
+
+    const { data: headerUpdatedRows, error: headerWriteError } = await (supabase.from("card_blocks") as any)
+      .update({
+        prose_content: nextHeader,
+        status: keepApproved(headerRow.status),
+        ...(isPrevious ? {} : { structured_data: { media_voti: parsed.weighted_average, cfu: parsed.total_credits } }),
       })
       .eq("student_profile_id", studentProfile.id)
       .eq("block_type", "header")
@@ -187,7 +235,8 @@ export async function uploadTranscript(formData: FormData) {
     }
 
     if (parsed.courses.length > 0) {
-      const formazioneItems: FormazioneItem[] = parsed.courses.map((c: ParsedCourse) => ({
+      const ciclo: CicloEsame = isPrevious ? "precedente" : "attuale";
+      const nuoviEsami: FormazioneItem[] = parsed.courses.map((c: ParsedCourse) => ({
         id: crypto.randomUUID(),
         esame: c.course_name,
         voto: c.grade,
@@ -196,12 +245,25 @@ export async function uploadTranscript(formData: FormData) {
         semestre: c.semester || null,
         verified: true,
         origin: "transcript",
+        ciclo,
       }));
+
+      const { data: formazioneRow } = await (supabase.from("card_blocks") as any)
+        .select("status, prose_content")
+        .eq("student_profile_id", studentProfile.id)
+        .eq("block_type", "formazione")
+        .single();
+
+      // Sostituisce solo gli esami della stessa fase: caricare la triennale non cancella la
+      // magistrale e viceversa. Le righe senza `ciclo` sono pre-2026-07-31, quindi attuali.
+      const esamiEsistenti = (formazioneRow?.prose_content?.items ?? []) as FormazioneItem[];
+      const esamiAltroCiclo = esamiEsistenti.filter((it) => getCicloEsame(it) !== ciclo);
+      const formazioneItems = isPrevious ? [...esamiAltroCiclo, ...nuoviEsami] : [...nuoviEsami, ...esamiAltroCiclo];
 
       const { data: formazioneUpdatedRows, error: formazioneWriteError } = await (supabase.from("card_blocks") as any)
         .update({
           prose_content: { items: formazioneItems },
-          status: "draft",
+          status: keepApproved(formazioneRow?.status),
         })
         .eq("student_profile_id", studentProfile.id)
         .eq("block_type", "formazione")
@@ -223,7 +285,7 @@ export async function uploadTranscript(formData: FormData) {
       entity_type: "student_transcript",
       entity_id: transcript!.id,
       user_id: profileId,
-      input_metadata: { file_name: file.name, file_size: file.size, file_type: file.type },
+      input_metadata: { file_name: file.name, file_size: file.size, file_type: file.type, phase: coursePhase },
       output_summary: {
         university_name: parsed.university_name,
         degree_program: parsed.degree_program,

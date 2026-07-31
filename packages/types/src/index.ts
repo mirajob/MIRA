@@ -25,8 +25,8 @@ export type {
   EsperienzaItem,
   EsperienzeProseContent,
   FormazioneItem,
+  CicloEsame,
   FormazioneProseContent,
-  CompetenzaCategoria,
   HardSkillLivello,
   CompetenzaItem,
   CompetenzeProseContent,
@@ -39,4 +39,4 @@ export type {
   ProseContentByBlockType,
   CardBlock,
 } from "./card-blocks";
-export { getCompetenzaCategoria } from "./card-blocks";
+export { isLegacyAcademic, getCicloEsame } from "./card-blocks";

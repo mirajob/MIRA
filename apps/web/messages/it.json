@@ -341,10 +341,12 @@
   },
   "StudentHome": {
     "greeting": "Ciao",
-    "completeCardCta": "Completa la tua card: mancano competenze, lingue e profilo personale (~5 minuti) →",
     "autodescrizioneIntro": "Scritto con le tue parole — modificalo pure, ed è la parte più personale della card.",
     "editCard": "Modifica la card",
-    "backToCard": "Torna alla card"
+    "backToCard": "Torna alla card",
+    "cardPurpose": "La tua MIRA Card è il profilo con cui ti candidi alle associazioni ed è quello che le aziende leggono quando cercano un candidato.",
+    "incompleteTitle": "{count, plural, one {Manca 1 sezione} other {Mancano # sezioni}} alla card completa",
+    "incompleteBody": "Da completare: {sections}. Più la card è completa, più ricerche ti trovano."
   },
   "CardDocument": {
     "empty": "Questo studente non ha ancora blocchi approvati nella card.",
@@ -352,7 +354,8 @@
     "close": "Chiudi",
     "zoomIn": "Tocca la card per ingrandirla",
     "zoomOut": "Vedi la card intera",
-    "moreItems": "+{count} altre"
+    "moreItems": "+{count} altre",
+    "andMore": "e altri {count}"
   },
   "CardBlocks": {
     "titles": {
@@ -366,7 +369,8 @@
       "interessi": "Interessi",
       "pianoCarriera": "Piano di carriera",
       "disponibilitaEPiano": "Disponibilità e piano",
-      "profiloPersonale": "Profilo personale"
+      "profiloPersonale": "Profilo personale",
+      "esami": "Esami"
     },
     "approved": "Approvato",
     "pendingConfirmation": "Da confermare",
@@ -417,7 +421,11 @@
       "reuploadTranscriptLabel": "Ricarica libretto",
       "uploadingTranscript": "Caricamento in corso...",
       "transcriptUploadError": "Errore nel caricamento: {error}",
-      "reuploadTranscriptNote": "Ricaricandolo, esami e media si aggiornano da zero in base al nuovo libretto."
+      "reuploadTranscriptNote": "Ricaricandolo, esami e media si aggiornano da zero in base al nuovo libretto.",
+      "transcriptPurpose": "Il libretto serve a mostrare cosa hai studiato: i tuoi esami dicono a chi ti legge quali argomenti conosci. La media la vedono solo se accendi l'interruttore qui sotto.",
+      "uploadPreviousTranscriptLabel": "Carica il libretto della triennale",
+      "reuploadPreviousTranscriptLabel": "Ricarica il libretto della triennale",
+      "previousTranscriptNote": "Se hai appena iniziato la magistrale quasi tutti i tuoi esami sono lì. Restano separati da quelli del corso attuale e non cambiano la tua media."
     },
     "disponibilita": {
       "cosaCercaLabel": "Cosa cerca",
@@ -452,16 +460,13 @@
     },
     "competenze": {
       "testoLabel": "Competenza (una riga)",
-      "testoPlaceholder": "es. Financial statement analysis",
+      "testoPlaceholder": "es. Excel, Python, corporate valuation",
       "evidenzaLabel": "Dove l'hai acquisita",
       "evidenzaPlaceholder": "es. Financial Accounting",
       "emptyView": "Nessuna competenza ancora.",
-      "academicSkills": "Competenze accademiche ({count})",
       "hardSkillsCount": "Hard skill ({count})",
       "hardHeading": "Hard skill",
       "hardEmpty": "Nessuna hard skill ancora.",
-      "academicHeading": "Competenze accademiche",
-      "academicEmpty": "Nessuna competenza accademica ancora.",
       "livelloLabels": {
         "beginner": "Base",
         "intermediate": "Intermedio",
@@ -469,9 +474,8 @@
       },
       "livelloLabel": "Livello",
       "evidenzaHintHard": "Da un progetto, uno stage o la pratica — è la prova della competenza",
-      "evidenzaHintAcademic": "In quali esami o corsi l'hai acquisita — è la prova della competenza",
       "evidenzaPlaceholderHard": "es. stage in consulting, progetto personale",
-      "evidenzaPlaceholderAcademic": "es. esame di Financial Accounting"
+      "intro": "Le materie che hai studiato le prendiamo dal tuo libretto: qui metti solo quello che sai usare."
     },
     "lingue": {
       "linguaLabel": "Lingua",
@@ -486,7 +490,15 @@
     "prose": {
       "notSpecified": "Non ancora indicato."
     },
-    "profiloPersonalePlaceholder": "Come ti presenti oltre a esami ed esperienze: interessi veri, abitudini, priorità..."
+    "profiloPersonalePlaceholder": "Come ti presenti oltre a esami ed esperienze: interessi veri, abitudini, priorità...",
+    "saveChanges": "Salva modifiche",
+    "notPublishedEmpty": "Sezione vuota: chi legge la tua card qui non vede niente. Aprila e compilala.",
+    "notPublishedDraft": "Non ancora confermata: queste informazioni non arrivano ad associazioni e aziende. Aprila e premi Conferma.",
+    "formazione": {
+      "cicloAttuale": "Corso attuale",
+      "cicloPrecedente": "Corso precedente",
+      "seeAll": "Tutti gli esami ({count})"
+    }
   },
   "JoinByCode": {
     "prompt": "Sei membro di un'associazione? Inserisci il codice invito",
@@ -541,8 +553,8 @@
   "AziendeStudent": {
     "tabRequests": "Richieste",
     "tabChats": "Chat ({count})",
-    "noRequestsTitle": "Nessuna richiesta di contatto ricevuta.",
-    "noRequestsBody": "Le aziende ti contatteranno quando troveranno il tuo profilo interessante.",
+    "noRequestsTitle": "Nessuna richiesta di contatto, per ora.",
+    "noRequestsBody": "Qui non devi candidarti: sono le aziende a cercare, e sei tu a decidere se rispondere.",
     "statusPending": "In attesa",
     "statusAccepted": "Accettata",
     "statusRejected": "Rifiutata",
@@ -579,7 +591,11 @@
     "nameLabel": "Nome",
     "emailLabel": "Email",
     "phoneLabel": "Telefono",
-    "share": "Condividi"
+    "share": "Condividi",
+    "howItWorksTitle": "Come funziona",
+    "howItWorks1": "Un'azienda descrive il profilo che cerca. MIRA legge le card degli studenti e le propone i candidati più adatti.",
+    "howItWorks2": "Se scelgono te, la richiesta arriva qui. L'azienda intanto vede la tua card senza nome e senza contatti.",
+    "howItWorks3": "La chat si apre solo se accetti. Nome, email e telefono li condividi quando vuoi, anche più avanti."
   },
   "PublicHeader": {
     "associationsLink": "Associazioni",
@@ -1398,16 +1414,14 @@
     "avgSuffix": ", media {avg}/30",
     "hintBocconi": "Lo trovi su you@b: nella sezione certificati/autocertificazioni puoi scaricare l'autocertificazione con l'elenco degli esami.",
     "hintGeneric": "Di solito lo trovi sul sito o nel portale della tua università, tra i documenti e i certificati.",
-    "guideHeader": "Ultimo passo per sbloccare la candidatura: i dati del tuo corso. Università e livello li ho già presi dalla registrazione — controlla che sia tutto giusto e aggiungi corso e anni, poi premi Conferma.\n\nSe hai il libretto sottomano puoi caricarlo già da qui e compilo io media ed esami. Non è obbligatorio: te lo ripropongo dopo.",
-    "guideHeaderAfterUpload": "Fatto: ho letto {courses} esami, {credits} CFU{avg}. Controlla i campi qui sotto — correggi quello che vuoi, poi premi Conferma.",
+    "guideHeader": "Ultimo passo per sbloccare la candidatura: i dati del tuo corso. Università e livello li ho già presi dalla registrazione, controlla che sia tutto giusto e aggiungi corso e anni, poi premi Conferma.\n\nSe hai il libretto sottomano puoi caricarlo già da qui: serve a mostrare cosa hai studiato, e la media la condividi solo se vuoi. Non è obbligatorio, te lo ripropongo dopo.",
+    "guideHeaderAfterUpload": "Fatto: ho letto {courses} esami, {credits} CFU{avg}. Gli esami entrano nella tua card e mostrano cosa hai studiato. Controlla i campi qui sotto, correggi quello che vuoi, poi premi Conferma.",
     "guideHeaderUploaded": "Il tuo libretto è già caricato: controlla i campi qui sotto, correggi quello che vuoi, poi premi Conferma.",
     "guideEsperienze": "Ora le esperienze: è la parte che pesa di più per chi ti leggerà. Hai tre strade — carica il CV e le preparo io in inglese, oppure scarica il tuo profilo LinkedIn in PDF (ti spiego come, sono 10 secondi), oppure aggiungile a mano qui sotto. Valgono anche progetti personali, competizioni, sport a livello agonistico, volontariato, attività associative — qualsiasi cosa pensi possa rappresentarti. Per le descrizioni scrivi come ti viene: ✦ Migliora con MIRA le riscrive in inglese stile CV.",
     "guideEsperienzeManual": "Va bene, le costruiamo a mano: aggiungi le tue esperienze qui sotto. Valgono anche progetti personali, competizioni, sport a livello agonistico, volontariato, attività associative. Scrivi le descrizioni come ti viene — ✦ Migliora con MIRA le riscrive in inglese stile CV. Poi premi Conferma.",
     "guideEsperienzeAfterCV": "Ho trovato {count, plural, =0 {le tue esperienze} one {1 esperienza} other {# esperienze}} nel CV e le ho già preparate qui sotto in inglese. Controllale, correggile o aggiungine altre — anche quelle che non metteresti mai in un CV (progetti, sport, volontariato, attività associative). Poi premi Conferma.",
     "guideDisponibilitaIntro": "Ciao {name}! Io sono MIRA: costruiamo insieme la tua MIRA Card — ti serve per candidarti alle associazioni, ed è il profilo con cui le aziende potranno trovarti e contattarti. Sarà scritta in inglese, ci penso io a tradurre.\n\nPartiamo da quello che conta davvero: cosa cerchi. Usa l'interruttore per dirmi se sei in cerca o aperto a opportunità e compila i campi — che tipo di esperienza, in che ambito, da quando, per quanto e dove. In basso raccontami cosa hai in programma per i prossimi mesi/anni (exchange, laurea, magistrale, lavoro, certificazioni...) e se hai già una direzione precisa o stai ancora esplorando: va benissimo anche così. Scrivi come parli, ✦ Migliora con MIRA lo sistema in inglese. Poi premi Conferma.",
-    "guideCompetenzeProposed": "Dai tuoi esami ho già proposto alcune competenze accademiche qui sotto — confermale, correggile o toglile. Poi aggiungi le hard skill: strumenti, software, metodologie o capacità pratiche che sai usare davvero (se ho trovato qualcosa nel CV, l'ho già inserito). Quando è tutto a posto, premi Conferma.",
-    "guideCompetenzeNoTranscript": "Ora le competenze. Se carichi il libretto ti propongo io le competenze accademiche partendo dai tuoi esami e voti, e ci metto pochi secondi. {hint}\n\nAltrimenti scrivile a mano qui sotto: academic sono le aree che hai studiato sul piano teorico (es. financial statement analysis, accounting, statistics, marketing), hard sono strumenti e capacità pratiche che sai usare (es. Excel, Python).",
-    "guideCompetenzeManual": "Ora le competenze. Academic: cosa hai studiato e acquisito sul piano teorico (es. financial statement analysis, accounting, statistics, marketing). Hard: strumenti e capacità pratiche che sai usare (es. Excel, Python). Aggiungile qui sotto in inglese — è il formato della card. Poi premi Conferma.",
+    "guideCompetenzeNoTranscript": "Prima una cosa: se carichi il libretto, i tuoi esami entrano nella card e raccontano da soli cosa hai studiato. È così che ti trova un'azienda che cerca basi teoriche precise, senza che tu debba elencarle. {hint}\n\nQui sotto invece va quello che sai usare: software e strumenti (Excel, Python, SQL), metodi che hai applicato davvero (valutazione d'azienda, analisi di bilancio), tecniche imparate sul campo. Per ognuna dimmi quanto la padroneggi e dove l'hai imparata. Poi premi Conferma.",
     "guideLingue": "Che lingue conosci? Aggiungile qui sotto con livello ed eventuale certificazione (es. English — C1 — IELTS 7.5). Poi premi Conferma.",
     "guideLingueWithCV": "Le lingue trovate nel CV le ho già inserite qui sotto: controlla livelli e certificazioni, aggiungi quelle che mancano, poi premi Conferma.",
     "guideProfilo": "Ora la parte che sul CV di solito manca: come ti presenti oltre a esami ed esperienze. Niente elenco di hobby né frasi da colloquio — racconta qualcosa di autentico:\n— Cosa segui per conto tuo, fuori dai programmi d'esame?\n— Fuori dallo studio, cosa fai con costanza?\n— Come ti descriverebbero le persone che ti conoscono bene?\n— Cosa non sopporti nel lavoro o nello studio, oppure a cosa non rinunci?\n— Qual è la cosa più \"te\" che hai fatto nell'ultimo anno?\nScrivi come parli, anche in italiano: ✦ Migliora con MIRA lo trasforma in un testo in prima persona, in inglese. Poi premi Conferma.",
@@ -1416,12 +1430,17 @@
     "gateWarning": "ATTENZIONE: Più completo è il profilo, più attrai l'attenzione delle aziende!",
     "gateContinue": "Completa ora (5 min)",
     "gateExit": "Esci e candidati",
-    "transcriptPromptTitle": "Vuoi arricchire la card con esami e media?",
-    "transcriptPromptBody": "Se carichi il libretto faccio tre cose in un colpo solo: aggiungo media e CFU alla tua card, alleghiamo l'elenco degli esami, e ti propongo le competenze accademiche partendo dai tuoi voti — poi le confermi tu. {hint}",
+    "transcriptPromptTitle": "Vuoi far vedere cosa hai studiato?",
+    "transcriptPromptBody": "Carica il libretto e i tuoi esami entrano nella card: sono la prova degli argomenti che conosci, ed è quello che guarda un'azienda quando cerca basi teoriche precise. La media resta tua, la mostri solo se accendi l'interruttore. {hint}",
     "preparingLabel": "Preparo le competenze...",
     "finalTitle": "Hai completato la tua MIRA Card!",
-    "finalBody": "La trovi nella sezione Profilo, e puoi modificarla quando vuoi. In bocca al lupo per le tue candidature.",
-    "redirecting": "Ti porto al tuo Profilo..."
+    "finalBody": "La trovi nella sezione Profilo e puoi modificarla quando vuoi.",
+    "redirecting": "Ti porto al tuo Profilo...",
+    "guideCompetenze": "Le materie che hai studiato le prendo dal tuo libretto, non serve riscriverle qui.\n\nIn questa sezione metti quello che sai usare: software e strumenti (Excel, Python, SQL, Bloomberg, Figma), metodi che hai applicato davvero (valutazione d'azienda, analisi di bilancio, A/B test), tecniche imparate sul campo. Per ognuna dimmi quanto la padroneggi e dove l'hai imparata. Le aziende cercano con queste parole. Poi premi Conferma.",
+    "finalNextTitle": "Cosa succede adesso",
+    "finalNext1": "Puoi candidarti alle associazioni della tua università: al posto del CV leggono la tua MIRA Card.",
+    "finalNext2": "Le aziende cercano su MIRA descrivendo il profilo che vogliono. Se la tua card corrisponde ti trovano, ma vedono un profilo anonimo: nome e contatti li dai tu, solo se accetti la richiesta.",
+    "finalNext3": "Più la card è completa, più ricerche ti trovano. Aggiornala quando dai un esame o inizi qualcosa di nuovo."
   },
   "AdminSeededAssociations": {
     "eyebrow": "Pagine seminate",
