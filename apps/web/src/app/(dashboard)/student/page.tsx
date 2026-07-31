@@ -1,7 +1,6 @@
 import { getUserContext } from "@/lib/auth";
 import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 // Il libretto si può ricaricare anche da qui (HeaderBlock): il parsing usa un modello ad
@@ -9,6 +8,7 @@ import { getTranslations } from "next-intl/server";
 // timeout di default delle funzioni serverless.
 export const maxDuration = 120;
 import { ensureCardBlocksExist } from "@/lib/actions/card-blocks";
+import { missingCardSections } from "@/lib/card-completeness";
 import { EditableSection } from "@/components/card/editable-section";
 import { MiraCardLayout } from "@/components/card/mira-card-layout";
 import { MiraCardDocument } from "@/components/card-view/mira-card-document";
@@ -87,24 +87,26 @@ export default async function StudentHomePage() {
 
   const cardT = await getTranslations("CardBlocks");
 
-  // Cosa manca davvero, sezione per sezione: prima c'era un solo avviso generico che
-  // nominava sempre le stesse tre sezioni, anche quando il buco era altrove.
-  const missingSections: string[] = [];
-  if (header?.status !== "approved") missingSections.push(cardT("titles.header"));
-  if (!(disponibilita?.status === "approved" && pianoCarriera?.status === "approved")) {
-    missingSections.push(cardT("titles.disponibilitaEPiano"));
-  }
-  if (esperienze?.status !== "approved") missingSections.push(cardT("titles.esperienze"));
-  if (competenze?.status !== "approved") missingSections.push(cardT("titles.competenze"));
-  if (lingue?.status !== "approved") missingSections.push(cardT("titles.lingue"));
-  if (autodescrizione?.status !== "approved") missingSections.push(cardT("titles.profiloPersonale"));
-
   const esperienzeItems = (esperienze?.prose_content as EsperienzeProseContent | undefined)?.items ?? [];
   const competenzeData = (competenze?.prose_content as CompetenzeProseContent | undefined) ?? { items: [], soft_skills: [] };
   const lingueItems = (lingue?.prose_content as LingueProseContent | undefined)?.items ?? [];
   const autodescrizioneTesto = (autodescrizione?.prose_content as AutodescrizioneProseContent | undefined)?.testo ?? null;
   const interessiTesto = (interessi?.prose_content as InteressiProseContent | undefined)?.testo ?? null;
   const pianoData = pianoCarriera?.prose_content as PianoCarrieraProseContent | undefined;
+  const formazioneItems = (formazione?.prose_content as FormazioneProseContent | undefined)?.items ?? [];
+
+  // Cosa manca si decide sul CONTENUTO, non sullo stato del blocco: un blocco confermato ma
+  // vuoto (Conferma premuto senza scrivere niente) è a tutti gli effetti un buco nella card,
+  // e con il controllo sullo stato non veniva segnalato da nessuna parte.
+  const missingSections = missingCardSections({
+    disponibilita: disponibilita?.prose_content as DisponibilitaProseContent | undefined,
+    esperienze: esperienzeItems,
+    esami: formazioneItems,
+    competenze: competenzeData.items,
+    lingue: lingueItems,
+    profiloPersonale: autodescrizioneTesto,
+    pianoCarriera: pianoData?.testo ?? null,
+  }).map((key) => cardT(`titles.${key === "esami" ? "esami" : key === "disponibilita" ? "disponibilitaEPiano" : key}`));
 
   const t = await getTranslations("StudentHome");
 
@@ -115,21 +117,8 @@ export default async function StudentHomePage() {
         <p className="mt-1 text-body-sm text-ink-secondary">{t("cardPurpose")}</p>
       </div>
 
-      {missingSections.length > 0 && (
-        <Link
-          href="/student/onboarding"
-          className="block rounded-lg border border-petrol/30 bg-petrol-50 px-4 py-3 hover:bg-petrol-100 transition-colors"
-        >
-          <p className="text-body-sm font-medium text-petrol-700">
-            {t("incompleteTitle", { count: missingSections.length })}
-          </p>
-          <p className="mt-0.5 text-body-sm text-petrol-700/80">
-            {t("incompleteBody", { sections: missingSections.join(", ") })}
-          </p>
-        </Link>
-      )}
-
       <ProfileViewSwitcher
+        missingSections={missingSections}
         card={
           <MiraCardDocument
             viewer="self"
@@ -137,7 +126,7 @@ export default async function StudentHomePage() {
             header={header ? { data: header.prose_content as HeaderProseContent, visibility: header.visibility as HeaderVisibility } : undefined}
             disponibilita={disponibilita ? { data: disponibilita.prose_content as DisponibilitaProseContent } : undefined}
             esperienze={esperienze ? { data: { items: esperienzeItems } } : undefined}
-            formazione={formazione ? { data: (formazione.prose_content as FormazioneProseContent | undefined) ?? { items: [] } } : undefined}
+            formazione={formazione ? { data: { items: formazioneItems } } : undefined}
             competenze={competenze ? { data: competenzeData } : undefined}
             lingue={lingue ? { data: { items: lingueItems } } : undefined}
             interessi={interessi ? { data: { testo: interessiTesto } } : undefined}
@@ -152,40 +141,33 @@ export default async function StudentHomePage() {
           <>
             {header && (
               <EditableSection
-                status={header.status}
                 view={
                   <HeaderView
                     data={header.prose_content as HeaderProseContent}
                     formazioneItems={(formazione?.prose_content as FormazioneProseContent | undefined)?.items ?? []}
                   />
                 }
-                edit={
+                edit={(onSaved) => (
                   <HeaderBlock
                     proseContent={header.prose_content as HeaderProseContent}
                     visibility={header.visibility as HeaderVisibility}
                     status={header.status}
                     formazioneItems={(formazione?.prose_content as FormazioneProseContent | undefined)?.items ?? []}
                     allowPreviousDegree
+                    onApproved={onSaved}
                   />
-                }
+                )}
               />
             )}
             {disponibilita && (
               <EditableSection
-                status={
-                  disponibilita.status === "approved" && pianoCarriera?.status === "approved"
-                    ? "approved"
-                    : disponibilita.status === "empty" && (pianoCarriera?.status ?? "empty") === "empty"
-                      ? "empty"
-                      : "draft"
-                }
                 view={
                   <DisponibilitaEPianoView
                     disponibilita={disponibilita.prose_content as DisponibilitaProseContent}
                     piano={pianoData ?? null}
                   />
                 }
-                edit={
+                edit={(onSaved) => (
                   <DisponibilitaEPianoBlock
                     disponibilita={disponibilita.prose_content as DisponibilitaProseContent}
                     piano={pianoData ?? { stato: "esplorazione", testo: null }}
@@ -196,8 +178,9 @@ export default async function StudentHomePage() {
                           ? "empty"
                           : "draft"
                     }
+                    onApproved={onSaved}
                   />
-                }
+                )}
               />
             )}
           </>
@@ -206,9 +189,8 @@ export default async function StudentHomePage() {
           <>
             {autodescrizione && (
               <EditableSection
-                status={autodescrizione.status}
                 view={<ProseView title={cardT("titles.profiloPersonale")} testo={autodescrizioneTesto} serif />}
-                edit={
+                edit={(onSaved) => (
                   <ProseBlock
                     blockType="autodescrizione"
                     title={cardT("titles.profiloPersonale")}
@@ -217,15 +199,15 @@ export default async function StudentHomePage() {
                     serif
                     intro={t("autodescrizioneIntro")}
                     placeholder={cardT("profiloPersonalePlaceholder")}
+                    onApproved={onSaved}
                   />
-                }
+                )}
               />
             )}
             {esperienze && (
               <EditableSection
-                status={esperienze.status}
                 view={<EsperienzeView items={esperienzeItems} />}
-                edit={<EsperienzeBlock items={esperienzeItems} status={esperienze.status} />}
+                edit={(onSaved) => <EsperienzeBlock items={esperienzeItems} status={esperienze.status} onApproved={onSaved} />}
               />
             )}
           </>
@@ -234,14 +216,12 @@ export default async function StudentHomePage() {
           <>
             {competenze && (
               <EditableSection
-                status={competenze.status}
                 view={<CompetenzeView data={competenzeData} />}
-                edit={<CompetenzeBlock data={competenzeData} status={competenze.status} />}
+                edit={(onSaved) => <CompetenzeBlock data={competenzeData} status={competenze.status} onApproved={onSaved} />}
               />
             )}
             {lingue && (
               <EditableSection
-                status={lingue.status}
                 view={
                   <div className="p-4">
                     <p className="text-eyebrow text-navy/60 uppercase mb-2">{cardT("titles.lingue")}</p>
@@ -258,7 +238,7 @@ export default async function StudentHomePage() {
                     )}
                   </div>
                 }
-                edit={<LingueBlock items={lingueItems} status={lingue.status} />}
+                edit={(onSaved) => <LingueBlock items={lingueItems} status={lingue.status} onApproved={onSaved} />}
               />
             )}
             {/* Interessi è legacy (confluito nel Profilo personale): resta visibile
@@ -266,15 +246,16 @@ export default async function StudentHomePage() {
             {interessi && interessiTesto && (
               <EditableSection
                 view={<ProseView title={cardT("titles.interessi")} testo={interessiTesto} />}
-                edit={
+                edit={(onSaved) => (
                   <ProseBlock
                     blockType="interessi"
                     title={cardT("titles.interessi")}
                     testo={interessiTesto}
                     status={interessi.status}
                     placeholder={cardT("interessiPlaceholder")}
+                    onApproved={onSaved}
                   />
-                }
+                )}
               />
             )}
           </>

@@ -70,6 +70,18 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return <p className="text-[10px] tracking-[0.14em] text-navy/60 uppercase mb-1.5">{children}</p>;
 }
 
+/** Il buco in una sezione, segnalato in chiaro sulla card dello studente. */
+function MissingSection({ title, hint }: { title: string; hint: string }) {
+  return (
+    <div>
+      <SectionTitle>{title}</SectionTitle>
+      <p className="rounded border border-dashed border-error/50 bg-error-bg px-2 py-1 text-[11px] leading-snug text-error">
+        {hint}
+      </p>
+    </div>
+  );
+}
+
 export function MiraCardDocument(props: MiraCardDocumentProps) {
   const t = useTranslations("CardBlocks");
   const d = useTranslations("CardDocument");
@@ -149,11 +161,9 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
   const visibleEsperienze = esperienze.slice(0, MAX_ESPERIENZE);
   const hiddenEsperienze = esperienze.length - visibleEsperienze.length;
 
-  // In anteprima solo i nomi, il corso attuale per primo: voti e CFU stanno nell'overlay,
-  // dove l'interruttore di visibilità decide se mostrarli.
-  const MAX_ESAMI = 12;
-  const visibleEsami = [...esamiAttuali, ...esamiPrecedenti].slice(0, MAX_ESAMI);
-  const hiddenEsami = formazioneItems.length - visibleEsami.length;
+  // Gli avvisi "manca questa parte" sono SOLO per lo studente sulla propria card: chi la
+  // riceve (associazione, azienda, admin) non deve vedere i buchi segnalati in rosso.
+  const showTodo = viewer === "self";
 
   /** Un gruppo di esami nell'overlay. I voti seguono l'interruttore di visibilità della media. */
   function examRows(items: FormazioneItem[]) {
@@ -338,6 +348,12 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                   )}
                 </div>
 
+                {dispPills.length === 0 && !dispNotActive && showTodo && (
+                  <div className="min-w-0 border-l border-border pl-6">
+                    <MissingSection title={t("titles.disponibilita")} hint={d("missing.disponibilita")} />
+                  </div>
+                )}
+
                 {(dispPills.length > 0 || dispNotActive) && (
                   <div className="min-w-0 border-l border-border pl-6">
                     <SectionTitle>{t("titles.disponibilita")}</SectionTitle>
@@ -371,8 +387,10 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
             {/* ——— Due colonne tematiche ——— */}
             <div className="grid grid-cols-[1fr_260px] gap-x-7 px-10 py-6">
               <div className="min-w-0 space-y-5">
-                {autodescrizione && (
+                {autodescrizione ? (
                   <ProseSection title={t("titles.profiloPersonale")} testo={autodescrizione} limit={520} serif />
+                ) : (
+                  showTodo && <MissingSection title={t("titles.profiloPersonale")} hint={d("missing.profiloPersonale")} />
                 )}
 
                 {esperienze.length > 0 && (
@@ -411,29 +429,31 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                   </div>
                 )}
 
-                {/* Esami: dal rework 2026-07-31 sono una sezione vera della card, non più un
-                    dettaglio nascosto sotto l'Header. Sono la prova di cosa lo studente ha
-                    studiato davvero, al posto delle vecchie "competenze accademiche". */}
-                {formazioneItems.length > 0 && (
-                  <div>
-                    <SectionTitle>{t("titles.esami")}</SectionTitle>
-                    <p className="text-[12px] leading-relaxed text-ink">
-                      {visibleEsami.map((it) => it.esame).join(" · ")}
-                      {hiddenEsami > 0 && <span className="text-ink-tertiary"> {d("andMore", { count: hiddenEsami })}</span>}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); openEsami(); }}
-                      className="mt-0.5 text-[11px] text-petrol hover:text-petrol-700 transition-colors"
-                    >
-                      {t("formazione.seeAll", { count: formazioneItems.length })} ▸
-                    </button>
-                  </div>
+                {showTodo && !esperienze.length && (
+                  <MissingSection title={t("titles.esperienze")} hint={d("missing.esperienze")} />
                 )}
               </div>
 
               <div className="min-w-0 space-y-5 border-l border-border pl-6">
-                {hardItems.length > 0 && (
+                {/* Esami sopra le competenze: sono la parte teorica (cosa ha studiato), le
+                    competenze quella pratica (cosa sa usare). Tutto l'elenco sta nell'overlay,
+                    niente anteprima tagliata: la card resta compatta e leggibile. */}
+                {formazioneItems.length > 0 ? (
+                  <div>
+                    <SectionTitle>{t("titles.esami")}</SectionTitle>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); openEsami(); }}
+                      className="block text-[12px] text-petrol hover:text-petrol-700 transition-colors"
+                    >
+                      {t("header.esami", { count: formazioneItems.length })} ▸
+                    </button>
+                  </div>
+                ) : (
+                  showTodo && <MissingSection title={t("titles.esami")} hint={d("missing.esami")} />
+                )}
+
+                {hardItems.length > 0 ? (
                   <div>
                     <SectionTitle>{t("titles.competenze")}</SectionTitle>
                     <button
@@ -444,6 +464,12 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                       {t("competenze.hardSkillsCount", { count: hardItems.length })} ▸
                     </button>
                   </div>
+                ) : (
+                  showTodo && <MissingSection title={t("titles.competenze")} hint={d("missing.competenze")} />
+                )}
+
+                {showTodo && lingue.length === 0 && (
+                  <MissingSection title={t("titles.lingue")} hint={d("missing.lingue")} />
                 )}
 
                 {lingue.length > 0 && (
@@ -459,7 +485,11 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                   </div>
                 )}
 
-                {piano && <ProseSection title={t("titles.pianoCarriera")} testo={piano} limit={260} />}
+                {piano ? (
+                  <ProseSection title={t("titles.pianoCarriera")} testo={piano} limit={260} />
+                ) : (
+                  showTodo && <MissingSection title={t("titles.pianoCarriera")} hint={d("missing.pianoCarriera")} />
+                )}
 
                 {/* Interessi legacy (pre-rework): visibile solo se un vecchio profilo lo aveva compilato. */}
                 {interessi && <ProseSection title={t("titles.interessi")} testo={interessi} limit={260} />}

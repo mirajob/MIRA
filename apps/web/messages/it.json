@@ -345,8 +345,8 @@
     "editCard": "Modifica la card",
     "backToCard": "Torna alla card",
     "cardPurpose": "La tua MIRA Card è il profilo con cui ti candidi alle associazioni ed è quello che le aziende leggono quando cercano un candidato.",
-    "incompleteTitle": "{count, plural, one {Manca 1 sezione} other {Mancano # sezioni}} alla card completa",
-    "incompleteBody": "Da completare: {sections}. Più la card è completa, più ricerche ti trovano."
+    "incompleteTitle": "{count, plural, one {Manca 1 sezione} other {Mancano # sezioni}} alla tua card",
+    "incompleteBody": "Da completare: {sections}. Tocca qui per aggiungerle."
   },
   "CardDocument": {
     "empty": "Questo studente non ha ancora blocchi approvati nella card.",
@@ -355,7 +355,15 @@
     "zoomIn": "Tocca la card per ingrandirla",
     "zoomOut": "Vedi la card intera",
     "moreItems": "+{count} altre",
-    "andMore": "e altri {count}"
+    "missing": {
+      "disponibilita": "Manca: di' se cerchi qualcosa, in che ambito e da quando.",
+      "profiloPersonale": "Manca: è la parte che ti distingue da chi ha studiato le stesse cose.",
+      "esperienze": "Mancano: è la parte che pesa di più per chi ti legge.",
+      "esami": "Manca il libretto: senza, nessuno vede cosa hai studiato.",
+      "competenze": "Mancano: sono le parole con cui le aziende cercano.",
+      "lingue": "Mancano: bastano lingua e livello.",
+      "pianoCarriera": "Manca: dove vuoi arrivare, anche se stai ancora esplorando."
+    }
   },
   "CardBlocks": {
     "titles": {
@@ -376,7 +384,6 @@
     "pendingConfirmation": "Da confermare",
     "confirm": "Conferma",
     "edit": "Modifica",
-    "done": "Fatto",
     "remove": "Rimuovi",
     "verified": "Verificata",
     "showLess": "Mostra meno",
@@ -492,12 +499,9 @@
     },
     "profiloPersonalePlaceholder": "Come ti presenti oltre a esami ed esperienze: interessi veri, abitudini, priorità...",
     "saveChanges": "Salva modifiche",
-    "notPublishedEmpty": "Sezione vuota: chi legge la tua card qui non vede niente. Aprila e compilala.",
-    "notPublishedDraft": "Non ancora confermata: queste informazioni non arrivano ad associazioni e aziende. Aprila e premi Conferma.",
     "formazione": {
       "cicloAttuale": "Corso attuale",
-      "cicloPrecedente": "Corso precedente",
-      "seeAll": "Tutti gli esami ({count})"
+      "cicloPrecedente": "Corso precedente"
     }
   },
   "JoinByCode": {

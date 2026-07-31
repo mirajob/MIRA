@@ -345,8 +345,8 @@
     "editCard": "Edit card",
     "backToCard": "Back to card",
     "cardPurpose": "Your MIRA Card is the profile you apply to associations with, and the one companies read when they look for a candidate.",
-    "incompleteTitle": "{count, plural, one {1 section left} other {# sections left}} to complete your card",
-    "incompleteBody": "Still to do: {sections}. The more complete your card, the more searches find you."
+    "incompleteTitle": "{count, plural, one {1 section missing} other {# sections missing}} from your card",
+    "incompleteBody": "Still to add: {sections}. Tap here to fill them in."
   },
   "CardDocument": {
     "empty": "This student has no approved card blocks yet.",
@@ -355,7 +355,15 @@
     "zoomIn": "Tap the card to zoom in",
     "zoomOut": "View full card",
     "moreItems": "+{count} more",
-    "andMore": "and {count} more"
+    "missing": {
+      "disponibilita": "Missing: say what you are looking for, in which field and from when.",
+      "profiloPersonale": "Missing: this is what sets you apart from everyone with the same degree.",
+      "esperienze": "Missing: this is the part that counts most for whoever reads you.",
+      "esami": "Transcript missing: without it, nobody sees what you studied.",
+      "competenze": "Missing: these are the words companies search with.",
+      "lingue": "Missing: language and level are enough.",
+      "pianoCarriera": "Missing: where you want to get to, even if you are still exploring."
+    }
   },
   "CardBlocks": {
     "titles": {
@@ -376,7 +384,6 @@
     "pendingConfirmation": "Pending confirmation",
     "confirm": "Confirm",
     "edit": "Edit",
-    "done": "Done",
     "remove": "Remove",
     "verified": "Verified",
     "showLess": "Show less",
@@ -492,12 +499,9 @@
     },
     "profiloPersonalePlaceholder": "How you present yourself beyond exams and experiences: real interests, habits, priorities...",
     "saveChanges": "Save changes",
-    "notPublishedEmpty": "Empty section: whoever reads your card sees nothing here. Open it and fill it in.",
-    "notPublishedDraft": "Not confirmed yet: this content does not reach associations and companies. Open it and press Confirm.",
     "formazione": {
       "cicloAttuale": "Current degree",
-      "cicloPrecedente": "Previous degree",
-      "seeAll": "All exams ({count})"
+      "cicloPrecedente": "Previous degree"
     }
   },
   "JoinByCode": {
