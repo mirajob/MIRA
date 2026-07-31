@@ -524,7 +524,8 @@
     "claimRequestsHeading": "Le tue richieste di gestione",
     "claimStatusPending": "In attesa",
     "claimStatusApproved": "Approvata",
-    "claimStatusRejected": "Non approvata"
+    "claimStatusRejected": "Non approvata",
+    "adminPreviewNotice": "Anteprima admin: vedi questa schermata come la vede uno studente, con dentro anche le pagine ancora in bozza."
   },
   "Applications": {
     "backLink": "← Associazioni",
@@ -1475,5 +1476,43 @@
     "pendingTitle": "Richiesta inviata.",
     "pendingBody": "La trovi in Associazioni con il suo stato: ti rispondiamo appena l'abbiamo esaminata.",
     "rejectedNote": "La richiesta precedente non è stata approvata."
+  },
+  "AssociationCategories": {
+    "finance": "Finanza",
+    "consulting": "Consulenza",
+    "economics": "Economia e scienze sociali",
+    "entrepreneurship": "Imprenditorialità",
+    "marketing": "Marketing",
+    "tech": "Tecnologia",
+    "data_ai": "Dati e intelligenza artificiale",
+    "engineering": "Ingegneria",
+    "sciences": "Scienze",
+    "law": "Diritto",
+    "politics": "Politica e geopolitica",
+    "public_policy": "Politiche pubbliche",
+    "debate": "Dibattito",
+    "social_impact": "Impatto sociale",
+    "sustainability": "Sostenibilità",
+    "health": "Salute",
+    "communication": "Comunicazione",
+    "media_journalism": "Media e giornalismo",
+    "design": "Design",
+    "architecture": "Architettura",
+    "fashion": "Moda e lusso",
+    "arts": "Arti",
+    "music": "Musica",
+    "culture": "Cultura",
+    "languages": "Lingue",
+    "sports": "Sport e tempo libero",
+    "international": "Comunità internazionali",
+    "other": "Altro"
+  },
+  "AssociationDirectory": {
+    "searchPlaceholder": "Cerca un'associazione",
+    "countSummary": "{total} associazioni · {open} con selezioni aperte",
+    "allCategories": "Tutti gli ambiti",
+    "noResults": "Nessuna associazione corrisponde alla ricerca.",
+    "draftTag": "Bozza",
+    "openNow": "Selezioni aperte"
   }
 }

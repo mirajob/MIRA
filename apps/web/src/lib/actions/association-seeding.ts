@@ -38,7 +38,7 @@ export async function publishSeededAssociation(associationId: string) {
   const supabase = await createServiceClient();
 
   const { data: association } = await (supabase.from("association_profiles") as any)
-    .select("slug, name, university")
+    .select("slug, name, university, short_description")
     .eq("id", associationId)
     .maybeSingle();
 
@@ -48,6 +48,12 @@ export async function publishSeededAssociation(associationId: string) {
   // studente filtra per ateneo, quindi pubblicarla sarebbe un falso positivo.
   if (!association.university) {
     return { error: `${association.name}: manca l'università, la pagina non sarebbe visibile a nessuno.` };
+  }
+
+  // Le righe nascono con solo nome, ambito e sito: la scheda si scrive dopo. Una
+  // pagina senza descrizione non va pubblicata, sarebbe una riga vuota nell'elenco.
+  if (!association.short_description) {
+    return { error: `${association.name}: manca la descrizione, la scheda non è ancora scritta.` };
   }
 
   const { error } = await (supabase.from("association_profiles") as any)
@@ -91,13 +97,20 @@ export async function publishSeededAssociations(associationIds: string[]) {
   const supabase = await createServiceClient();
 
   const { data: rows } = await (supabase.from("association_profiles") as any)
-    .select("id, name, university")
+    .select("id, name, university, short_description")
     .in("id", associationIds);
 
   const missingUniversity = (rows ?? []).filter((r: any) => !r.university);
   if (missingUniversity.length) {
     return {
       error: `Manca l'università per: ${missingUniversity.map((r: any) => r.name).join(", ")}.`,
+    };
+  }
+
+  const missingDescription = (rows ?? []).filter((r: any) => !r.short_description);
+  if (missingDescription.length) {
+    return {
+      error: `Scheda non ancora scritta per: ${missingDescription.map((r: any) => r.name).join(", ")}.`,
     };
   }
 

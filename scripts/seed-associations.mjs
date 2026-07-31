@@ -78,20 +78,24 @@ for (const a of seed.associations) {
     continue;
   }
 
-  const row = {
-    name: a.name,
-    slug: a.slug,
-    category: a.category ?? null,
-    sectors: a.sectors ?? null,
-    short_description: a.short_description ?? null,
-    long_description: a.long_description ?? null,
-    website_url: a.website_url ?? null,
-    recruiting_timeline: a.recruiting_timeline ?? null,
-    source_urls: a.source_urls ?? null,
-    university,
-    claim_status: "seeded",
-    official: false,
-  };
+  // Solo i campi presenti nella voce di seed finiscono nella riga. Serve perché i
+  // file sono due e complementari: il roster porta nome, ambito e sito di tutte le
+  // associazioni, le schede portano i testi di quelle già scritte. Se scrivessimo
+  // anche i campi assenti, rilanciare il roster cancellerebbe le schede.
+  const row = { university, claim_status: "seeded", official: false };
+  for (const field of [
+    "name",
+    "slug",
+    "category",
+    "sectors",
+    "short_description",
+    "long_description",
+    "website_url",
+    "recruiting_timeline",
+    "source_urls",
+  ]) {
+    if (a[field] !== undefined) row[field] = a[field];
+  }
 
   if (existing) {
     // Non tocchiamo public_page_status: se l'admin l'ha già pubblicata, un

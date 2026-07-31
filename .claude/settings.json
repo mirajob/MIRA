@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --filter @mira/web typecheck *)",
+      "Bash(pnpm --filter @mira/web typecheck)",
+      "Bash(pnpm --filter @mira/web build *)",
+      "Bash(pnpm --filter @mira/web build)",
+      "Bash(pnpm --filter @mira/web lint *)",
+      "Bash(pnpm --filter @mira/web lint)",
+      "Bash(pnpm --filter @mira/ai typecheck *)",
+      "Bash(pnpm --filter @mira/domain typecheck *)",
+      "Bash(pnpm --filter @mira/supabase typecheck *)",
+      "Bash(pnpm --filter @mira/types typecheck *)",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm build *)",
+      "Bash(pnpm build)",
+      "Bash(npx tsc --noEmit *)",
+      "Bash(npx tsc --noEmit)"
+    ]
+  }
+}

@@ -3,6 +3,7 @@
 // Sono slug testuali, non un enum del DB: aggiungerne di nuovi non richiede migrazioni e non
 // invalida i valori gia' salvati. Mostrati "prettificati" (underscore -> spazio).
 export const ASSOCIATION_CATEGORIES = [
+  "management",
   "finance",
   "consulting",
   "economics",
@@ -29,8 +30,44 @@ export const ASSOCIATION_CATEGORIES = [
   "languages",
   "debate",
   "sports",
+  "international",
   "other",
 ] as const;
+
+// Ordine con cui le sezioni compaiono nella lista associazioni: prima gli ambiti
+// legati alla carriera, poi cultura, sport e comunità. L'ordine dell'array sopra
+// serve ai menu a tendina, questo alla lettura di una pagina lunga.
+export const ASSOCIATION_CATEGORY_ORDER: readonly string[] = [
+  "management",
+  "finance",
+  "consulting",
+  "economics",
+  "entrepreneurship",
+  "marketing",
+  "tech",
+  "data_ai",
+  "engineering",
+  "sciences",
+  "law",
+  "politics",
+  "public_policy",
+  "debate",
+  "social_impact",
+  "sustainability",
+  "health",
+  "communication",
+  "media_journalism",
+  "design",
+  "architecture",
+  "fashion",
+  "arts",
+  "music",
+  "culture",
+  "languages",
+  "sports",
+  "international",
+  "other",
+];
 
 // Etichette per gli slug che "prettificati" verrebbero male (Data ai, Media journalism...).
 // Gli altri ricadono sulla prettificazione automatica.

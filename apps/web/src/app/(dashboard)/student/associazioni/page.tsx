@@ -3,11 +3,12 @@ import { createServerClient, createServiceClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { APPLICATION_STATUS_LABELS, associationCategoryLabel } from "@mira/domain";
+import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { JoinByCode } from "@/components/join-by-code";
 import { WORKSPACE_ROLES, hasWorkspaceAccess } from "@/lib/association-roles";
 import { MarkAssociationNotificationsRead } from "./mark-read";
 import { MyMemberships } from "./my-memberships";
+import { AssociationDirectory, type DirectoryAssociation } from "@/components/association-directory";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-navy-50 text-ink-tertiary",
@@ -20,9 +21,15 @@ const STATUS_COLORS: Record<string, string> = {
   withdrawn: "bg-navy-50 text-ink-tertiary",
 };
 
-export default async function StudentAssociazioniPage() {
+export default async function StudentAssociazioniPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ateneo?: string }>;
+}) {
   const ctx = await getUserContext();
   if (!ctx.isStudent) redirect("/api/auth/redirect");
+
+  const { ateneo } = await searchParams;
 
   const t = await getTranslations("Associazioni");
   const c = await getTranslations("Common");
@@ -38,13 +45,32 @@ export default async function StudentAssociazioniPage() {
     .eq("user_id", profileId)
     .maybeSingle();
 
+  // L'admin MIRA vede questa schermata in anteprima: stessa resa dello studente, ma
+  // con dentro anche le pagine ancora in bozza e con la possibilità di cambiare
+  // ateneo. Serve a giudicare l'insieme prima di pubblicare, non solo la singola pagina.
+  const isAdminPreview = ctx.isMiraAdmin;
+  const university = isAdminPreview
+    ? (ateneo || studentProfile?.university || "")
+    : (studentProfile?.university ?? "");
+
   // Ogni associazione eredita l'università del presidente che l'ha candidata: uno
   // studente vede e si candida solo alle associazioni della propria università.
-  const { data: associations } = await (supabase.from("association_profiles") as any)
-    .select("id, name, slug, category, short_description, logo_url, sectors, claim_status")
-    .eq("public_page_status", "published")
-    .eq("university", studentProfile?.university ?? "")
+  let associationsQuery = (supabase.from("association_profiles") as any)
+    .select("id, name, slug, category, short_description, logo_url, sectors, claim_status, public_page_status")
+    .eq("university", university)
     .order("name");
+  if (!isAdminPreview) {
+    associationsQuery = associationsQuery.eq("public_page_status", "published");
+  }
+  const { data: associations } = await associationsQuery;
+
+  // Atenei disponibili per il selettore dell'anteprima admin.
+  const { data: allUniversities } = isAdminPreview
+    ? await (supabase.from("association_profiles") as any).select("university")
+    : { data: [] };
+  const universityOptions = [
+    ...new Set(((allUniversities ?? []) as any[]).map((a) => a.university).filter(Boolean)),
+  ].sort((a: string, b: string) => a.localeCompare(b));
 
   const { data: openCycles } = await (supabase.from("application_cycles") as any)
     .select("id, title, closes_at, association_id")
@@ -95,8 +121,32 @@ export default async function StudentAssociazioniPage() {
     membershipByAssoc.set(m.association_id, m);
   }
 
+  const directoryRows: DirectoryAssociation[] = (associations ?? []).map((assoc: any) => {
+    const membership = membershipByAssoc.get(assoc.id);
+    const myApp = appsByAssoc.get(assoc.id);
+    return {
+      id: assoc.id,
+      name: assoc.name,
+      slug: assoc.slug,
+      category: assoc.category ?? null,
+      shortDescription: assoc.short_description ?? null,
+      // Una pagina seminata non ha un board che gestisce le candidature, quindi non
+      // può avere cicli aperti: il pallino non le riguarda mai.
+      hasOpenCycle: assoc.claim_status !== "seeded" && (cyclesByAssoc.get(assoc.id) ?? []).length > 0,
+      isDraft: assoc.public_page_status !== "published",
+      roleLabel: membership
+        ? (c.has(`boardRoles.${membership.role}`) ? c(`boardRoles.${membership.role}`) : membership.role)
+        : null,
+      applicationLabel: myApp
+        ? (APPLICATION_STATUS_LABELS[myApp.status] ?? myApp.status)
+        : null,
+    };
+  });
+
   return (
-    <div className="mx-auto max-w-2xl px-6 py-6 space-y-6">
+    // Piu' largo del solito max-w-2xl: l'indice va su due colonne e con oltre cento
+    // associazioni una colonna sola diventa un rotolo infinito.
+    <div className="mx-auto max-w-4xl px-6 py-6 space-y-6">
       <MarkAssociationNotificationsRead />
 
       <div>
@@ -292,102 +342,39 @@ export default async function StudentAssociazioniPage() {
         )}
       </div>
 
-      {/* Associazioni della propria università — la query è già filtrata per university */}
+      {/* Indice delle associazioni dell'ateneo: sezioni per ambito, righe compatte.
+          La query e' gia' filtrata per universita'. */}
       <div>
         <h2 className="font-sans text-h3 text-navy mb-3">{t("allAssociationsHeading")}</h2>
-        <div className="space-y-4">
-          {(associations ?? []).map((assoc: any) => {
-            const cycles = cyclesByAssoc.get(assoc.id) ?? [];
-            const myApp = appsByAssoc.get(assoc.id);
-            const membership = membershipByAssoc.get(assoc.id);
-            const hasOpenCycle = cycles.length > 0;
 
-            return (
-              <div key={assoc.id} className="rounded-lg border border-border bg-white p-5">
-                <div className="flex items-start gap-3">
-                  {assoc.logo_url ? (
-                    <img src={assoc.logo_url} alt="" className="h-10 w-10 rounded-md object-cover" />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-navy text-white text-label font-semibold shrink-0">
-                      {assoc.name.charAt(0)}
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-sans text-h3 text-navy">{assoc.name}</h3>
-                      {membership && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-petrol-50 text-petrol-700">
-                          {c.has(`boardRoles.${membership.role}`) ? c(`boardRoles.${membership.role}`) : membership.role}
-                        </span>
-                      )}
-                    </div>
-                    {assoc.category && (
-                      <p className="text-body-sm text-ink-tertiary">
-                        {associationCategoryLabel(assoc.category)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {assoc.short_description && (
-                  <p className="mt-2 text-body-sm text-ink-secondary">{assoc.short_description}</p>
-                )}
-
-                {assoc.sectors?.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {assoc.sectors.map((s: string) => (
-                      <span key={s} className="px-2 py-0.5 rounded-full text-xs font-medium bg-navy-50 text-navy">
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="mt-3 flex items-center gap-3">
+        {isAdminPreview && (
+          <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+            <p className="text-body-sm text-ink">{t("adminPreviewNotice")}</p>
+            {universityOptions.length > 1 && (
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {universityOptions.map((u: string) => (
                   <Link
-                    href={`/student/associazioni/${assoc.slug}`}
-                    className="text-body-sm text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700"
+                    key={u}
+                    href={`/student/associazioni?ateneo=${encodeURIComponent(u)}`}
+                    className={`rounded-full px-2.5 py-0.5 text-body-sm transition-colors duration-100 ${
+                      u === university ? "bg-navy text-white" : "bg-white text-navy hover:bg-navy-50"
+                    }`}
                   >
-                    {t("viewPage")}
+                    {u}
                   </Link>
-
-                  {/* Pagina seminata da MIRA: nessun board la gestisce ancora, quindi non
-                      esiste un ciclo a cui candidarsi — dirlo è più onesto di
-                      "candidature chiuse", che farebbe pensare a una scadenza passata. */}
-                  {assoc.claim_status === "seeded" ? (
-                    <span className="text-body-sm text-ink-tertiary">{t("notOnMiraYet")}</span>
-                  ) : hasWorkspaceAccess(membership) ? (
-                    <Link
-                      href={`/association/${assoc.slug}`}
-                      className="bg-petrol text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-petrol-700 transition-colors duration-100"
-                    >
-                      {t("manage")}
-                    </Link>
-                  ) : myApp ? (
-                    <span className="text-body-sm text-ink-secondary">
-                      {t("applicationStatus", { status: APPLICATION_STATUS_LABELS[myApp.status] ?? myApp.status })}
-                    </span>
-                  ) : hasOpenCycle ? (
-                    <Link
-                      href={`/associations/${assoc.slug}/apply?cycle=${cycles[0].id}`}
-                      className="bg-navy text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-navy-700 transition-colors duration-100"
-                    >
-                      {t("applyNow")}
-                    </Link>
-                  ) : (
-                    <span className="text-body-sm text-ink-tertiary">{t("applicationsClosed")}</span>
-                  )}
-                </div>
+                ))}
               </div>
-            );
-          })}
+            )}
+          </div>
+        )}
 
-          {!(associations?.length) && (
-            <div className="rounded-lg border border-border bg-white p-8 text-center">
-              <p className="text-body text-ink-secondary">{t("noAssociationsAvailable")}</p>
-            </div>
-          )}
-        </div>
+        {directoryRows.length === 0 ? (
+          <div className="rounded-lg border border-border bg-white p-8 text-center">
+            <p className="text-body text-ink-secondary">{t("noAssociationsAvailable")}</p>
+          </div>
+        ) : (
+          <AssociationDirectory associations={directoryRows} />
+        )}
       </div>
     </div>
   );

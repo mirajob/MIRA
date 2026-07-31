@@ -524,7 +524,8 @@
     "claimRequestsHeading": "Your management requests",
     "claimStatusPending": "Pending",
     "claimStatusApproved": "Approved",
-    "claimStatusRejected": "Not approved"
+    "claimStatusRejected": "Not approved",
+    "adminPreviewNotice": "Admin preview: this is the student view, with pages still in draft included."
   },
   "Applications": {
     "backLink": "← Associations",
@@ -1475,5 +1476,43 @@
     "pendingTitle": "Request sent.",
     "pendingBody": "You can follow its status under Associations. We will get back to you once we have reviewed it.",
     "rejectedNote": "Your previous request was not approved."
+  },
+  "AssociationCategories": {
+    "finance": "Finance",
+    "consulting": "Consulting",
+    "economics": "Economics & Social Sciences",
+    "entrepreneurship": "Entrepreneurship",
+    "marketing": "Marketing",
+    "tech": "Technology",
+    "data_ai": "Data & AI",
+    "engineering": "Engineering",
+    "sciences": "Sciences",
+    "law": "Law",
+    "politics": "Politics & Geopolitics",
+    "public_policy": "Public Policy",
+    "debate": "Debate",
+    "social_impact": "Social Impact",
+    "sustainability": "Sustainability",
+    "health": "Health",
+    "communication": "Communication",
+    "media_journalism": "Media & Journalism",
+    "design": "Design",
+    "architecture": "Architecture",
+    "fashion": "Fashion & Luxury",
+    "arts": "Arts",
+    "music": "Music",
+    "culture": "Culture",
+    "languages": "Languages",
+    "sports": "Sports & Leisure",
+    "international": "International Communities",
+    "other": "Other"
+  },
+  "AssociationDirectory": {
+    "searchPlaceholder": "Search an association",
+    "countSummary": "{total} associations · {open} recruiting now",
+    "allCategories": "All areas",
+    "noResults": "No association matches your search.",
+    "draftTag": "Draft",
+    "openNow": "Recruiting"
   }
 }

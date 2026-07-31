@@ -1,0 +1,1172 @@
+{
+  "_comment": [
+    "Anagrafica di tutte le associazioni studentesche Bocconi, dall'elenco ufficiale.",
+    "Contiene SOLO nome, ambito e sito: le schede (descrizioni) stanno in",
+    "associations-bocconi.json e si aggiungono a lotti man mano che vengono scritte.",
+    "Lo script non sovrascrive un campo assente qui, quindi rilanciare questo file",
+    "non cancella le schede gia' scritte, e salta sempre le pagine gia' rivendicate",
+    "da un'associazione (Blockchain, Value Investing, Shipping, Strategy Club).",
+    "Una pagina senza descrizione non e' pubblicabile: il controllo e' in",
+    "publishSeededAssociation."
+  ],
+  "university": "Università Bocconi",
+  "associations": [
+    {
+      "name": "Bocconi Students Consulting Club",
+      "slug": "bocconi-students-consulting-club",
+      "category": "management",
+      "website_url": "https://www.bsccmilan.com/",
+      "source_urls": [
+        "https://www.bsccmilan.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Business Entertainment Access & Talent",
+      "slug": "bocconi-students-for-business-entertainment-access-and-talen",
+      "category": "management",
+      "website_url": "https://bs4beat.com",
+      "source_urls": [
+        "https://bs4beat.com",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Fashion and Luxury",
+      "slug": "bocconi-students-for-fashion-and-luxury",
+      "category": "management",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Hospitality Management",
+      "slug": "bocconi-students-for-hospitality-management",
+      "category": "management",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for PMI",
+      "slug": "bocconi-students-for-pmi",
+      "category": "management",
+      "website_url": "https://studentsforpmi.carrd.co/",
+      "source_urls": [
+        "https://studentsforpmi.carrd.co/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Sport Management",
+      "slug": "bocconi-students-for-sport-management",
+      "category": "management",
+      "website_url": "https://instagram.com/bssportmanagement",
+      "source_urls": [
+        "https://instagram.com/bssportmanagement",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Management Club",
+      "slug": "bocconi-students-management-club",
+      "category": "management",
+      "website_url": "https://www.instagram.com/bsmc_bocconi",
+      "source_urls": [
+        "https://www.instagram.com/bsmc_bocconi",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Marketing Society",
+      "slug": "bocconi-students-marketing-society",
+      "category": "management",
+      "website_url": "https://www.bocconimarketingsociety.com/",
+      "source_urls": [
+        "https://www.bocconimarketingsociety.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Strategy Club",
+      "slug": "bocconi-students-strategy-club",
+      "category": "management",
+      "website_url": "https://asstrategyclub.wixsite.com/bssc",
+      "source_urls": [
+        "https://asstrategyclub.wixsite.com/bssc",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Culturit Bocconi Studenti",
+      "slug": "culturit-bocconi-studenti",
+      "category": "management",
+      "website_url": "https://www.instagram.com/culturitbocconi/",
+      "source_urls": [
+        "https://www.instagram.com/culturitbocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Dawn Advisory",
+      "slug": "dawn-advisory",
+      "category": "management",
+      "website_url": "https://www.dawnadvisory.com/",
+      "source_urls": [
+        "https://www.dawnadvisory.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Entrepreneurship Club Bocconi Students",
+      "slug": "entrepreneurship-club-bocconi-students",
+      "category": "management",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Family Business Association",
+      "slug": "family-business-association",
+      "category": "management",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Luxury Bocconi Students Society",
+      "slug": "luxury-bocconi-students-society",
+      "category": "management",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Women in Business",
+      "slug": "women-in-business",
+      "category": "management",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Black Swan Student Society",
+      "slug": "black-swan-student-society",
+      "category": "finance",
+      "website_url": "https://www.instagram.com/blackswanstudentsociety/",
+      "source_urls": [
+        "https://www.instagram.com/blackswanstudentsociety/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Shipping & Global Trade Student Association",
+      "slug": "bocconi-shipping-and-global-trade-association",
+      "category": "finance",
+      "website_url": "https://www.instagram.com/bsgtassociation/",
+      "source_urls": [
+        "https://www.instagram.com/bsgtassociation/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Asset Management Club",
+      "slug": "bocconi-students-asset-management-club",
+      "category": "finance",
+      "website_url": "https://www.bsamc.org/",
+      "source_urls": [
+        "https://www.bsamc.org/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Capital Markets",
+      "slug": "bocconi-students-capital-markets",
+      "category": "finance",
+      "website_url": "https://www.bscapitalmarkets.com/",
+      "source_urls": [
+        "https://www.bscapitalmarkets.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Distressed Investing & Restructuring Society",
+      "slug": "bocconi-students-distressed-investing-and-restructuring-soci",
+      "category": "finance",
+      "website_url": "https://bdrxeu.com/",
+      "source_urls": [
+        "https://bdrxeu.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Emerging Markets Club",
+      "slug": "bocconi-students-for-emerging-markets-club",
+      "category": "finance",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Energy & Infrastructure Finance",
+      "slug": "bocconi-students-energy-and-infrastructure-finance",
+      "category": "finance",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Finance Society",
+      "slug": "bocconi-students-finance-society",
+      "category": "finance",
+      "website_url": "https://www.bsfs.it/",
+      "source_urls": [
+        "https://www.bsfs.it/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Financial Markets",
+      "slug": "bocconi-students-financial-markets",
+      "category": "finance",
+      "website_url": "https://www.asfinancialmarkets.it/",
+      "source_urls": [
+        "https://www.asfinancialmarkets.it/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Fintech Society",
+      "slug": "bocconi-students-fintech-society",
+      "category": "finance",
+      "website_url": "https://www.bsfintechsociety.com/",
+      "source_urls": [
+        "https://www.bsfintechsociety.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Alternative Investments",
+      "slug": "bocconi-students-for-alternative-investments",
+      "category": "finance",
+      "website_url": "https://bsai.it/",
+      "source_urls": [
+        "https://bsai.it/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Forensic Finance Society",
+      "slug": "bocconi-students-forensic-finance-society",
+      "category": "finance",
+      "website_url": "https://www.instagram.com/bsffsbocconi",
+      "source_urls": [
+        "https://www.instagram.com/bsffsbocconi",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Real Estate",
+      "slug": "bocconi-students-for-real-estate",
+      "category": "finance",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Trophy Assets",
+      "slug": "bocconi-students-for-trophy-assets",
+      "category": "finance",
+      "website_url": "https://bocconi-students-for-trophy-assets.com/",
+      "source_urls": [
+        "https://bocconi-students-for-trophy-assets.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Venture Capital",
+      "slug": "bocconi-students-for-venture-capital",
+      "category": "finance",
+      "website_url": "https://www.bsvc.club/",
+      "source_urls": [
+        "https://www.bsvc.club/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Value Investing",
+      "slug": "bocconi-students-for-value-investing",
+      "category": "finance",
+      "website_url": "https://bsvi.it",
+      "source_urls": [
+        "https://bsvi.it",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Investment Club",
+      "slug": "bocconi-students-investment-club",
+      "category": "finance",
+      "website_url": "https://bsic.it/",
+      "source_urls": [
+        "https://bsic.it/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students M&A Circle",
+      "slug": "bocconi-students-ma-circle",
+      "category": "finance",
+      "website_url": "https://bsmac.org/",
+      "source_urls": [
+        "https://bsmac.org/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Private Equity Club",
+      "slug": "bocconi-students-private-equity-club",
+      "category": "finance",
+      "website_url": "https://bspeclub.com/",
+      "source_urls": [
+        "https://bspeclub.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Quantitative Finance",
+      "slug": "bocconi-students-quantitative-finance",
+      "category": "finance",
+      "website_url": "https://bocconistudentsquantitativefinance.com/",
+      "source_urls": [
+        "https://bocconistudentsquantitativefinance.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Women in Finance",
+      "slug": "bocconi-students-women-in-finance",
+      "category": "finance",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Minerva Investment Management Society",
+      "slug": "minerva-investment-management-society",
+      "category": "finance",
+      "website_url": "https://minervaims.it/",
+      "source_urls": [
+        "https://minervaims.it/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Starting Finance Club Studenti Bocconi",
+      "slug": "starting-finance-club-studenti-bocconi",
+      "category": "finance",
+      "website_url": "https://www.instagram.com/sfclubbocconi/",
+      "source_urls": [
+        "https://www.instagram.com/sfclubbocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Behavioral Insights Association of Students",
+      "slug": "bocconi-behavioral-insights-association-of-students",
+      "category": "economics",
+      "website_url": "https://bbiasblog.wordpress.com/",
+      "source_urls": [
+        "https://bbiasblog.wordpress.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Economics Student Association",
+      "slug": "bocconi-economics-student-association",
+      "category": "economics",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Social Equity in Education and Development",
+      "slug": "bocconi-students-for-social-equity-in-education-and-developm",
+      "category": "economics",
+      "website_url": "https://www.instagram.com/bocconi.seed",
+      "source_urls": [
+        "https://www.instagram.com/bocconi.seed",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Economic Society for Bocconi Students",
+      "slug": "economic-society-for-bocconi-students",
+      "category": "economics",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "INSIGHT",
+      "slug": "insight",
+      "category": "economics",
+      "website_url": "https://it.linkedin.com/company/insightbocconi",
+      "source_urls": [
+        "https://it.linkedin.com/company/insightbocconi",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Liberi Oltre Le Illusioni Studenti Bocconi",
+      "slug": "liberi-oltre-le-illusioni-studenti-bocconi",
+      "category": "economics",
+      "website_url": "https://www.instagram.com/liberioltre_bocconi/",
+      "source_urls": [
+        "https://www.instagram.com/liberioltre_bocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Studenti Bocconiani Liberali - Milton Friedman Society",
+      "slug": "studenti-bocconiani-liberali-milton-friedman-society",
+      "category": "economics",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Tortuga Studenti Bocconi",
+      "slug": "tortuga-studenti-bocconi",
+      "category": "economics",
+      "website_url": "https://www.tortuga-econ.it/",
+      "source_urls": [
+        "https://www.tortuga-econ.it/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "ReThink Studenti Bocconi",
+      "slug": "rethink-studenti-bocconi",
+      "category": "economics",
+      "website_url": "https://www.instagram.com/rethink_studenti_bocconi/",
+      "source_urls": [
+        "https://www.instagram.com/rethink_studenti_bocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Aleph - Analisi Strategiche",
+      "slug": "aleph-analisi-strategiche",
+      "category": "politics",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Debate Club",
+      "slug": "bocconi-students-debate-club",
+      "category": "politics",
+      "website_url": "https://instagram.com/bocconidebateclub",
+      "source_urls": [
+        "https://instagram.com/bocconidebateclub",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Diplomacy and International Cooperation",
+      "slug": "bocconi-students-for-diplomacy-and-international-cooperation",
+      "category": "politics",
+      "website_url": "https://instagram.com/bosdic",
+      "source_urls": [
+        "https://instagram.com/bosdic",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "European Generation",
+      "slug": "european-generation",
+      "category": "politics",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Politeia Bocconi Students",
+      "slug": "politeia-bocconi-students",
+      "category": "politics",
+      "website_url": "https://www.instagram.com/politeia_bocconi/",
+      "source_urls": [
+        "https://www.instagram.com/politeia_bocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "VOYCE Bocconi Students",
+      "slug": "voyce-bocconi-students",
+      "category": "politics",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students - Advocacy & Litigation",
+      "slug": "bocconi-students-advocacy-and-litigation",
+      "category": "law",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students International Law Society",
+      "slug": "bocconi-students-international-law-society",
+      "category": "law",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Corporate Law Academy",
+      "slug": "corporate-law-academy",
+      "category": "law",
+      "website_url": "https://www.facebook.com/BocconiStudentsCorporateLawAcademy/",
+      "source_urls": [
+        "https://www.facebook.com/BocconiStudentsCorporateLawAcademy/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "IUS@B",
+      "slug": "iusb",
+      "category": "law",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Keiron - La Casa del Penalista",
+      "slug": "keiron-la-casa-del-penalista",
+      "category": "law",
+      "website_url": "https://www.instagram.com/keiron.bocconi/",
+      "source_urls": [
+        "https://www.instagram.com/keiron.bocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Law For AI - Bocconi Students",
+      "slug": "law-for-ai-bocconi-students",
+      "category": "law",
+      "website_url": "https://www.instagram.com/law4ai/",
+      "source_urls": [
+        "https://www.instagram.com/law4ai/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Law for the Fine Arts",
+      "slug": "law-for-the-fine-arts",
+      "category": "law",
+      "website_url": "https://instagram.com/lawforthefinearts",
+      "source_urls": [
+        "https://instagram.com/lawforthefinearts",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Res Ethica",
+      "slug": "res-ethica",
+      "category": "law",
+      "website_url": "https://www.facebook.com/resethica/",
+      "source_urls": [
+        "https://www.facebook.com/resethica/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi AI and Neuroscience Student Association",
+      "slug": "bocconi-ai-and-neuroscience-student-association",
+      "category": "tech",
+      "website_url": "https://bainsa.xyz/",
+      "source_urls": [
+        "https://bainsa.xyz/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Student Association for Mathematical Sciences",
+      "slug": "bocconi-student-association-for-mathematical-sciences",
+      "category": "tech",
+      "website_url": "https://mathematicalsciencesbocconi.org/",
+      "source_urls": [
+        "https://mathematicalsciencesbocconi.org/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Blockchain Association",
+      "slug": "bocconi-students-blockchain-association",
+      "category": "tech",
+      "website_url": "https://bocconiblockchain.com/",
+      "source_urls": [
+        "https://bocconiblockchain.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Cyber Security Association",
+      "slug": "bocconi-students-cyber-security-association",
+      "category": "tech",
+      "website_url": "https://www.instagram.com/bocconicybersecurity/",
+      "source_urls": [
+        "https://www.instagram.com/bocconicybersecurity/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Machine Learning",
+      "slug": "bocconi-students-for-machine-learning",
+      "category": "tech",
+      "website_url": "https://www.bsmachinelearning.com/",
+      "source_urls": [
+        "https://www.bsmachinelearning.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Women in STEM and Economics",
+      "slug": "bocconi-students-women-in-stem-and-economics",
+      "category": "tech",
+      "website_url": "https://wisebocconi.com/",
+      "source_urls": [
+        "https://wisebocconi.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Build Sustainable Innovation",
+      "slug": "build-sustainable-innovation",
+      "category": "tech",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Hephaestus Applied Artificial Intelligence Association",
+      "slug": "hephaestus-applied-artificial-intelligence-association",
+      "category": "tech",
+      "website_url": "https://instagram.com/hephaestusappliedai",
+      "source_urls": [
+        "https://instagram.com/hephaestusappliedai",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "theHackLab Bocconi Students",
+      "slug": "thehacklab-bocconi-students",
+      "category": "tech",
+      "website_url": "https://thehacklab.org/",
+      "source_urls": [
+        "https://thehacklab.org/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Alma - Student Association for Psychology and Wellbeing",
+      "slug": "alma-student-association-for-psychology-and-wellbeing",
+      "category": "social_impact",
+      "website_url": "https://www.instagram.com/alma_bocconi/",
+      "source_urls": [
+        "https://www.instagram.com/alma_bocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "B-ESG: investing & analysis",
+      "slug": "b-esg-investing-and-analysis",
+      "category": "social_impact",
+      "website_url": "https://instagram.com/bocconi.esg",
+      "source_urls": [
+        "https://instagram.com/bocconi.esg",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students against Organized Crime",
+      "slug": "bocconi-students-against-organized-crime",
+      "category": "social_impact",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students for ESG",
+      "slug": "bocconi-students-for-esg",
+      "category": "social_impact",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Green Light for Business",
+      "slug": "green-light-for-business",
+      "category": "social_impact",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "INSUD - Studenti Bocconi per l'Innovazione del Sud",
+      "slug": "insud-studenti-bocconi-per-linnovazione-del-sud",
+      "category": "social_impact",
+      "website_url": "https://www.instagram.com/insud.bocconi/",
+      "source_urls": [
+        "https://www.instagram.com/insud.bocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Mass Media and Culture",
+      "slug": "mass-media-and-culture",
+      "category": "social_impact",
+      "website_url": "https://massmediandculture.com/",
+      "source_urls": [
+        "https://massmediandculture.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Neuroscience for Economic and Societal Challenges Association",
+      "slug": "neuroscience-for-economic-and-societal-challenges-associatio",
+      "category": "social_impact",
+      "website_url": "https://www.instagram.com/nesca.bocconi/",
+      "source_urls": [
+        "https://www.instagram.com/nesca.bocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Studenti Pendolari Bocconi",
+      "slug": "studenti-pendolari-bocconi",
+      "category": "social_impact",
+      "website_url": "https://www.instagram.com/pendolaribocconi/",
+      "source_urls": [
+        "https://www.instagram.com/pendolaribocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Students for Humanity",
+      "slug": "students-for-humanity",
+      "category": "social_impact",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Associazione il Caffè Studenti Bocconi",
+      "slug": "associazione-il-caffe-studenti-bocconi",
+      "category": "sports",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Outdoor Student Community",
+      "slug": "bocconi-outdoor-student-community",
+      "category": "sports",
+      "website_url": "https://www.instagram.com/bosco_bocconioutdoor/",
+      "source_urls": [
+        "https://www.instagram.com/bosco_bocconioutdoor/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "B.Wine",
+      "slug": "bwine",
+      "category": "sports",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Baking Students Association",
+      "slug": "bocconi-baking-students-association",
+      "category": "sports",
+      "website_url": "https://www.instagram.com/bocconibaking",
+      "source_urls": [
+        "https://www.instagram.com/bocconibaking",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Badminton Community",
+      "slug": "bocconi-students-badminton-community",
+      "category": "sports",
+      "website_url": "https://www.instagram.com/badminton_bocconi/",
+      "source_urls": [
+        "https://www.instagram.com/badminton_bocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Chess Club: Ruy Lopez Society",
+      "slug": "bocconi-students-chess-club-ruy-lopez-society",
+      "category": "sports",
+      "website_url": "https://www.facebook.com/BSCCRuyLopezSociety/",
+      "source_urls": [
+        "https://www.facebook.com/BSCCRuyLopezSociety/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Sailing Team",
+      "slug": "bocconi-students-sailing-team",
+      "category": "sports",
+      "website_url": "https://www.instagram.com/bocconisailingteam/",
+      "source_urls": [
+        "https://www.instagram.com/bocconisailingteam/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Ski Club",
+      "slug": "bocconi-students-ski-club",
+      "category": "sports",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Surf Club",
+      "slug": "bocconi-students-surf-club",
+      "category": "sports",
+      "website_url": "https://www.instagram.com/bocconistudentssurfclub/",
+      "source_urls": [
+        "https://www.instagram.com/bocconistudentssurfclub/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Tennis Club",
+      "slug": "bocconi-students-tennis-club",
+      "category": "sports",
+      "website_url": "https://www.instagram.com/bstc.bocconi/",
+      "source_urls": [
+        "https://www.instagram.com/bstc.bocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Associazione Studentesca Letteraria Bocconi d'Inchiostro",
+      "slug": "associazione-studentesca-letteraria-bocconi-dinchiostro",
+      "category": "arts",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Associazione Universitaria di Etica e Metaetica",
+      "slug": "associazione-universitaria-di-etica-e-metaetica",
+      "category": "arts",
+      "website_url": "https://instagram.com/au_etica_metaetica",
+      "source_urls": [
+        "https://instagram.com/au_etica_metaetica",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Live Performance Student Association",
+      "slug": "bocconi-live-performance-student-association",
+      "category": "arts",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Art Society",
+      "slug": "bocconi-students-art-society",
+      "category": "arts",
+      "website_url": "https://www.instagram.com/bocconistudentsartsociety/",
+      "source_urls": [
+        "https://www.instagram.com/bocconistudentsartsociety/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Film Productions",
+      "slug": "bocconi-students-film-productions",
+      "category": "arts",
+      "website_url": "https://www.linkedin.com/company/bocconi-students-film-productions",
+      "source_urls": [
+        "https://www.linkedin.com/company/bocconi-students-film-productions",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Opera Society",
+      "slug": "bocconi-students-opera-society",
+      "category": "arts",
+      "website_url": "https://instagram.com/opera.society",
+      "source_urls": [
+        "https://instagram.com/opera.society",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Business&Arts",
+      "slug": "business-and-arts",
+      "category": "arts",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "DEA - Dancing, Expressing, Assembling",
+      "slug": "dea-dancing-expressing-assembling",
+      "category": "arts",
+      "website_url": "https://www.instagram.com/_dea.movement_/",
+      "source_urls": [
+        "https://www.instagram.com/_dea.movement_/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Gruppo Teatro Studenti Bocconi",
+      "slug": "gruppo-teatro-studenti-bocconi",
+      "category": "arts",
+      "website_url": "https://instagram.com/_gtsb_",
+      "source_urls": [
+        "https://instagram.com/_gtsb_",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Marmalade Music - Student Association",
+      "slug": "marmalade-music-student-association",
+      "category": "arts",
+      "website_url": "https://instagram.com/bocconijazzclassical",
+      "source_urls": [
+        "https://instagram.com/bocconijazzclassical",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "NOUS Bocconi Students for Philosophy",
+      "slug": "nous-bocconi-students-for-philosophy",
+      "category": "arts",
+      "website_url": "https://www.instagram.com/nous.bocconi",
+      "source_urls": [
+        "https://www.instagram.com/nous.bocconi",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Smart Movie Student Club",
+      "slug": "smart-movie-student-club",
+      "category": "arts",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Studenti Bocconi Rettoria San Ferdinando",
+      "slug": "studenti-bocconi-rettoria-san-ferdinando",
+      "category": "arts",
+      "website_url": "https://www.instagram.com/studentibocconi_rsf/",
+      "source_urls": [
+        "https://www.instagram.com/studentibocconi_rsf/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi African Student Association",
+      "slug": "bocconi-african-student-association",
+      "category": "international",
+      "website_url": "https://www.linkedin.com/company/basabocconi",
+      "source_urls": [
+        "https://www.linkedin.com/company/basabocconi",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Brazilian Students Association",
+      "slug": "bocconi-brazilian-students-association",
+      "category": "international",
+      "website_url": "https://www.instagram.com/brazilatbocconi/",
+      "source_urls": [
+        "https://www.instagram.com/brazilatbocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Chinese Student Association",
+      "slug": "bocconi-chinese-student-association",
+      "category": "international",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Georgian Students Association",
+      "slug": "bocconi-georgian-students-association",
+      "category": "international",
+      "website_url": "https://www.instagram.com/bocconi.bgsa/",
+      "source_urls": [
+        "https://www.instagram.com/bocconi.bgsa/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Jewish Student Association",
+      "slug": "bocconi-jewish-student-association",
+      "category": "international",
+      "website_url": "https://www.instagram.com/bjsa.bocconi/",
+      "source_urls": [
+        "https://www.instagram.com/bjsa.bocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Lebanese Students Society",
+      "slug": "bocconi-lebanese-students-society",
+      "category": "international",
+      "website_url": "https://www.instagram.com/blss.bocconi",
+      "source_urls": [
+        "https://www.instagram.com/blss.bocconi",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Moroccan Student Society",
+      "slug": "bocconi-moroccan-student-society",
+      "category": "international",
+      "website_url": "https://www.instagram.com/bmss.bocconi/",
+      "source_urls": [
+        "https://www.instagram.com/bmss.bocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Nordic Students Society",
+      "slug": "bocconi-nordic-students-society",
+      "category": "international",
+      "website_url": "https://www.instagram.com/bocconinordicstudents/",
+      "source_urls": [
+        "https://www.instagram.com/bocconinordicstudents/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students German Society",
+      "slug": "bocconi-students-german-society",
+      "category": "international",
+      "website_url": "https://www.instagram.com/bsgermansociety/",
+      "source_urls": [
+        "https://www.instagram.com/bsgermansociety/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Students Polish Society",
+      "slug": "bocconi-students-polish-society",
+      "category": "international",
+      "website_url": "https://www.instagram.com/bocconipolishsociety/",
+      "source_urls": [
+        "https://www.instagram.com/bocconipolishsociety/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Bocconi Turkish Students' Association",
+      "slug": "bocconi-turkish-students-association",
+      "category": "international",
+      "website_url": "https://www.linkedin.com/company/bocconitsa/",
+      "source_urls": [
+        "https://www.linkedin.com/company/bocconitsa/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Czech&Slovak Bocconi Students",
+      "slug": "czech-and-slovak-bocconi-students",
+      "category": "international",
+      "website_url": "https://www.linkedin.com/company/czechoslovak-bocconi-students/",
+      "source_urls": [
+        "https://www.linkedin.com/company/czechoslovak-bocconi-students/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "ESN Milano Bocconi - Erasmus Student Network",
+      "slug": "esn-milano-bocconi-erasmus-student-network",
+      "category": "international",
+      "website_url": null,
+      "source_urls": [
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Greek Students Bocconi Society",
+      "slug": "greek-students-bocconi-society",
+      "category": "international",
+      "website_url": "https://instagram.com/greeksbocconi",
+      "source_urls": [
+        "https://instagram.com/greeksbocconi",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "RO@B - Romanian Students at Bocconi",
+      "slug": "rob-romanian-students-at-bocconi",
+      "category": "international",
+      "website_url": "https://www.instagram.com/ro.bocconi/",
+      "source_urls": [
+        "https://www.instagram.com/ro.bocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    },
+    {
+      "name": "Spanish and Latino Student Association",
+      "slug": "spanish-and-latino-student-association",
+      "category": "international",
+      "website_url": "https://www.instagram.com/salsabocconi/",
+      "source_urls": [
+        "https://www.instagram.com/salsabocconi/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/attivita-studentesche/elenco-delle-associazioni"
+      ]
+    }
+  ]
+}
