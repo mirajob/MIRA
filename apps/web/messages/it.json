@@ -520,7 +520,13 @@
     "leaveConfirm": "Uscire?",
     "leaveYes": "Sì",
     "leaveNo": "No",
-    "notOnMiraYet": "Non ancora su MIRA"
+    "notOnMiraYet": "Non ancora su MIRA",
+    "claimRequestsHeading": "Le tue richieste di gestione",
+    "claimTypeClaim": "Richiesta di gestione",
+    "claimTypeRemoval": "Richiesta di rimozione",
+    "claimStatusPending": "In attesa",
+    "claimStatusApproved": "Approvata",
+    "claimStatusRejected": "Non approvata"
   },
   "Applications": {
     "backLink": "← Associazioni",
@@ -1417,11 +1423,6 @@
     "finalBody": "La trovi nella sezione Profilo, e puoi modificarla quando vuoi. In bocca al lupo per le tue candidature.",
     "redirecting": "Ti porto al tuo Profilo..."
   },
-  "AssociationSeeded": {
-    "notice": "Questa pagina è stata creata da MIRA a partire da informazioni pubbliche. L'associazione non la gestisce ancora e non riceve candidature qui.",
-    "claimPrompt": "Fai parte del board? <link>Scrivici per prendere in gestione la pagina</link> o per chiederne la rimozione.",
-    "claimEmailSubject": "Pagina associazione su MIRA"
-  },
   "AdminSeededAssociations": {
     "eyebrow": "Pagine seminate",
     "heading": "Associazioni create da MIRA",
@@ -1453,6 +1454,33 @@
     "deleteConfirmPrompt": "Eliminare definitivamente {name}? Scrivi {word} per confermare.",
     "barDraftHint": "Solo tu vedi questa pagina. È esattamente come la vedranno gli studenti.",
     "barPublishedHint": "Pubblicata: la vedono gli studenti del suo ateneo.",
-    "backToList": "Torna all'elenco"
+    "backToList": "Torna all'elenco",
+    "claimQueueHeading": "Richieste di gestione ({count})",
+    "claimApprove": "Approva",
+    "claimReject": "Rifiuta",
+    "claimApproveConfirm": "Consegnare la pagina di {name}? Chi ha fatto richiesta diventa amministratore dell'associazione.",
+    "claimRejectPrompt": "Motivo del rifiuto (facoltativo, lo vede il richiedente):",
+    "claimTypeClaim": "Gestione",
+    "claimTypeRemoval": "Rimozione"
+  },
+  "AssociationClaim": {
+    "prompt": "Fai parte del board di {name}?",
+    "openCta": "Richiedi di gestirla",
+    "formHeading": "Richiesta per {name}",
+    "typeClaim": "Voglio gestire questa pagina per conto dell'associazione",
+    "typeRemoval": "Chiedo che la pagina venga rimossa",
+    "roleLabel": "Il tuo ruolo nell'associazione",
+    "rolePlaceholder": "Presidente, responsabile recruiting, membro del board...",
+    "noteLabel": "Vuoi aggiungere qualcosa? (facoltativo)",
+    "continueCta": "Continua",
+    "cancel": "Annulla",
+    "confirmClaim": "Stai chiedendo di gestire la pagina di {name} come {role}. Confermi l'invio?",
+    "confirmRemoval": "Stai chiedendo la rimozione della pagina di {name}. Confermi l'invio?",
+    "confirmCta": "Conferma e invia",
+    "sending": "Invio...",
+    "back": "Torna indietro",
+    "pendingTitle": "Richiesta inviata.",
+    "pendingBody": "La trovi in Associazioni con il suo stato: ti rispondiamo appena l'abbiamo esaminata.",
+    "rejectedNote": "La richiesta precedente non è stata approvata."
   }
 }

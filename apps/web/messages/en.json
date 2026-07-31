@@ -520,7 +520,13 @@
     "leaveConfirm": "Leave?",
     "leaveYes": "Yes",
     "leaveNo": "No",
-    "notOnMiraYet": "Not on MIRA yet"
+    "notOnMiraYet": "Not on MIRA yet",
+    "claimRequestsHeading": "Your management requests",
+    "claimTypeClaim": "Management request",
+    "claimTypeRemoval": "Removal request",
+    "claimStatusPending": "Pending",
+    "claimStatusApproved": "Approved",
+    "claimStatusRejected": "Not approved"
   },
   "Applications": {
     "backLink": "← Associations",
@@ -1417,11 +1423,6 @@
     "finalBody": "You'll find it in the Profile section, and you can edit it anytime. Good luck with your applications.",
     "redirecting": "Taking you to your Profile..."
   },
-  "AssociationSeeded": {
-    "notice": "MIRA built this page from publicly available information. The association does not manage it yet and is not receiving applications here.",
-    "claimPrompt": "Are you on the board? <link>Write to us to take over this page</link> or to ask for its removal.",
-    "claimEmailSubject": "Association page on MIRA"
-  },
   "AdminSeededAssociations": {
     "eyebrow": "Seeded pages",
     "heading": "Associations created by MIRA",
@@ -1453,6 +1454,33 @@
     "deleteConfirmPrompt": "Permanently delete {name}? Type {word} to confirm.",
     "barDraftHint": "Only you can see this page. It looks exactly as students will see it.",
     "barPublishedHint": "Published: students at its university can see it.",
-    "backToList": "Back to list"
+    "backToList": "Back to list",
+    "claimQueueHeading": "Management requests ({count})",
+    "claimApprove": "Approve",
+    "claimReject": "Reject",
+    "claimApproveConfirm": "Hand over the page of {name}? The requester becomes an administrator of the association.",
+    "claimRejectPrompt": "Reason for rejection (optional, shown to the requester):",
+    "claimTypeClaim": "Management",
+    "claimTypeRemoval": "Removal"
+  },
+  "AssociationClaim": {
+    "prompt": "Are you on the board of {name}?",
+    "openCta": "Request to manage it",
+    "formHeading": "Request for {name}",
+    "typeClaim": "I want to manage this page on behalf of the association",
+    "typeRemoval": "I am asking for this page to be removed",
+    "roleLabel": "Your role in the association",
+    "rolePlaceholder": "President, recruiting lead, board member...",
+    "noteLabel": "Anything to add? (optional)",
+    "continueCta": "Continue",
+    "cancel": "Cancel",
+    "confirmClaim": "You are asking to manage the page of {name} as {role}. Confirm and send?",
+    "confirmRemoval": "You are asking for the page of {name} to be removed. Confirm and send?",
+    "confirmCta": "Confirm and send",
+    "sending": "Sending...",
+    "back": "Back",
+    "pendingTitle": "Request sent.",
+    "pendingBody": "You can follow its status under Associations — we will get back to you once we have reviewed it.",
+    "rejectedNote": "Your previous request was not approved."
   }
 }

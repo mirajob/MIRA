@@ -1,5 +1,5 @@
 import { getUserContext } from "@/lib/auth";
-import { createServerClient } from "@mira/supabase/server";
+import { createServerClient, createServiceClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -64,6 +64,15 @@ export default async function StudentAssociazioniPage() {
     .select("association_id, role, permissions, joined_at, association_profiles(name, slug, verification_status, public_page_status)")
     .eq("user_id", profileId)
     .eq("status", "active");
+
+  // Richieste di prendere in gestione una pagina non ancora rivendicata: è qui che
+  // chi l'ha mandata ne segue lo stato. La tabella non ha policy client-side, quindi
+  // si legge col service client filtrando sull'utente corrente.
+  const service = await createServiceClient();
+  const { data: myClaimRequests } = await (service.from("association_claim_requests") as any)
+    .select("id, status, request_type, rejected_reason, association_profiles(name, slug)")
+    .eq("user_id", profileId)
+    .order("created_at", { ascending: false });
 
   const cyclesByAssoc = new Map<string, any[]>();
   for (const c of openCycles ?? []) {
@@ -177,6 +186,43 @@ export default async function StudentAssociazioniPage() {
           </div>
         );
       })()}
+
+      {/* Richieste di gestione di una pagina associazione */}
+      {(myClaimRequests ?? []).length > 0 && (
+        <div>
+          <h2 className="font-sans text-h3 text-navy mb-3">{t("claimRequestsHeading")}</h2>
+          <div className="rounded-lg border border-border bg-white divide-y divide-border">
+            {(myClaimRequests as any[]).map((req) => (
+              <div key={req.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5">
+                <p className="text-body-sm text-navy font-medium">
+                  {req.association_profiles?.name ?? c("associationFallback")}
+                </p>
+                <p className="text-body-sm text-ink-tertiary">
+                  {req.request_type === "removal" ? t("claimTypeRemoval") : t("claimTypeClaim")}
+                </p>
+                <span
+                  className={`ml-auto rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${
+                    req.status === "approved"
+                      ? "bg-success-bg text-success"
+                      : req.status === "rejected"
+                        ? "bg-error-bg text-error"
+                        : "bg-warning-bg text-warning"
+                  }`}
+                >
+                  {req.status === "approved"
+                    ? t("claimStatusApproved")
+                    : req.status === "rejected"
+                      ? t("claimStatusRejected")
+                      : t("claimStatusPending")}
+                </span>
+                {req.status === "rejected" && req.rejected_reason && (
+                  <p className="w-full text-body-sm text-ink-tertiary">{req.rejected_reason}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Le tue candidature */}
       <div>

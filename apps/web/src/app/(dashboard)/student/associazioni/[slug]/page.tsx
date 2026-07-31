@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getUserContext } from "@/lib/auth";
-import { createServerClient } from "@mira/supabase/server";
+import { createServerClient, createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import { AssociationPublicProfile } from "@/components/association-public-profile";
-import { AssociationSeededNotice } from "@/components/association-seeded-notice";
+import { AssociationClaimBanner, type ExistingClaimRequest } from "@/components/association-claim-banner";
 import { AssociationDraftAdminBar } from "@/components/association-draft-admin-bar";
 import { hasWorkspaceAccess } from "@/lib/association-roles";
-import { SEEDED_CONTACT_EMAIL } from "@/lib/seeded-associations";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -45,17 +44,41 @@ export default async function StudentAssociationPage({ params }: Props) {
     (m: any) => m.association_id === association.id
   ) as { role: string; permissions?: unknown } | undefined;
 
+  const isSeeded = association.claim_status === "seeded";
+  let existingRequest: ExistingClaimRequest | null = null;
+  if (isSeeded) {
+    const service = await createServiceClient();
+    const { data: request } = await (service.from("association_claim_requests") as any)
+      .select("status, request_type, rejected_reason")
+      .eq("association_id", association.id)
+      .eq("user_id", ctx.profile.id)
+      .maybeSingle();
+    if (request) {
+      existingRequest = {
+        status: request.status,
+        requestType: request.request_type,
+        rejectedReason: request.rejected_reason,
+      };
+    }
+  }
+
   return (
     <div className="mx-auto max-w-reading px-2 py-4 sm:px-6 sm:py-6">
-      {ctx.isMiraAdmin && association.claim_status === "seeded" && (
+      {ctx.isMiraAdmin && isSeeded && (
         <AssociationDraftAdminBar
           associationId={association.id}
           slug={slug}
           published={isPublished}
         />
       )}
-      {association.claim_status === "seeded" && (
-        <AssociationSeededNotice contactEmail={SEEDED_CONTACT_EMAIL} />
+      {isSeeded && (
+        <AssociationClaimBanner
+          associationId={association.id}
+          associationName={association.name}
+          isLoggedIn
+          loginHref={`/login?redirect=/student/associazioni/${slug}`}
+          existingRequest={existingRequest}
+        />
       )}
       <AssociationPublicProfile
         association={association}

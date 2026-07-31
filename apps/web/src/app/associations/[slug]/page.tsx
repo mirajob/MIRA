@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createServerClient } from "@mira/supabase/server";
+import { createServerClient, createServiceClient } from "@mira/supabase/server";
 import { notFound, redirect } from "next/navigation";
 import { PublicHeader } from "@/components/public-header";
 import { AssociationPublicProfile } from "@/components/association-public-profile";
-import { AssociationSeededNotice } from "@/components/association-seeded-notice";
+import { AssociationClaimBanner, type ExistingClaimRequest } from "@/components/association-claim-banner";
 import { AssociationDraftAdminBar } from "@/components/association-draft-admin-bar";
 import { hasWorkspaceAccess } from "@/lib/association-roles";
-import { SEEDED_CONTACT_EMAIL } from "@/lib/seeded-associations";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -26,12 +25,11 @@ export default async function AssociationPublicPage({ params }: Props) {
 
   if (!association) notFound();
 
-  // Gli studenti loggati vedono questa pagina dentro la piattaforma (sidebar,
-  // navigazione coerente) invece che come pagina pubblica scollegata.
   const { data: { user } } = await supabase.auth.getUser();
   let membership: { role: string; permissions?: unknown } | null = null;
   let isMiraAdmin = false;
   let isStudent = false;
+  let profileId: string | null = null;
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -39,17 +37,17 @@ export default async function AssociationPublicPage({ params }: Props) {
       .eq("auth_user_id", user.id)
       .maybeSingle();
     if (profile) {
-      const pid = (profile as Record<string, unknown>).id as string;
+      profileId = (profile as Record<string, unknown>).id as string;
 
       const { data: roles } = await supabase
         .from("global_role_assignments")
         .select("role")
-        .eq("user_id", pid);
+        .eq("user_id", profileId);
       isMiraAdmin = (roles ?? []).some((r) => (r as Record<string, string>).role === "mira_admin");
 
       const { data: student } = await (supabase.from("student_profiles") as any)
         .select("id")
-        .eq("user_id", pid)
+        .eq("user_id", profileId)
         .maybeSingle();
       isStudent = Boolean(student);
 
@@ -57,7 +55,7 @@ export default async function AssociationPublicPage({ params }: Props) {
         .select("role, permissions")
         .eq("association_id", (association as Record<string, unknown>).id)
         .eq("status", "active")
-        .eq("user_id", pid)
+        .eq("user_id", profileId)
         .maybeSingle();
       membership = m;
     }
@@ -77,20 +75,46 @@ export default async function AssociationPublicPage({ params }: Props) {
     .eq("status", "open")
     .order("closes_at", { ascending: true });
 
+  const isSeeded = association.claim_status === "seeded";
+  let existingRequest: ExistingClaimRequest | null = null;
+  if (isSeeded && profileId) {
+    // Service client: la tabella non ha policy client-side, la lettura è filtrata
+    // qui sull'utente corrente.
+    const service = await createServiceClient();
+    const { data: request } = await (service.from("association_claim_requests") as any)
+      .select("status, request_type, rejected_reason")
+      .eq("association_id", association.id)
+      .eq("user_id", profileId)
+      .maybeSingle();
+    if (request) {
+      existingRequest = {
+        status: request.status,
+        requestType: request.request_type,
+        rejectedReason: request.rejected_reason,
+      };
+    }
+  }
+
   return (
     <div className="min-h-screen bg-paper">
       <PublicHeader />
 
       <main className="mx-auto max-w-reading px-6 py-12">
-        {isMiraAdmin && association.claim_status === "seeded" && (
+        {isMiraAdmin && isSeeded && (
           <AssociationDraftAdminBar
             associationId={association.id}
             slug={slug}
             published={isPublished}
           />
         )}
-        {association.claim_status === "seeded" && (
-          <AssociationSeededNotice contactEmail={SEEDED_CONTACT_EMAIL} />
+        {isSeeded && (
+          <AssociationClaimBanner
+            associationId={association.id}
+            associationName={association.name}
+            isLoggedIn={Boolean(profileId)}
+            loginHref={`/login?redirect=/associations/${slug}`}
+            existingRequest={existingRequest}
+          />
         )}
         <AssociationPublicProfile
           association={association}
