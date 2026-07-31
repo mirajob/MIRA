@@ -162,6 +162,23 @@
       ]
     },
     {
+      "name": "Nanoscience Innovation and Nanotechnology Engineering",
+      "slug": "nanoscience-innovation-and-nanotechnology-engineering",
+      "category": "engineering",
+      "sectors": [
+        "Nanotechnology",
+        "Research",
+        "Conferences"
+      ],
+      "short_description": "Nanotechnology at Polimi since 2021: an interdisciplinary community, built through research collaborations, conferences and trips.",
+      "long_description": "We work on innovation in nanotechnology, and we have been running since 2021.\n\nWhat we build is an interdisciplinary community, through educational events, collaborations with research centres, trips and conferences.\n\nThe point of all of it is to be a bridge between what you study here and what exists outside, which in a field this specialised is not something that happens on its own.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/nanoscience-innovation-and-nanotechnology-engineering"
+      ]
+    },
+    {
       "name": "POLI.MOVIES",
       "slug": "polimovies",
       "category": "culture",
@@ -211,6 +228,23 @@
       "source_urls": [
         "https://www.polimi.it/en/students/associazioni-degli-studenti/poliedro",
         "https://poliedro-polimi.it/it/"
+      ]
+    },
+    {
+      "name": "Polifonia",
+      "slug": "polifonia",
+      "category": "culture",
+      "sectors": [
+        "Music",
+        "Choir",
+        "Orchestra"
+      ],
+      "short_description": "The music association of Politecnico di Milano: choir, orchestra, jazz band and other ensembles, plus the concerts to play them in.",
+      "long_description": "We are the music association of Politecnico di Milano, founded in 2019, and the simplest description of us is a way to meet people who care about music as much as you do.\n\nYou can join the choir, the orchestra, the jazz band or one of the other ensembles, and through the academic year we organise the events where members actually perform.\n\nWe are deliberately mixed and open: what you play and how well you play it matters less than showing up.",
+      "website_url": "https://www.instagram.com/polifoniapolimi/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/polifonia"
       ]
     },
     {
@@ -265,6 +299,55 @@
       ]
     },
     {
+      "name": "Resilient G.A.P.",
+      "slug": "resilient-gap",
+      "category": "sustainability",
+      "sectors": [
+        "Environment",
+        "Active Citizenship",
+        "Workshops"
+      ],
+      "short_description": "Glocal Action Project: thinking globally and acting locally on environmental sustainability and active citizenship.",
+      "long_description": "GAP stands for Glocal Action Project, and it describes how we work: thinking globally, acting concretely where we actually are.\n\nWe raise awareness on environmental questions through workshops, educational meetings and themed excursions, which get people outside and into the thing they are discussing.\n\nWe are organised horizontally, without a hierarchy deciding what counts, which means anyone willing to contribute can. We have been registered since 2017.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/resilient-gap"
+      ]
+    },
+    {
+      "name": "Scacchi Polimi",
+      "slug": "scacchi-polimi",
+      "category": "sports",
+      "sectors": [
+        "Chess"
+      ],
+      "short_description": "The chess association of Politecnico di Milano, running since 2015.",
+      "long_description": "We are the chess association of Politecnico di Milano, and we have been running since 2015. We organise activities and events around the game for anybody at the university who plays, or wants to start.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/scacchi-polimi"
+      ]
+    },
+    {
+      "name": "SITPolimi",
+      "slug": "sitpolimi",
+      "category": "sustainability",
+      "sectors": [
+        "Social Innovation",
+        "Sustainability",
+        "Workshops"
+      ],
+      "short_description": "Social Innovation Teams: we build networks and share skills on social innovation and sustainable development, from the campus outwards.",
+      "long_description": "We work on social innovation and sustainable development, and what we are actually doing most of the time is building networks and sharing skills between people who would otherwise never meet.\n\nThat happens through events and workshops, and it happens at four levels at once: inside the university, across Milan, around Italy, and internationally.\n\nWe have been registered since 2017.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/sitpolimi"
+      ]
+    },
+    {
       "name": "Skyward Experimental Rocketry",
       "slug": "skyward-experimental-rocketry",
       "category": "engineering",
@@ -279,6 +362,40 @@
       "recruiting_timeline": null,
       "source_urls": [
         "https://www.polimi.it/en/students/associazioni-degli-studenti/skyward-experimental-rocketry"
+      ]
+    },
+    {
+      "name": "Teatro delle Biglie",
+      "slug": "teatro-delle-biglie",
+      "category": "culture",
+      "sectors": [
+        "Theatre",
+        "Workshops",
+        "Culture"
+      ],
+      "short_description": "Free theatre workshops every semester, open to every Polimi student. Run by students, for students.",
+      "long_description": "We run free theatre workshops every semester, open to any student at Politecnico di Milano, and everything in them is conceived, organised and run by students.\n\nWhat we are after is freedom, sharing, surprise and creativity, which are not words you hear much in an engineering building and are exactly why this exists.\n\nWe have been here since 2006. No experience is expected.",
+      "website_url": null,
+      "recruiting_timeline": "Free workshops open every semester.",
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/teatro-delle-biglie"
+      ]
+    },
+    {
+      "name": "TOP - Techno Optimist Polimi",
+      "slug": "top-techno-optimist-polimi",
+      "category": "culture",
+      "sectors": [
+        "Technology",
+        "Debate",
+        "Critical Thinking"
+      ],
+      "short_description": "We treat technological development as a central driver of social progress, and we argue about it properly.",
+      "long_description": "We started in 2025 around a position: technological development is a central driver of social progress, and it deserves to be defended and examined rather than assumed either way.\n\nSo we run events and debates meant to push critical thinking and responsible discussion of the challenges in front of us.\n\nWhat we are trying to produce is not more specialists. It is people who are well prepared in a wider sense, which is a different thing and harder to get from a degree.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/techno-optimist-polimi"
       ]
     }
   ]
