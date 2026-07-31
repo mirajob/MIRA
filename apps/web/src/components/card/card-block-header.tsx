@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { approveCardBlock } from "@/lib/actions/card-blocks";
+import { useEditingSection } from "./editing-section-context";
 import type { CardBlockStatus, CardBlockType } from "@mira/types";
 
 export function CardBlockHeader({
@@ -27,6 +28,8 @@ export function CardBlockHeader({
   const t = useTranslations("CardBlocks");
   const [pending, startTransition] = useTransition();
   const [localStatus, setLocalStatus] = useState(status);
+  // Presente solo dentro il Profilo: lì lo stesso pulsante richiude la sezione in modifica.
+  const editingSection = useEditingSection();
 
   // Questo componente non viene rimontato tra un resync e l'altro nel pannello onboarding
   // (stessa posizione nell'albero React): senza questo effetto, localStatus resterebbe
@@ -43,6 +46,7 @@ export function CardBlockHeader({
         await approveCardBlock(alsoApprove ? [blockType, ...alsoApprove] : blockType);
         setLocalStatus("approved");
         onApproved?.();
+        editingSection?.close();
       } catch (err) {
         console.error("[MIRA] approve failed:", err);
       }

@@ -142,21 +142,17 @@ export default async function StudentHomePage() {
             {header && (
               <EditableSection
                 view={
-                  <HeaderView
-                    data={header.prose_content as HeaderProseContent}
-                    formazioneItems={(formazione?.prose_content as FormazioneProseContent | undefined)?.items ?? []}
-                  />
+                  <HeaderView data={header.prose_content as HeaderProseContent} formazioneItems={formazioneItems} />
                 }
-                edit={(onSaved) => (
+                edit={
                   <HeaderBlock
                     proseContent={header.prose_content as HeaderProseContent}
                     visibility={header.visibility as HeaderVisibility}
                     status={header.status}
-                    formazioneItems={(formazione?.prose_content as FormazioneProseContent | undefined)?.items ?? []}
+                    formazioneItems={formazioneItems}
                     allowPreviousDegree
-                    onApproved={onSaved}
                   />
-                )}
+                }
               />
             )}
             {disponibilita && (
@@ -167,7 +163,7 @@ export default async function StudentHomePage() {
                     piano={pianoData ?? null}
                   />
                 }
-                edit={(onSaved) => (
+                edit={
                   <DisponibilitaEPianoBlock
                     disponibilita={disponibilita.prose_content as DisponibilitaProseContent}
                     piano={pianoData ?? { stato: "esplorazione", testo: null }}
@@ -178,9 +174,8 @@ export default async function StudentHomePage() {
                           ? "empty"
                           : "draft"
                     }
-                    onApproved={onSaved}
                   />
-                )}
+                }
               />
             )}
           </>
@@ -190,7 +185,7 @@ export default async function StudentHomePage() {
             {autodescrizione && (
               <EditableSection
                 view={<ProseView title={cardT("titles.profiloPersonale")} testo={autodescrizioneTesto} serif />}
-                edit={(onSaved) => (
+                edit={
                   <ProseBlock
                     blockType="autodescrizione"
                     title={cardT("titles.profiloPersonale")}
@@ -199,15 +194,14 @@ export default async function StudentHomePage() {
                     serif
                     intro={t("autodescrizioneIntro")}
                     placeholder={cardT("profiloPersonalePlaceholder")}
-                    onApproved={onSaved}
                   />
-                )}
+                }
               />
             )}
             {esperienze && (
               <EditableSection
                 view={<EsperienzeView items={esperienzeItems} />}
-                edit={(onSaved) => <EsperienzeBlock items={esperienzeItems} status={esperienze.status} onApproved={onSaved} />}
+                edit={<EsperienzeBlock items={esperienzeItems} status={esperienze.status} />}
               />
             )}
           </>
@@ -217,7 +211,7 @@ export default async function StudentHomePage() {
             {competenze && (
               <EditableSection
                 view={<CompetenzeView data={competenzeData} />}
-                edit={(onSaved) => <CompetenzeBlock data={competenzeData} status={competenze.status} onApproved={onSaved} />}
+                edit={<CompetenzeBlock data={competenzeData} status={competenze.status} />}
               />
             )}
             {lingue && (
@@ -238,7 +232,7 @@ export default async function StudentHomePage() {
                     )}
                   </div>
                 }
-                edit={(onSaved) => <LingueBlock items={lingueItems} status={lingue.status} onApproved={onSaved} />}
+                edit={<LingueBlock items={lingueItems} status={lingue.status} />}
               />
             )}
             {/* Interessi è legacy (confluito nel Profilo personale): resta visibile
@@ -246,16 +240,15 @@ export default async function StudentHomePage() {
             {interessi && interessiTesto && (
               <EditableSection
                 view={<ProseView title={cardT("titles.interessi")} testo={interessiTesto} />}
-                edit={(onSaved) => (
+                edit={
                   <ProseBlock
                     blockType="interessi"
                     title={cardT("titles.interessi")}
                     testo={interessiTesto}
                     status={interessi.status}
                     placeholder={cardT("interessiPlaceholder")}
-                    onApproved={onSaved}
                   />
-                )}
+                }
               />
             )}
           </>
