@@ -1,0 +1,121 @@
+{
+  "_comment": [
+    "Pagine associazione seminate da MIRA per l'Università Bocconi.",
+    "Schede scritte a mano da fonti pubbliche (sito ufficiale dell'associazione + elenco",
+    "ufficiale Bocconi), non generate. Ogni riga porta le fonti in source_urls.",
+    "Nessun dato personale: solo l'organizzazione. Nessun logo scaricato.",
+    "Le pagine nascono in bozza: le vede solo l'admin MIRA finché non le pubblica.",
+    "Applicare con: node scripts/seed-associations.mjs supabase/seed/associations-bocconi.json"
+  ],
+  "university": "Università Bocconi",
+  "associations": [
+    {
+      "name": "Bocconi Students Investment Club",
+      "slug": "bocconi-students-investment-club",
+      "category": "finance",
+      "sectors": ["Corporate finance", "Mercati", "Quant"],
+      "short_description": "La più longeva associazione di finanza della Bocconi: analisi dei mercati e ricerca finanziaria scritta dagli studenti.",
+      "long_description": "Bocconi Students Investment Club (BSIC) nasce nel 2010 e ottiene il riconoscimento ufficiale dell'Università nell'aprile 2011: è la più antica associazione studentesca di finanza della Bocconi.\n\nConta circa 60 membri attivi, distribuiti su tre divisioni: Corporate Finance, Markets e Quant. L'attività principale è la produzione di analisi e ricerca sui mercati finanziari, pubblicata sul sito dell'associazione.\n\nLe selezioni si tengono più volte nel corso dell'anno accademico e sono aperte agli studenti iscritti alla Bocconi.",
+      "website_url": "https://bsic.it/",
+      "recruiting_timeline": "Più sessioni di selezione nel corso dell'anno accademico.",
+      "source_urls": ["https://bsic.it/about-us/", "https://bsic.it/join-us/"]
+    },
+    {
+      "name": "Bocconi Students Consulting Club",
+      "slug": "bocconi-students-consulting-club",
+      "category": "consulting",
+      "sectors": ["Consulenza strategica", "Business case", "Networking"],
+      "short_description": "Associazione dedicata a chi punta a una carriera nella consulenza strategica: allenamento sui casi, visite in azienda, networking.",
+      "long_description": "Bocconi Students Consulting Club (BSCC) è l'associazione rivolta agli studenti interessati a una carriera nella consulenza strategica, di cui è il club di consulenza più antico e più grande in Italia.\n\nLe attività principali sono visite presso società di consulenza, sessioni di allenamento su framework e business case, ed eventi di networking con professionisti del settore.\n\nOggi conta circa 70 membri di dieci nazionalità diverse. L'ingresso avviene tramite un processo di selezione che si tiene due volte l'anno.",
+      "website_url": "https://www.bsccmilan.com/",
+      "recruiting_timeline": "Due sessioni di selezione all'anno, di norma a settembre e a marzo.",
+      "source_urls": [
+        "https://www.bsccmilan.com/",
+        "https://www.unibocconi.it/it/news/bocconi-students-consulting-club-cercasi-nuovi-membri"
+      ]
+    },
+    {
+      "name": "Minerva Investment Management Society",
+      "slug": "minerva-investment-management-society",
+      "category": "finance",
+      "sectors": ["Asset management", "Equity research", "Quant"],
+      "short_description": "La prima associazione di asset management della Bocconi: gestisce portafogli propri e produce ricerca su equity e macro.",
+      "long_description": "Minerva Investment Management Society (MIMS) è la prima e principale associazione studentesca di asset management dell'Università Bocconi.\n\nConta circa 70 membri attivi organizzati in cinque divisioni: Portfolio Management, che gestisce tre fondi proprietari su diverse classi di attivo; Quantitative, che analizza il rischio dei portafogli con metodologie VaR, bootstrapping e ottimizzazione; Equity Research, che valuta società con modelli DCF, multipli, DDM e LBO; Macro Research, dedicata all'analisi macroeconomica e ai trend di mercato; e Investment Research, che produce outlook e report mensili.",
+      "website_url": "https://minervaims.it/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://minervaims.org/divisions/investment",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/minerva-investment-management-society"
+      ]
+    },
+    {
+      "name": "Bocconi Students M&A Circle",
+      "slug": "bocconi-students-ma-circle",
+      "category": "finance",
+      "sectors": ["M&A", "Investment banking", "Valuation"],
+      "short_description": "Associazione specializzata in fusioni e acquisizioni, dal 2014: analisi di operazioni, workshop di valutazione, preparazione ai colloqui.",
+      "long_description": "Bocconi Students M&A Circle (BSMAC) nasce nel 2014 ed è interamente gestita da studenti. È dedicata a chi punta a una carriera nel mondo delle fusioni e acquisizioni e dell'investment banking.\n\nLe attività comprendono l'analisi di operazioni di M&A recenti, workshop di valutazione, eventi con ospiti e professionisti del settore, laboratori su CV e lettere di presentazione e preparazione ai colloqui.\n\nL'associazione conta circa 35 studenti, divisi in parti uguali fra triennale e magistrale, con undici nazionalità rappresentate.",
+      "website_url": "https://bsmac.org/",
+      "recruiting_timeline": "Due sessioni di selezione all'anno, a ottobre e a marzo.",
+      "source_urls": ["https://bsmac.org/about-us/", "https://bsmac.org/join-us/"]
+    },
+    {
+      "name": "Bocconi Students Capital Markets",
+      "slug": "bocconi-students-capital-markets",
+      "category": "finance",
+      "sectors": ["Mercati dei capitali", "Investment banking", "Ricerca"],
+      "short_description": "Analisi e articoli sui mercati finanziari mondiali, con team dedicati ad Americhe, EMEA e Asia.",
+      "long_description": "Bocconi Students Capital Markets (BSCM) è l'associazione che affronta la finanza nel senso più ampio del termine: investment banking, asset management, hedge fund e private equity.\n\nL'attività principale dei membri è la pubblicazione di articoli e analisi sui mercati finanziari mondiali, con team organizzati su tre aree geografiche: Americhe, EMEA e Asia.\n\nUna parte importante del lavoro è dedicata alla preparazione dei membri interessati all'investment banking, attraverso casi di M&A, colloqui simulati e incontri con professionisti del settore.",
+      "website_url": "https://www.bscapitalmarkets.com/",
+      "recruiting_timeline": null,
+      "source_urls": ["https://www.bscapitalmarkets.com/", "https://theorg.com/org/bocconi-students-capital-markets"]
+    },
+    {
+      "name": "Bocconi Students Private Equity Club",
+      "slug": "bocconi-students-private-equity-club",
+      "category": "finance",
+      "sectors": ["Private equity", "Venture capital"],
+      "short_description": "Una delle associazioni più longeve della Bocconi, dedicata al private equity e al venture capital in Italia e nel mondo.",
+      "long_description": "Bocconi Students Private Equity Club (BSPEC) è una delle associazioni studentesche più antiche e attive della Bocconi. L'attenzione è concentrata sui settori del private equity e del venture capital, in Italia e all'estero.\n\nLe attività comprendono la pubblicazione di articoli su private equity e venture capital, interviste a professionisti del settore, eventi con fondi, advisor e accademici, e workshop formativi per i membri.\n\nGli incontri, distribuiti lungo tutto l'anno accademico, sono dedicati soprattutto all'analisi e alla discussione dei trend più recenti del settore.",
+      "website_url": "https://bspeclub.com/",
+      "recruiting_timeline": null,
+      "source_urls": ["https://bspeclub.com/about-us/"]
+    },
+    {
+      "name": "Bocconi Students Finance Society",
+      "slug": "bocconi-students-finance-society",
+      "category": "finance",
+      "sectors": ["Finanza", "Eventi", "Networking"],
+      "short_description": "Dal 2013 mette in contatto gli studenti Bocconi con i professionisti della finanza, attraverso talk, panel e sessioni di networking.",
+      "long_description": "Bocconi Students Finance Society (BSFS) nasce all'inizio del 2013 con l'obiettivo di creare un luogo di confronto fra gli studenti della Bocconi e i protagonisti dell'industria finanziaria.\n\nLo strumento principale sono gli eventi: presentazioni, panel di discussione su temi di attualità dei mercati e sessioni di networking con professionisti del settore.",
+      "website_url": "https://www.bsfs.it/",
+      "recruiting_timeline": null,
+      "source_urls": ["https://www.bsfs.it/", "https://www.bsfs.it/events/"]
+    },
+    {
+      "name": "Bocconi Students Marketing Society",
+      "slug": "bocconi-students-marketing-society",
+      "category": "marketing",
+      "sectors": ["Marketing", "Consulenza", "Eventi", "Digital"],
+      "short_description": "L'associazione di marketing della Bocconi, organizzata in quattro dipartimenti: Consulting, Digital, Events e Partnership.",
+      "long_description": "Bocconi Students Marketing Society (BSMS) è l'associazione dedicata al marketing e alla comunicazione, con l'obiettivo di costruire consapevolezza su un ambito sempre più centrale sia per le multinazionali sia per le start-up.\n\nÈ organizzata in quattro dipartimenti: Consulting, Digital, Events e Partnership.\n\nLe attività spaziano dai progetti di consulenza agli eventi, con attenzione ai temi e ai trend più recenti del settore, e puntano a costruire una rete fra studenti, alumni, docenti e professionisti.",
+      "website_url": "https://www.bocconimarketingsociety.com/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.bocconimarketingsociety.com/",
+        "https://www.unibocconi.it/it/studenti-iscritti/campus-life/bocconi-students-marketing-society-bsms"
+      ]
+    },
+    {
+      "name": "Bocconi Students for Machine Learning",
+      "slug": "bocconi-students-for-machine-learning",
+      "category": "data_ai",
+      "sectors": ["Machine learning", "Progetti", "Ricerca"],
+      "short_description": "L'associazione di machine learning della Bocconi: progetti pratici, talk di ricerca e sessioni con aziende tech.",
+      "long_description": "Bocconi Students for Machine Learning (BSML) è la principale associazione studentesca della Bocconi dedicata al machine learning. L'obiettivo dichiarato è costruire una rete fra studenti, docenti e professionisti di aziende tech, fondi di investimento e laboratori di ricerca.\n\nLe attività comprendono l'organizzazione di eventi — talk di ricerca, sessioni con aziende, presentazioni di progetti —, partnership su hackathon e progetti, e la pubblicazione dei risultati sotto forma di articoli, video e presentazioni.\n\nL'associazione affianca i membri nei progetti personali, dal codice alla pubblicazione.",
+      "website_url": "https://bsmachinelearning.com/",
+      "recruiting_timeline": null,
+      "source_urls": ["https://bsmachinelearning.com/", "https://github.com/bs-machinelearning"]
+    }
+  ]
+}
