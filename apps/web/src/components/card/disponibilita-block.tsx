@@ -23,12 +23,16 @@ export function DisponibilitaEPianoBlock({
   disponibilita,
   piano,
   status,
+  showPiano = true,
   onApproved,
 }: {
   disponibilita: DisponibilitaProseContent;
   piano: PianoCarrieraProseContent;
   /** Status combinato: approved solo se entrambe le righe lo sono. */
   status: CardBlockStatus;
+  /** Sul Profilo il piano ha una sezione propria (come sulla card) e qui va nascosto:
+   * l'onboarding invece li tiene insieme, con un solo Conferma. */
+  showPiano?: boolean;
   onApproved?: () => void;
 }) {
   const t = useTranslations("CardBlocks");
@@ -59,7 +63,9 @@ export function DisponibilitaEPianoBlock({
       ? { ...form, attiva: form.attiva ?? null }
       : { attiva: false, cosa_cerca: null, ambito: null, periodo: form.periodo ?? null, durata: null, dove: null };
     await updateCardBlockProseContent("disponibilita", cleaned);
-    await updateCardBlockProseContent("piano_carriera", { stato: pianoStato, testo: pianoTesto });
+    if (showPiano) {
+      await updateCardBlockProseContent("piano_carriera", { stato: pianoStato, testo: pianoTesto });
+    }
     setDirty(false);
   }
 
@@ -79,7 +85,7 @@ export function DisponibilitaEPianoBlock({
         title={t("titles.disponibilitaEPiano")}
         status={status}
         blockType="disponibilita"
-        alsoApprove={["piano_carriera"]}
+        alsoApprove={showPiano ? ["piano_carriera"] : undefined}
         onBeforeApprove={handleSave}
         onApproved={onApproved}
       />
@@ -122,34 +128,36 @@ export function DisponibilitaEPianoBlock({
           </div>
         )}
 
-        <div>
-          <label className="text-ink-tertiary text-body-sm">{t("disponibilita.pianoLabel")}</label>
-          <textarea
-            value={pianoTesto}
-            placeholder={t("disponibilita.pianoPlaceholder")}
-            maxLength={450}
-            rows={3}
-            onChange={(e) => {
-              setPianoTesto(e.target.value);
-              setDirty(true);
-            }}
-            className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
-          />
-          <div className="mt-2">
-            <MiraImproveButton
-              getText={() => pianoTesto}
-              improve={async (text) => {
-                const result = await miraImprovePiano({ testo: text });
-                setPianoStato(result.stato);
-                return result.testo;
-              }}
-              onImproved={(text) => {
-                setPianoTesto(text);
+        {showPiano && (
+          <div>
+            <label className="text-ink-tertiary text-body-sm">{t("disponibilita.pianoLabel")}</label>
+            <textarea
+              value={pianoTesto}
+              placeholder={t("disponibilita.pianoPlaceholder")}
+              maxLength={450}
+              rows={3}
+              onChange={(e) => {
+                setPianoTesto(e.target.value);
                 setDirty(true);
               }}
+              className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
             />
+            <div className="mt-2">
+              <MiraImproveButton
+                getText={() => pianoTesto}
+                improve={async (text) => {
+                  const result = await miraImprovePiano({ testo: text });
+                  setPianoStato(result.stato);
+                  return result.testo;
+                }}
+                onImproved={(text) => {
+                  setPianoTesto(text);
+                  setDirty(true);
+                }}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
       </div>
     </div>
@@ -172,9 +180,11 @@ export function disponibilitaPills(data: DisponibilitaProseContent): string[] {
 export function DisponibilitaEPianoView({
   disponibilita,
   piano,
+  showPiano = true,
 }: {
   disponibilita: DisponibilitaProseContent;
   piano: PianoCarrieraProseContent | null;
+  showPiano?: boolean;
 }) {
   const t = useTranslations("CardBlocks");
   const notActive = disponibilita.attiva === false;
@@ -207,7 +217,7 @@ export function DisponibilitaEPianoView({
           <p className="text-body-sm text-ink-tertiary italic">{t("disponibilita.notSpecified")}</p>
         )}
       </div>
-      {piano?.testo && (
+      {showPiano && piano?.testo && (
         <div>
           <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.pianoCarriera")}</p>
           <p className="text-body-sm text-ink">{piano.testo}</p>

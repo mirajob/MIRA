@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
-import { miraImproveProfilo } from "@/lib/actions/onboarding-flow";
+import { miraImproveProfilo, miraImprovePiano } from "@/lib/actions/onboarding-flow";
 import { CardBlockHeader } from "./card-block-header";
 import { MiraImproveButton } from "./mira-improve-button";
 import type { CardBlockStatus, PianoCarrieraStato } from "@mira/types";
@@ -63,6 +63,23 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
           <MiraImproveButton
             getText={() => text}
             improve={async (raw) => (await miraImproveProfilo({ testo: raw })).testo}
+            onImproved={(improved) => {
+              setText(improved);
+              setDirty(true);
+            }}
+          />
+        )}
+        {/* Il piano ha la stessa riscrittura che ha in onboarding dentro il blocco unito:
+            senza, modificandolo dal Profilo si perdeva l'aiuto e anche la classificazione
+            dello stato (direzione chiara / ipotesi / esplorazione). */}
+        {blockType === "piano_carriera" && (
+          <MiraImproveButton
+            getText={() => text}
+            improve={async (raw) => {
+              const result = await miraImprovePiano({ testo: raw });
+              setStatoValue(result.stato);
+              return result.testo;
+            }}
             onImproved={(improved) => {
               setText(improved);
               setDirty(true);

@@ -501,7 +501,8 @@
     "saveChanges": "Save changes",
     "formazione": {
       "cicloAttuale": "Current degree",
-      "cicloPrecedente": "Previous degree"
+      "cicloPrecedente": "Previous degree",
+      "emptyView": "No exams yet: upload your transcript."
     }
   },
   "JoinByCode": {

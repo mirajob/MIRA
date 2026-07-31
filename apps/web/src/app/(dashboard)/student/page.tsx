@@ -18,6 +18,7 @@ import { DisponibilitaEPianoBlock, DisponibilitaEPianoView } from "@/components/
 import { EsperienzeBlock, EsperienzeView } from "@/components/card/esperienze-block";
 import { CompetenzeBlock, CompetenzeView } from "@/components/card/competenze-block";
 import { LingueBlock } from "@/components/card/lingue-block";
+import { EsamiBlock, EsamiView } from "@/components/card/esami-block";
 import { ProseBlock, ProseView } from "@/components/card/prose-block";
 import type {
   CardBlockType,
@@ -142,7 +143,7 @@ export default async function StudentHomePage() {
             {header && (
               <EditableSection
                 view={
-                  <HeaderView data={header.prose_content as HeaderProseContent} formazioneItems={formazioneItems} />
+                  <HeaderView data={header.prose_content as HeaderProseContent} />
                 }
                 edit={
                   <HeaderBlock
@@ -150,7 +151,7 @@ export default async function StudentHomePage() {
                     visibility={header.visibility as HeaderVisibility}
                     status={header.status}
                     formazioneItems={formazioneItems}
-                    allowPreviousDegree
+                    showEsami={false}
                   />
                 }
               />
@@ -161,6 +162,7 @@ export default async function StudentHomePage() {
                   <DisponibilitaEPianoView
                     disponibilita={disponibilita.prose_content as DisponibilitaProseContent}
                     piano={pianoData ?? null}
+                    showPiano={false}
                   />
                 }
                 edit={
@@ -174,6 +176,7 @@ export default async function StudentHomePage() {
                           ? "empty"
                           : "draft"
                     }
+                    showPiano={false}
                   />
                 }
               />
@@ -208,6 +211,20 @@ export default async function StudentHomePage() {
         }
         right={
           <>
+            {/* Stesso ordine della card: prima gli esami (cosa hai studiato), poi le
+                competenze (cosa sai usare), poi lingue e piano. */}
+            {formazione && (
+              <EditableSection
+                view={<EsamiView formazioneItems={formazioneItems} />}
+                edit={
+                  <EsamiBlock
+                    formazioneItems={formazioneItems}
+                    status={formazione.status}
+                    livello={(header?.prose_content as HeaderProseContent | undefined)?.livello ?? null}
+                  />
+                }
+              />
+            )}
             {competenze && (
               <EditableSection
                 view={<CompetenzeView data={competenzeData} />}
@@ -233,6 +250,21 @@ export default async function StudentHomePage() {
                   </div>
                 }
                 edit={<LingueBlock items={lingueItems} status={lingue.status} />}
+              />
+            )}
+            {pianoCarriera && (
+              <EditableSection
+                view={<ProseView title={cardT("titles.pianoCarriera")} testo={pianoData?.testo ?? null} />}
+                edit={
+                  <ProseBlock
+                    blockType="piano_carriera"
+                    title={cardT("titles.pianoCarriera")}
+                    testo={pianoData?.testo ?? null}
+                    stato={pianoData?.stato}
+                    status={pianoCarriera.status}
+                    placeholder={cardT("disponibilita.pianoPlaceholder")}
+                  />
+                }
               />
             )}
             {/* Interessi è legacy (confluito nel Profilo personale): resta visibile

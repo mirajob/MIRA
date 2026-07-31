@@ -501,7 +501,8 @@
     "saveChanges": "Salva modifiche",
     "formazione": {
       "cicloAttuale": "Corso attuale",
-      "cicloPrecedente": "Corso precedente"
+      "cicloPrecedente": "Corso precedente",
+      "emptyView": "Nessun esame ancora: carica il libretto."
     }
   },
   "JoinByCode": {
