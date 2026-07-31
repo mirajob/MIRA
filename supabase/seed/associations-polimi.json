@@ -1,0 +1,285 @@
+{
+  "_comment": [
+    "Schede delle associazioni del Politecnico di Milano, scritte a mano dalle",
+    "pagine ufficiali polimi.it. Nessun nome di persona: le pagine dell'ateneo",
+    "espongono le email dei presidenti, che qui non entrano.",
+    "Applicare con: node scripts/seed-associations.mjs supabase/seed/associations-polimi.json"
+  ],
+  "university": "Politecnico di Milano",
+  "associations": [
+    {
+      "name": "ASAP - Associazione Studenti Architettura Polimi",
+      "slug": "asap-associazione-studenti-architettura-polimi",
+      "category": "engineering",
+      "sectors": [
+        "Architecture",
+        "Workshops",
+        "Culture"
+      ],
+      "short_description": "A space inside the university for horizontal dialogue and collective research, connecting architecture to everything around it.",
+      "long_description": "We were created to make room inside the university for something that is otherwise hard to find: horizontal dialogue and collective research, where the discussion is not organised around who is teaching whom.\n\nWhat we do is connect architecture to other kinds of knowledge and to other cultural fields, and push people towards active participation and critical thinking rather than passive attendance.\n\nIn practice: lectures, workshops, itineraries around Milan and beyond, film screenings, trips, and the social moments that hold the rest together.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/associazione-studenti-architettura-polimi"
+      ]
+    },
+    {
+      "name": "Associazione degli Ingegneri Matematici",
+      "slug": "associazione-degli-ingegneri-matematici",
+      "category": "engineering",
+      "sectors": [
+        "Mathematical Engineering",
+        "Courses",
+        "Seminars"
+      ],
+      "short_description": "For mathematical engineers at Polimi: courses on LaTeX and Python, scientific seminars, and connections that outlast the degree.",
+      "long_description": "We exist to give the mathematical engineer a clearer role, and to build connections between students that survive both the degree and the careers that follow it.\n\nWe run courses on LaTeX, Python and more, plus scientific seminars and talks that fill in what the curriculum leaves out. Alongside those there is the social side, which is half the reason the connections last.\n\nWe were founded in 2009 and officially registered in 2016.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/associazione-degli-ingegneri-matematici"
+      ]
+    },
+    {
+      "name": "B.E.S.T. - Board of European Students of Technology",
+      "slug": "best-board-of-european-students-of-technology",
+      "category": "engineering",
+      "sectors": [
+        "European Network",
+        "Exchange",
+        "Courses"
+      ],
+      "short_description": "Part of a network spanning more than 80 European technical universities. Two-week intensive courses abroad, close to a short Erasmus.",
+      "long_description": "We are the Milan branch of a network that connects thousands of students across more than eighty universities in Europe, and we have been here since 2006.\n\nThe part people notice first is the intensive courses: two weeks at another European technical university, close to a short Erasmus in how much it changes what you think is possible.\n\nAround that we run seasonal activities, educational and recreational events on campus, and the cultural exchange that comes from having people from eighty universities in the same network.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/board-of-european-students-of-technology"
+      ]
+    },
+    {
+      "name": "Biomedical Engineering Association",
+      "slug": "biomedical-engineering-association",
+      "category": "engineering",
+      "sectors": [
+        "Biomedical Engineering",
+        "Networking",
+        "Events"
+      ],
+      "short_description": "Biomedical engineering at Polimi since 2017: trips across Europe, talks, and the connection between university and the industry.",
+      "long_description": "We have been running since 2017, and what we are trying to build is an environment where networking and teamwork actually create opportunities rather than being words in a mission statement.\n\nWe organise trips and visits across Europe, talks and conferences, and events that put the university and the professional world in the same room.\n\nWe are open to anyone interested in the biomedical field.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/biomedical-engineering-association"
+      ]
+    },
+    {
+      "name": "DeLTA - Decentralized Leadership and Technologies Association",
+      "slug": "delta-decentralized-leadership-and-technologies-association",
+      "category": "engineering",
+      "sectors": [
+        "Emerging Technologies",
+        "Conferences",
+        "Workshops"
+      ],
+      "short_description": "Conferences, workshops and seminars on the technologies that are reshaping how things get built and governed.",
+      "long_description": "We work on emerging technologies and what they do to the way organisations are led and structured.\n\nWhat we run is conferences, workshops and seminars that go into the innovations reshaping the future, with the aim of giving the university a place for dialogue, technical growth and critical thinking about them.\n\nOur job, put simply, is to sit between curiosity, expertise and the point where the two turn into something applied.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/delta-decentralized-leadership-and-technologies-association"
+      ]
+    },
+    {
+      "name": "E.S.N. - Erasmus Student Network Polimi",
+      "slug": "esn-erasmus-student-network-polimi",
+      "category": "international",
+      "sectors": [
+        "Erasmus",
+        "Exchange",
+        "Volunteering"
+      ],
+      "short_description": "We support international students at Polimi: integration, cultural exchange and volunteering, as part of one of the largest student networks in Europe.",
+      "long_description": "We support international students at Politecnico di Milano, and we have been doing it since 2006.\n\nThat means practical help when someone arrives, and everything that turns arriving into belonging: social events, trips, and activities that put exchange students inside the community rather than beside it.\n\nWe are part of the Erasmus Student Network, one of the biggest student associations in Europe, which is what gives a local section this much reach.",
+      "website_url": "https://esnpolimi.it/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/erasmus-student-network",
+        "https://esnpolimi.it/"
+      ]
+    },
+    {
+      "name": "Enactus Polimi",
+      "slug": "enactus-polimi",
+      "category": "sustainability",
+      "sectors": [
+        "Social Entrepreneurship",
+        "Sustainability",
+        "Projects"
+      ],
+      "short_description": "Entrepreneurial students building projects against social and environmental problems, aligned to the seventeen UN Sustainable Development Goals.",
+      "long_description": "We bring together students at Polimi who have an entrepreneurial streak and care about sustainability, and we put the two together into projects.\n\nWhat we build are innovative answers to social and environmental challenges, aligned to the seventeen United Nations Sustainable Development Goals. The work happens in interdisciplinary teams, because problems that size do not fit inside one degree.\n\nWe have been running since 2020.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/enactus-polimi"
+      ]
+    },
+    {
+      "name": "Fly-Mi",
+      "slug": "fly-mi",
+      "category": "engineering",
+      "sectors": [
+        "Aeronautics",
+        "Drones",
+        "Competitions"
+      ],
+      "short_description": "The only association at Polimi entirely dedicated to aeronautics. We design and build fixed-wing aircraft for industry competitions.",
+      "long_description": "We are the only student association at Politecnico di Milano dedicated entirely to aeronautics. We design and build fixed-wing model aircraft, and we take them to high-level industry competitions.\n\nSince we started in 2022 we have built three prototypes: Aethra, our first, then Nyx in the 2023/24 academic year, and Olivia, which is being assembled now.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/fly-mi"
+      ]
+    },
+    {
+      "name": "MESA - Milan Engineering Student Association",
+      "slug": "mesa-milan-engineering-student-association",
+      "category": "engineering",
+      "sectors": [
+        "Soft Skills",
+        "Technical Courses",
+        "Travel"
+      ],
+      "short_description": "Since 2018 we close the gap between the university and everything outside it: technical and soft skill courses, travel, and the social side.",
+      "long_description": "We started in 2018 to give engineering students at Polimi the kind of growth the degree itself does not cover.\n\nThat means courses on both technical and soft skills, opportunities to travel, and the social occasions that make a large university feel smaller.\n\nWhat we are really doing is closing the distance between the university and what comes after it.",
+      "website_url": "https://mi.eestec.it/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/milan-engineering-student-association"
+      ]
+    },
+    {
+      "name": "POLI.MOVIES",
+      "slug": "polimovies",
+      "category": "culture",
+      "sectors": [
+        "Cinema",
+        "Video",
+        "Photography"
+      ],
+      "short_description": "Cinema and audiovisual culture at Polimi: a place to watch, argue, shoot and learn how it is actually done.",
+      "long_description": "We bring together students interested in cinema, video production and photography, and we promote film and audiovisual culture inside a university where nobody else does.\n\nWhat we offer is room to discuss, to experiment, and to build both the technical skills and the critical eye. Which of the two you come for is up to you.\n\nThe association works on active participation and sharing, which is a polite way of saying that it works if people show up and make things.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/polimovies"
+      ]
+    },
+    {
+      "name": "POLI.RADIO",
+      "slug": "poliradio",
+      "category": "culture",
+      "sectors": [
+        "Radio",
+        "Music",
+        "Media"
+      ],
+      "short_description": "The official web radio of Politecnico di Milano, run entirely by students. No experience required.",
+      "long_description": "We are the official web radio of Politecnico di Milano, on air since 2008 and run entirely by students, on our own site and on the main streaming platforms.\n\nIt takes more kinds of people than you would expect: audio and IT technicians, graphic designers, presenters, interviewers, music curators, event organisers, and the people who deal with artists.\n\nNo specific skills are needed to start. Enthusiasm and a willingness to learn are the whole entry requirement.",
+      "website_url": "https://www.poliradio.it/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/poliradio"
+      ]
+    },
+    {
+      "name": "Poliedro",
+      "slug": "poliedro",
+      "category": "sustainability",
+      "sectors": [
+        "LGBTI+",
+        "Inclusion",
+        "Community"
+      ],
+      "short_description": "The reference point at Polimi on LGBTI+ matters since 2012: support, awareness, and a university that is easier to be yourself in.",
+      "long_description": "We have been the reference point for LGBTI+ matters at Politecnico di Milano since 2012.\n\nWe support students who face discrimination, we work to raise awareness around sexuality and gender identity, and we run social events, because a community is not built out of workshops alone.\n\nWhat guides the work is transfeminist intersectionality, and the aim is straightforward: a university that more people can actually be part of.",
+      "website_url": "https://poliedro-polimi.it/it/",
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/poliedro",
+        "https://poliedro-polimi.it/it/"
+      ]
+    },
+    {
+      "name": "Polimi Data Scientists",
+      "slug": "polimi-data-scientists",
+      "category": "engineering",
+      "sectors": [
+        "Data Science",
+        "AI",
+        "Projects"
+      ],
+      "short_description": "The official AI and data science association at Polimi: events with academics and professionals, hands-on projects, and a reading club on current research.",
+      "long_description": "We are the official AI and data science association at Politecnico di Milano, running since 2019.\n\nEvery year we bring in professors and professionals for events, and we run hands-on projects where the theory from the courses has to survive contact with real data.\n\nWe also run a reading club on contemporary research, which is where people who want to go deeper than the syllabus end up.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/polimi-data-scientists"
+      ]
+    },
+    {
+      "name": "Polispace",
+      "slug": "polispace",
+      "category": "engineering",
+      "sectors": [
+        "Space",
+        "CubeSat",
+        "Rover"
+      ],
+      "short_description": "The largest space-focused association at Polimi. A 1U CubeSat, a rover for the European Rover Challenge, and the projects around them.",
+      "long_description": "We are the largest student association at Polimi built around space, and we started in 2021 with one aim: closing the distance between what universities teach and what the aerospace industry actually does.\n\nWe do it by building things. A 1U CubeSat. A rover for the European Rover Challenge. And work on mission analysis, spacesuits, space medicine and telecommunications.\n\nWe are deliberately not only engineers: running projects this size needs management roles too, because we operate like a real company rather than a study group. Around us we keep a strong network of aerospace companies, which is where the projects turn into careers.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/polispace"
+      ]
+    },
+    {
+      "name": "Politecnico Open Unix Labs",
+      "slug": "politecnico-open-unix-labs",
+      "category": "engineering",
+      "sectors": [
+        "Open Source",
+        "GNU/Linux",
+        "Security"
+      ],
+      "short_description": "Free software and open source culture at Polimi since 2009: courses, workshops and conferences on GNU/Linux, programming and security.",
+      "long_description": "We have been around since 2009, and what we promote is free software and open source culture, which at an engineering university is less obvious than it sounds.\n\nWe run courses, workshops and conferences on GNU/Linux, programming, security and digital technologies. The setting is collaborative on purpose: most of what people learn here they learn from each other rather than from a lecture.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/politecnico-open-unix-labs"
+      ]
+    },
+    {
+      "name": "Skyward Experimental Rocketry",
+      "slug": "skyward-experimental-rocketry",
+      "category": "engineering",
+      "sectors": [
+        "Rocketry",
+        "Aerospace",
+        "Competitions"
+      ],
+      "short_description": "We design, build and launch sounding rockets, and take them to EuRoC against the rest of Europe.",
+      "long_description": "We have been running since 2012, and what we do is unusually concrete for a student association: we design sounding rockets, build them, and launch them.\n\nThe target is EuRoC, the European rocketry competition, where we compete against universities from across the continent. That deadline is what shapes the year.\n\nWe come from a range of bachelor and master programmes, because a rocket needs more kinds of people than one degree produces.",
+      "website_url": null,
+      "recruiting_timeline": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/skyward-experimental-rocketry"
+      ]
+    }
+  ]
+}

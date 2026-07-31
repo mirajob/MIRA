@@ -1,0 +1,322 @@
+{
+  "_comment": [
+    "Anagrafica delle associazioni studentesche del Politecnico di Milano,",
+    "dall'elenco ufficiale polimi.it. Contiene SOLO nome, ambito e fonti: le",
+    "descrizioni stanno in associations-polimi.json e si aggiungono a lotti.",
+    "Le sezioni riprendono i cinque raggruppamenti del sito del Politecnico.",
+    "Entrepreneurship Club Polimi esiste gia' ed e' gestita dal suo presidente:",
+    "lo script la salta da solo."
+  ],
+  "university": "Politecnico di Milano",
+  "associations": [
+    {
+      "name": "ASAP - Associazione Studenti Architettura Polimi",
+      "slug": "asap-associazione-studenti-architettura-polimi",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/associazione-studenti-architettura-polimi",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Associazione degli Ingegneri Matematici",
+      "slug": "associazione-degli-ingegneri-matematici",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/associazione-degli-ingegneri-matematici",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Automation Engineering Association",
+      "slug": "automation-engineering-association",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "B.E.S.T. - Board of European Students of Technology",
+      "slug": "best-board-of-european-students-of-technology",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/board-of-european-students-of-technology",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Biomedical Engineering Association",
+      "slug": "biomedical-engineering-association",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/biomedical-engineering-association",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "DeLTA - Decentralized Leadership and Technologies Association",
+      "slug": "delta-decentralized-leadership-and-technologies-association",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/delta-decentralized-leadership-and-technologies-association",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Entrepreneurship Club Polimi",
+      "slug": "entrepreneurship-club-polimi",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/entrepreneurship-club-polimi",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Fly-Mi",
+      "slug": "fly-mi",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/fly-mi",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "MESA - Milan Engineering Student Association",
+      "slug": "mesa-milan-engineering-student-association",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/milan-engineering-student-association",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Nanoscience Innovation and Nanotechnology Engineering",
+      "slug": "nanoscience-innovation-and-nanotechnology-engineering",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/nanoscience-innovation-and-nanotechnology-engineering",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Polimi Data Scientists",
+      "slug": "polimi-data-scientists",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/polimi-data-scientists",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Polispace",
+      "slug": "polispace",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/polispace",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Politecnico Open Unix Labs",
+      "slug": "politecnico-open-unix-labs",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/politecnico-open-unix-labs",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Skyward Experimental Rocketry",
+      "slug": "skyward-experimental-rocketry",
+      "category": "engineering",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/skyward-experimental-rocketry",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Cattolici Popolari",
+      "slug": "cattolici-popolari",
+      "category": "culture",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/cattolici-popolari",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "CRES",
+      "slug": "cres",
+      "category": "culture",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/cres",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "GBU Milano Politecnico",
+      "slug": "gbu-milano-politecnico",
+      "category": "culture",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/gbu-milano-politecnico",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "PassionLab",
+      "slug": "passionlab",
+      "category": "culture",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/passionlab",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Polifonia",
+      "slug": "polifonia",
+      "category": "culture",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/polifonia",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "POLI.MOVIES",
+      "slug": "polimovies",
+      "category": "culture",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/polimovies",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "POLI.RADIO",
+      "slug": "poliradio",
+      "category": "culture",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/poliradio",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Teatro delle Biglie",
+      "slug": "teatro-delle-biglie",
+      "category": "culture",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/teatro-delle-biglie",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "TOP - Techno Optimist Polimi",
+      "slug": "top-techno-optimist-polimi",
+      "category": "culture",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/techno-optimist-polimi",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Enactus Polimi",
+      "slug": "enactus-polimi",
+      "category": "sustainability",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/enactus-polimi",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Poliedro",
+      "slug": "poliedro",
+      "category": "sustainability",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/poliedro",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Resilient G.A.P.",
+      "slug": "resilient-gap",
+      "category": "sustainability",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/resilient-gap",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "SITPolimi",
+      "slug": "sitpolimi",
+      "category": "sustainability",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/sitpolimi",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "E.S.N. - Erasmus Student Network Polimi",
+      "slug": "esn-erasmus-student-network-polimi",
+      "category": "international",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/erasmus-student-network",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "POLIRAN",
+      "slug": "poliran",
+      "category": "international",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/poliran",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Alpine Polimi",
+      "slug": "alpine-polimi",
+      "category": "sports",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/alpine-polimi",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    },
+    {
+      "name": "Scacchi Polimi",
+      "slug": "scacchi-polimi",
+      "category": "sports",
+      "website_url": null,
+      "source_urls": [
+        "https://www.polimi.it/en/students/associazioni-degli-studenti/scacchi-polimi",
+        "https://www.polimi.it/en/students/associazioni-degli-studenti"
+      ]
+    }
+  ]
+}
