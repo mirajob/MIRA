@@ -519,7 +519,8 @@
     "leave": "Leave",
     "leaveConfirm": "Leave?",
     "leaveYes": "Yes",
-    "leaveNo": "No"
+    "leaveNo": "No",
+    "notOnMiraYet": "Not on MIRA yet"
   },
   "Applications": {
     "backLink": "← Associations",
@@ -1328,7 +1329,9 @@
     "deleteConfirmWord": "DELETE",
     "deletedLabel": "Deleted",
     "deleteButton": "Delete",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "seededLinkLabel": "Pages created by MIRA",
+    "seededLinkCount": "{total} total, {drafts} to review"
   },
   "AdminUsers": {
     "heading": "Users",
@@ -1413,5 +1416,43 @@
     "finalTitle": "You've completed your MIRA Card!",
     "finalBody": "You'll find it in the Profile section, and you can edit it anytime. Good luck with your applications.",
     "redirecting": "Taking you to your Profile..."
+  },
+  "AssociationSeeded": {
+    "notice": "MIRA built this page from publicly available information. The association does not manage it yet and is not receiving applications here.",
+    "claimPrompt": "Are you on the board? <link>Write to us to take over this page</link> or to ask for its removal.",
+    "claimEmailSubject": "Association page on MIRA"
+  },
+  "AdminSeededAssociations": {
+    "eyebrow": "Seeded pages",
+    "heading": "Associations created by MIRA",
+    "subhead": "Pages built from public sources. While in draft only you can see them: open, re-read and publish.",
+    "filterUniversity": "University",
+    "filterStatus": "Status",
+    "filterAll": "All",
+    "filterDraft": "Drafts ({count})",
+    "filterPublished": "Published ({count})",
+    "backToAssociations": "Back to associations",
+    "emptyState": "No seeded pages match these filters.",
+    "colAssociation": "Association",
+    "colUniversity": "University",
+    "colStatus": "Status",
+    "colInterest": "Interested",
+    "colActions": "Actions",
+    "statusDraft": "Draft",
+    "statusPublished": "Published",
+    "review": "Review",
+    "publish": "Publish",
+    "unpublish": "Back to draft",
+    "delete": "Delete",
+    "working": "Working...",
+    "selectAll": "Select all",
+    "selectedCount": "{count} selected",
+    "publishSelected": "Publish selected",
+    "bulkConfirm": "Publish {count} pages? They become visible to students at their university.",
+    "deleteConfirmWord": "DELETE",
+    "deleteConfirmPrompt": "Permanently delete {name}? Type {word} to confirm.",
+    "barDraftHint": "Only you can see this page. It looks exactly as students will see it.",
+    "barPublishedHint": "Published: students at its university can see it.",
+    "backToList": "Back to list"
   }
 }

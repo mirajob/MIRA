@@ -519,7 +519,8 @@
     "leave": "Esci",
     "leaveConfirm": "Uscire?",
     "leaveYes": "Sì",
-    "leaveNo": "No"
+    "leaveNo": "No",
+    "notOnMiraYet": "Non ancora su MIRA"
   },
   "Applications": {
     "backLink": "← Associazioni",
@@ -1328,7 +1329,9 @@
     "deleteConfirmWord": "ELIMINA",
     "deletedLabel": "Eliminata",
     "deleteButton": "Elimina",
-    "deleting": "Eliminazione..."
+    "deleting": "Eliminazione...",
+    "seededLinkLabel": "Pagine create da MIRA",
+    "seededLinkCount": "{total} in totale, {drafts} da rivedere"
   },
   "AdminUsers": {
     "heading": "Utenti",
@@ -1413,5 +1416,43 @@
     "finalTitle": "Hai completato la tua MIRA Card!",
     "finalBody": "La trovi nella sezione Profilo, e puoi modificarla quando vuoi. In bocca al lupo per le tue candidature.",
     "redirecting": "Ti porto al tuo Profilo..."
+  },
+  "AssociationSeeded": {
+    "notice": "Questa pagina è stata creata da MIRA a partire da informazioni pubbliche. L'associazione non la gestisce ancora e non riceve candidature qui.",
+    "claimPrompt": "Fai parte del board? <link>Scrivici per prendere in gestione la pagina</link> o per chiederne la rimozione.",
+    "claimEmailSubject": "Pagina associazione su MIRA"
+  },
+  "AdminSeededAssociations": {
+    "eyebrow": "Pagine seminate",
+    "heading": "Associazioni create da MIRA",
+    "subhead": "Pagine costruite da fonti pubbliche. Finché sono in bozza le vedi solo tu: aprile, rileggile e pubblicale.",
+    "filterUniversity": "Ateneo",
+    "filterStatus": "Stato",
+    "filterAll": "Tutte",
+    "filterDraft": "Bozze ({count})",
+    "filterPublished": "Pubblicate ({count})",
+    "backToAssociations": "Torna alle associazioni",
+    "emptyState": "Nessuna pagina seminata con questi filtri.",
+    "colAssociation": "Associazione",
+    "colUniversity": "Ateneo",
+    "colStatus": "Stato",
+    "colInterest": "Interessati",
+    "colActions": "Azioni",
+    "statusDraft": "Bozza",
+    "statusPublished": "Pubblicata",
+    "review": "Rivedi",
+    "publish": "Pubblica",
+    "unpublish": "Riporta in bozza",
+    "delete": "Elimina",
+    "working": "Attendi...",
+    "selectAll": "Seleziona tutte",
+    "selectedCount": "{count} selezionate",
+    "publishSelected": "Pubblica selezionate",
+    "bulkConfirm": "Pubblicare {count} pagine? Diventano visibili agli studenti del loro ateneo.",
+    "deleteConfirmWord": "ELIMINA",
+    "deleteConfirmPrompt": "Eliminare definitivamente {name}? Scrivi {word} per confermare.",
+    "barDraftHint": "Solo tu vedi questa pagina. È esattamente come la vedranno gli studenti.",
+    "barPublishedHint": "Pubblicata: la vedono gli studenti del suo ateneo.",
+    "backToList": "Torna all'elenco"
   }
 }

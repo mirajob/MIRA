@@ -23,11 +23,21 @@ export default async function ApplyPage({ params, searchParams }: Props) {
 
   const { data: association } = await supabase
     .from("association_profiles")
-    .select("id, name, slug, university")
+    .select("id, name, slug, university, claim_status, public_page_status")
     .eq("slug", slug)
     .maybeSingle();
 
   if (!association) notFound();
+
+  // Pagina in bozza o seminata da MIRA e non ancora rivendicata: non esiste un board
+  // che leggerebbe la candidatura, quindi il modulo non deve nemmeno aprirsi. Stesso
+  // controllo in submitApplication, perché questo URL è raggiungibile a mano.
+  if (
+    (association as any).public_page_status !== "published" ||
+    (association as any).claim_status === "seeded"
+  ) {
+    notFound();
+  }
 
   if (!user) {
     redirect(`/signup?redirect=/associations/${slug}/apply${cycleId ? `?cycle=${cycleId}` : ""}`);

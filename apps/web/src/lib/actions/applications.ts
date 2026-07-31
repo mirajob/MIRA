@@ -32,9 +32,16 @@ export async function submitApplication(cycleId: string, formData: FormData) {
   // solo UI, perché l'endpoint è raggiungibile direttamente conoscendo un cycleId.
   const { data: association } = await supabase
     .from("association_profiles")
-    .select("university")
+    .select("university, claim_status")
     .eq("id", cycle.association_id)
     .maybeSingle();
+
+  // Una pagina seminata da MIRA non è ancora gestita da nessuno: una candidatura qui
+  // non verrebbe mai letta. Meglio rifiutarla che farla sparire nel vuoto.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((association as any)?.claim_status === "seeded") {
+    return { error: "Questa associazione non gestisce ancora le candidature su MIRA." };
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (student.university !== (association as any)?.university) {

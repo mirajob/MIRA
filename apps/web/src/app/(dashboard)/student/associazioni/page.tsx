@@ -41,7 +41,7 @@ export default async function StudentAssociazioniPage() {
   // Ogni associazione eredita l'università del presidente che l'ha candidata: uno
   // studente vede e si candida solo alle associazioni della propria università.
   const { data: associations } = await (supabase.from("association_profiles") as any)
-    .select("id, name, slug, category, short_description, logo_url, sectors")
+    .select("id, name, slug, category, short_description, logo_url, sectors, claim_status")
     .eq("public_page_status", "published")
     .eq("university", studentProfile?.university ?? "")
     .order("name");
@@ -308,7 +308,12 @@ export default async function StudentAssociazioniPage() {
                     {t("viewPage")}
                   </Link>
 
-                  {hasWorkspaceAccess(membership) ? (
+                  {/* Pagina seminata da MIRA: nessun board la gestisce ancora, quindi non
+                      esiste un ciclo a cui candidarsi — dirlo è più onesto di
+                      "candidature chiuse", che farebbe pensare a una scadenza passata. */}
+                  {assoc.claim_status === "seeded" ? (
+                    <span className="text-body-sm text-ink-tertiary">{t("notOnMiraYet")}</span>
+                  ) : hasWorkspaceAccess(membership) ? (
                     <Link
                       href={`/association/${assoc.slug}`}
                       className="bg-petrol text-white px-4 py-1.5 rounded-md text-body-sm hover:bg-petrol-700 transition-colors duration-100"

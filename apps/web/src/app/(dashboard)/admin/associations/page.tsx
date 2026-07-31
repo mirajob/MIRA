@@ -1,6 +1,7 @@
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { InvitationForm } from "./invitation-form";
 import { ApproveRejectButtons } from "./approve-reject-buttons";
 import { DeleteAssociationButton } from "./delete-association-button";
@@ -133,14 +134,22 @@ export default async function AdminAssociationsPage() {
     }
   }
 
+  // Le pagine seminate da MIRA hanno una coda di revisione tutta loro (/seminate):
+  // non sono richieste da approvare né associazioni attive, e mescolarle qui
+  // seppellirebbe le associazioni reali sotto decine di righe.
+  const seeded = (associations ?? []).filter((a: any) => a.claim_status === "seeded");
+  const real = (associations ?? []).filter((a: any) => a.claim_status !== "seeded");
+
   // Richieste in attesa e associazioni accettate — raggruppate per università, con
   // sottosezioni per stato del percorso (richiesta → accettata → pagina pubblica).
-  const relevant = (associations ?? []).filter((a: any) =>
+  const relevant = real.filter((a: any) =>
     ["pending_verification", "verified"].includes(a.verification_status)
   );
-  const others = (associations ?? []).filter((a: any) =>
+  const others = real.filter((a: any) =>
     !["pending_verification", "verified"].includes(a.verification_status)
   );
+
+  const seededDrafts = seeded.filter((a: any) => a.public_page_status !== "published").length;
 
   const byUniversity = new Map<string, any[]>();
   for (const a of relevant) {
@@ -159,6 +168,19 @@ export default async function AdminAssociationsPage() {
           {t("subhead")}
         </p>
       </div>
+
+      {seeded.length > 0 && (
+        <Link
+          href="/admin/associations/seminate"
+          className="flex items-center gap-3 rounded-lg border border-border bg-white px-3 py-2 hover:border-border-strong transition-colors duration-100"
+        >
+          <span className="text-body-sm font-medium text-navy">{t("seededLinkLabel")}</span>
+          <span className="text-body-sm text-ink-secondary">
+            {t("seededLinkCount", { total: seeded.length, drafts: seededDrafts })}
+          </span>
+          <span className="ml-auto text-body-sm text-petrol">→</span>
+        </Link>
+      )}
 
       <section>
         <InvitationForm />
