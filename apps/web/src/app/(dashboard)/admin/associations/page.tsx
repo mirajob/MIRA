@@ -2,8 +2,9 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { InvitationForm } from "./invitation-form";
 import { ApproveRejectButtons } from "./approve-reject-buttons";
+import { ClaimRequests, type ClaimRequestRow } from "./claim-requests";
+import { DuplicateActions } from "./duplicate-actions";
 import { DeleteAssociationButton } from "./delete-association-button";
 import { ReminderButton } from "./reminder-button";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -17,12 +18,21 @@ const STATUS_CLASS: Record<string, string> = {
   suspended: "bg-red-100 text-red-600",
 };
 
-function AssociationRow({ assoc, president, t, statusLabel, dateLocale, showReminder }: { assoc: any; president: any; t: any; statusLabel: Record<string, string>; dateLocale: string; showReminder?: boolean }) {
+function AssociationRow({ assoc, president, t, statusLabel, dateLocale, showReminder, duplicateOf }: { assoc: any; president: any; t: any; statusLabel: Record<string, string>; dateLocale: string; showReminder?: boolean; duplicateOf?: any }) {
   return (
     <tr className="border-b border-border last:border-0 hover:bg-paper transition-colors">
-      <td className="px-3 py-2">
+      <td className="px-3 py-2 max-w-[320px]">
         <p className="text-body-sm font-medium text-navy">{assoc.name}</p>
         <p className="text-eyebrow text-ink-tertiary">/{assoc.slug}</p>
+        {duplicateOf && (
+          <DuplicateActions
+            associationId={assoc.id}
+            associationName={assoc.name}
+            targetId={duplicateOf.id}
+            targetName={duplicateOf.name}
+            targetSlug={duplicateOf.slug}
+          />
+        )}
       </td>
       <td className="px-3 py-2">
         <p className="text-body-sm text-ink">{president?.full_name ?? "—"}</p>
@@ -48,7 +58,7 @@ function AssociationRow({ assoc, president, t, statusLabel, dateLocale, showRemi
   );
 }
 
-function AssociationTable({ rows, presidentByAssociation, t, statusLabel, dateLocale, showReminder }: { rows: any[]; presidentByAssociation: Record<string, any>; t: any; statusLabel: Record<string, string>; dateLocale: string; showReminder?: boolean }) {
+function AssociationTable({ rows, presidentByAssociation, t, statusLabel, dateLocale, showReminder, associationById }: { rows: any[]; presidentByAssociation: Record<string, any>; t: any; statusLabel: Record<string, string>; dateLocale: string; showReminder?: boolean; associationById?: Record<string, any> }) {
   if (!rows.length) {
     return <p className="px-3 py-3 text-body-sm text-ink-tertiary">{t("noAssociationsInSection")}</p>;
   }
@@ -69,7 +79,16 @@ function AssociationTable({ rows, presidentByAssociation, t, statusLabel, dateLo
       </thead>
       <tbody>
         {rows.map((assoc) => (
-          <AssociationRow key={assoc.id} assoc={assoc} president={presidentByAssociation[assoc.id]} t={t} statusLabel={statusLabel} dateLocale={dateLocale} showReminder={showReminder} />
+          <AssociationRow
+            key={assoc.id}
+            assoc={assoc}
+            president={presidentByAssociation[assoc.id]}
+            t={t}
+            statusLabel={statusLabel}
+            dateLocale={dateLocale}
+            showReminder={showReminder}
+            duplicateOf={assoc.possible_duplicate_of ? associationById?.[assoc.possible_duplicate_of] : undefined}
+          />
         ))}
       </tbody>
     </table>
@@ -77,15 +96,15 @@ function AssociationTable({ rows, presidentByAssociation, t, statusLabel, dateLo
   );
 }
 
-function AssociationSection({ label, rows, presidentByAssociation, t, statusLabel, dateLocale, showReminder }: {
-  label: string; rows: any[]; presidentByAssociation: Record<string, any>; t: any; statusLabel: Record<string, string>; dateLocale: string; showReminder?: boolean;
+function AssociationSection({ label, rows, presidentByAssociation, t, statusLabel, dateLocale, showReminder, associationById }: {
+  label: string; rows: any[]; presidentByAssociation: Record<string, any>; t: any; statusLabel: Record<string, string>; dateLocale: string; showReminder?: boolean; associationById?: Record<string, any>;
 }) {
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
       <div className="border-b border-border bg-navy-50/50 px-3 py-1.5">
         <p className="text-eyebrow uppercase text-navy/70">{label}</p>
       </div>
-      <AssociationTable rows={rows} presidentByAssociation={presidentByAssociation} t={t} statusLabel={statusLabel} dateLocale={dateLocale} showReminder={showReminder} />
+      <AssociationTable rows={rows} presidentByAssociation={presidentByAssociation} t={t} statusLabel={statusLabel} dateLocale={dateLocale} showReminder={showReminder} associationById={associationById} />
     </div>
   );
 }
@@ -151,6 +170,36 @@ export default async function AdminAssociationsPage() {
 
   const seededDrafts = seeded.filter((a: any) => a.public_page_status !== "published").length;
 
+  const associationById: Record<string, any> = {};
+  for (const a of associations ?? []) associationById[a.id] = a;
+
+  // Le richieste di gestione delle pagine seminate sono la coda più urgente: consegnare
+  // una pagina al suo board vale più che approvarne una nuova, e prima stavano sepolte
+  // dentro l'elenco delle schede seminate, dove nessuno le cercava.
+  const { data: claimRequests } = await (supabase.from("association_claim_requests") as any)
+    .select("id, role_in_association, note, association_id, user_id")
+    .eq("status", "pending")
+    .order("created_at", { ascending: true });
+
+  const requesterIds = [...new Set(((claimRequests ?? []) as any[]).map((r) => r.user_id))];
+  const { data: requesters } = requesterIds.length
+    ? await (supabase.from("profiles") as any).select("id, full_name, email").in("id", requesterIds)
+    : { data: [] };
+  const requesterById: Record<string, any> = {};
+  for (const p of requesters ?? []) requesterById[p.id] = p;
+
+  const claimRows: ClaimRequestRow[] = ((claimRequests ?? []) as any[])
+    .filter((r) => associationById[r.association_id])
+    .map((r) => ({
+      id: r.id,
+      associationName: associationById[r.association_id].name,
+      associationSlug: associationById[r.association_id].slug,
+      requesterName: requesterById[r.user_id]?.full_name ?? null,
+      requesterEmail: requesterById[r.user_id]?.email ?? null,
+      roleInAssociation: r.role_in_association,
+      note: r.note,
+    }));
+
   const byUniversity = new Map<string, any[]>();
   for (const a of relevant) {
     const uni = a.university || t("noUniversitySpecified");
@@ -182,9 +231,7 @@ export default async function AdminAssociationsPage() {
         </Link>
       )}
 
-      <section>
-        <InvitationForm />
-      </section>
+      <ClaimRequests rows={claimRows} />
 
       {universities.length === 0 ? (
         <div className="rounded-lg border border-border bg-white p-6 text-center">
@@ -210,6 +257,7 @@ export default async function AdminAssociationsPage() {
                 t={t}
                 statusLabel={statusLabel}
                 dateLocale={dateLocale}
+                associationById={associationById}
               />
               <AssociationSection
                 label={t("acceptedNoPageHeading", { count: acceptedNoPage.length })}

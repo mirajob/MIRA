@@ -681,7 +681,17 @@
     "passwordLabel": "Password *",
     "passwordHelper": "Almeno 8 caratteri, una maiuscola, un numero e un carattere speciale.",
     "submitLoading": "Invio in corso...",
-    "submit": "Invia candidatura"
+    "submit": "Invia candidatura",
+    "duplicateHeading": "Questa associazione ce l'abbiamo già.",
+    "duplicateBody": "Abbiamo scritto noi la sua pagina partendo da fonti pubbliche. Se è la tua, prendila in gestione invece di crearne una seconda.",
+    "duplicateSeeded": "Pagina scritta da MIRA, non ancora gestita da nessuno",
+    "duplicateClaimed": "Pagina già gestita da qualcuno del board",
+    "roleLabel": "Il tuo ruolo nell'associazione",
+    "rolePlaceholder": "es. presidente, responsabile recruiting",
+    "duplicateClaimNote": "La richiesta arriva a noi: controlliamo e ti diamo la pagina.",
+    "duplicateJoinNote": "La richiesta arriva a chi gestisce già la pagina, che ti fa entrare.",
+    "duplicateConfirmCta": "Sì, è la nostra: invia la richiesta",
+    "duplicateRejectCta": "No, la mia è un'altra associazione"
   },
   "InAttesaPage": {
     "heading": "Candidatura in attesa",
@@ -696,7 +706,21 @@
       "step3": "Ricevi una email di conferma",
       "step4": "Accedi e inizia a gestire candidature e board"
     },
-    "footer": "Per domande, rispondi all'email di conferma che riceverai."
+    "footer": "Per domande, rispondi all'email di conferma che riceverai.",
+    "claimHeading": "Richiesta inviata",
+    "claimBody": "Hai chiesto di prendere in gestione la pagina della tua associazione. La controlliamo e ti scriviamo: quando è tua, la gestisci da qui.",
+    "claimSteps": {
+      "step1": "Verifichiamo che tu faccia parte del board",
+      "step2": "Ti passiamo la pagina, con i testi che abbiamo già scritto",
+      "step3": "Da lì apri le selezioni e gestisci le candidature"
+    },
+    "joinHeading": "Richiesta inviata al board",
+    "joinBody": "La pagina della tua associazione è già gestita da qualcuno del tuo board: la tua richiesta di ingresso è arrivata a loro, non a noi.",
+    "joinSteps": {
+      "step1": "Chi gestisce la pagina vede la tua richiesta nella sua dashboard",
+      "step2": "Ti fa entrare come membro",
+      "step3": "Se serve, può darti anche i permessi da amministratore"
+    }
   },
   "AssociationLayout": {
     "onboardingBanner": "Prima di continuare, completa il tuo profilo MiraCard (~5 minuti) →",
@@ -1340,16 +1364,12 @@
     "statusVerified": "Attiva",
     "statusRejected": "Rifiutata",
     "statusSuspended": "Sospesa",
-    "inviteHeading": "Invita un presidente",
-    "inviteIntro": "Riceverà subito un'email da MIRA con il link per creare il suo account e la pagina dell'associazione.",
     "presidentEmailLabel": "Email presidente *",
     "presidentEmailPlaceholder": "presidente@studbocconi.it",
     "associationNameLabel": "Nome associazione *",
     "associationNamePlaceholder": "es. Finance Club, Debate Society...",
     "emailMessageLabel": "Messaggio nell'email (opzionale)",
     "emailMessagePlaceholder": "Cosa deve sapere o fare — questo testo comparirà nell'email che riceve.",
-    "invitationCreatedEmailFailed": "Invito creato, ma l'invio dell'email non è riuscito. Copia il link e inviaglielo manualmente: ",
-    "invitationCreatedEmailSent": "Invito creato e inviato via email. Link di invito: ",
     "sendInvite": "Invia invito",
     "sendingInvite": "Invio in corso...",
     "deleteConfirmPrompt": "Questa azione elimina definitivamente \"{name}\" e tutti i suoi dati (candidature, board, cicli, ecc). Non è reversibile.\n\nScrivi {word} per confermare.",
@@ -1358,7 +1378,11 @@
     "deleteButton": "Elimina",
     "deleting": "Eliminazione...",
     "seededLinkLabel": "Pagine create da MIRA",
-    "seededLinkCount": "{total} in totale, {drafts} da rivedere"
+    "seededLinkCount": "{total} in totale, {drafts} da rivedere",
+    "duplicateWarning": "Possibile doppione di",
+    "duplicateMergeCta": "Unisci",
+    "duplicateDismissCta": "Non è un doppione",
+    "duplicateMergeConfirm": "Unire «{duplicate}» a «{target}»? La pagina «{duplicate}» viene cancellata e chi l'ha creata diventa amministratore di «{target}»."
   },
   "AdminUsers": {
     "heading": "Utenti",
@@ -1501,7 +1525,11 @@
     "back": "Torna indietro",
     "pendingTitle": "Richiesta inviata.",
     "pendingBody": "La trovi in Associazioni con il suo stato: ti rispondiamo appena l'abbiamo esaminata.",
-    "rejectedNote": "La richiesta precedente non è stata approvata."
+    "rejectedNote": "La richiesta precedente non è stata approvata.",
+    "promptJoin": "Fai parte del board di {name}? Chiedi di entrare nella pagina.",
+    "formHeadingJoin": "Chiedi di entrare in {name}",
+    "confirmJoin": "Confermi la richiesta di entrare in {name} come {role}? La approva chi gestisce già la pagina.",
+    "pendingBodyJoin": "La richiesta è arrivata a chi gestisce la pagina: sarà una persona del board a farti entrare."
   },
   "AssociationCategories": {
     "finance": "Finanza",

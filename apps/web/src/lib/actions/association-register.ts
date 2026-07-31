@@ -57,7 +57,7 @@ async function createAssociationForProfile(
   profileId: string,
   contactEmail: string | null | undefined,
   university: string,
-  input: { associationName: string; category: string; websiteUrl: string; description: string },
+  input: { associationName: string; category: string; websiteUrl: string; description: string; possibleDuplicateOf?: string | null },
   presidentName?: string | null
 ) {
   const baseSlug = toSlug(input.associationName) || "associazione";
@@ -76,6 +76,9 @@ async function createAssociationForProfile(
       official: false,
       verification_status: "pending_verification",
       created_by_user_id: profileId,
+      // Somiglia a una pagina che esiste già ma non abbastanza da collegarla da soli:
+      // la pagina nasce comunque e in admin arriva con l'avviso e il pulsante Unisci.
+      possible_duplicate_of: input.possibleDuplicateOf || null,
     })
     .select("id, slug, name")
     .single();
@@ -117,6 +120,78 @@ async function createAssociationForProfile(
 }
 
 /**
+ * Invece di creare una pagina nuova, aggancia chi si sta registrando a una pagina che
+ * esiste già: richiesta di gestione se la pagina è ancora nostra (seminata), richiesta di
+ * ingresso al board se qualcuno la gestisce già. In tutti e due i casi l'account viene
+ * creato lo stesso, perché senza account non sapremmo chi sta chiedendo.
+ */
+async function linkProfileToExistingAssociation(
+  supabase: any,
+  profileId: string,
+  associationId: string,
+  roleInAssociation: string,
+  note?: string | null
+): Promise<{ success: true; linked: "claim" | "join"; slug: string; name: string } | { error: string }> {
+  const { data: association } = await supabase
+    .from("association_profiles")
+    .select("id, name, slug, claim_status")
+    .eq("id", associationId)
+    .maybeSingle();
+
+  if (!association) return { error: "Pagina associazione non trovata." };
+
+  if (association.claim_status === "seeded") {
+    const { error } = await supabase.from("association_claim_requests").upsert(
+      {
+        association_id: association.id,
+        user_id: profileId,
+        request_type: "claim",
+        role_in_association: roleInAssociation.trim() || null,
+        note: note?.trim() || null,
+        status: "pending",
+        rejected_reason: null,
+        reviewed_by_user_id: null,
+        reviewed_at: null,
+      },
+      { onConflict: "association_id,user_id" }
+    );
+    if (error) return { error: error.message };
+    return { success: true, linked: "claim", slug: association.slug, name: association.name };
+  }
+
+  // Pagina già gestita: la richiesta la valuta chi ci sta dentro, non MIRA.
+  const { data: existing } = await supabase
+    .from("association_memberships")
+    .select("id, status")
+    .eq("association_id", association.id)
+    .eq("user_id", profileId)
+    .maybeSingle();
+
+  if (existing?.status === "active") {
+    return { success: true, linked: "join", slug: association.slug, name: association.name };
+  }
+
+  const pendingRow = {
+    role: "association_member",
+    title: roleInAssociation.trim() || null,
+    permissions: {},
+    status: "pending_approval",
+    joined_at: null,
+  };
+
+  const { error } = existing
+    ? await supabase.from("association_memberships").update(pendingRow).eq("id", existing.id)
+    : await supabase.from("association_memberships").insert({
+        association_id: association.id,
+        user_id: profileId,
+        ...pendingRow,
+      });
+
+  if (error) return { error: error.message };
+  return { success: true, linked: "join", slug: association.slug, name: association.name };
+}
+
+/**
  * Crea in un solo passaggio server-side: utente auth (già confermato — l'associazione
  * passa comunque per una revisione manuale del MIRA admin entro 24h, non serve anche il
  * click di conferma email), profilo studente (stessi dati del signup normale, così il
@@ -136,6 +211,11 @@ export async function registerAssociationPresident(input: {
   password: string;
   university: string;
   degreeLevel: string;
+  /** La pagina esistente riconosciuta come la stessa associazione: niente pagina nuova. */
+  linkToAssociationId?: string | null;
+  roleInAssociation?: string | null;
+  /** Somiglianza non certa: la pagina si crea, ma l'admin vede l'avviso. */
+  possibleDuplicateOf?: string | null;
 }) {
   const email = input.email.trim().toLowerCase();
   const supabase = await createServiceClient();
@@ -213,6 +293,16 @@ export async function registerAssociationPresident(input: {
     degreeLevel: input.degreeLevel,
   });
 
+  if (input.linkToAssociationId) {
+    return linkProfileToExistingAssociation(
+      supabase,
+      profileId,
+      input.linkToAssociationId,
+      input.roleInAssociation ?? "",
+      input.description
+    );
+  }
+
   const result = await createAssociationForProfile(supabase, profileId, email, input.university, input, input.presidentName);
   if (result.error) {
     await supabase.auth.admin.deleteUser(authUserId).catch(() => {});
@@ -230,21 +320,34 @@ export async function attachAssociationToCurrentUser(input: {
   category: string;
   websiteUrl: string;
   description: string;
+  linkToAssociationId?: string | null;
+  roleInAssociation?: string | null;
+  possibleDuplicateOf?: string | null;
 }) {
   const ctx = await getUserContext();
   const supabase = await createServiceClient();
 
-  await ensureStudentProfile(supabase, ctx.profile.id, ctx.user.email);
+  await ensureStudentProfile(supabase, (ctx.profile as any).id, ctx.user.email);
+
+  if (input.linkToAssociationId) {
+    return linkProfileToExistingAssociation(
+      supabase,
+      (ctx.profile as any).id,
+      input.linkToAssociationId,
+      input.roleInAssociation ?? "",
+      input.description
+    );
+  }
 
   const { data: studentProfile } = await supabase
     .from("student_profiles")
     .select("university")
-    .eq("user_id", ctx.profile.id)
+    .eq("user_id", (ctx.profile as any).id)
     .maybeSingle();
 
   return createAssociationForProfile(
     supabase,
-    ctx.profile.id,
+    (ctx.profile as any).id,
     ctx.user.email,
     (studentProfile as any)?.university ?? "",
     input,
@@ -269,7 +372,7 @@ export async function approveAssociation(associationId: string) {
     .update({
       verification_status: "verified",
       official: true,
-      approved_by_user_id: ctx.profile.id,
+      approved_by_user_id: (ctx.profile as any).id,
       approved_at: new Date().toISOString(),
     })
     .eq("id", associationId);

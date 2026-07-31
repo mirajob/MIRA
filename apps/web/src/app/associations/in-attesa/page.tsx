@@ -5,7 +5,17 @@ import { signOut } from "@/lib/actions/auth";
 import Link from "next/link";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 
-export default async function AssociazioneInAttesaPage() {
+interface Props {
+  searchParams: Promise<{ tipo?: string }>;
+}
+
+/**
+ * Schermata di attesa dopo l'invio. Tre esiti diversi, perché chi decide cambia:
+ * pagina nuova e richiesta di gestione le valuta MIRA, la richiesta di ingresso in una
+ * pagina già gestita la approva chi la gestisce.
+ */
+export default async function AssociazioneInAttesaPage({ searchParams }: Props) {
+  const { tipo } = await searchParams;
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -37,9 +47,11 @@ export default async function AssociazioneInAttesaPage() {
             </svg>
           </div>
 
-          <h1 className="font-display text-h1 text-navy mb-3">{t("heading")}</h1>
+          <h1 className="font-display text-h1 text-navy mb-3">
+            {tipo === "gestione" ? t("claimHeading") : tipo === "ingresso" ? t("joinHeading") : t("heading")}
+          </h1>
           <p className="text-body text-ink-secondary mb-6">
-            {t("body")}
+            {tipo === "gestione" ? t("claimBody") : tipo === "ingresso" ? t("joinBody") : t("body")}
           </p>
 
           <div className="rounded-lg border border-petrol/30 bg-petrol-50 p-6 text-left mb-6">
@@ -58,12 +70,12 @@ export default async function AssociazioneInAttesaPage() {
           <div className="rounded-lg border border-border bg-white p-6 text-left mb-6">
             <p className="text-label text-navy mb-3">{t("whatNowLabel")}</p>
             <ol className="space-y-3">
-              {[
-                t("steps.step1"),
-                t("steps.step2"),
-                t("steps.step3"),
-                t("steps.step4"),
-              ].map((step, i) => (
+              {(tipo === "gestione"
+                ? [t("claimSteps.step1"), t("claimSteps.step2"), t("claimSteps.step3")]
+                : tipo === "ingresso"
+                  ? [t("joinSteps.step1"), t("joinSteps.step2"), t("joinSteps.step3")]
+                  : [t("steps.step1"), t("steps.step2"), t("steps.step3"), t("steps.step4")]
+              ).map((step, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-navy text-white text-xs flex items-center justify-center font-medium">
                     {i + 1}

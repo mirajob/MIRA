@@ -45,7 +45,10 @@ export default async function StudentAssociationPage({ params }: Props) {
   ) as { role: string; permissions?: unknown } | undefined;
 
   const isSeeded = association.claim_status === "seeded";
+  const isMember = !!membership;
+
   let existingRequest: ExistingClaimRequest | null = null;
+  let joinRequested = false;
   if (isSeeded) {
     const service = await createServiceClient();
     const { data: request } = await (service.from("association_claim_requests") as any)
@@ -56,6 +59,16 @@ export default async function StudentAssociationPage({ params }: Props) {
     if (request) {
       existingRequest = { status: request.status, rejectedReason: request.rejected_reason };
     }
+  } else if (!isMember) {
+    // Pagina già gestita: chi fa parte del board può comunque chiedere di entrare, e
+    // approva chi la gestisce già (non MIRA).
+    const service = await createServiceClient();
+    const { data: pending } = await (service.from("association_memberships") as any)
+      .select("status")
+      .eq("association_id", association.id)
+      .eq("user_id", ctx.profile.id)
+      .maybeSingle();
+    joinRequested = pending?.status === "pending_approval";
   }
 
   return (
@@ -67,7 +80,7 @@ export default async function StudentAssociationPage({ params }: Props) {
           published={isPublished}
         />
       )}
-      {isSeeded && (
+      {isSeeded ? (
         <AssociationClaimBanner
           associationId={association.id}
           associationName={association.name}
@@ -75,6 +88,18 @@ export default async function StudentAssociationPage({ params }: Props) {
           loginHref={`/login?redirect=/student/associazioni/${slug}`}
           existingRequest={existingRequest}
         />
+      ) : (
+        !isMember && (
+          <AssociationClaimBanner
+            mode="join"
+            associationId={association.id}
+            associationName={association.name}
+            isLoggedIn
+            loginHref={`/login?redirect=/student/associazioni/${slug}`}
+            existingRequest={null}
+            alreadyRequested={joinRequested}
+          />
+        )
       )}
       <AssociationPublicProfile
         association={association}

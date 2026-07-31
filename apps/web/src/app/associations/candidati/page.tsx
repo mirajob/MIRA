@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { createBrowserClient } from "@mira/supabase/client";
 import { registerAssociationPresident, attachAssociationToCurrentUser } from "@/lib/actions/association-register";
+import { lookupAssociationMatches, type AssociationMatch } from "@/lib/actions/association-matching";
 import { ASSOCIATION_CATEGORIES, validatePassword } from "@mira/domain";
 import { getAuthErrorKey } from "@/lib/auth-error-messages";
 import { useRouter } from "next/navigation";
@@ -13,6 +14,9 @@ import { PasswordInput } from "@/components/password-input";
 import { UniversityCombobox } from "@/components/university-combobox";
 
 const DEGREE_LEVEL_VALUES = ["triennale", "magistrale", "ciclo_unico"] as const;
+
+/** Esito comune ai due invii: pagina creata, oppure agganciata a una che esisteva già. */
+type SubmitResult = { error?: string; linked?: "claim" | "join" };
 
 export default function CandidatiAssociazionePage() {
   const t = useTranslations("CandidatiPage");
@@ -32,15 +36,28 @@ export default function CandidatiAssociazionePage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // Pagine già su MIRA che sembrano la stessa associazione: finché la scelta non è fatta
+  // non si crea niente, altrimenti nasce un doppione della pagina che abbiamo scritto noi.
+  const [matches, setMatches] = useState<AssociationMatch[] | null>(null);
+  const [linkTarget, setLinkTarget] = useState<AssociationMatch | null>(null);
+  const [roleInAssociation, setRoleInAssociation] = useState("");
   const router = useRouter();
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  /** L'invio vero: crea la pagina, oppure aggancia quella che esiste già. */
+  async function submitRegistration(options: {
+    linkToAssociationId?: string | null;
+    possibleDuplicateOf?: string | null;
+  }) {
     setError(null);
-
     const normalizedUrl = websiteUrl
       ? websiteUrl.startsWith("http") ? websiteUrl : `https://${websiteUrl}`
       : "";
+
+    const linkPayload = {
+      linkToAssociationId: options.linkToAssociationId ?? null,
+      roleInAssociation: roleInAssociation || null,
+      possibleDuplicateOf: options.possibleDuplicateOf ?? null,
+    };
 
     if (hasAccount) {
       setLoading(true);
@@ -52,12 +69,13 @@ export default function CandidatiAssociazionePage() {
         return;
       }
 
-      const result = await attachAssociationToCurrentUser({
+      const result = (await attachAssociationToCurrentUser({
         associationName,
         category,
         websiteUrl: normalizedUrl,
         description,
-      });
+        ...linkPayload,
+      })) as SubmitResult;
 
       if (result.error) {
         setError(result.error);
@@ -65,7 +83,7 @@ export default function CandidatiAssociazionePage() {
         return;
       }
 
-      router.push("/associations/in-attesa");
+      router.push(pendingHref(result));
       return;
     }
 
@@ -77,7 +95,7 @@ export default function CandidatiAssociazionePage() {
 
     setLoading(true);
 
-    const result = await registerAssociationPresident({
+    const result = (await registerAssociationPresident({
       associationName,
       category,
       websiteUrl: normalizedUrl,
@@ -87,7 +105,8 @@ export default function CandidatiAssociazionePage() {
       password,
       university,
       degreeLevel,
-    });
+      ...linkPayload,
+    })) as SubmitResult;
 
     if (result.error) {
       setError(result.error + t("retrySameEmail"));
@@ -106,7 +125,37 @@ export default function CandidatiAssociazionePage() {
       return;
     }
 
-    router.push("/associations/in-attesa");
+    router.push(pendingHref(result));
+  }
+
+  function pendingHref(result: SubmitResult) {
+    if (result.linked === "claim") return "/associations/in-attesa?tipo=gestione";
+    if (result.linked === "join") return "/associations/in-attesa?tipo=ingresso";
+    return "/associations/in-attesa";
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    // Prima di creare: la pagina di questa associazione potrebbe esistere già. Il
+    // controllo è sul nome, dentro lo stesso ateneo, e solo un match praticamente certo
+    // interrompe il flusso — un doppione da unire costa meno di un presidente mandato
+    // sulla pagina sbagliata.
+    setLoading(true);
+    const { matches: found } = await lookupAssociationMatches({
+      name: associationName,
+      university: hasAccount ? undefined : university,
+    });
+    setLoading(false);
+
+    const certain = found.filter((m) => m.level === "certain");
+    if (certain.length > 0) {
+      setMatches(certain);
+      return;
+    }
+
+    await submitRegistration({ possibleDuplicateOf: found[0]?.id ?? null });
   }
 
   return (
@@ -126,7 +175,79 @@ export default function CandidatiAssociazionePage() {
             {t("intro")}
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          {/* La pagina esiste già: si sceglie prima di creare qualsiasi cosa. */}
+          {matches && matches.length > 0 && (
+            <div className="mb-6 rounded-lg border border-petrol/30 bg-petrol-50 p-5">
+              <p className="text-label text-navy">{t("duplicateHeading")}</p>
+              <p className="mt-1 text-body-sm text-ink-secondary">{t("duplicateBody")}</p>
+
+              <div className="mt-4 space-y-2">
+                {matches.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setLinkTarget(m)}
+                    className={`block w-full rounded-md border px-3 py-2 text-left transition-colors duration-100 ${
+                      linkTarget?.id === m.id
+                        ? "border-petrol bg-white"
+                        : "border-border bg-white hover:border-border-strong"
+                    }`}
+                  >
+                    <span className="block text-body-sm font-medium text-navy">{m.name}</span>
+                    <span className="block text-body-sm text-ink-tertiary">
+                      {m.claimStatus === "seeded" ? t("duplicateSeeded") : t("duplicateClaimed")}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {linkTarget && (
+                <div className="mt-4">
+                  <label className="block">
+                    <span className="text-label text-navy mb-1 block">{t("roleLabel")}</span>
+                    <input
+                      type="text"
+                      value={roleInAssociation}
+                      onChange={(e) => setRoleInAssociation(e.target.value)}
+                      placeholder={t("rolePlaceholder")}
+                      className="w-full rounded-md border border-border px-3 py-2 text-body-sm focus:border-petrol focus:outline-none"
+                    />
+                  </label>
+                  <p className="mt-1 text-body-sm text-ink-tertiary">
+                    {linkTarget.claimStatus === "seeded" ? t("duplicateClaimNote") : t("duplicateJoinNote")}
+                  </p>
+                </div>
+              )}
+
+              {error && <div className="mt-3 rounded-md bg-error-bg p-3 text-body-sm text-error">{error}</div>}
+
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  disabled={!linkTarget || !roleInAssociation.trim() || loading}
+                  onClick={() => submitRegistration({ linkToAssociationId: linkTarget!.id })}
+                  className="rounded-md bg-navy px-4 py-2 text-body-sm text-white hover:bg-navy-700 transition-colors duration-100 disabled:opacity-40"
+                >
+                  {loading ? c("loading") : t("duplicateConfirmCta")}
+                </button>
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => {
+                    const possible = matches[0]?.id ?? null;
+                    setMatches(null);
+                    setLinkTarget(null);
+                    submitRegistration({ possibleDuplicateOf: possible });
+                  }}
+                  className="text-body-sm text-ink-secondary underline underline-offset-2 hover:text-navy"
+                >
+                  {t("duplicateRejectCta")}
+                </button>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5" hidden={!!matches && matches.length > 0}>
             {error && (
               <div className="rounded-md bg-error-bg p-3 text-body-sm text-error">{error}</div>
             )}

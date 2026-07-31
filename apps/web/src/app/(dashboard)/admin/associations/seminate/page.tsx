@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { SeededTable, type SeededRow } from "./seeded-table";
-import { ClaimRequests, type ClaimRequestRow } from "./claim-requests";
 
 interface Props {
   searchParams: Promise<{ uni?: string; stato?: string }>;
@@ -45,36 +44,6 @@ export default async function AdminSeededAssociationsPage({ searchParams }: Prop
       (interestByAssociation.get(row.association_id) ?? 0) + 1
     );
   }
-
-  // Richieste di gestione ancora aperte: sono la coda che conta, e stanno in cima
-  // perché consegnare una pagina al suo board vale più che pubblicarne un'altra.
-  const { data: claimRequests } = await (supabase.from("association_claim_requests") as any)
-    .select("id, role_in_association, note, association_id, user_id")
-    .eq("status", "pending")
-    .order("created_at", { ascending: true });
-
-  const requesterIds = [...new Set(((claimRequests ?? []) as any[]).map((r) => r.user_id))];
-  const { data: requesters } = requesterIds.length
-    ? await (supabase.from("profiles") as any).select("id, full_name, email").in("id", requesterIds)
-    : { data: [] };
-  const requesterById = new Map(((requesters ?? []) as any[]).map((p) => [p.id, p]));
-  const associationById = new Map(all.map((a) => [a.id, a]));
-
-  const claimRows: ClaimRequestRow[] = ((claimRequests ?? []) as any[])
-    .filter((r) => associationById.has(r.association_id))
-    .map((r) => {
-      const association = associationById.get(r.association_id)!;
-      const requester = requesterById.get(r.user_id);
-      return {
-        id: r.id,
-        associationName: association.name,
-        associationSlug: association.slug,
-        requesterName: requester?.full_name ?? null,
-        requesterEmail: requester?.email ?? null,
-        roleInAssociation: r.role_in_association,
-        note: r.note,
-      };
-    });
 
   const universities = [...new Set(all.map((a) => a.university).filter(Boolean))].sort(
     (a: string, b: string) => a.localeCompare(b)
@@ -129,8 +98,6 @@ export default async function AdminSeededAssociationsPage({ searchParams }: Prop
         <h1 className="font-display text-h2 text-navy">{t("heading")}</h1>
         <p className="mt-0.5 text-body-sm text-ink-secondary">{t("subhead")}</p>
       </div>
-
-      <ClaimRequests rows={claimRows} />
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex flex-wrap items-center gap-1.5">

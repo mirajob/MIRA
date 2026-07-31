@@ -681,7 +681,17 @@
     "passwordLabel": "Password *",
     "passwordHelper": "At least 8 characters, one uppercase letter, one number, and one special character.",
     "submitLoading": "Sending...",
-    "submit": "Submit application"
+    "submit": "Submit application",
+    "duplicateHeading": "We already have this association.",
+    "duplicateBody": "We wrote its page ourselves from public sources. If it is yours, take it over instead of creating a second one.",
+    "duplicateSeeded": "Page written by MIRA, not managed by anyone yet",
+    "duplicateClaimed": "Page already managed by someone on the board",
+    "roleLabel": "Your role in the association",
+    "rolePlaceholder": "e.g. president, head of recruiting",
+    "duplicateClaimNote": "The request comes to us: we check it and hand you the page.",
+    "duplicateJoinNote": "The request goes to whoever manages the page, who lets you in.",
+    "duplicateConfirmCta": "Yes, it is ours: send the request",
+    "duplicateRejectCta": "No, mine is a different association"
   },
   "InAttesaPage": {
     "heading": "Application pending",
@@ -696,7 +706,21 @@
       "step3": "You receive a confirmation email",
       "step4": "You log in and start managing applications and the board"
     },
-    "footer": "For questions, reply to the confirmation email you'll receive."
+    "footer": "For questions, reply to the confirmation email you'll receive.",
+    "claimHeading": "Request sent",
+    "claimBody": "You asked to take over your association's page. We will check it and get back to you: once it is yours, you manage it from here.",
+    "claimSteps": {
+      "step1": "We check that you are on the board",
+      "step2": "We hand you the page, with the content we already wrote",
+      "step3": "From there you open selections and manage applications"
+    },
+    "joinHeading": "Request sent to the board",
+    "joinBody": "Your association's page is already managed by someone on your board: your request went to them, not to us.",
+    "joinSteps": {
+      "step1": "Whoever manages the page sees your request in their dashboard",
+      "step2": "They let you in as a member",
+      "step3": "If needed, they can also give you admin permissions"
+    }
   },
   "AssociationLayout": {
     "onboardingBanner": "Before continuing, complete your MiraCard profile (~5 minutes) →",
@@ -1340,16 +1364,12 @@
     "statusVerified": "Active",
     "statusRejected": "Rejected",
     "statusSuspended": "Suspended",
-    "inviteHeading": "Invite a president",
-    "inviteIntro": "They'll immediately receive an email from MIRA with the link to create their account and the association's page.",
     "presidentEmailLabel": "President email *",
     "presidentEmailPlaceholder": "president@studbocconi.it",
     "associationNameLabel": "Association name *",
     "associationNamePlaceholder": "e.g. Finance Club, Debate Society...",
     "emailMessageLabel": "Email message (optional)",
     "emailMessagePlaceholder": "What they need to know or do — this text will appear in the email they receive.",
-    "invitationCreatedEmailFailed": "Invitation created, but the email failed to send. Copy the link and send it manually: ",
-    "invitationCreatedEmailSent": "Invitation created and sent via email. Invite link: ",
     "sendInvite": "Send invite",
     "sendingInvite": "Sending...",
     "deleteConfirmPrompt": "This action permanently deletes \"{name}\" and all its data (applications, board, cycles, etc). It cannot be undone.\n\nType {word} to confirm.",
@@ -1358,7 +1378,11 @@
     "deleteButton": "Delete",
     "deleting": "Deleting...",
     "seededLinkLabel": "Pages created by MIRA",
-    "seededLinkCount": "{total} total, {drafts} to review"
+    "seededLinkCount": "{total} total, {drafts} to review",
+    "duplicateWarning": "Possible duplicate of",
+    "duplicateMergeCta": "Merge",
+    "duplicateDismissCta": "Not a duplicate",
+    "duplicateMergeConfirm": "Merge “{duplicate}” into “{target}”? The “{duplicate}” page is deleted and whoever created it becomes an admin of “{target}”."
   },
   "AdminUsers": {
     "heading": "Users",
@@ -1501,7 +1525,11 @@
     "back": "Back",
     "pendingTitle": "Request sent.",
     "pendingBody": "You can follow its status under Associations. We will get back to you once we have reviewed it.",
-    "rejectedNote": "Your previous request was not approved."
+    "rejectedNote": "Your previous request was not approved.",
+    "promptJoin": "Are you on the board of {name}? Ask to join the page.",
+    "formHeadingJoin": "Ask to join {name}",
+    "confirmJoin": "Confirm your request to join {name} as {role}? It is approved by whoever already manages the page.",
+    "pendingBodyJoin": "Your request went to whoever manages the page: someone on the board will let you in."
   },
   "AssociationCategories": {
     "finance": "Finance",
