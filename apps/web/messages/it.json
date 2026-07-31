@@ -605,7 +605,8 @@
     "opensOn": "Apre il {date}",
     "closesOn": "Scadenza: {date}",
     "applyCta": "Candidati",
-    "noCyclesOpen": "Nessuna candidatura aperta al momento."
+    "noCyclesOpen": "Nessuna candidatura aperta al momento.",
+    "backToDirectory": "Tutte le associazioni"
   },
   "ApplyPage": {
     "notYetOpenHeading": "Candidature non ancora aperte",

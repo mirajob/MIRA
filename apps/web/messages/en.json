@@ -605,7 +605,8 @@
     "opensOn": "Opens on {date}",
     "closesOn": "Deadline: {date}",
     "applyCta": "Apply",
-    "noCyclesOpen": "No applications open at the moment."
+    "noCyclesOpen": "No applications open at the moment.",
+    "backToDirectory": "All associations"
   },
   "ApplyPage": {
     "notYetOpenHeading": "Applications not open yet",

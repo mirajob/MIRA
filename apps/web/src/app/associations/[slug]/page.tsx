@@ -116,6 +116,7 @@ export default async function AssociationPublicPage({ params }: Props) {
           association={association}
           openCycles={openCycles ?? []}
           showManage={hasWorkspaceAccess(membership)}
+          backHref="/associations"
         />
       </main>
     </div>

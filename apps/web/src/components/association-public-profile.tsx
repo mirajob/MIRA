@@ -13,11 +13,14 @@ export async function AssociationPublicProfile({
   association,
   openCycles,
   showManage,
+  backHref,
 }: {
   association: any;
   openCycles: any[];
   /** true solo per chi ha davvero accesso alla dashboard dell'associazione (board/permessi). */
   showManage: boolean;
+  /** Dove torna il link "tutte le associazioni": l'elenco cambia fra vista studente e pagina pubblica. */
+  backHref?: string;
 }) {
   const t = await getTranslations("AssociationPublicPage");
   const locale = await getLocale();
@@ -26,14 +29,24 @@ export async function AssociationPublicProfile({
 
   return (
     <>
-      {/* Header */}
+      {/* Con un elenco di oltre cento associazioni si entra e si esce di continuo:
+          senza questo si torna indietro solo dal menu laterale. */}
+      {backHref && (
+        <Link
+          href={backHref}
+          className="mb-4 inline-flex items-center gap-1.5 text-body-sm text-ink-tertiary transition-colors hover:text-petrol"
+        >
+          <span aria-hidden>&larr;</span>
+          {t("backToDirectory")}
+        </Link>
+      )}
+
+      {/* Header. Senza logo non mettiamo un segnaposto con l'iniziale: una lettera
+          dentro un quadrato somiglia a un logo vero e non lo e'. Meglio il solo nome,
+          finche' l'associazione non carica il suo. */}
       <div className="flex items-start gap-4 mb-8">
-        {association.logo_url ? (
+        {association.logo_url && (
           <img src={association.logo_url} alt="" className="h-16 w-16 rounded-lg object-cover" />
-        ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-navy text-white text-h2 font-semibold">
-            {association.name.charAt(0)}
-          </div>
         )}
         <div>
           <h1 className="font-display text-display-md text-navy">{association.name}</h1>

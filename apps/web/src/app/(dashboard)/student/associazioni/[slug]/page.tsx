@@ -80,6 +80,7 @@ export default async function StudentAssociationPage({ params }: Props) {
         association={association}
         openCycles={openCycles ?? []}
         showManage={hasWorkspaceAccess(membership)}
+        backHref="/student/associazioni"
       />
     </div>
   );

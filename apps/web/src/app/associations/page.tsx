@@ -58,12 +58,8 @@ export default async function AssociationsPage() {
                 className="rounded-lg border border-border bg-white p-6 hover:border-border-strong transition-colors duration-100"
               >
                 <div className="flex items-center gap-3 mb-4">
-                  {assoc.logo_url ? (
+                  {assoc.logo_url && (
                     <img src={assoc.logo_url} alt="" className="h-10 w-10 rounded-md object-cover" />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-navy text-white text-label font-semibold">
-                      {assoc.name.charAt(0)}
-                    </div>
                   )}
                   <div>
                     <h2 className="font-sans text-h3 text-navy">{assoc.name}</h2>

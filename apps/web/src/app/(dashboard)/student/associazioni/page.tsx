@@ -301,12 +301,8 @@ export default async function StudentAssociazioniPage({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
-                      {assoc?.logo_url ? (
+                      {assoc?.logo_url && (
                         <img src={assoc.logo_url} alt="" className="h-9 w-9 rounded-md object-cover shrink-0 mt-0.5" />
-                      ) : (
-                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-navy text-white text-label font-semibold shrink-0 mt-0.5">
-                          {assoc?.name?.charAt(0) ?? "?"}
-                        </div>
                       )}
                       <div>
                         <p className="font-sans text-h3 text-navy">{assoc?.name ?? c("associationFallback")}</p>
