@@ -1676,7 +1676,14 @@
     "noCandidates": "No candidates in this cycle.",
     "candidateBooked": "booked",
     "candidateWaiting": "has not picked yet",
-    "inviteCta": "Invite {count}"
+    "inviteCta": "Invite {count}",
+    "bookedHeading": "Booked interviews",
+    "bookedEmpty": "Nobody has booked a time yet.",
+    "conductedBy": "run by {name}",
+    "noInterviewerAssigned": "nobody assigned",
+    "missingLinks": "{count} without a link",
+    "saveLink": "Save and send",
+    "linkSent": "sent"
   },
   "StudentInterviews": {
     "pageTitle": "Interviews",

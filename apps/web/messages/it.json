@@ -1676,7 +1676,14 @@
     "noCandidates": "Nessun candidato in questo ciclo.",
     "candidateBooked": "ha prenotato",
     "candidateWaiting": "non ha ancora scelto",
-    "inviteCta": "Invita {count}"
+    "inviteCta": "Invita {count}",
+    "bookedHeading": "Colloqui fissati",
+    "bookedEmpty": "Nessuno ha ancora prenotato un orario.",
+    "conductedBy": "conduce {name}",
+    "noInterviewerAssigned": "nessuno assegnato",
+    "missingLinks": "{count} senza link",
+    "saveLink": "Salva e manda",
+    "linkSent": "inviato"
   },
   "StudentInterviews": {
     "pageTitle": "Colloqui",

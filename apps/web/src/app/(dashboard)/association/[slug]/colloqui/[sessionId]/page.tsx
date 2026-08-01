@@ -11,6 +11,7 @@ import { AvailabilityGrid, type AvailabilityBlock } from "./availability-grid";
 import { SessionActions } from "./session-actions";
 import { EditSessionPanel } from "./edit-session-panel";
 import { InvitePanel, type InvitableCandidate } from "./invite-panel";
+import { BookedInterviews, type BookedInterview } from "./booked-interviews";
 
 interface Props {
   params: Promise<{ slug: string; sessionId: string }>;
@@ -50,8 +51,8 @@ export default async function InterviewSessionPage({ params }: Props) {
 
   const { data: slots } = await (supabase.from("interview_slots") as any)
     .select(`
-      id, starts_at, ends_at, track, application_id,
-      applications(profiles!applications_student_user_id_fkey(full_name))
+      id, starts_at, ends_at, track, application_id, interviewer_user_id, meeting_link,
+      applications(profiles!applications_student_user_id_fkey(full_name, email))
     `)
     .eq("session_id", sessionId)
     .order("starts_at", { ascending: true });
@@ -60,7 +61,12 @@ export default async function InterviewSessionPage({ params }: Props) {
     .select("user_id, starts_at, ends_at")
     .eq("session_id", sessionId);
 
-  const peopleIds = [...new Set(((availability ?? []) as any[]).map((a) => a.user_id))];
+  const peopleIds = [
+    ...new Set([
+      ...((availability ?? []) as any[]).map((a) => a.user_id),
+      ...((slots ?? []) as any[]).map((s) => s.interviewer_user_id).filter(Boolean),
+    ]),
+  ];
   const { data: people } = peopleIds.length
     ? await (supabase.from("profiles") as any).select("id, full_name, email").in("id", peopleIds)
     : { data: [] };
@@ -121,6 +127,21 @@ export default async function InterviewSessionPage({ params }: Props) {
       booked: Boolean(invite?.slot_id),
     };
   });
+
+  // I colloqui fissati, in ordine di orario: è la lista che serve il giorno prima.
+  const bookedInterviews: BookedInterview[] = ((slots ?? []) as any[])
+    .filter((s) => s.application_id)
+    .map((s) => {
+      const interviewer = s.interviewer_user_id ? personById.get(s.interviewer_user_id) : null;
+      return {
+        slotId: s.id,
+        startsAt: s.starts_at,
+        candidateName: s.applications?.profiles?.full_name ?? "—",
+        candidateEmail: s.applications?.profiles?.email ?? "",
+        interviewerName: interviewer?.full_name ?? interviewer?.email ?? null,
+        meetingLink: s.meeting_link ?? null,
+      };
+    });
 
   const total = blocks.length;
   const covered = blocks.filter(
@@ -209,6 +230,14 @@ export default async function InterviewSessionPage({ params }: Props) {
           <SessionActions sessionId={sessionId} slug={slug} status={session.status} canManage={canManage} />
         </div>
       </div>
+
+      <BookedInterviews
+        slug={slug}
+        sessionId={sessionId}
+        interviews={bookedInterviews}
+        needsLink={session.mode === "online" && session.link_mode === "per_interview"}
+        dateLocale={dateLocale}
+      />
 
       <InvitePanel
         sessionId={sessionId}

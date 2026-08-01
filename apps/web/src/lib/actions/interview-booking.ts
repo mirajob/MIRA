@@ -300,7 +300,11 @@ export async function setSlotMeetingLink(input: {
   const supabase = await createServiceClient();
 
   const { data: slot } = await (supabase.from("interview_slots") as any)
-    .select("id, session_id, interview_sessions(association_id)")
+    .select(`
+      id, session_id, starts_at, ends_at, meeting_link, application_id,
+      applications(student_user_id, profiles!applications_student_user_id_fkey(full_name, email)),
+      interview_sessions(association_id, title, description, association_profiles(name))
+    `)
     .eq("id", input.slotId)
     .maybeSingle();
 
@@ -315,17 +319,61 @@ export async function setSlotMeetingLink(input: {
 
   if (!membership && !ctx.isMiraAdmin) return { error: "Non fai parte di questa associazione." };
 
+  const link = input.link.trim() || null;
+  const changed = link !== (slot.meeting_link ?? null);
+
   const { error } = await (supabase.from("interview_slots") as any)
-    .update({ meeting_link: input.link.trim() || null })
+    .update({ meeting_link: link })
     .eq("id", input.slotId);
 
   if (error) return { error: error.message };
 
   await (supabase.from("interview_invites") as any)
-    .update({ location_or_link: input.link.trim() || null })
+    .update({ location_or_link: link })
     .eq("slot_id", input.slotId);
+
+  // Salvare il link e basta non serve a niente: il candidato deve riceverlo.
+  // Parte una conferma aggiornata con l'evento allegato, così il colloquio in
+  // calendario si aggiorna invece di restare senza indirizzo.
+  const student = slot.applications?.profiles;
+  if (changed && link && student?.email) {
+    const session = slot.interview_sessions;
+    const associationName = session?.association_profiles?.name ?? "";
+
+    const ics = buildInterviewIcs({
+      uid: input.slotId,
+      title: `${session?.title ?? "Colloquio"} · ${associationName}`,
+      description: session?.description,
+      location: link,
+      startsAt: new Date(slot.starts_at),
+      endsAt: new Date(slot.ends_at),
+      organizerName: associationName || "MIRA",
+    });
+
+    await sendInterviewConfirmation({
+      email: student.email,
+      recipientName: student.full_name ?? null,
+      associationName,
+      sessionTitle: session?.title ?? "",
+      whenLabel: whenLabel(slot.starts_at),
+      placeLabel: link,
+      placeIsLink: true,
+      icsContent: ics,
+    }).catch(() => {});
+
+    const studentUserId = slot.applications?.student_user_id;
+    if (studentUserId) {
+      await (supabase.from("notifications") as any).insert({
+        user_id: studentUserId,
+        type: "interview_link",
+        title: "Link del colloquio",
+        body: `${associationName}: il link per il tuo colloquio è disponibile.`,
+        data: { slot_id: input.slotId },
+      });
+    }
+  }
 
   revalidatePath(`/association/${input.slug}/colloqui/${input.sessionId}`);
   revalidatePath("/student/colloqui");
-  return { success: true };
+  return { success: true, notified: Boolean(changed && link) };
 }
