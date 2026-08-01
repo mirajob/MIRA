@@ -79,6 +79,17 @@ function isTransientStatus(status: number): boolean {
   return status === 429 || status === 500 || status === 503;
 }
 
+/**
+ * Google ritira le versioni pinnate col tempo, e quando succede risponde 404 "not found".
+ * In quel caso si ripiega sull'alias, che per definizione punta sempre a un modello vivo:
+ * meglio una lettura più cara che un caricamento fallito.
+ */
+const FALLBACK_MODEL: GeminiModel = "gemini-flash-latest";
+
+function isModelGoneError(message: string): boolean {
+  return message.includes("404") || message.toLowerCase().includes("not found");
+}
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
@@ -155,9 +166,16 @@ async function generate(
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       const transient = message.startsWith("__TRANSIENT__");
-      if (!transient || attempt === maxAttempts) {
-        throw new Error(message.replace("__TRANSIENT__", ""));
+      if (!transient) {
+        const clean = message.replace("__TRANSIENT__", "");
+        if (isModelGoneError(clean) && model !== FALLBACK_MODEL) {
+          console.error(`[MIRA AI] modello ${model} non più disponibile, ripiego su ${FALLBACK_MODEL}`);
+          const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/${FALLBACK_MODEL}:generateContent`;
+          return await callGemini(fallbackUrl, apiKey, body, options);
+        }
+        throw new Error(clean);
       }
+      if (attempt === maxAttempts) throw new Error(message.replace("__TRANSIENT__", ""));
       lastTransientError = message.replace("__TRANSIENT__", "");
       await sleep(attempt * 1500);
     }

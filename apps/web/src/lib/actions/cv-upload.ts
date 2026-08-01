@@ -4,8 +4,9 @@ import { parseCVWithGemini, formatCVForChat } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 
-// Stesso modello del libretto: Gemini Flash per velocità (vedi transcript-upload.ts).
-const CV_MODEL = "gemini-flash-latest" as const;
+// Stesso modello del libretto (vedi transcript-upload.ts), ma a ragionamento basso: qui
+// non ci sono voti da leggere e il CV viene estratto bene lo stesso.
+const CV_MODEL = "gemini-3.1-flash-lite" as const;
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/webp"];

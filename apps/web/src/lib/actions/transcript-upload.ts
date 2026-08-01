@@ -9,10 +9,13 @@ import {
   type GeminiUsage,
 } from "@mira/ai";
 
-// Modello di produzione per la lettura del libretto: Gemini Flash (alias -latest,
-// così resta sul modello corrente disponibile). Scelto per velocità — il parser
-// OpenAI su gpt-5.4 con reasoning high superava i 30s e la gente abbandonava.
-const TRANSCRIPT_MODEL = "gemini-flash-latest" as const;
+// Modello di produzione per la lettura del libretto: Flash-Lite 3.1 con ragionamento alto.
+// Scelto su prove vere fatte dal playground sullo stesso libretto Bocconi (2026-08-01):
+// legge tutti i 16 esami senza sbagliare un voto in 9 secondi e per circa 0,006 dollari,
+// contro i 14 secondi e il centesimo abbondante della 3.5, e contro l'alias -latest che
+// costa 1,50/7,50 per milione di token invece di 0,25/1,50.
+// Se un giorno Google ritira questa versione, geminiGenerateJson ripiega sull'alias.
+const TRANSCRIPT_MODEL = "gemini-3.1-flash-lite" as const;
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
