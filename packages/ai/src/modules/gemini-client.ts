@@ -35,6 +35,23 @@ function isTransientStatus(status: number): boolean {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
+ * Come geminiGenerateJson ma SENZA file: si manda solo testo.
+ *
+ * Serve per i PDF di testo (le autocertificazioni universitarie lo sono quasi sempre):
+ * il testo si estrae in locale in una frazione di secondo e il modello legge caratteri
+ * invece di guardare un'immagine. È la stessa risposta, ma molto più veloce e molto
+ * meno cara, perché non si pagano i token dell'immagine.
+ */
+export async function geminiGenerateJsonFromText(
+  model: GeminiModel,
+  systemPrompt: string,
+  userText: string,
+  options: GeminiOptions = {}
+): Promise<string> {
+  return generate(model, systemPrompt, [{ text: userText }], options);
+}
+
+/**
  * One-shot structured generation: system instruction + a text prompt + one
  * inline file (PDF or image). Forces JSON output and returns the raw JSON text.
  */
@@ -46,20 +63,26 @@ export async function geminiGenerateJson(
   fileMimeType: string,
   options: GeminiOptions = {}
 ): Promise<string> {
+  return generate(
+    model,
+    systemPrompt,
+    [{ text: userText }, { inlineData: { mimeType: fileMimeType, data: fileBase64 } }],
+    options
+  );
+}
+
+async function generate(
+  model: GeminiModel,
+  systemPrompt: string,
+  parts: Array<Record<string, unknown>>,
+  options: GeminiOptions
+): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
 
   const body = {
     systemInstruction: { parts: [{ text: systemPrompt }] },
-    contents: [
-      {
-        role: "user",
-        parts: [
-          { text: userText },
-          { inlineData: { mimeType: fileMimeType, data: fileBase64 } },
-        ],
-      },
-    ],
+    contents: [{ role: "user", parts }],
     generationConfig: {
       responseMimeType: "application/json",
       temperature: 0.1,

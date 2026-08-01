@@ -98,8 +98,9 @@ export async function uploadTranscript(formData: FormData) {
     // vale come ripiego: meglio venti secondi in più che un errore in faccia.
     let parsed;
     let usedModel: string = TRANSCRIPT_MODEL;
+    let viaText = false;
     try {
-      ({ parsed } = await parseTranscriptWithGemini(base64, file.type, TRANSCRIPT_MODEL));
+      ({ parsed, viaText = false } = await parseTranscriptWithGemini(base64, file.type, TRANSCRIPT_MODEL));
     } catch (geminiError) {
       console.error("[MIRA] Gemini transcript parse failed, ripiego su OpenAI:", geminiError);
       parsed = await parseTranscriptFile(base64, file.type);
@@ -299,7 +300,9 @@ export async function uploadTranscript(formData: FormData) {
       entity_type: "student_transcript",
       entity_id: transcript!.id,
       user_id: profileId,
-      input_metadata: { file_name: file.name, file_size: file.size, file_type: file.type, phase: coursePhase },
+      // via_text = il PDF aveva testo e l'abbiamo estratto in locale (strada veloce);
+      // false = lettura visiva del file, cioè scansione o screenshot.
+      input_metadata: { file_name: file.name, file_size: file.size, file_type: file.type, phase: coursePhase, via_text: viaText },
       output_summary: {
         university_name: parsed.university_name,
         degree_program: parsed.degree_program,
