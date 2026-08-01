@@ -38,6 +38,7 @@ docs/
   12_MIRA_STUDENT_PROFILE_MODULE_SPEC.md
   13_MIRA_MOBILE_APP_SPEC.md
   14_MIRA_KNOWLEDGE_BASE_RAG_SPEC.md
+  15_MIRA_WHATSAPP_AGENT_SPEC.md
 ```
 
 ---
@@ -131,6 +132,12 @@ Use it before building the native app.
 Knowledge base and RAG specification. Defines document upload, parsing, chunking, embeddings, scopes, retrieval, reprocessing, versioning and how AI modules use knowledge.
 
 Use it before implementing document ingestion or retrieval-augmented generation.
+
+### `15_MIRA_WHATSAPP_AGENT_SPEC.md`
+
+WhatsApp acquisition agent specification (in Italian). Defines the public WhatsApp number, the opening menu and its routing to multiple paths, the Flows-based collection of availability and career plan, Meta platform constraints, the one-time token that links a WhatsApp lead to a MIRA account, and lead data retention.
+
+Use it before implementing the WhatsApp channel. Read `MIRA_CARD_REWORK_SPEC.md` first: the agent must follow the same form-first logic, not conversational onboarding.
 
 ---
 
