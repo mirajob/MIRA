@@ -23,6 +23,8 @@ export default async function AdminLayout({
     // Strumento dev interno (solo admin MIRA): banco di prova per il parsing AI.
     { label: "AI Test", href: "/admin/ai-test" },
     { label: "Consumi AI", href: "/admin/ai-usage" },
+    // Banco di prova della conversazione WhatsApp: gira in memoria, non parla con Meta.
+    { label: "WhatsApp", href: "/admin/whatsapp" },
   ];
 
   return (

@@ -15,3 +15,26 @@ export type {
   AssociationCandidate,
   RankedAssociationMatch,
 } from "./association-matching";
+export {
+  PATHS,
+  WA_LIMITS,
+  COPY as WHATSAPP_COPY,
+  LINK_PLACEHOLDER,
+  initialState,
+  handleEvent,
+  toDisponibilita,
+  toPianoCarriera,
+  validateOutbound,
+} from "./whatsapp-agent";
+export type {
+  PathId,
+  AgentStep,
+  StepName,
+  AgentState,
+  AgentReply,
+  CollectedData,
+  InboundEvent,
+  OutboundMessage,
+  OutboundButton,
+  FlowAnswers,
+} from "./whatsapp-agent";
