@@ -6,6 +6,7 @@ import { ApplicationForm } from "./application-form";
 import Link from "next/link";
 import { CornerLocale } from "@/components/corner-locale";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -115,7 +116,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
           </h1>
           <p className="text-body text-ink-secondary">
             {notYetOpen
-              ? t("opensOnBody", { name: association.name, date: new Date((cycle as any).opens_at).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" }) })
+              ? t("opensOnBody", { name: association.name, date: new Date((cycle as any).opens_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE, day: "numeric", month: "long", year: "numeric" }) })
               : t("noCyclesBody", { name: association.name })}
           </p>
           <Link href={`/associations/${slug}`} className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
@@ -177,7 +178,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
         )}
         {cycle.closes_at && (
           <p className="mt-2 text-body-sm text-ink-tertiary">
-            {t("closesOn", { date: new Date(cycle.closes_at).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" }) })}
+            {t("closesOn", { date: new Date(cycle.closes_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE, day: "numeric", month: "long", year: "numeric" }) })}
           </p>
         )}
 

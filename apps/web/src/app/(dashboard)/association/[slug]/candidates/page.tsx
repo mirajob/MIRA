@@ -147,7 +147,7 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
                       )}
                     </td>
                     <td className="py-4 px-4 text-body-sm text-ink-secondary">
-                      {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString(dateLocale) : "—"}
+                      {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE }) : "—"}
                     </td>
                   </tr>
                 );

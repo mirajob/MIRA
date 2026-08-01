@@ -93,7 +93,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
           <p className="text-body-sm text-ink-tertiary mt-0.5">
             {cycle?.title}
             {selectedRole && selectedRole !== "generica" && t("roleLabel", { role: selectedRole })}
-            {application.submitted_at && c("submittedOn", { date: new Date(application.submitted_at).toLocaleDateString(dateLocale) })}
+            {application.submitted_at && c("submittedOn", { date: new Date(application.submitted_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE }) })}
           </p>
         </div>
         <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium shrink-0 ${STATUS_COLORS[application.status] ?? "bg-navy-50 text-navy"}`}>
@@ -117,7 +117,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
           <p className="font-sans text-h3 text-navy">{t("interviewHeading")}</p>
           {activeInterview.selected_time && (
             <p className="text-body-sm text-ink">
-              {new Date(activeInterview.selected_time).toLocaleDateString(dateLocale, {
+              {new Date(activeInterview.selected_time).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE,
                 weekday: "long", day: "numeric", month: "long",
                 year: "numeric", hour: "2-digit", minute: "2-digit",
               })}
@@ -148,7 +148,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
                     {APPLICATION_STATUS_LABELS[ev.new_status] ?? ev.new_status}
                   </p>
                   <p className="text-xs text-ink-tertiary mt-0.5">
-                    {new Date(ev.created_at).toLocaleDateString(dateLocale, {
+                    {new Date(ev.created_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE,
                       day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
                     })}
                   </p>

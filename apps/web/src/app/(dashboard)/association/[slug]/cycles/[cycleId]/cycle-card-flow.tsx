@@ -19,13 +19,14 @@ import {
 } from "@/lib/cycle-card";
 import type { CycleBlock, CycleCardState, CyclePosition } from "@/lib/cycle-card";
 import type { CycleBlockPayload } from "@/lib/actions/cycle-card";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 
 /** Data leggibile ("31 luglio 2026") invece dell'ISO grezzo. */
 function formatDate(iso: string, locale: string): string {
   if (!iso) return "";
   const d = new Date(`${iso}T00:00:00`);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString(locale === "it" ? "it-IT" : "en-US", {
+  return d.toLocaleDateString(locale === "it" ? "it-IT" : "en-US", { timeZone: APP_TIME_ZONE,
     day: "numeric",
     month: "long",
     year: "numeric",

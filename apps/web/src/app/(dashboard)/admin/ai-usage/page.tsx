@@ -52,7 +52,7 @@ export default async function AdminAiUsagePage() {
   const grouped = [...byKey.entries()].sort((a, b) => b[1].cost - a[1].cost);
 
   const money = (value: number) => `$${value.toFixed(4)}`;
-  const monthLabel = startOfMonth.toLocaleDateString("it-IT", { month: "long", year: "numeric" });
+  const monthLabel = startOfMonth.toLocaleDateString("it-IT", { timeZone: APP_TIME_ZONE, month: "long", year: "numeric" });
 
   return (
     <div className="space-y-5">
@@ -103,7 +103,7 @@ export default async function AdminAiUsagePage() {
                   <td className="px-3 py-2 text-navy font-medium">{key}</td>
                   <td className="px-3 py-2 tabular-nums text-ink">{agg.calls}</td>
                   <td className="px-3 py-2 tabular-nums text-ink-secondary">
-                    {agg.tokensIn.toLocaleString("it-IT")} / {agg.tokensOut.toLocaleString("it-IT")}
+                    {agg.tokensIn.toLocaleString("it-IT", { timeZone: APP_TIME_ZONE })} / {agg.tokensOut.toLocaleString("it-IT", { timeZone: APP_TIME_ZONE })}
                   </td>
                   <td className="px-3 py-2 tabular-nums text-ink">{money(agg.cost)}</td>
                   <td className="px-3 py-2 tabular-nums text-ink-tertiary">
@@ -149,7 +149,7 @@ export default async function AdminAiUsagePage() {
                 return (
                   <tr key={i} className="border-b border-border last:border-0">
                     <td className="px-3 py-2 whitespace-nowrap text-ink-tertiary">
-                      {new Date(r.created_at).toLocaleString("it-IT", {
+                      {new Date(r.created_at).toLocaleString("it-IT", { timeZone: APP_TIME_ZONE,
                         day: "numeric",
                         month: "short",
                         hour: "2-digit",

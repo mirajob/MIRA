@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 
 // Lazy singleton: the Resend constructor throws when the API key is
 // missing, which would otherwise crash every page/action that merely
@@ -23,14 +24,21 @@ export async function sendAdminNewSignupNotification({
   email,
   detail,
 }: {
-  kind: "student" | "association" | "company";
+  kind: "student" | "association" | "company" | "claim_request";
   name: string;
   email: string;
   detail?: string | null;
 }) {
   const label =
-    kind === "student" ? "Nuovo studente" : kind === "association" ? "Nuova associazione" : "Nuova azienda";
+    kind === "student"
+      ? "Nuovo studente"
+      : kind === "association"
+        ? "Nuova associazione"
+        : kind === "company"
+          ? "Nuova azienda"
+          : "Richiesta di gestione pagina";
   const now = new Date().toLocaleString("it-IT", {
+    timeZone: APP_TIME_ZONE,
     day: "numeric",
     month: "short",
     year: "numeric",

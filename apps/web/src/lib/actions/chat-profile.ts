@@ -112,7 +112,7 @@ NOTA: gli esami pass/fail (es. seminari da 1 CFU) NON hanno voto numerico e NON 
     }
     if (relevantCycles.length) {
       platformData += `\n\nCANDIDATURE APERTE (per associazioni in cui NON è già membro):\n${relevantCycles.map((c: any) =>
-        `- ${c.association_profiles?.name}: "${c.title}"${c.closes_at ? ` (scade ${new Date(c.closes_at).toLocaleDateString("it-IT")})` : ""}`
+        `- ${c.association_profiles?.name}: "${c.title}"${c.closes_at ? ` (scade ${new Date(c.closes_at).toLocaleDateString("it-IT", { timeZone: APP_TIME_ZONE })})` : ""}`
       ).join("\n")}`;
     }
   }

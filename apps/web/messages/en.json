@@ -1428,7 +1428,8 @@
     "reminderSend": "Send",
     "reminderSending": "Sending...",
     "reminderCancel": "Cancel",
-    "reminderSent": "Reminder sent."
+    "reminderSent": "Reminder sent.",
+    "tableCardCompleted": "Card completed"
   },
   "OnboardingFlow": {
     "progressTitle": "Your MIRA Card",

@@ -8,6 +8,7 @@ import { DuplicateActions } from "./duplicate-actions";
 import { DeleteAssociationButton } from "./delete-association-button";
 import { ReminderButton } from "./reminder-button";
 import { getLocale, getTranslations } from "next-intl/server";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -45,7 +46,7 @@ function AssociationRow({ assoc, president, t, statusLabel, dateLocale, showRemi
         </span>
       </td>
       <td className="px-3 py-2 text-body-sm text-ink-tertiary whitespace-nowrap">
-        {new Date(assoc.created_at).toLocaleString(dateLocale, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+        {new Date(assoc.created_at).toLocaleString(dateLocale, { timeZone: APP_TIME_ZONE, day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
       </td>
       <td className="px-3 py-2">
         <div className="flex items-center gap-3">

@@ -3,6 +3,7 @@
 import { createServerClient, createServiceClient } from "@mira/supabase/server";
 import { ensureStudentProfile } from "@/lib/student-provisioning";
 import { ensureCardBlocksExist } from "./card-blocks";
+import { sendAdminNewSignupNotification } from "@/lib/email";
 import { revalidatePath } from "next/cache";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -44,6 +45,16 @@ export async function completeStudentProfile(input: {
 
   const profileId = profile.id as string;
 
+  // Questa pagina è l'unico punto in cui passa chi si registra con Google, e ci passa
+  // una volta sola: il dispatcher /api/auth/redirect ci manda solo chi non ha ancora
+  // un'università. Leggiamo lo stato PRIMA di scrivere, così la notifica all'admin
+  // parte alla prima compilazione e non a un eventuale reinvio.
+  const { data: before } = await (service.from("student_profiles") as any)
+    .select("university")
+    .eq("user_id", profileId)
+    .maybeSingle();
+  const isFirstCompletion = !before?.university;
+
   // Chi arriva da Google può non avere ancora né student_profiles né il ruolo.
   await ensureStudentProfile(service, profileId, user.email, {
     university,
@@ -80,6 +91,23 @@ export async function completeStudentProfile(input: {
       })
       .eq("student_profile_id", student.id)
       .eq("block_type", "header");
+  }
+
+  // Chi si registra con Google non passa dal form di signup, quindi senza questa
+  // chiamata l'admin non riceveva alcuna notifica della sua iscrizione.
+  // Best-effort: un problema con l'email non deve bloccare l'accesso.
+  if (isFirstCompletion) {
+    const { data: named } = await (service.from("profiles") as any)
+      .select("full_name")
+      .eq("id", profileId)
+      .maybeSingle();
+
+    await sendAdminNewSignupNotification({
+      kind: "student",
+      name: named?.full_name ?? "",
+      email: user.email ?? "",
+      detail: [university, input.degreeLevel, "accesso con Google"].filter(Boolean).join(" · "),
+    }).catch(() => {});
   }
 
   revalidatePath("/student");

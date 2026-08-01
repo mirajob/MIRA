@@ -5,6 +5,7 @@ import { ApproveRejectButtons } from "./approve-reject-buttons";
 import { AccessRequestButtons } from "./access-request-buttons";
 import { InvitationForm } from "./invitation-form";
 import { getLocale, getTranslations } from "next-intl/server";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -89,7 +90,7 @@ export default async function AdminCompaniesPage() {
           </span>
         </td>
         <td className="px-3 py-2 text-body-sm text-ink-tertiary whitespace-nowrap">
-          {new Date(company.created_at).toLocaleString(dateLocale, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+          {new Date(company.created_at).toLocaleString(dateLocale, { timeZone: APP_TIME_ZONE, day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
         </td>
         <td className="px-3 py-2">
           <ApproveRejectButtons
@@ -146,7 +147,7 @@ export default async function AdminCompaniesPage() {
                       ) : <span className="text-body-sm text-ink-tertiary">—</span>}
                     </td>
                     <td className="px-3 py-2 text-body-sm text-ink-tertiary whitespace-nowrap">
-                      {new Date(r.created_at).toLocaleString(dateLocale, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      {new Date(r.created_at).toLocaleString(dateLocale, { timeZone: APP_TIME_ZONE, day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </td>
                     <td className="px-3 py-2">
                       <AccessRequestButtons requestId={r.id} />

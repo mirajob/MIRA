@@ -65,8 +65,8 @@ export default async function CycleDetailPage({ params }: Props) {
           </div>
           {cycle.description && <p className="text-body text-ink-secondary">{cycle.description}</p>}
           <div className="mt-2 flex gap-4 text-body-sm text-ink-tertiary">
-            {cycle.opens_at && <span>{t("openedOn", { date: new Date(cycle.opens_at).toLocaleDateString(dateLocale) })}</span>}
-            {cycle.closes_at && <span>{t("closedOn", { date: new Date(cycle.closes_at).toLocaleDateString(dateLocale) })}</span>}
+            {cycle.opens_at && <span>{t("openedOn", { date: new Date(cycle.opens_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE }) })}</span>}
+            {cycle.closes_at && <span>{t("closedOn", { date: new Date(cycle.closes_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE }) })}</span>}
           </div>
         </div>
 

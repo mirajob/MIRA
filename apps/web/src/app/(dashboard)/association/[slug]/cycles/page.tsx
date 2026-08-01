@@ -65,7 +65,7 @@ export default async function CyclesPage({ params }: Props) {
             <div className="mt-1 flex gap-3 text-body-sm text-ink-tertiary">
               <span>{t("questionsCount", { count: questionCount })}</span>
               <span>{t("applicationsCount", { count: applicationCount })}</span>
-              {cycle.closes_at && <span>{t("closesOn", { date: new Date(cycle.closes_at).toLocaleDateString(dateLocale) })}</span>}
+              {cycle.closes_at && <span>{t("closesOn", { date: new Date(cycle.closes_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE }) })}</span>}
             </div>
           </div>
           <div className="flex gap-2 shrink-0">

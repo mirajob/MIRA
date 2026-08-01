@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createBrowserClient } from "@mira/supabase/client";
 import { useLocale, useTranslations } from "next-intl";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 import {
   loadChatMessages,
   sendCompanyChatMessage,
@@ -135,7 +136,7 @@ export function CompanyContactsClient({ slug, initialContacts }: Props) {
                   </span>
                 </div>
                 <p className="text-xs text-ink-tertiary">
-                  {new Date(contactItem.created_at).toLocaleDateString(dateLocale, { day: "numeric", month: "short" })}
+                  {new Date(contactItem.created_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE, day: "numeric", month: "short" })}
                   {chat && t("chatOpenSuffix")}
                 </p>
                 {!chat && contactItem.status === "pending" && (
@@ -205,7 +206,7 @@ export function CompanyContactsClient({ slug, initialContacts }: Props) {
                       )}
                       <p className="text-body whitespace-pre-wrap">{msg.content}</p>
                       <p className={`text-xs mt-1 ${isCompany && !isSpecial ? "text-white/60" : "text-ink-tertiary"}`}>
-                        {new Date(msg.created_at).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" })}
+                        {new Date(msg.created_at).toLocaleTimeString(dateLocale, { timeZone: APP_TIME_ZONE, hour: "2-digit", minute: "2-digit" })}
                         {msg.read_at && isCompany && t("readSuffix")}
                       </p>
                     </div>

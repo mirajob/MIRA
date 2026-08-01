@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { createBrowserClient } from "@mira/supabase/client";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 import {
   respondToContactRequest,
   loadStudentChatMessages,
@@ -336,7 +337,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
                                 </p>
                               )}
                               <p className={`text-xs mt-1 ${isStudent && !isSpecial ? "text-white/60" : "text-ink-tertiary"}`}>
-                                {new Date(msg.created_at).toLocaleTimeString(timeLocale, { hour: "2-digit", minute: "2-digit" })}
+                                {new Date(msg.created_at).toLocaleTimeString(timeLocale, { timeZone: APP_TIME_ZONE, hour: "2-digit", minute: "2-digit" })}
                               </p>
                             </div>
                           </div>

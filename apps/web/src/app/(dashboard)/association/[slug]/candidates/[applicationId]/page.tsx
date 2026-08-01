@@ -258,7 +258,7 @@ export default async function CandidateDetailPage({ params }: Props) {
             {statusEvents.map((ev) => (
               <div key={ev.id} className="text-body-sm">
                 <p className="text-ink">{APPLICATION_STATUS_LABELS[ev.new_status] ?? ev.new_status}</p>
-                <p className="text-ink-tertiary">{ev.profiles?.full_name ?? t("systemFallback")} · {new Date(ev.created_at).toLocaleDateString(dateLocale)}</p>
+                <p className="text-ink-tertiary">{ev.profiles?.full_name ?? t("systemFallback")} · {new Date(ev.created_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE })}</p>
                 {ev.note && <p className="text-ink-secondary mt-1 italic">{ev.note}</p>}
               </div>
             ))}
@@ -274,7 +274,7 @@ export default async function CandidateDetailPage({ params }: Props) {
               {notes.map((n) => (
                 <div key={n.id} className="text-body-sm">
                   <p className="text-ink">{n.note_text}</p>
-                  <p className="text-ink-tertiary mt-1">{n.profiles?.full_name} · {new Date(n.created_at).toLocaleDateString(dateLocale)}</p>
+                  <p className="text-ink-tertiary mt-1">{n.profiles?.full_name} · {new Date(n.created_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE })}</p>
                 </div>
               ))}
             </div>

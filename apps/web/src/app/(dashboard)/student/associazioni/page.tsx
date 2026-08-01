@@ -308,7 +308,7 @@ export default async function StudentAssociazioniPage({
                         <p className="font-sans text-h3 text-navy">{assoc?.name ?? c("associationFallback")}</p>
                         <p className="text-body-sm text-ink-tertiary mt-0.5">
                           {cycle?.title}
-                          {app.submitted_at && c("submittedOn", { date: new Date(app.submitted_at).toLocaleDateString(dateLocale) })}
+                          {app.submitted_at && c("submittedOn", { date: new Date(app.submitted_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE }) })}
                         </p>
                       </div>
                     </div>
@@ -321,7 +321,7 @@ export default async function StudentAssociazioniPage({
                     <div className="mt-3 rounded-md bg-petrol-50 px-3 py-2">
                       <p className="text-xs font-medium text-navy">{t("interviewScheduled")}</p>
                       <p className="text-body-sm text-ink mt-0.5">
-                        {new Date(upcomingInterview.selected_time!).toLocaleDateString(dateLocale, {
+                        {new Date(upcomingInterview.selected_time!).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE,
                           weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
                         })}
                       </p>

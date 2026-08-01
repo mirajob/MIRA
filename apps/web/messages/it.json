@@ -1428,7 +1428,8 @@
     "reminderSend": "Invia",
     "reminderSending": "Invio...",
     "reminderCancel": "Annulla",
-    "reminderSent": "Promemoria inviato."
+    "reminderSent": "Promemoria inviato.",
+    "tableCardCompleted": "Card completata"
   },
   "OnboardingFlow": {
     "progressTitle": "La tua MIRA Card",

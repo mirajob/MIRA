@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { associationCategoryLabel } from "@mira/domain";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 
 /**
  * Corpo della pagina vetrina di un'associazione, senza chrome attorno: usato sia
@@ -127,13 +128,13 @@ export async function AssociationPublicProfile({
                 )}
                 {notYetOpen ? (
                   <p className="mt-2 text-body-sm text-ink-tertiary">
-                    {t("opensOn", { date: new Date(cycle.opens_at).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" }) })}
+                    {t("opensOn", { date: new Date(cycle.opens_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE, day: "numeric", month: "long", year: "numeric" }) })}
                   </p>
                 ) : (
                   <>
                     {cycle.closes_at && (
                       <p className="mt-2 text-body-sm text-ink-tertiary">
-                        {t("closesOn", { date: new Date(cycle.closes_at).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" }) })}
+                        {t("closesOn", { date: new Date(cycle.closes_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE, day: "numeric", month: "long", year: "numeric" }) })}
                       </p>
                     )}
                     <Link

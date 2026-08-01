@@ -12,6 +12,7 @@ import {
   type CandidateMatch,
 } from "@/lib/actions/company-search";
 import { ContactRequestModal } from "../contacts/contact-request-modal";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 
 interface SearchThread {
   id: string;
@@ -167,7 +168,7 @@ export function CompanySearchClient({ slug, initialSearches, initialActiveId }: 
                   <>
                     <p className="text-body-sm font-medium truncate">{s.title}</p>
                     <p className="text-xs text-ink-tertiary">
-                      {new Date(s.created_at).toLocaleDateString(dateLocale, { day: "numeric", month: "short" })}
+                      {new Date(s.created_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE, day: "numeric", month: "short" })}
                     </p>
                   </>
                 )}

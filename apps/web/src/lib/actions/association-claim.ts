@@ -3,6 +3,7 @@
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { ROLE_PERMISSION_TEMPLATES } from "@mira/domain";
+import { sendAdminNewSignupNotification } from "@/lib/email";
 import { revalidatePath } from "next/cache";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -59,6 +60,21 @@ export async function submitAssociationClaimRequest(input: {
   );
 
   if (error) return { error: error.message };
+
+  // La richiesta la deve valutare l'admin MIRA a mano: senza notifica resterebbe
+  // ferma finché qualcuno non apre la coda per caso. Best-effort, come le altre.
+  await sendAdminNewSignupNotification({
+    kind: "claim_request",
+    name: (ctx.profile as any).full_name ?? "",
+    email: (ctx.profile as any).email ?? ctx.user.email ?? "",
+    detail: [
+      association.name,
+      input.roleInAssociation.trim(),
+      input.note?.trim() || null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
+  }).catch(() => {});
 
   revalidatePath("/student/associazioni");
   revalidatePath("/admin/associations/seminate");

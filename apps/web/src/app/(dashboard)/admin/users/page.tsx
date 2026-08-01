@@ -6,6 +6,7 @@ import { CopyLink } from "./copy-link";
 import { DeleteUserButton } from "./delete-user-button";
 import { ReminderButton } from "./reminder-button";
 import { getLocale, getTranslations } from "next-intl/server";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 
 interface StudentRow {
   id: string;
@@ -15,6 +16,8 @@ interface StudentRow {
   university: string;
   degreeLevel: string | null;
   onboardingCompleted: boolean;
+  /** Quando lo studente ha finito la card. Null per chi non l'ha ancora completata. */
+  cardCompletedAt: string | null;
 }
 
 export default async function AdminUsersPage() {
@@ -29,7 +32,7 @@ export default async function AdminUsersPage() {
 
   const { data: profiles, error } = await supabase
     .from("profiles")
-    .select("*, student_profiles(university, degree_level, onboarding_completed)")
+    .select("*, student_profiles(university, degree_level, onboarding_completed, onboarding_completed_at)")
     .order("created_at", { ascending: false })
     .limit(500);
 
@@ -51,6 +54,7 @@ export default async function AdminUsersPage() {
         university: (sp.university as string) || t("noUniversity"),
         degreeLevel: (sp.degree_level as string) ?? null,
         onboardingCompleted: Boolean(sp.onboarding_completed),
+        cardCompletedAt: (sp.onboarding_completed_at as string) ?? null,
       };
     });
 
@@ -83,6 +87,7 @@ export default async function AdminUsersPage() {
             <th className="text-left text-eyebrow text-navy/60 uppercase py-2 px-3">{t("tableEmail")}</th>
             <th className="text-left text-eyebrow text-navy/60 uppercase py-2 px-3">{t("tableLevel")}</th>
             <th className="text-left text-eyebrow text-navy/60 uppercase py-2 px-3">{t("tableRegistered")}</th>
+            <th className="text-left text-eyebrow text-navy/60 uppercase py-2 px-3">{t("tableCardCompleted")}</th>
             <th className="text-left text-eyebrow text-navy/60 uppercase py-2 px-3">{t("tableActions")}</th>
           </tr>
         </thead>
@@ -109,13 +114,28 @@ export default async function AdminUsersPage() {
               <td className="py-2 px-3 text-body-sm text-ink">{s.email}</td>
               <td className="py-2 px-3 text-body-sm text-ink">{degreeLevelLabel(s.degreeLevel)}</td>
               <td className="py-2 px-3 text-body-sm text-ink-secondary whitespace-nowrap">
-                {new Date(s.createdAt).toLocaleString(dateLocale, {
+                {new Date(s.createdAt).toLocaleString(dateLocale, { timeZone: APP_TIME_ZONE,
                   day: "numeric",
                   month: "short",
                   year: "numeric",
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
+              </td>
+              {/* Quando la card e' stata finita. Chi ha completato prima che questa
+                  colonna esistesse puo' non averla: meglio un trattino che una data
+                  inventata. */}
+              <td className="py-2 px-3 text-body-sm text-ink-secondary whitespace-nowrap">
+                {s.cardCompletedAt
+                  ? new Date(s.cardCompletedAt).toLocaleString(dateLocale, {
+                      timeZone: APP_TIME_ZONE,
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "—"}
               </td>
               <td className="py-2 px-3">
                 <div className="flex items-center gap-3">
