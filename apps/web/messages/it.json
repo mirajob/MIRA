@@ -1640,12 +1640,23 @@
     "deleteSession": "Elimina",
     "deleteConfirm": "Eliminare questa sessione di colloqui?",
     "selectDay": "Tutto il giorno",
-    "selectedSlots": "{count} slot selezionati",
-    "coverCta": "Me li prendo",
-    "uncoverCta": "Li lascio",
     "working": "Attendi...",
-    "slotFree": "Libero",
     "slotUncovered": "Scoperto",
-    "slotMine": "· tu"
+    "linkModeLabel": "Come gestite il link",
+    "linkModePerInterview": "Un link per ogni colloquio",
+    "linkModePerInterviewHint": "Chi conduce lo incolla dopo che il candidato ha prenotato. La sezione Colloqui ti mostra quali sono ancora senza.",
+    "linkModeShared": "Una stanza sola per tutti",
+    "linkModeSharedHint": "Sempre lo stesso link. Comodo se fate un colloquio per volta.",
+    "daysLabel": "Giorni dei colloqui",
+    "defaultHours": "Orario per tutti i giorni",
+    "resetDay": "Riporta al predefinito",
+    "previewNoDays": "Scegli i giorni sul calendario per vedere quanti slot escono.",
+    "requiredInterviewersLabel": "Persone a colloquio",
+    "availabilityIntro": "Clicca le fasce in cui ci sei. Gli altri del board li vedi accanto, ognuno col suo colore.",
+    "availabilityYou": "ci sei tu",
+    "saveAvailability": "Salva le disponibilità",
+    "nobodyYet": "nessuno",
+    "slotBookable": "Prenotabile",
+    "statRequired": "Servono"
   }
 }

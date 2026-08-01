@@ -1640,12 +1640,23 @@
     "deleteSession": "Delete",
     "deleteConfirm": "Delete this interview session?",
     "selectDay": "Whole day",
-    "selectedSlots": "{count} slots selected",
-    "coverCta": "I'll take these",
-    "uncoverCta": "Drop these",
     "working": "Working...",
-    "slotFree": "Free",
     "slotUncovered": "Uncovered",
-    "slotMine": "· you"
+    "linkModeLabel": "How you handle the link",
+    "linkModePerInterview": "One link per interview",
+    "linkModePerInterviewHint": "Whoever runs it pastes the link after the candidate books. The Interviews section shows which ones are still missing it.",
+    "linkModeShared": "One room for everyone",
+    "linkModeSharedHint": "Always the same link. Fine if you run one interview at a time.",
+    "daysLabel": "Interview days",
+    "defaultHours": "Hours for every day",
+    "resetDay": "Back to default",
+    "previewNoDays": "Pick the days on the calendar to see how many slots come out.",
+    "requiredInterviewersLabel": "People per interview",
+    "availabilityIntro": "Click the times you are available. The rest of the board shows next to it, each in their own colour.",
+    "availabilityYou": "you",
+    "saveAvailability": "Save availability",
+    "nobodyYet": "nobody",
+    "slotBookable": "Bookable",
+    "statRequired": "Needed"
   }
 }

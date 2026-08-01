@@ -2,14 +2,19 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createInterviewSession } from "@/lib/actions/interview-sessions";
 import { generateSlots, type InterviewWindow } from "@/lib/interview-slots";
+import { DayPicker } from "@/components/day-picker";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 
 /**
- * Creazione di un round di colloqui. Il board descrive quando e come, e il numero
- * di slot che ne esce si vede prima di salvare: è l'unico modo per accorgersi che
- * quattro ore da venti minuti non bastano per sessanta candidati.
+ * Creazione di un round di colloqui.
+ *
+ * I giorni si scelgono su un calendario, non digitando date: la prima versione
+ * aveva dei campi data e non si capiva nemmeno che si potessero mettere più
+ * giornate. L'orario ha un valore che vale per tutti i giorni scelti e si può
+ * cambiare su quelli che fanno eccezione.
  */
 export function SessionForm({
   associationId,
@@ -23,36 +28,52 @@ export function SessionForm({
   onDone: () => void;
 }) {
   const t = useTranslations("Interviews");
+  const locale = useLocale();
+  const dateLocale = locale === "it" ? "it-IT" : "en-US";
   const router = useRouter();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [mode, setMode] = useState<"online" | "in_person">("in_person");
+  const [linkMode, setLinkMode] = useState<"shared" | "per_interview">("per_interview");
   const [location, setLocation] = useState("");
   const [meetingLink, setMeetingLink] = useState("");
   const [duration, setDuration] = useState(20);
   const [pause, setPause] = useState(5);
   const [tracks, setTracks] = useState(1);
-  const [windows, setWindows] = useState<InterviewWindow[]>([
-    { date: "", start: "15:00", end: "19:00" },
-  ]);
+  const [requiredInterviewers, setRequiredInterviewers] = useState(1);
+
+  const [defaultStart, setDefaultStart] = useState("15:00");
+  const [defaultEnd, setDefaultEnd] = useState("19:00");
+  const [days, setDays] = useState<string[]>([]);
+  const [perDay, setPerDay] = useState<Record<string, { start: string; end: string }>>({});
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const validWindows = windows.filter((w) => w.date && w.start && w.end);
+  const windows: InterviewWindow[] = useMemo(
+    () =>
+      [...days].sort().map((date) => ({
+        date,
+        start: perDay[date]?.start ?? defaultStart,
+        end: perDay[date]?.end ?? defaultEnd,
+      })),
+    [days, perDay, defaultStart, defaultEnd]
+  );
+
   const preview = useMemo(
     () =>
       generateSlots({
-        windows: validWindows,
+        windows,
         slotDurationMinutes: duration,
         breakMinutes: pause,
         parallelTracks: tracks,
       }),
-    [validWindows, duration, pause, tracks]
+    [windows, duration, pause, tracks]
   );
 
-  function updateWindow(index: number, patch: Partial<InterviewWindow>) {
-    setWindows((prev) => prev.map((w, i) => (i === index ? { ...w, ...patch } : w)));
+  function toggleDay(date: string) {
+    setDays((prev) => (prev.includes(date) ? prev.filter((d) => d !== date) : [...prev, date]));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -67,12 +88,14 @@ export function SessionForm({
       title,
       description,
       mode,
+      linkMode,
       location,
       meetingLink,
       slotDurationMinutes: duration,
       breakMinutes: pause,
       parallelTracks: tracks,
-      windows: validWindows,
+      requiredInterviewers,
+      windows,
     });
 
     if (result.error) {
@@ -87,16 +110,18 @@ export function SessionForm({
 
   const field =
     "w-full rounded-md border border-border px-3 py-1.5 text-body-sm text-ink focus:border-petrol focus:outline-none";
+  const label = "mb-1 block text-eyebrow uppercase text-navy/60";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-border bg-white p-4">
+    <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border border-border bg-white p-4">
       <p className="text-eyebrow uppercase text-navy/60">{t("newSessionHeading")}</p>
 
       {error && <p className="rounded-md bg-error-bg px-3 py-2 text-body-sm text-error">{error}</p>}
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      {/* 1. Che round è */}
+      <div className="space-y-3">
         <label className="block">
-          <span className="mb-1 block text-eyebrow uppercase text-navy/60">{t("titleLabel")}</span>
+          <span className={label}>{t("titleLabel")}</span>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -106,8 +131,22 @@ export function SessionForm({
           />
         </label>
 
+        <label className="block">
+          <span className={label}>{t("descriptionLabel")}</span>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+            placeholder={t("descriptionPlaceholder")}
+            className={field}
+          />
+        </label>
+      </div>
+
+      {/* 2. Dove si fa */}
+      <div className="space-y-3 border-t border-border pt-4">
         <div>
-          <span className="mb-1 block text-eyebrow uppercase text-navy/60">{t("modeLabel")}</span>
+          <span className={label}>{t("modeLabel")}</span>
           <div className="flex gap-1">
             {(["in_person", "online"] as const).map((m) => (
               <button
@@ -123,44 +162,132 @@ export function SessionForm({
             ))}
           </div>
         </div>
+
+        {mode === "in_person" ? (
+          <label className="block">
+            <span className={label}>{t("locationLabel")}</span>
+            <input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder={t("locationPlaceholder")}
+              className={field}
+            />
+          </label>
+        ) : (
+          <div className="space-y-2">
+            <span className={label}>{t("linkModeLabel")}</span>
+            {(["per_interview", "shared"] as const).map((lm) => (
+              <label key={lm} className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="linkMode"
+                  checked={linkMode === lm}
+                  onChange={() => setLinkMode(lm)}
+                  className="mt-1"
+                />
+                <span>
+                  <span className="block text-body-sm text-ink">
+                    {lm === "per_interview" ? t("linkModePerInterview") : t("linkModeShared")}
+                  </span>
+                  <span className="block text-body-sm text-ink-tertiary">
+                    {lm === "per_interview" ? t("linkModePerInterviewHint") : t("linkModeSharedHint")}
+                  </span>
+                </span>
+              </label>
+            ))}
+
+            {linkMode === "shared" && (
+              <input
+                value={meetingLink}
+                onChange={(e) => setMeetingLink(e.target.value)}
+                placeholder={t("linkPlaceholder")}
+                className={field}
+              />
+            )}
+          </div>
+        )}
       </div>
 
-      <label className="block">
-        <span className="mb-1 block text-eyebrow uppercase text-navy/60">{t("descriptionLabel")}</span>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          placeholder={t("descriptionPlaceholder")}
-          className={field}
-        />
-      </label>
+      {/* 3. Quando */}
+      <div className="space-y-3 border-t border-border pt-4">
+        <span className={label}>{t("daysLabel")}</span>
+        <DayPicker selected={days} onToggle={toggleDay} locale={dateLocale} />
 
-      {mode === "in_person" ? (
-        <label className="block">
-          <span className="mb-1 block text-eyebrow uppercase text-navy/60">{t("locationLabel")}</span>
-          <input
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder={t("locationPlaceholder")}
-            className={field}
-          />
-        </label>
-      ) : (
-        <label className="block">
-          <span className="mb-1 block text-eyebrow uppercase text-navy/60">{t("linkLabel")}</span>
-          <input
-            value={meetingLink}
-            onChange={(e) => setMeetingLink(e.target.value)}
-            placeholder={t("linkPlaceholder")}
-            className={field}
-          />
-        </label>
-      )}
+        {days.length > 0 && (
+          <div className="space-y-2 rounded-md bg-navy-50/60 p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-body-sm text-ink">{t("defaultHours")}</span>
+              <input
+                type="time"
+                value={defaultStart}
+                onChange={(e) => setDefaultStart(e.target.value)}
+                className={`${field} w-auto`}
+              />
+              <span className="text-body-sm text-ink-tertiary">{t("windowTo")}</span>
+              <input
+                type="time"
+                value={defaultEnd}
+                onChange={(e) => setDefaultEnd(e.target.value)}
+                className={`${field} w-auto`}
+              />
+            </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+            {[...days].sort().map((date) => {
+              const current = perDay[date] ?? { start: defaultStart, end: defaultEnd };
+              const custom = Boolean(perDay[date]);
+              return (
+                <div key={date} className="flex flex-wrap items-center gap-2">
+                  <span className="min-w-[150px] text-body-sm text-navy">
+                    {new Date(`${date}T12:00:00Z`).toLocaleDateString(dateLocale, {
+                      timeZone: APP_TIME_ZONE,
+                      weekday: "short",
+                      day: "numeric",
+                      month: "long",
+                    })}
+                  </span>
+                  <input
+                    type="time"
+                    value={current.start}
+                    onChange={(e) =>
+                      setPerDay((p) => ({ ...p, [date]: { ...current, start: e.target.value } }))
+                    }
+                    className={`${field} w-auto`}
+                  />
+                  <span className="text-body-sm text-ink-tertiary">{t("windowTo")}</span>
+                  <input
+                    type="time"
+                    value={current.end}
+                    onChange={(e) =>
+                      setPerDay((p) => ({ ...p, [date]: { ...current, end: e.target.value } }))
+                    }
+                    className={`${field} w-auto`}
+                  />
+                  {custom && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPerDay((p) => {
+                          const next = { ...p };
+                          delete next[date];
+                          return next;
+                        })
+                      }
+                      className="text-body-sm text-petrol hover:underline"
+                    >
+                      {t("resetDay")}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* 4. Come sono fatti i colloqui */}
+      <div className="grid gap-3 border-t border-border pt-4 sm:grid-cols-4">
         <label className="block">
-          <span className="mb-1 block text-eyebrow uppercase text-navy/60">{t("durationLabel")}</span>
+          <span className={label}>{t("durationLabel")}</span>
           <input
             type="number"
             min={5}
@@ -171,7 +298,7 @@ export function SessionForm({
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-eyebrow uppercase text-navy/60">{t("breakLabel")}</span>
+          <span className={label}>{t("breakLabel")}</span>
           <input
             type="number"
             min={0}
@@ -182,7 +309,7 @@ export function SessionForm({
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-eyebrow uppercase text-navy/60">{t("tracksLabel")}</span>
+          <span className={label}>{t("tracksLabel")}</span>
           <input
             type="number"
             min={1}
@@ -192,55 +319,23 @@ export function SessionForm({
             className={field}
           />
         </label>
+        <label className="block">
+          <span className={label}>{t("requiredInterviewersLabel")}</span>
+          <input
+            type="number"
+            min={1}
+            max={5}
+            value={requiredInterviewers}
+            onChange={(e) => setRequiredInterviewers(Number(e.target.value))}
+            className={field}
+          />
+        </label>
       </div>
 
-      <div className="space-y-2">
-        <span className="block text-eyebrow uppercase text-navy/60">{t("windowsLabel")}</span>
-        {windows.map((w, i) => (
-          <div key={i} className="flex flex-wrap items-center gap-2">
-            <input
-              type="date"
-              value={w.date}
-              onChange={(e) => updateWindow(i, { date: e.target.value })}
-              className={`${field} w-auto`}
-            />
-            <input
-              type="time"
-              value={w.start}
-              onChange={(e) => updateWindow(i, { start: e.target.value })}
-              className={`${field} w-auto`}
-            />
-            <span className="text-body-sm text-ink-tertiary">{t("windowTo")}</span>
-            <input
-              type="time"
-              value={w.end}
-              onChange={(e) => updateWindow(i, { end: e.target.value })}
-              className={`${field} w-auto`}
-            />
-            {windows.length > 1 && (
-              <button
-                type="button"
-                onClick={() => setWindows((prev) => prev.filter((_, idx) => idx !== i))}
-                className="text-body-sm text-error hover:underline"
-              >
-                {t("windowRemove")}
-              </button>
-            )}
-          </div>
-        ))}
-        <button
-          type="button"
-          onClick={() => setWindows((prev) => [...prev, { date: "", start: "15:00", end: "19:00" }])}
-          className="text-body-sm text-petrol hover:underline"
-        >
-          {t("windowAdd")}
-        </button>
-      </div>
-
-      {/* Il conto degli slot prima di salvare: è il dato che dice se la griglia
-          regge i candidati che devi vedere. */}
       <div className="rounded-md bg-navy-50 px-3 py-2">
-        <p className="text-body-sm text-navy">{t("previewCount", { count: preview.length })}</p>
+        <p className="text-body-sm text-navy">
+          {days.length ? t("previewCount", { count: preview.length }) : t("previewNoDays")}
+        </p>
       </div>
 
       <div className="flex items-center gap-3">

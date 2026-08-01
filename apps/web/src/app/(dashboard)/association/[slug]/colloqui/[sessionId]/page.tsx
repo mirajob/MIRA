@@ -5,19 +5,12 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { hasWorkspaceAccess } from "@/lib/association-roles";
-import { SessionGrid, type GridSlot } from "./session-grid";
+import { personInitials, rangeCoversBlock } from "@/lib/interview-slots";
+import { AvailabilityGrid, type AvailabilityBlock } from "./availability-grid";
 import { SessionActions } from "./session-actions";
 
 interface Props {
   params: Promise<{ slug: string; sessionId: string }>;
-}
-
-/** Iniziali del nome, per stare dentro una casella della griglia. */
-function initials(name: string | null, email: string | null): string {
-  const source = (name ?? email ?? "?").trim();
-  const parts = source.split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return source.slice(0, 2).toUpperCase();
 }
 
 export default async function InterviewSessionPage({ params }: Props) {
@@ -50,48 +43,61 @@ export default async function InterviewSessionPage({ params }: Props) {
   const t = await getTranslations("Interviews");
   const locale = await getLocale();
   const dateLocale = locale === "it" ? "it-IT" : "en-US";
+  const profileId = (ctx.profile as any).id as string;
 
   const { data: slots } = await (supabase.from("interview_slots") as any)
     .select(`
-      id, starts_at, track, application_id,
-      interview_slot_interviewers(user_id),
-      applications(profiles!applications_student_user_id_fkey(full_name, email))
+      id, starts_at, ends_at, track, application_id,
+      applications(profiles!applications_student_user_id_fkey(full_name))
     `)
     .eq("session_id", sessionId)
-    .order("starts_at", { ascending: true })
-    .order("track", { ascending: true });
+    .order("starts_at", { ascending: true });
 
-  // I nomi degli intervistatori si risolvono in un colpo solo: la griglia può avere
-  // centinaia di caselle e una query per casella sarebbe insostenibile.
-  const interviewerIds = [
-    ...new Set(
-      ((slots ?? []) as any[]).flatMap((s) =>
-        (s.interview_slot_interviewers ?? []).map((i: any) => i.user_id)
-      )
-    ),
-  ];
-  const { data: people } = interviewerIds.length
-    ? await (supabase.from("profiles") as any).select("id, full_name, email").in("id", interviewerIds)
+  const { data: availability } = await (supabase.from("interview_availability") as any)
+    .select("user_id, starts_at, ends_at")
+    .eq("session_id", sessionId);
+
+  const peopleIds = [...new Set(((availability ?? []) as any[]).map((a) => a.user_id))];
+  const { data: people } = peopleIds.length
+    ? await (supabase.from("profiles") as any).select("id, full_name, email").in("id", peopleIds)
     : { data: [] };
   const personById = new Map(((people ?? []) as any[]).map((p) => [p.id, p]));
 
-  const profileId = (ctx.profile as any).id as string;
+  // Le fasce si mostrano una volta sola anche quando i colloqui in parallelo sono
+  // più di uno: la disponibilità è "a quest'ora ci sono", non "ci sono nell'aula 2".
+  const byTime = new Map<string, any[]>();
+  for (const slot of (slots ?? []) as any[]) {
+    byTime.set(slot.starts_at, [...(byTime.get(slot.starts_at) ?? []), slot]);
+  }
 
-  const gridSlots: GridSlot[] = ((slots ?? []) as any[]).map((s) => ({
-    id: s.id,
-    startsAt: s.starts_at,
-    track: s.track,
-    interviewers: (s.interview_slot_interviewers ?? []).map((i: any) => {
-      const person = personById.get(i.user_id);
-      return { userId: i.user_id, label: initials(person?.full_name, person?.email) };
-    }),
-    candidateName: s.applications?.profiles?.full_name ?? (s.application_id ? "—" : null),
-    mine: (s.interview_slot_interviewers ?? []).some((i: any) => i.user_id === profileId),
-  }));
+  const blocks: AvailabilityBlock[] = [...byTime.entries()].map(([startsAt, group]) => {
+    const block = { startsAt, endsAt: group[0].ends_at };
+    const covering = ((availability ?? []) as any[]).filter((a) => rangeCoversBlock(a, block));
+    const booked = group.find((s: any) => s.application_id);
 
-  const total = gridSlots.length;
-  const covered = gridSlots.filter((s) => s.interviewers.length > 0).length;
-  const booked = gridSlots.filter((s) => s.candidateName).length;
+    return {
+      startsAt,
+      endsAt: group[0].ends_at,
+      others: covering
+        .filter((a) => a.user_id !== profileId)
+        .map((a) => {
+          const person = personById.get(a.user_id);
+          return {
+            userId: a.user_id,
+            initials: personInitials(person?.full_name, person?.email),
+            name: person?.full_name ?? person?.email ?? "—",
+          };
+        }),
+      mine: covering.some((a) => a.user_id === profileId),
+      bookedName: booked?.applications?.profiles?.full_name ?? (booked ? "—" : null),
+    };
+  });
+
+  const total = blocks.length;
+  const covered = blocks.filter(
+    (b) => b.others.length + (b.mine ? 1 : 0) >= session.required_interviewers
+  ).length;
+  const booked = blocks.filter((b) => b.bookedName).length;
 
   return (
     <div className="space-y-4">
@@ -117,7 +123,11 @@ export default async function InterviewSessionPage({ params }: Props) {
           <p className="mt-1 text-body-sm text-ink-secondary">{session.description}</p>
         )}
         <p className="mt-0.5 text-body-sm text-ink-tertiary">
-          {session.mode === "online" ? session.meeting_link : session.location}
+          {session.mode === "in_person"
+            ? session.location
+            : session.link_mode === "shared"
+              ? session.meeting_link
+              : t("linkModePerInterview")}
         </p>
       </div>
 
@@ -136,17 +146,25 @@ export default async function InterviewSessionPage({ params }: Props) {
           <p className="text-eyebrow uppercase text-navy/50">{t("statBooked")}</p>
           <p className="text-body font-medium text-navy tabular-nums">{booked}</p>
         </div>
+        {session.required_interviewers > 1 && (
+          <div>
+            <p className="text-eyebrow uppercase text-navy/50">{t("statRequired")}</p>
+            <p className="text-body font-medium text-navy tabular-nums">
+              {session.required_interviewers}
+            </p>
+          </div>
+        )}
 
         <div className="ml-auto">
           <SessionActions sessionId={sessionId} slug={slug} status={session.status} canManage={canManage} />
         </div>
       </div>
 
-      <SessionGrid
+      <AvailabilityGrid
         sessionId={sessionId}
         slug={slug}
-        slots={gridSlots}
-        tracks={session.parallel_tracks}
+        blocks={blocks}
+        requiredInterviewers={session.required_interviewers}
         dateLocale={dateLocale}
       />
     </div>

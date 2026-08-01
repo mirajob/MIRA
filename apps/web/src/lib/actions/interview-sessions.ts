@@ -2,7 +2,12 @@
 
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
-import { generateSlots, parseWindows, type InterviewWindow } from "@/lib/interview-slots";
+import {
+  generateSlots,
+  mergeBlocksIntoRanges,
+  parseWindows,
+  type InterviewWindow,
+} from "@/lib/interview-slots";
 import { revalidatePath } from "next/cache";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -55,22 +60,26 @@ export async function createInterviewSession(input: {
   title: string;
   description?: string;
   mode: "online" | "in_person";
+  linkMode: "shared" | "per_interview";
   location?: string;
   meetingLink?: string;
   slotDurationMinutes: number;
   breakMinutes: number;
   parallelTracks: number;
+  requiredInterviewers: number;
   windows: InterviewWindow[];
 }) {
   const { ctx, supabase, membership } = await loadMembership(input.associationId);
   if (!canManage(membership, ctx.isMiraAdmin)) return { error: "Non hai i permessi." };
 
   if (!input.title.trim()) return { error: "Dai un titolo alla sessione." };
-  if (input.mode === "online" && !input.meetingLink?.trim()) {
-    return { error: "Una sessione online ha bisogno del link." };
-  }
   if (input.mode === "in_person" && !input.location?.trim()) {
     return { error: "Una sessione in presenza ha bisogno del luogo." };
+  }
+  // In modalità per_interview il link non esiste ancora: lo mette chi conduce dopo
+  // la prenotazione. Serve solo se la stanza è una sola per tutti.
+  if (input.mode === "online" && input.linkMode === "shared" && !input.meetingLink?.trim()) {
+    return { error: "Con una stanza sola serve il link, oppure scegli un link per colloquio." };
   }
 
   const windows = parseWindows(input.windows);
@@ -92,11 +101,16 @@ export async function createInterviewSession(input: {
       description: input.description?.trim() || null,
       round_index: (existing?.round_index ?? 0) + 1,
       mode: input.mode,
+      link_mode: input.linkMode,
       location: input.mode === "in_person" ? input.location!.trim() : null,
-      meeting_link: input.mode === "online" ? input.meetingLink!.trim() : null,
+      meeting_link:
+        input.mode === "online" && input.linkMode === "shared"
+          ? input.meetingLink!.trim()
+          : null,
       slot_duration_minutes: input.slotDurationMinutes,
       break_minutes: input.breakMinutes,
       parallel_tracks: input.parallelTracks,
+      required_interviewers: input.requiredInterviewers,
       windows,
       status: "draft",
       created_by_user_id: (ctx.profile as any).id,
@@ -183,14 +197,14 @@ export async function setInterviewSessionStatus(input: {
   if (!canManage(membership, ctx.isMiraAdmin)) return { error: "Non hai i permessi." };
 
   if (input.status === "open") {
-    // Aprire una sessione i cui slot non sono coperti da nessuno significa far
-    // prenotare orari in cui non c'è nessuno ad aspettare lo studente.
-    const { count } = await (supabase.from("interview_slot_interviewers") as any)
-      .select("slot_id, interview_slots!inner(session_id)", { count: "exact", head: true })
-      .eq("interview_slots.session_id", input.sessionId);
+    // Aprire una sessione senza disponibilità significa far prenotare orari in cui
+    // non c'è nessuno ad aspettare lo studente.
+    const { count } = await (supabase.from("interview_availability") as any)
+      .select("id", { count: "exact", head: true })
+      .eq("session_id", input.sessionId);
 
     if (!count) {
-      return { error: "Nessuno del board si è ancora preso uno slot: la sessione resterebbe vuota." };
+      return { error: "Nessuno del board ha ancora dato la sua disponibilità: la sessione resterebbe vuota." };
     }
   }
 
@@ -205,15 +219,17 @@ export async function setInterviewSessionStatus(input: {
 }
 
 /**
- * Il membro del board si prende (o lascia) una fascia di slot. Si lavora su un
- * intervallo e non su un singolo slot perché su una griglia da quaranta caselle
- * nessuno cliccherebbe quaranta volte.
+ * Le disponibilità di chi guarda, per questa sessione.
+ *
+ * Arrivano dall'interfaccia come blocchi cliccati e vengono salvate come fasce
+ * continue: nessuno ragiona per caselle, si ragiona per "giovedì dalle 15 alle 17".
+ * Si riscrive tutto l'insieme invece di aggiungere e togliere il singolo pezzo,
+ * così quello che vedi sullo schermo è esattamente quello che finisce salvato.
  */
-export async function setInterviewerCoverage(input: {
+export async function setMyAvailability(input: {
   sessionId: string;
   slug: string;
-  slotIds: string[];
-  covering: boolean;
+  blocks: { startsAt: string; endsAt: string }[];
 }) {
   const supabase = await createServiceClient();
 
@@ -225,36 +241,43 @@ export async function setInterviewerCoverage(input: {
   if (!session) return { error: "Sessione non trovata." };
 
   const { ctx, membership } = await loadMembership(session.association_id);
-  // Coprire un turno non è amministrare: basta far parte del board.
+  // Dare la propria disponibilità non è amministrare: basta far parte del board.
   if (!membership && !ctx.isMiraAdmin) return { error: "Non fai parte di questa associazione." };
-  if (!input.slotIds.length) return { error: "Nessuno slot selezionato." };
 
   const profileId = (ctx.profile as any).id as string;
+  const ranges = mergeBlocksIntoRanges(input.blocks);
 
-  // Gli slot devono appartenere davvero a questa sessione: l'id arriva dal client.
-  const { data: slots } = await (supabase.from("interview_slots") as any)
-    .select("id")
+  await (supabase.from("interview_availability") as any)
+    .delete()
     .eq("session_id", input.sessionId)
-    .in("id", input.slotIds);
+    .eq("user_id", profileId);
 
-  const validIds = ((slots ?? []) as any[]).map((s) => s.id);
-  if (!validIds.length) return { error: "Slot non validi." };
-
-  if (input.covering) {
-    const { error } = await (supabase.from("interview_slot_interviewers") as any).upsert(
-      validIds.map((slotId) => ({ slot_id: slotId, user_id: profileId })),
-      { onConflict: "slot_id,user_id", ignoreDuplicates: true }
+  if (ranges.length) {
+    const { error } = await (supabase.from("interview_availability") as any).insert(
+      ranges.map((r) => ({
+        session_id: input.sessionId,
+        user_id: profileId,
+        starts_at: r.startsAt,
+        ends_at: r.endsAt,
+      }))
     );
-    if (error) return { error: error.message };
-  } else {
-    const { error } = await (supabase.from("interview_slot_interviewers") as any)
-      .delete()
-      .eq("user_id", profileId)
-      .in("slot_id", validIds);
     if (error) return { error: error.message };
   }
 
   revalidateSession(input.slug, input.sessionId);
+  return { success: true, ranges: ranges.length };
+}
+
+/** Il link della propria stanza permanente, usato su tutti i colloqui che si conducono. */
+export async function setMyMeetingLink(link: string) {
+  const ctx = await getUserContext();
+  const supabase = await createServiceClient();
+
+  const { error } = await (supabase.from("profiles") as any)
+    .update({ meeting_link: link.trim() || null })
+    .eq("id", (ctx.profile as any).id);
+
+  if (error) return { error: error.message };
   return { success: true };
 }
 

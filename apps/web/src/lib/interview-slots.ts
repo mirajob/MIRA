@@ -84,6 +84,72 @@ export function zonedToInstant(date: string, time: string): Date {
  * ripetuti su ciascun colloquio in parallelo. Uno slot che sfora la fine della
  * finestra non viene creato.
  */
+/**
+ * Colore stabile per ogni membro del board, ricavato dal suo id.
+ *
+ * Serve a leggere il calendario delle disponibilità a colpo d'occhio: chi copre
+ * cosa si distingue dal colore, non dal nome scritto in una casella da due
+ * centimetri. Deterministico, così non cambia fra un caricamento e l'altro.
+ */
+const INTERVIEWER_COLORS = [
+  { bg: "bg-petrol", text: "text-white", soft: "bg-petrol-50", border: "border-petrol" },
+  { bg: "bg-amber-500", text: "text-white", soft: "bg-amber-50", border: "border-amber-500" },
+  { bg: "bg-emerald-600", text: "text-white", soft: "bg-emerald-50", border: "border-emerald-600" },
+  { bg: "bg-violet-500", text: "text-white", soft: "bg-violet-50", border: "border-violet-500" },
+  { bg: "bg-rose-500", text: "text-white", soft: "bg-rose-50", border: "border-rose-500" },
+  { bg: "bg-sky-600", text: "text-white", soft: "bg-sky-50", border: "border-sky-600" },
+] as const;
+
+export function interviewerColor(userId: string): (typeof INTERVIEWER_COLORS)[number] {
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) hash = (hash * 31 + userId.charCodeAt(i)) >>> 0;
+  return INTERVIEWER_COLORS[hash % INTERVIEWER_COLORS.length]!;
+}
+
+/** Iniziali per l'indicatore accanto al colore. */
+export function personInitials(name: string | null, email: string | null): string {
+  const source = (name ?? email ?? "?").trim();
+  const parts = source.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0]!.charAt(0)}${parts[1]!.charAt(0)}`.toUpperCase();
+  return source.slice(0, 2).toUpperCase();
+}
+
+/**
+ * Fonde in intervalli continui i blocchi che una persona ha selezionato.
+ *
+ * L'interfaccia lavora a blocchi perché è così che si clicca, il database tiene
+ * fasce perché è così che si ragiona ("giovedì dalle 15 alle 17"). Questa funzione
+ * è il ponte fra le due cose.
+ */
+export function mergeBlocksIntoRanges(
+  blocks: { startsAt: string; endsAt: string }[]
+): { startsAt: string; endsAt: string }[] {
+  const sorted = [...blocks].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  const ranges: { startsAt: string; endsAt: string }[] = [];
+
+  for (const block of sorted) {
+    const last = ranges[ranges.length - 1];
+    if (last && new Date(last.endsAt).getTime() >= new Date(block.startsAt).getTime()) {
+      if (new Date(block.endsAt) > new Date(last.endsAt)) last.endsAt = block.endsAt;
+    } else {
+      ranges.push({ ...block });
+    }
+  }
+
+  return ranges;
+}
+
+/** Una fascia copre un blocco se lo contiene per intero. */
+export function rangeCoversBlock(
+  range: { starts_at: string; ends_at: string },
+  block: { startsAt: string; endsAt: string }
+): boolean {
+  return (
+    new Date(range.starts_at).getTime() <= new Date(block.startsAt).getTime() &&
+    new Date(range.ends_at).getTime() >= new Date(block.endsAt).getTime()
+  );
+}
+
 export function generateSlots(input: {
   windows: InterviewWindow[];
   slotDurationMinutes: number;
