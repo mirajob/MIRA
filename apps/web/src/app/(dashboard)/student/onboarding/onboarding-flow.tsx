@@ -517,6 +517,7 @@ export function OnboardingFlow({ userName }: { userName: string }) {
                 mediaVoti={blocks.header.data.media_voti}
                 showPurpose={false}
                 visibility={blocks.header.visibility}
+                onUploaded={() => refresh()}
                 onApproved={() => refresh()}
               />
             </div>

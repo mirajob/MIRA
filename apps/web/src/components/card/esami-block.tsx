@@ -26,6 +26,7 @@ export function EsamiEditor({
   mediaVoti,
   showPurpose = true,
   visibility,
+  onUploaded,
 }: {
   formazioneItems: FormazioneItem[];
   /** Media calcolata dal libretto: si mostra qui, dove è stata prodotta. */
@@ -38,6 +39,10 @@ export function EsamiEditor({
   /** Se passata, gli interruttori su media e voti compaiono qui: è il momento in cui
    * lo studente si chiede chi vedrà i suoi voti. */
   visibility?: HeaderVisibility | null;
+  /** In onboarding lo stato non arriva dai Server Component ma da loadOnboardingFlow():
+   * senza questa callback il libretto veniva letto e salvato, ma la schermata restava
+   * identica e sembrava che non fosse successo niente. */
+  onUploaded?: () => void;
 }) {
   const t = useTranslations("CardBlocks");
   const router = useRouter();
@@ -64,8 +69,12 @@ export function EsamiEditor({
     formData.append("ciclo", ciclo);
     const result = await uploadTranscript(formData);
 
-    if (result.error) setError(result.error);
-    else router.refresh();
+    if (result.error) {
+      setError(result.error);
+    } else {
+      router.refresh();
+      onUploaded?.();
+    }
 
     setUploading(null);
     const ref = ciclo === "precedente" ? previousRef : currentRef;
@@ -192,6 +201,7 @@ export function EsamiBlock({
   mediaVoti,
   showPurpose = true,
   visibility,
+  onUploaded,
   onApproved,
 }: {
   formazioneItems: FormazioneItem[];
@@ -200,6 +210,7 @@ export function EsamiBlock({
   mediaVoti?: number | null;
   showPurpose?: boolean;
   visibility?: HeaderVisibility | null;
+  onUploaded?: () => void;
   onApproved?: () => void;
 }) {
   const t = useTranslations("CardBlocks");
@@ -222,6 +233,7 @@ export function EsamiBlock({
           mediaVoti={mediaVoti}
           showPurpose={showPurpose}
           visibility={visibility}
+          onUploaded={onUploaded}
         />
       </div>
     </div>
