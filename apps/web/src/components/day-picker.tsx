@@ -1,36 +1,53 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { APP_TIME_ZONE } from "@/lib/format-date";
 
 /**
- * Calendario per scegliere i giorni. Si clicca sui giorni, non si digitano le date.
+ * Calendario per scegliere i giorni. Si clicca, oppure si trascina su più giorni.
  *
- * Mostra due mesi perché le selezioni si organizzano quasi sempre a cavallo fra
- * la fine di un mese e l'inizio del successivo, e costringere a cambiare mese per
- * vedere la settimana dopo è un attrito inutile.
+ * Il trascinamento non è un vezzo: una sessione di colloqui copre quasi sempre
+ * giorni consecutivi, e selezionarli uno per uno su due settimane è la stessa
+ * fatica che avevano i campi data. Trascinando da un giorno già selezionato si
+ * deseleziona, come ci si aspetta da una selezione.
+ *
+ * Due mesi affiancati perché le selezioni cadono spesso a cavallo fra la fine di
+ * un mese e l'inizio del successivo.
  */
 export function DayPicker({
   selected,
-  onToggle,
+  onChange,
   locale,
 }: {
   selected: string[];
-  onToggle: (date: string) => void;
+  onChange: (next: string[]) => void;
   locale: string;
 }) {
-  const today = useMemo(() => {
-    // Il "oggi" giusto è quello italiano, non quello del fuso del server.
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone: APP_TIME_ZONE,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date());
-    return parts;
-  }, []);
+  const today = useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-CA", {
+        timeZone: APP_TIME_ZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date()),
+    []
+  );
 
   const [monthOffset, setMonthOffset] = useState(0);
+  const drag = useRef<{ anchor: string; adding: boolean } | null>(null);
+  const [dragging, setDragging] = useState(false);
+
+  // Il rilascio può avvenire fuori dal calendario: senza questo la selezione
+  // resterebbe "appiccicata" al puntatore.
+  useEffect(() => {
+    function stop() {
+      drag.current = null;
+      setDragging(false);
+    }
+    window.addEventListener("pointerup", stop);
+    return () => window.removeEventListener("pointerup", stop);
+  }, []);
 
   const months = useMemo(() => {
     const parts = today.split("-");
@@ -42,19 +59,47 @@ export function DayPicker({
     });
   }, [today, monthOffset]);
 
-  const selectedSet = new Set(selected);
   const weekdayLabels = useMemo(() => {
-    // Lunedì come primo giorno: è così che si guarda un calendario in Italia.
-    const base = Date.UTC(2024, 0, 1); // un lunedì
+    // Lunedì primo giorno: è così che si legge un calendario in Italia.
+    const monday = Date.UTC(2024, 0, 1);
     return Array.from({ length: 7 }, (_, i) =>
       new Intl.DateTimeFormat(locale, { weekday: "narrow", timeZone: "UTC" }).format(
-        new Date(base + i * 86_400_000)
+        new Date(monday + i * 86_400_000)
       )
     );
   }, [locale]);
 
+  function applyRange(from: string, to: string, adding: boolean) {
+    const [start, end] = from <= to ? [from, to] : [to, from];
+    const range: string[] = [];
+    for (let d = new Date(`${start}T12:00:00Z`); ; d.setUTCDate(d.getUTCDate() + 1)) {
+      const iso = d.toISOString().slice(0, 10);
+      if (iso >= today) range.push(iso);
+      if (iso >= end) break;
+    }
+
+    const next = new Set(selected);
+    for (const iso of range) {
+      if (adding) next.add(iso);
+      else next.delete(iso);
+    }
+    onChange([...next].sort());
+  }
+
+  function startDrag(iso: string) {
+    const adding = !selected.includes(iso);
+    drag.current = { anchor: iso, adding };
+    setDragging(true);
+    applyRange(iso, iso, adding);
+  }
+
+  function extendDrag(iso: string) {
+    if (!drag.current) return;
+    applyRange(drag.current.anchor, iso, drag.current.adding);
+  }
+
   return (
-    <div>
+    <div className="select-none">
       <div className="mb-2 flex items-center gap-2">
         <button
           type="button"
@@ -71,13 +116,15 @@ export function DayPicker({
         >
           &rarr;
         </button>
+        <span className="ml-2 text-body-sm text-ink-tertiary">
+          {dragging ? "..." : null}
+        </span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         {months.map(({ year, month }) => {
           const first = new Date(Date.UTC(year, month, 1));
           const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-          // getUTCDay(): domenica = 0. Con lunedì primo, domenica va in fondo.
           const leading = (first.getUTCDay() + 6) % 7;
 
           return (
@@ -91,9 +138,9 @@ export function DayPicker({
               </p>
 
               <div className="grid grid-cols-7 gap-0.5">
-                {weekdayLabels.map((label, i) => (
+                {weekdayLabels.map((labelText, i) => (
                   <span key={i} className="py-1 text-center text-xs text-ink-tertiary">
-                    {label}
+                    {labelText}
                   </span>
                 ))}
 
@@ -105,14 +152,23 @@ export function DayPicker({
                   const day = i + 1;
                   const iso = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
                   const isPast = iso < today;
-                  const isSelected = selectedSet.has(iso);
+                  const isSelected = selected.includes(iso);
 
                   return (
                     <button
                       key={iso}
                       type="button"
                       disabled={isPast}
-                      onClick={() => onToggle(iso)}
+                      onPointerDown={(e) => {
+                        if (isPast) return;
+                        // Necessario perché il puntatore continui a mandare eventi
+                        // anche uscendo dal bottone su cui è partito.
+                        e.currentTarget.releasePointerCapture?.(e.pointerId);
+                        startDrag(iso);
+                      }}
+                      onPointerEnter={() => {
+                        if (!isPast) extendDrag(iso);
+                      }}
                       className={`aspect-square rounded text-body-sm transition-colors duration-100 ${
                         isSelected
                           ? "bg-navy font-medium text-white"

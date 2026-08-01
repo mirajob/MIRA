@@ -6,8 +6,10 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { hasWorkspaceAccess } from "@/lib/association-roles";
 import { personInitials, rangeCoversBlock } from "@/lib/interview-slots";
+import { parseWindows } from "@/lib/interview-slots";
 import { AvailabilityGrid, type AvailabilityBlock } from "./availability-grid";
 import { SessionActions } from "./session-actions";
+import { EditSessionPanel } from "./edit-session-panel";
 
 interface Props {
   params: Promise<{ slug: string; sessionId: string }>;
@@ -155,7 +157,28 @@ export default async function InterviewSessionPage({ params }: Props) {
           </div>
         )}
 
-        <div className="ml-auto">
+        <div className="ml-auto flex flex-wrap items-center gap-4">
+          {canManage && (
+            <EditSessionPanel
+              associationId={session.association_id}
+              slug={slug}
+              cycleId={session.application_cycle_id}
+              sessionId={sessionId}
+              initial={{
+                title: session.title,
+                description: session.description ?? "",
+                mode: session.mode,
+                linkMode: session.link_mode,
+                location: session.location ?? "",
+                meetingLink: session.meeting_link ?? "",
+                slotDurationMinutes: session.slot_duration_minutes,
+                breakMinutes: session.break_minutes,
+                parallelTracks: session.parallel_tracks,
+                requiredInterviewers: session.required_interviewers,
+                windows: parseWindows(session.windows),
+              }}
+            />
+          )}
           <SessionActions sessionId={sessionId} slug={slug} status={session.status} canManage={canManage} />
         </div>
       </div>

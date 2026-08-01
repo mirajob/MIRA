@@ -128,6 +128,101 @@ export async function createInterviewSession(input: {
 }
 
 /**
+ * Modifica di un round già creato.
+ *
+ * Mancava, e non era un dettaglio: una volta creata la sessione non si poteva più
+ * cambiare né un orario né una data. La griglia si rigenera dopo la modifica, e
+ * gli slot già prenotati restano dov'erano.
+ */
+export async function updateInterviewSession(input: {
+  sessionId: string;
+  slug: string;
+  title: string;
+  description?: string;
+  mode: "online" | "in_person";
+  linkMode: "shared" | "per_interview";
+  location?: string;
+  meetingLink?: string;
+  slotDurationMinutes: number;
+  breakMinutes: number;
+  parallelTracks: number;
+  requiredInterviewers: number;
+  windows: InterviewWindow[];
+}) {
+  const supabase = await createServiceClient();
+
+  const { data: session } = await (supabase.from("interview_sessions") as any)
+    .select("association_id")
+    .eq("id", input.sessionId)
+    .maybeSingle();
+
+  if (!session) return { error: "Sessione non trovata." };
+
+  const { ctx, membership } = await loadMembership(session.association_id);
+  if (!canManage(membership, ctx.isMiraAdmin)) return { error: "Non hai i permessi." };
+
+  if (!input.title.trim()) return { error: "Dai un titolo alla sessione." };
+  if (input.mode === "in_person" && !input.location?.trim()) {
+    return { error: "Una sessione in presenza ha bisogno del luogo." };
+  }
+  if (input.mode === "online" && input.linkMode === "shared" && !input.meetingLink?.trim()) {
+    return { error: "Con una stanza sola serve il link, oppure scegli un link per colloquio." };
+  }
+
+  const windows = parseWindows(input.windows);
+  if (!windows.length) return { error: "Serve almeno una giornata di colloqui." };
+
+  // Se ci sono colloqui prenotati fuori dalle nuove giornate, la modifica li
+  // lascerebbe orfani: meglio dirlo che scoprirlo dopo.
+  const { data: bookedSlots } = await (supabase.from("interview_slots") as any)
+    .select("starts_at")
+    .eq("session_id", input.sessionId)
+    .not("application_id", "is", null);
+
+  const newDays = new Set(windows.map((w) => w.date));
+  const orphaned = ((bookedSlots ?? []) as any[]).filter((s) => {
+    const day = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/Rome",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(s.starts_at));
+    return !newDays.has(day);
+  });
+
+  if (orphaned.length) {
+    return {
+      error: `Ci sono ${orphaned.length} colloqui prenotati in giornate che stai togliendo. Spostali o annullali prima.`,
+    };
+  }
+
+  const { error } = await (supabase.from("interview_sessions") as any)
+    .update({
+      title: input.title.trim(),
+      description: input.description?.trim() || null,
+      mode: input.mode,
+      link_mode: input.linkMode,
+      location: input.mode === "in_person" ? input.location!.trim() : null,
+      meeting_link:
+        input.mode === "online" && input.linkMode === "shared" ? input.meetingLink!.trim() : null,
+      slot_duration_minutes: input.slotDurationMinutes,
+      break_minutes: input.breakMinutes,
+      parallel_tracks: input.parallelTracks,
+      required_interviewers: input.requiredInterviewers,
+      windows,
+    })
+    .eq("id", input.sessionId);
+
+  if (error) return { error: error.message };
+
+  const generated = await regenerateSlots(input.sessionId);
+  if (generated.error) return generated;
+
+  revalidateSession(input.slug, input.sessionId);
+  return { success: true };
+}
+
+/**
  * Ricostruisce la griglia dalle finestre della sessione.
  *
  * Gli slot già prenotati non si toccano: cancellarli scaricherebbe su uno studente

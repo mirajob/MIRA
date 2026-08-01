@@ -1657,6 +1657,17 @@
     "saveAvailability": "Save availability",
     "nobodyYet": "nobody",
     "slotBookable": "Bookable",
-    "statRequired": "Needed"
+    "statRequired": "Needed",
+    "daysHint": "Click a day, or drag to select several in a row.",
+    "editSession": "Edit",
+    "editSessionHeading": "Edit the round",
+    "saveChanges": "Save changes",
+    "oneDay": "{date}",
+    "manyDays": "{count} days, from {from} to {to}",
+    "slotCount": "{count} slots",
+    "stepNoAvailability": "Nobody from the board has given their availability yet.",
+    "stepReadyToOpen": "Ready: open bookings so candidates can pick a time.",
+    "stepOpen": "Bookings open · {booked} booked out of {covered} available times",
+    "stepClosed": "Bookings closed."
   }
 }

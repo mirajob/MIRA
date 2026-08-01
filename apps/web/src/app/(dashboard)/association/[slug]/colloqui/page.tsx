@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { hasWorkspaceAccess } from "@/lib/association-roles";
 import { APP_TIME_ZONE } from "@/lib/format-date";
+import { parseWindows, rangeCoversBlock } from "@/lib/interview-slots";
 import { NewSessionPanel, type CycleOption } from "./new-session-panel";
 
 interface Props {
@@ -52,21 +53,51 @@ export default async function AssociationInterviewsPage({ params }: Props) {
     .eq("association_id", association.id)
     .order("round_index", { ascending: true });
 
-  // Conteggi per sessione: slot totali, coperti da almeno un intervistatore, prenotati.
+  // Conteggi per sessione. La copertura non è più una proprietà dello slot ma il
+  // risultato dell'incrocio con le disponibilità dichiarate dal board.
   const sessionIds = ((sessions ?? []) as any[]).map((s) => s.id);
   const { data: slots } = sessionIds.length
     ? await (supabase.from("interview_slots") as any)
-        .select("id, session_id, application_id, starts_at, interview_slot_interviewers(user_id)")
+        .select("id, session_id, application_id, starts_at, ends_at")
         .in("session_id", sessionIds)
     : { data: [] };
 
+  const { data: availability } = sessionIds.length
+    ? await (supabase.from("interview_availability") as any)
+        .select("session_id, user_id, starts_at, ends_at")
+        .in("session_id", sessionIds)
+    : { data: [] };
+
+  const availabilityBySession = new Map<string, any[]>();
+  for (const a of (availability ?? []) as any[]) {
+    availabilityBySession.set(a.session_id, [...(availabilityBySession.get(a.session_id) ?? []), a]);
+  }
+
+  const requiredBySession = new Map<string, number>(
+    ((sessions ?? []) as any[]).map((s) => [s.id, s.required_interviewers ?? 1])
+  );
+
   const stats = new Map<string, { total: number; covered: number; booked: number; first: string | null }>();
+  // Un orario con più colloqui in parallelo conta una volta sola nella copertura:
+  // una persona non può condurne due insieme.
+  const countedTimes = new Map<string, Set<string>>();
+
   for (const slot of (slots ?? []) as any[]) {
     const entry = stats.get(slot.session_id) ?? { total: 0, covered: 0, booked: 0, first: null };
     entry.total++;
-    if ((slot.interview_slot_interviewers ?? []).length > 0) entry.covered++;
     if (slot.application_id) entry.booked++;
     if (!entry.first || slot.starts_at < entry.first) entry.first = slot.starts_at;
+
+    const seen = countedTimes.get(slot.session_id) ?? new Set<string>();
+    if (!seen.has(slot.starts_at)) {
+      seen.add(slot.starts_at);
+      countedTimes.set(slot.session_id, seen);
+      const covering = (availabilityBySession.get(slot.session_id) ?? []).filter((a) =>
+        rangeCoversBlock(a, { startsAt: slot.starts_at, endsAt: slot.ends_at })
+      );
+      if (covering.length >= (requiredBySession.get(slot.session_id) ?? 1)) entry.covered++;
+    }
+
     stats.set(slot.session_id, entry);
   }
 
@@ -99,6 +130,25 @@ export default async function AssociationInterviewsPage({ params }: Props) {
         <div className="space-y-2">
           {((sessions ?? []) as any[]).map((session) => {
             const s = stats.get(session.id) ?? { total: 0, covered: 0, booked: 0, first: null };
+            const days = (parseWindows(session.windows) ?? []).map((w) => w.date).sort();
+            const dayLabel = (iso: string) =>
+              new Date(`${iso}T12:00:00Z`).toLocaleDateString(dateLocale, {
+                timeZone: APP_TIME_ZONE,
+                day: "numeric",
+                month: "long",
+              });
+
+            // La riga deve dire in una frase cosa manca per andare avanti, altrimenti
+            // bisogna entrare in ogni round per capirlo.
+            const nextStep =
+              s.covered === 0
+                ? { text: t("stepNoAvailability"), tone: "text-warning" }
+                : session.status === "draft"
+                  ? { text: t("stepReadyToOpen"), tone: "text-petrol" }
+                  : session.status === "open"
+                    ? { text: t("stepOpen", { booked: s.booked, covered: s.covered }), tone: "text-ink-secondary" }
+                    : { text: t("stepClosed"), tone: "text-ink-tertiary" };
+
             return (
               <Link
                 key={session.id}
@@ -109,10 +159,7 @@ export default async function AssociationInterviewsPage({ params }: Props) {
                   <span className="text-eyebrow uppercase text-navy/50">
                     {t("roundLabel", { index: session.round_index })}
                   </span>
-                  <span className="text-body-sm font-medium text-navy">{session.title}</span>
-                  <span className="text-body-sm text-ink-tertiary">
-                    {session.mode === "online" ? t("modeOnline") : t("modeInPerson")}
-                  </span>
+                  <span className="font-sans text-h3 text-navy">{session.title}</span>
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass[session.status] ?? ""}`}
                   >
@@ -124,28 +171,23 @@ export default async function AssociationInterviewsPage({ params }: Props) {
                 </div>
 
                 <p className="mt-1 text-body-sm text-ink-secondary">
-                  {s.first
-                    ? t("startsOn", {
-                        date: new Date(s.first).toLocaleString(dateLocale, {
-                          timeZone: APP_TIME_ZONE,
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }),
-                      })
-                    : t("noSlots")}
+                  {session.mode === "online" ? t("modeOnline") : t("modeInPerson")}
+                  {days.length > 0 && (
+                    <>
+                      {" · "}
+                      {days.length === 1
+                        ? t("oneDay", { date: dayLabel(days[0]!) })
+                        : t("manyDays", {
+                            count: days.length,
+                            from: dayLabel(days[0]!),
+                            to: dayLabel(days[days.length - 1]!),
+                          })}
+                    </>
+                  )}
+                  {s.total > 0 && <>{" · "}{t("slotCount", { count: s.total })}</>}
                 </p>
 
-                <p className="mt-0.5 text-body-sm text-ink-tertiary">
-                  {t("slotSummary", { total: s.total, covered: s.covered, booked: s.booked })}
-                  {s.covered < s.total && (
-                    <span className="ml-2 text-warning">
-                      {t("uncoveredWarning", { count: s.total - s.covered })}
-                    </span>
-                  )}
-                </p>
+                <p className={`mt-0.5 text-body-sm ${nextStep.tone}`}>{nextStep.text}</p>
               </Link>
             );
           })}

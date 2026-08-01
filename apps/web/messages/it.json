@@ -1657,6 +1657,17 @@
     "saveAvailability": "Salva le disponibilità",
     "nobodyYet": "nessuno",
     "slotBookable": "Prenotabile",
-    "statRequired": "Servono"
+    "statRequired": "Servono",
+    "daysHint": "Clicca un giorno, oppure trascina per selezionarne diversi di fila.",
+    "editSession": "Modifica",
+    "editSessionHeading": "Modifica il round",
+    "saveChanges": "Salva le modifiche",
+    "oneDay": "{date}",
+    "manyDays": "{count} giornate, dal {from} al {to}",
+    "slotCount": "{count} slot",
+    "stepNoAvailability": "Nessuno del board ha ancora dato la disponibilità.",
+    "stepReadyToOpen": "Pronta: apri le prenotazioni per far scegliere ai candidati.",
+    "stepOpen": "Prenotazioni aperte · {booked} prenotati su {covered} orari disponibili",
+    "stepClosed": "Prenotazioni chiuse."
   }
 }

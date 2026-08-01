@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { createInterviewSession } from "@/lib/actions/interview-sessions";
+import { createInterviewSession, updateInterviewSession } from "@/lib/actions/interview-sessions";
 import { generateSlots, type InterviewWindow } from "@/lib/interview-slots";
 import { DayPicker } from "@/components/day-picker";
 import { APP_TIME_ZONE } from "@/lib/format-date";
@@ -16,15 +16,34 @@ import { APP_TIME_ZONE } from "@/lib/format-date";
  * giornate. L'orario ha un valore che vale per tutti i giorni scelti e si può
  * cambiare su quelli che fanno eccezione.
  */
+export interface SessionInitialValues {
+  title: string;
+  description: string;
+  mode: "online" | "in_person";
+  linkMode: "shared" | "per_interview";
+  location: string;
+  meetingLink: string;
+  slotDurationMinutes: number;
+  breakMinutes: number;
+  parallelTracks: number;
+  requiredInterviewers: number;
+  windows: InterviewWindow[];
+}
+
 export function SessionForm({
   associationId,
   slug,
   cycleId,
+  sessionId,
+  initial,
   onDone,
 }: {
   associationId: string;
   slug: string;
   cycleId: string;
+  /** Presente quando si modifica un round esistente invece di crearne uno. */
+  sessionId?: string;
+  initial?: SessionInitialValues;
   onDone: () => void;
 }) {
   const t = useTranslations("Interviews");
@@ -32,21 +51,29 @@ export function SessionForm({
   const dateLocale = locale === "it" ? "it-IT" : "en-US";
   const router = useRouter();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [mode, setMode] = useState<"online" | "in_person">("in_person");
-  const [linkMode, setLinkMode] = useState<"shared" | "per_interview">("per_interview");
-  const [location, setLocation] = useState("");
-  const [meetingLink, setMeetingLink] = useState("");
-  const [duration, setDuration] = useState(20);
-  const [pause, setPause] = useState(5);
-  const [tracks, setTracks] = useState(1);
-  const [requiredInterviewers, setRequiredInterviewers] = useState(1);
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [mode, setMode] = useState<"online" | "in_person">(initial?.mode ?? "in_person");
+  const [linkMode, setLinkMode] = useState<"shared" | "per_interview">(
+    initial?.linkMode ?? "per_interview"
+  );
+  const [location, setLocation] = useState(initial?.location ?? "");
+  const [meetingLink, setMeetingLink] = useState(initial?.meetingLink ?? "");
+  const [duration, setDuration] = useState(initial?.slotDurationMinutes ?? 20);
+  const [pause, setPause] = useState(initial?.breakMinutes ?? 5);
+  const [tracks, setTracks] = useState(initial?.parallelTracks ?? 1);
+  const [requiredInterviewers, setRequiredInterviewers] = useState(
+    initial?.requiredInterviewers ?? 1
+  );
 
-  const [defaultStart, setDefaultStart] = useState("15:00");
-  const [defaultEnd, setDefaultEnd] = useState("19:00");
-  const [days, setDays] = useState<string[]>([]);
-  const [perDay, setPerDay] = useState<Record<string, { start: string; end: string }>>({});
+  const [defaultStart, setDefaultStart] = useState(initial?.windows[0]?.start ?? "15:00");
+  const [defaultEnd, setDefaultEnd] = useState(initial?.windows[0]?.end ?? "19:00");
+  const [days, setDays] = useState<string[]>(initial?.windows.map((w) => w.date) ?? []);
+  const [perDay, setPerDay] = useState<Record<string, { start: string; end: string }>>(() =>
+    Object.fromEntries(
+      (initial?.windows ?? []).map((w) => [w.date, { start: w.start, end: w.end }])
+    )
+  );
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,19 +99,13 @@ export function SessionForm({
     [windows, duration, pause, tracks]
   );
 
-  function toggleDay(date: string) {
-    setDays((prev) => (prev.includes(date) ? prev.filter((d) => d !== date) : [...prev, date]));
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    const result = await createInterviewSession({
-      associationId,
+    const payload = {
       slug,
-      cycleId,
       title,
       description,
       mode,
@@ -96,7 +117,11 @@ export function SessionForm({
       parallelTracks: tracks,
       requiredInterviewers,
       windows,
-    });
+    };
+
+    const result = sessionId
+      ? await updateInterviewSession({ ...payload, sessionId })
+      : await createInterviewSession({ ...payload, associationId, cycleId });
 
     if (result.error) {
       setError(result.error);
@@ -114,7 +139,9 @@ export function SessionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border border-border bg-white p-4">
-      <p className="text-eyebrow uppercase text-navy/60">{t("newSessionHeading")}</p>
+      <p className="text-eyebrow uppercase text-navy/60">
+        {sessionId ? t("editSessionHeading") : t("newSessionHeading")}
+      </p>
 
       {error && <p className="rounded-md bg-error-bg px-3 py-2 text-body-sm text-error">{error}</p>}
 
@@ -211,7 +238,8 @@ export function SessionForm({
       {/* 3. Quando */}
       <div className="space-y-3 border-t border-border pt-4">
         <span className={label}>{t("daysLabel")}</span>
-        <DayPicker selected={days} onToggle={toggleDay} locale={dateLocale} />
+        <DayPicker selected={days} onChange={setDays} locale={dateLocale} />
+        <p className="text-body-sm text-ink-tertiary">{t("daysHint")}</p>
 
         {days.length > 0 && (
           <div className="space-y-2 rounded-md bg-navy-50/60 p-3">
@@ -344,7 +372,7 @@ export function SessionForm({
           disabled={loading || !preview.length}
           className="rounded-md bg-navy px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-navy-700 disabled:opacity-40"
         >
-          {loading ? t("creating") : t("createCta")}
+          {loading ? t("creating") : sessionId ? t("saveChanges") : t("createCta")}
         </button>
         <button type="button" onClick={onDone} className="text-body-sm text-ink-secondary hover:underline">
           {t("cancel")}
