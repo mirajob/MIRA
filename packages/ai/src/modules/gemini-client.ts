@@ -23,7 +23,16 @@ interface GeminiOptions {
   timeoutMs?: number;
   /** Reasoning depth. "low" = fastest, "high" = most accurate. Default: "low". */
   thinkingLevel?: ThinkingLevel;
+  /** Quanti tentativi in più sugli errori temporanei di capacità. Default: 2. */
+  retries?: number;
 }
+
+/** 503 (modello sovraccarico), 429 (quota momentanea) e 500 sono temporanei: si riprova. */
+function isTransientStatus(status: number): boolean {
+  return status === 429 || status === 500 || status === 503;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * One-shot structured generation: system instruction + a text prompt + one
@@ -61,6 +70,35 @@ export async function geminiGenerateJson(
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
+  // "This model is currently experiencing high demand" arriva come 503 e passa da solo in
+  // pochi secondi: senza questi tentativi lo studente vedeva l'errore grezzo dell'API e
+  // restava senza libretto, con l'unica alternativa di riprovare a mano.
+  const maxAttempts = 1 + (options.retries ?? 2);
+  let lastTransientError = "";
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await callGemini(url, apiKey, body, options);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const transient = message.startsWith("__TRANSIENT__");
+      if (!transient || attempt === maxAttempts) {
+        throw new Error(message.replace("__TRANSIENT__", ""));
+      }
+      lastTransientError = message.replace("__TRANSIENT__", "");
+      await sleep(attempt * 1500);
+    }
+  }
+
+  throw new Error(lastTransientError || "Gemini non ha risposto.");
+}
+
+async function callGemini(
+  url: string,
+  apiKey: string,
+  body: unknown,
+  options: GeminiOptions
+): Promise<string> {
   const controller = options.timeoutMs ? new AbortController() : null;
   const timer = controller ? setTimeout(() => controller.abort(), options.timeoutMs) : null;
 
@@ -87,7 +125,8 @@ export async function geminiGenerateJson(
   if (!response.ok) {
     const error = await response.text();
     console.error(`[MIRA AI] Gemini API error ${response.status}:`, error);
-    throw new Error(`Gemini API error ${response.status}: ${error}`);
+    const prefix = isTransientStatus(response.status) ? "__TRANSIENT__" : "";
+    throw new Error(`${prefix}Gemini API error ${response.status}: ${error}`);
   }
 
   const data = await response.json();

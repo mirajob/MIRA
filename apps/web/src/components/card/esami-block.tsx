@@ -23,10 +23,13 @@ export function EsamiEditor({
   formazioneItems,
   allowPreviousDegree = false,
   livello,
+  mediaVoti,
   showPurpose = true,
   visibility,
 }: {
   formazioneItems: FormazioneItem[];
+  /** Media calcolata dal libretto: si mostra qui, dove è stata prodotta. */
+  mediaVoti?: number | null;
   /** Il libretto del corso precedente si carica solo dal Profilo, a card già costruita. */
   allowPreviousDegree?: boolean;
   livello?: string | null;
@@ -75,6 +78,13 @@ export function EsamiEditor({
   return (
     <div>
       {showPurpose && <p className="text-body-sm text-ink-secondary">{t("header.transcriptPurpose")}</p>}
+
+      {mediaVoti != null && (
+        <p className="mt-3 text-body-sm text-ink" title={t("header.mediaCambioNote")}>
+          <span className="text-ink-tertiary">{t("header.mediaLabel")}: </span>
+          <span className="font-medium">{Number(mediaVoti).toFixed(1)}/30</span>
+        </p>
+      )}
 
       {formazioneItems.length > 0 && (
         <button
@@ -179,6 +189,7 @@ export function EsamiBlock({
   formazioneItems,
   status,
   livello,
+  mediaVoti,
   showPurpose = true,
   visibility,
   onApproved,
@@ -186,6 +197,7 @@ export function EsamiBlock({
   formazioneItems: FormazioneItem[];
   status: CardBlockStatus;
   livello?: string | null;
+  mediaVoti?: number | null;
   showPurpose?: boolean;
   visibility?: HeaderVisibility | null;
   onApproved?: () => void;
@@ -207,6 +219,7 @@ export function EsamiBlock({
           formazioneItems={formazioneItems}
           allowPreviousDegree
           livello={livello}
+          mediaVoti={mediaVoti}
           showPurpose={showPurpose}
           visibility={visibility}
         />

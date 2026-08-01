@@ -1,6 +1,6 @@
 "use server";
 
-import { parseTranscriptWithGemini, formatTranscriptForChat, type ParsedCourse } from "@mira/ai";
+import { parseTranscriptWithGemini, parseTranscriptFile, formatTranscriptForChat, type ParsedCourse } from "@mira/ai";
 
 // Modello di produzione per la lettura del libretto: Gemini Flash (alias -latest,
 // così resta sul modello corrente disponibile). Scelto per velocità — il parser
@@ -92,7 +92,19 @@ export async function uploadTranscript(formData: FormData) {
 
   try {
     const base64 = buffer.toString("base64");
-    const { parsed } = await parseTranscriptWithGemini(base64, file.type, TRANSCRIPT_MODEL);
+
+    // Gemini è la strada veloce, ma risponde 503 quando il modello è sovraccarico e in quel
+    // momento lo studente resta senza libretto. Il parser OpenAI (più lento, stesso prompt)
+    // vale come ripiego: meglio venti secondi in più che un errore in faccia.
+    let parsed;
+    let usedModel: string = TRANSCRIPT_MODEL;
+    try {
+      ({ parsed } = await parseTranscriptWithGemini(base64, file.type, TRANSCRIPT_MODEL));
+    } catch (geminiError) {
+      console.error("[MIRA] Gemini transcript parse failed, ripiego su OpenAI:", geminiError);
+      parsed = await parseTranscriptFile(base64, file.type);
+      usedModel = "openai-fallback";
+    }
 
     // Recalculate weighted average in code (AI math is unreliable)
     let weightedSum = 0;
@@ -282,8 +294,8 @@ export async function uploadTranscript(formData: FormData) {
 
     await (supabase.from("ai_logs") as any).insert({
       module: "transcript_parser",
-      provider: "google",
-      model: TRANSCRIPT_MODEL,
+      provider: usedModel === "openai-fallback" ? "openai" : "google",
+      model: usedModel,
       entity_type: "student_transcript",
       entity_id: transcript!.id,
       user_id: profileId,

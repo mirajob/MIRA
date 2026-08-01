@@ -148,7 +148,6 @@ export default async function StudentHomePage() {
                 edit={
                   <HeaderBlock
                     proseContent={header.prose_content as HeaderProseContent}
-                    visibility={header.visibility as HeaderVisibility}
                     status={header.status}
                     formazioneItems={formazioneItems}
                     showEsami={false}
@@ -221,6 +220,8 @@ export default async function StudentHomePage() {
                     formazioneItems={formazioneItems}
                     status={formazione.status}
                     livello={(header?.prose_content as HeaderProseContent | undefined)?.livello ?? null}
+                    mediaVoti={(header?.prose_content as HeaderProseContent | undefined)?.media_voti ?? null}
+                    visibility={header?.visibility as HeaderVisibility}
                   />
                 }
               />

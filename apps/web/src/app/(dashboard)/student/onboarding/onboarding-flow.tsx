@@ -335,7 +335,6 @@ export function OnboardingFlow({ userName }: { userName: string }) {
           <HeaderBlock
             key={`header-${blocks.formazione.data.items.length}`}
             proseContent={blocks.header.data}
-            visibility={blocks.header.visibility}
             status={blocks.header.status}
             formazioneItems={blocks.formazione.data.items}
             showEsami={false}
@@ -515,6 +514,7 @@ export function OnboardingFlow({ userName }: { userName: string }) {
                 formazioneItems={blocks.formazione.data.items}
                 status={blocks.formazione.status}
                 livello={blocks.header.data.livello}
+                mediaVoti={blocks.header.data.media_voti}
                 showPurpose={false}
                 visibility={blocks.header.visibility}
                 onApproved={() => refresh()}

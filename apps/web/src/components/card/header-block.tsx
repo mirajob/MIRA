@@ -5,21 +5,18 @@ import { useTranslations } from "next-intl";
 import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
 import { EsamiEditor } from "./esami-block";
-import { MediaVisibilityToggles } from "./media-visibility-toggles";
-import type { CardBlockStatus, FormazioneItem, HeaderProseContent, HeaderVisibility } from "@mira/types";
+import type { CardBlockStatus, FormazioneItem, HeaderProseContent } from "@mira/types";
 
 const LEVEL_KEYS = ["triennale", "magistrale", "ciclo_unico", "phd"] as const;
 
 export function HeaderBlock({
   proseContent,
-  visibility,
   status,
   formazioneItems,
   showEsami = true,
   onApproved,
 }: {
   proseContent: HeaderProseContent;
-  visibility: HeaderVisibility;
   status: CardBlockStatus;
   formazioneItems: FormazioneItem[];
   /** In onboarding gli esami vivono dentro l'Header (un solo Conferma per Header+Formazione);
@@ -29,9 +26,6 @@ export function HeaderBlock({
 }) {
   const t = useTranslations("CardBlocks");
   const [form, setForm] = useState(proseContent);
-  const vis: HeaderVisibility = visibility?.media_voti
-    ? visibility
-    : { media_voti: { associazioni: false, aziende: false } };
   const [dirty, setDirty] = useState(false);
   // In onboarding proseContent arriva in modo asincrono (es. dopo il parsing del libretto):
   // se non c'è un edit locale in corso, riflette sempre l'ultimo dato dal server.
@@ -137,12 +131,6 @@ export function HeaderBlock({
               className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
             />
           </div>
-          <div>
-            <label className="text-ink-tertiary text-body-sm">{t("header.mediaLabel")}</label>
-            <p className="mt-1 px-3 py-2 text-body-sm text-ink-secondary" title={t("header.mediaCambioNote")}>
-              {form.media_voti ? `${Number(form.media_voti).toFixed(1)}/30` : "—"}
-            </p>
-          </div>
         </div>
 
         {/* In onboarding gli esami stanno qui dentro (un blocco per volta); sul Profilo
@@ -189,9 +177,6 @@ export function HeaderBlock({
           </div>
         )}
 
-        <div className="border-t border-border pt-4">
-          <MediaVisibilityToggles visibility={vis} />
-        </div>
       </div>
     </div>
   );
