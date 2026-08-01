@@ -6,6 +6,8 @@ import { requestCompanyAccess } from "@/lib/actions/company-register";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
 const SECTORS = [
   "Consulting",
@@ -58,11 +60,10 @@ export default function AziendePage() {
 
   if (step === "form") {
     return (
-      <div className="min-h-screen bg-paper flex flex-col">
-        <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
-          <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
+      <div className="min-h-screen bg-cream flex flex-col">
+        <SiteHeader>
           <LocaleSwitcher />
-        </header>
+        </SiteHeader>
 
         <div className="flex-1 flex items-start justify-center px-6 py-12">
           <div className="w-full max-w-md">
@@ -169,6 +170,8 @@ export default function AziendePage() {
             </form>
           </div>
         </div>
+
+        <SiteFooter />
       </div>
     );
   }
@@ -187,16 +190,13 @@ export default function AziendePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-paper">
-      <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
-        <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
-        <div className="flex items-center gap-4">
-          <LocaleSwitcher />
-          <Link href="/login?type=company" className="text-body-sm text-ink-secondary hover:text-navy transition-colors">
-            {c("login")}
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-cream">
+      <SiteHeader>
+        <LocaleSwitcher />
+        <Link href="/login?type=company" className="text-body-sm text-ink-secondary hover:text-navy transition-colors">
+          {c("login")}
+        </Link>
+      </SiteHeader>
 
       <main className="max-w-4xl mx-auto px-6 py-16">
         {/* Hero */}
@@ -253,6 +253,8 @@ export default function AziendePage() {
           </button>
         </div>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

@@ -10,6 +10,8 @@ import { getAuthErrorKey } from "@/lib/auth-error-messages";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import { PasswordInput } from "@/components/password-input";
 import { UniversityCombobox } from "@/components/university-combobox";
 
@@ -159,13 +161,10 @@ export default function CandidatiAssociazionePage() {
   }
 
   return (
-    <div className="min-h-screen bg-paper flex flex-col">
-      <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
-        <Link href="/">
-          <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
-        </Link>
+    <div className="min-h-screen bg-cream flex flex-col">
+      <SiteHeader>
         <LocaleSwitcher />
-      </header>
+      </SiteHeader>
 
       <div className="flex-1 flex items-start justify-center px-6 py-12">
         <div className="w-full max-w-md">
@@ -435,6 +434,8 @@ export default function CandidatiAssociazionePage() {
           </form>
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   );
 }

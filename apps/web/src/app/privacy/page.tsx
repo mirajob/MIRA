@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPageLayout, LegalSection } from "@/components/legal-page-layout";
 
 export const metadata: Metadata = {
-  title: "Informativa sulla Privacy — MIRA",
+  title: "Informativa sulla Privacy",
 };
 
 export default function PrivacyPage() {

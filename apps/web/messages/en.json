@@ -61,13 +61,24 @@
   "HomePage": {
     "eyebrow": "Reverse the recruiting",
     "heading": "You don't send résumés. Companies reach out to you.",
-    "subhead": "Chat with MIRA and your MiraCard takes shape: what you've actually done, who you are beyond the résumé — interests, how you work, where you want to go — and exactly what you're available for: which field, in which city, from when and for how long. No keyword filters: here you won't get dropped by an ATS for using the wrong term. The more you share, the more companies find you.",
-    "step1": "Chat with MIRA, 5 minutes",
-    "step2": "Your MiraCard takes shape",
-    "step3": "Matching companies reach out",
-    "ctaStudent": "Create your MiraCard — it's free",
-    "ctaMicrocopy": "Free for students, always.",
-    "ctaAssociations": "And in the meantime you apply to your campus associations with the same profile.",
+    "subhead": "Chat with MIRA for five minutes and your MiraCard takes shape.",
+    "cardPoints": [
+      {
+        "title": "What you have actually done",
+        "body": "Experiences, projects, exams."
+      },
+      {
+        "title": "Who you are beyond the résumé",
+        "body": "Interests, how you work, where you want to go."
+      },
+      {
+        "title": "When and where you are available",
+        "body": "Which field, which city, from when and for how long."
+      }
+    ],
+    "noAts": "No keyword filters: no ATS drops you here for using the wrong term. The more you share, the more companies find you.",
+    "ctaStudent": "Create your MiraCard, it's free",
+    "ctaMicrocopy": "Free for students, always. The same profile applies to your campus associations.",
     "orgEyebrow": "Are you a company or a university association?",
     "associationTitle": "Association",
     "associationBody": "Apply for your association: manage applications, board members, and your MIRA page.",
@@ -136,14 +147,14 @@
     "guide": {
       "headerIntro": "Hi {name}! Let's build your MIRA Card.",
       "headerUploading": "Reading your transcript…",
-      "headerFilled": "Got it — check your details and confirm.",
+      "headerFilled": "Got it. Check your details and confirm.",
       "expAsk": "Tell me about an experience.",
-      "expImprove": "Write it however it comes — I'll shape it.",
+      "expImprove": "Write it however it comes, I'll shape it.",
       "expImproved": "Here it is, CV-ready. Confirm?",
       "availability": "What are you looking for, and what's next?",
       "skills": "From your exams, here are your skills.",
       "languages": "And the languages you speak.",
-      "profile": "Last thing — who you are beyond the CV."
+      "profile": "Last thing: who you are beyond the CV."
     }
   },
   "AssociationDemo": {
@@ -169,9 +180,9 @@
     "colAccepted": "Accepted",
     "guide": {
       "compose": "Tell me who you're recruiting.",
-      "building": "Here's your cycle — positions, requirements, questions.",
+      "building": "Here's your cycle: positions, requirements, questions.",
       "candidates": "Applications are coming in.",
-      "detail": "AI reads every profile — you decide."
+      "detail": "AI reads every profile, you decide."
     }
   },
   "CompanyDemo": {
@@ -193,7 +204,7 @@
     "awaitingReply": "Awaiting reply",
     "guide": {
       "compose": "Describe your ideal candidate.",
-      "results": "Here's who fits — and why.",
+      "results": "Here's who fits, and why.",
       "detail": "Anonymous until they accept the contact."
     }
   },
@@ -1563,5 +1574,16 @@
     "noResults": "No association matches your search.",
     "draftTag": "Draft",
     "openNow": "Recruiting"
+  },
+  "Footer": {
+    "tagline": "The profile your campus associations and companies use to find you.",
+    "platform": "Platform",
+    "students": "Students",
+    "associations": "Associations",
+    "companies": "Companies",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Write to us"
   }
 }

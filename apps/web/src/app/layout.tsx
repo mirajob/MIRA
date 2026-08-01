@@ -1,10 +1,62 @@
 import type { Metadata } from "next";
+import { Inter, Playfair_Display } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 
+/**
+ * I font passano da un <link> a Google Fonts a next/font: vengono scaricati in fase di
+ * build e serviti dal nostro dominio. Con il link il browser mostrava prima il font di
+ * sistema e poi rifaceva il testo, con lo scatto visibile a ogni primo caricamento.
+ * I nomi delle variabili sono quelli usati da globals.css.
+ */
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+/**
+ * Anteprima dei link condivisi (WhatsApp, Instagram, Telegram, Google).
+ *
+ * Il testo è in italiano di proposito, anche se il locale di default del sito è
+ * l'inglese: chi legge l'anteprima è uno studente italiano, e i crawler non mandano
+ * né cookie né accept-language, quindi seguirebbero il default sbagliato.
+ *
+ * L'immagine larga la genera `opengraph-image.tsx`, Next la collega da sé.
+ */
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://mirajob.cloud";
+const SITE_DESCRIPTION =
+  "Rispondi a MIRA in chat e nasce la tua MiraCard: il profilo con cui le associazioni del tuo campus e le aziende ti trovano. Gratis per gli studenti.";
+
 export const metadata: Metadata = {
-  title: "MIRA",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "MIRA",
+    template: "%s · MIRA",
+  },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: "MIRA",
+    url: SITE_URL,
+    title: "MIRA",
+    description: SITE_DESCRIPTION,
+    locale: "it_IT",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MIRA",
+    description: SITE_DESCRIPTION,
+  },
   icons: {
     icon: [
       { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
@@ -28,15 +80,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang={locale} className={`${inter.variable} ${playfair.variable}`}>
       <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
           {children}

@@ -37,8 +37,9 @@
   --color-error-bg: #FAE9E9;
 
   /* === FONTS === */
-  --font-display: "Playfair Display", Georgia, serif;
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Le due variabili --font-playfair / --font-inter arrivano da next/font (layout.tsx). */
+  --font-display: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   /* === FONT SIZES === */

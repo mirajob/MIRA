@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@mira/supabase/server";
 import { getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import { LandingDemo } from "@/components/landing/landing-demo";
 import { AssociationDemo } from "@/components/landing/association-demo";
 import { CompanyDemo } from "@/components/landing/company-demo";
@@ -18,21 +20,19 @@ export default async function HomePage() {
   const t = await getTranslations("HomePage");
   const c = await getTranslations("Common");
   const faq = t.raw("faq") as { q: string; a: string }[];
+  const cardPoints = t.raw("cardPoints") as { title: string; body: string }[];
 
   return (
     <div className="min-h-screen bg-cream">
-      <header className="h-20 px-6 lg:px-12 flex items-center justify-between">
-        <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-7" />
-        <div className="flex items-center gap-4">
-          <LocaleSwitcher />
-          <Link href="/login" className="text-body text-navy hover:text-petrol transition-colors duration-100">
-            {c("login")}
-          </Link>
-          <Link href="/signup" className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100">
-            {c("start")}
-          </Link>
-        </div>
-      </header>
+      <SiteHeader>
+        <LocaleSwitcher />
+        <Link href="/login" className="text-body text-navy hover:text-petrol transition-colors duration-100">
+          {c("login")}
+        </Link>
+        <Link href="/signup" className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100">
+          {c("start")}
+        </Link>
+      </SiteHeader>
 
       <main className="mx-auto max-w-6xl px-6 lg:px-12 py-12 lg:py-20">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -46,22 +46,30 @@ export default async function HomePage() {
             <p className="mt-6 text-body-lg text-ink-secondary max-w-xl mx-auto lg:mx-0">
               {t("subhead")}
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-body-sm text-navy/70 lg:justify-start">
-              <span>{t("step1")}</span>
-              <span aria-hidden className="text-navy/30">·</span>
-              <span>{t("step2")}</span>
-              <span aria-hidden className="text-navy/30">·</span>
-              <span>{t("step3")}</span>
-            </div>
-            <div className="mt-10">
+
+            {/* Cosa entra nella card. Sta in colonna e allineato a sinistra anche quando il
+                resto dell'hero è centrato: un elenco centrato non si legge. */}
+            <ul className="mt-7 max-w-sm mx-auto space-y-3.5 text-left lg:mx-0">
+              {cardPoints.map((point) => (
+                <li key={point.title} className="border-l-2 border-petrol/30 pl-4">
+                  <p className="text-body font-medium text-navy">{point.title}</p>
+                  <p className="text-body-sm text-ink-secondary">{point.body}</p>
+                </li>
+              ))}
+            </ul>
+
+            <p className="mt-6 max-w-sm mx-auto text-left text-body-sm text-ink-tertiary lg:mx-0">
+              {t("noAts")}
+            </p>
+
+            <div className="mt-9">
               <Link
                 href="/signup"
                 className="inline-block bg-navy text-white px-8 py-4 rounded-md text-body hover:bg-navy-700 transition-colors duration-100"
               >
                 {t("ctaStudent")}
               </Link>
-              <p className="mt-3 text-body-sm text-ink-tertiary">{t("ctaMicrocopy")}</p>
-              <p className="mt-2 text-body-sm text-ink-tertiary max-w-md mx-auto lg:mx-0">{t("ctaAssociations")}</p>
+              <p className="mt-3 text-body-sm text-ink-tertiary max-w-md mx-auto lg:mx-0">{t("ctaMicrocopy")}</p>
             </div>
           </div>
 
@@ -142,6 +150,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <SiteFooter />
     </div>
   );
 }

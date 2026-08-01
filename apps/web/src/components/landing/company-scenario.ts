@@ -48,7 +48,7 @@ export const companyData: CompanyData = {
   name: "Northwind Partners",
   monogram: "N",
   brief:
-    "Analyst for our M&A team — Bocconi or similar, Bachelor or Master in finance, curious and rigorous, genuinely into markets. Fluent English, available for a summer internship in Milan.",
+    "Analyst for our M&A team. Bocconi or similar, Bachelor or Master in finance, curious and rigorous, genuinely into markets. Fluent English, available for a summer internship in Milan.",
   candidates: [
     {
       code: "C-014",
@@ -79,7 +79,7 @@ export const companyData: CompanyData = {
   },
   chat: {
     companyMsg: "Hi! We'd love to talk about a summer analyst role on our M&A team.",
-    candidateMsg: "Hi Northwind — thanks for reaching out, I'd be glad to. When works for a call?",
+    candidateMsg: "Hi Northwind, thanks for reaching out, I'd be glad to. When works for a call?",
     businessCase: "Business case · Market entry: Italy",
   },
   conversations: [

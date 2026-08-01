@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPageLayout, LegalSection } from "@/components/legal-page-layout";
 
 export const metadata: Metadata = {
-  title: "Termini di Servizio — MIRA",
+  title: "Termini di Servizio",
 };
 
 export default function TerminiPage() {

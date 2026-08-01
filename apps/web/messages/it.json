@@ -61,13 +61,24 @@
   "HomePage": {
     "eyebrow": "Il recruiting al contrario",
     "heading": "Non mandi CV. Sono le aziende a scrivere a te.",
-    "subhead": "Rispondi a MIRA in chat e nasce la tua MiraCard: cosa hai fatto davvero, chi sei fuori dal curriculum — interessi, come lavori, dove vuoi arrivare — e la tua disponibilità precisa: quale ambito, in che città, da quando e per quanto. Nessun filtro per parole chiave: qui non vieni scartato da un ATS perché hai usato il termine sbagliato. Più racconti, più le aziende ti trovano.",
-    "step1": "Parli con MIRA, 5 minuti",
-    "step2": "Nasce la tua MiraCard",
-    "step3": "Le aziende compatibili ti scrivono",
-    "ctaStudent": "Crea la tua MiraCard — è gratis",
-    "ctaMicrocopy": "Gratis per gli studenti, sempre.",
-    "ctaAssociations": "E intanto ti candidi alle associazioni del tuo campus con lo stesso profilo.",
+    "subhead": "Rispondi a MIRA in chat, bastano cinque minuti, e nasce la tua MiraCard.",
+    "cardPoints": [
+      {
+        "title": "Cosa hai fatto davvero",
+        "body": "Esperienze, progetti, esami."
+      },
+      {
+        "title": "Chi sei fuori dal curriculum",
+        "body": "Interessi, come lavori, dove vuoi arrivare."
+      },
+      {
+        "title": "Quando e dove sei disponibile",
+        "body": "Quale ambito, in che città, da quando e per quanto."
+      }
+    ],
+    "noAts": "Nessun filtro per parole chiave: qui non vieni scartato da un ATS perché hai usato il termine sbagliato. Più racconti, più le aziende ti trovano.",
+    "ctaStudent": "Crea la tua MiraCard, è gratis",
+    "ctaMicrocopy": "Gratis per gli studenti, sempre. Con lo stesso profilo ti candidi anche alle associazioni del tuo campus.",
     "orgEyebrow": "Sei un'azienda o un'associazione?",
     "associationTitle": "Associazione",
     "associationBody": "Candida la tua associazione: gestisci candidature, board e la tua pagina su MIRA.",
@@ -136,14 +147,14 @@
     "guide": {
       "headerIntro": "Ciao {name}! Costruiamo la tua MIRA Card.",
       "headerUploading": "Leggo il tuo libretto…",
-      "headerFilled": "Fatto — controlla i dati e conferma.",
+      "headerFilled": "Fatto. Controlla i dati e conferma.",
       "expAsk": "Raccontami un'esperienza.",
-      "expImprove": "Scrivi come ti viene — ci penso io a metterla in forma.",
+      "expImprove": "Scrivi come ti viene, ci penso io a metterla in forma.",
       "expImproved": "Eccola, pronta da CV. Confermi?",
       "availability": "Cosa cerchi, e i prossimi passi?",
       "skills": "Dai tuoi esami, ecco le tue competenze.",
       "languages": "E le lingue che parli.",
-      "profile": "Ultima cosa — chi sei oltre al CV."
+      "profile": "Ultima cosa: chi sei oltre al CV."
     }
   },
   "AssociationDemo": {
@@ -169,9 +180,9 @@
     "colAccepted": "Accettati",
     "guide": {
       "compose": "Dimmi chi stai cercando.",
-      "building": "Ecco il tuo ciclo — posizioni, requisiti, domande.",
+      "building": "Ecco il tuo ciclo: posizioni, requisiti, domande.",
       "candidates": "Stanno arrivando le candidature.",
-      "detail": "L'AI legge ogni profilo — decidi tu."
+      "detail": "L'AI legge ogni profilo, decidi tu."
     }
   },
   "CompanyDemo": {
@@ -193,7 +204,7 @@
     "awaitingReply": "In attesa",
     "guide": {
       "compose": "Descrivi il candidato ideale.",
-      "results": "Ecco chi corrisponde — e perché.",
+      "results": "Ecco chi corrisponde, e perché.",
       "detail": "Anonimo finché non accetta il contatto."
     }
   },
@@ -1563,5 +1574,16 @@
     "noResults": "Nessuna associazione corrisponde alla ricerca.",
     "draftTag": "Bozza",
     "openNow": "Selezioni aperte"
+  },
+  "Footer": {
+    "tagline": "Il profilo con cui le associazioni del tuo campus e le aziende ti trovano.",
+    "platform": "Piattaforma",
+    "students": "Studenti",
+    "associations": "Associazioni",
+    "companies": "Aziende",
+    "legal": "Legale",
+    "privacy": "Privacy",
+    "terms": "Termini",
+    "contact": "Scrivici"
   }
 }

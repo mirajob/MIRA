@@ -46,7 +46,7 @@ export interface AssociationData {
 export const associationData: AssociationData = {
   name: "Meridian Consulting Club",
   monogram: "M",
-  compose: "Opening Analyst and Business Development roles — finance fundamentals, available from October.",
+  compose: "Opening Analyst and Business Development roles: finance fundamentals, available from October.",
   cycleTitle: "Fall Recruitment 2026",
   roles: ["Analyst", "Business Development"],
   requirements: ["Finance fundamentals", "Available from October", "Analytical mindset"],

@@ -78,12 +78,12 @@ export const studentData: StudentData = {
   experienceOrg: "Bocconi Students Association",
   availability: ["Internship", "Strategy consulting", "Boutique firm", "Milan", "6 months", "From June"],
   availabilityNote: "Open to relocation for the right team.",
-  plan: "On exchange next spring, then a master's in Finance — leaning toward consulting, still exploring.",
+  plan: "On exchange next spring, then a master's in Finance. Leaning toward consulting, still exploring.",
   academicSkills: ["Corporate Finance", "Financial Statement Analysis", "Statistics", "Microeconomics"],
   hardSkills: ["Excel", "Python", "PowerPoint", "Bloomberg"],
-  languages: ["Italian — Native", "English — C1", "Spanish — B2"],
+  languages: ["Italian · Native", "English · C1", "Spanish · B2"],
   personalProfile:
-    "I've run a small investing newsletter for my friends for two years, and I follow markets more closely than most of my exams. Outside study I train for triathlons — the discipline carries into how I work. People who know me say I over-prepare and can't leave things half-done.",
+    "I've run a small investing newsletter for my friends for two years, and I follow markets more closely than most of my exams. Outside study I train for triathlons, and the discipline carries into how I work. People who know me say I over-prepare and can't leave things half-done.",
 };
 
 /**
