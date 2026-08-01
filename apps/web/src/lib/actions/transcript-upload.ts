@@ -1,6 +1,13 @@
 "use server";
 
-import { parseTranscriptWithGemini, parseTranscriptFile, formatTranscriptForChat, type ParsedCourse } from "@mira/ai";
+import {
+  parseTranscriptWithGemini,
+  parseTranscriptFile,
+  formatTranscriptForChat,
+  estimateGeminiCost,
+  type ParsedCourse,
+  type GeminiUsage,
+} from "@mira/ai";
 
 // Modello di produzione per la lettura del libretto: Gemini Flash (alias -latest,
 // così resta sul modello corrente disponibile). Scelto per velocità — il parser
@@ -99,8 +106,14 @@ export async function uploadTranscript(formData: FormData) {
     let parsed;
     let usedModel: string = TRANSCRIPT_MODEL;
     let viaText = false;
+    let textReason = "";
+    let usage: GeminiUsage | undefined;
     try {
-      ({ parsed, viaText = false } = await parseTranscriptWithGemini(base64, file.type, TRANSCRIPT_MODEL));
+      ({ parsed, viaText = false, textReason = "", usage } = await parseTranscriptWithGemini(
+        base64,
+        file.type,
+        TRANSCRIPT_MODEL
+      ));
     } catch (geminiError) {
       console.error("[MIRA] Gemini transcript parse failed, ripiego su OpenAI:", geminiError);
       parsed = await parseTranscriptFile(base64, file.type);
@@ -302,7 +315,19 @@ export async function uploadTranscript(formData: FormData) {
       user_id: profileId,
       // via_text = il PDF aveva testo e l'abbiamo estratto in locale (strada veloce);
       // false = lettura visiva del file, cioè scansione o screenshot.
-      input_metadata: { file_name: file.name, file_size: file.size, file_type: file.type, phase: coursePhase, via_text: viaText },
+      input_metadata: {
+        file_name: file.name,
+        file_size: file.size,
+        file_type: file.type,
+        phase: coursePhase,
+        via_text: viaText,
+        // Perché quella strada: "ok:12345" testo estratto, "poco_testo:80" scansione,
+        // "errore:..." la libreria non ce l'ha fatta, "testo_senza_esami" testo inutile.
+        text_reason: textReason,
+      },
+      tokens_input: usage?.inputTokens ?? null,
+      tokens_output: usage?.outputTokens ?? null,
+      estimated_cost: usage ? estimateGeminiCost(usedModel, usage) : null,
       output_summary: {
         university_name: parsed.university_name,
         degree_program: parsed.degree_program,

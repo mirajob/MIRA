@@ -4,7 +4,12 @@
 // return the same ParsedTranscript / ParsedCV shapes so the dev page can render
 // them identically to the MiraCard.
 
-import { geminiGenerateJson, geminiGenerateJsonFromText, type GeminiModel } from "./gemini-client";
+import {
+  geminiGenerateJson,
+  geminiGenerateJsonFromText,
+  type GeminiModel,
+  type GeminiUsage,
+} from "./gemini-client";
 import { EXTRACTION_PROMPT, type ParsedTranscript } from "./transcript-parser";
 import { CV_EXTRACTION_PROMPT, type ParsedCV } from "./cv-parser";
 
@@ -26,17 +31,19 @@ const MIN_TEXT_CHARS = 400;
  * modello un'immagine, che è la parte lenta e cara. Torna null se il PDF non ha testo
  * (scansione o foto), e in quel caso si passa dalla lettura visiva come prima.
  */
-async function extractPdfText(base64Data: string): Promise<string | null> {
+async function extractPdfText(base64Data: string): Promise<{ text: string | null; reason: string }> {
   try {
     const { extractText, getDocumentProxy } = await import("unpdf");
     const bytes = Uint8Array.from(Buffer.from(base64Data, "base64"));
     const pdf = await getDocumentProxy(bytes);
     const { text } = await extractText(pdf, { mergePages: true });
     const cleaned = (text ?? "").replace(/[ \t]+\n/g, "\n").trim();
-    return cleaned.length >= MIN_TEXT_CHARS ? cleaned : null;
+    if (cleaned.length >= MIN_TEXT_CHARS) return { text: cleaned, reason: `ok:${cleaned.length}` };
+    return { text: null, reason: `poco_testo:${cleaned.length}` };
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     console.error("[MIRA AI] estrazione testo PDF fallita, si passa alla lettura visiva:", err);
-    return null;
+    return { text: null, reason: `errore:${message.slice(0, 120)}` };
   }
 }
 
@@ -46,6 +53,9 @@ export interface GeminiParseResult<T> {
   model: GeminiModel;
   /** true = letto dal testo estratto in locale, false = lettura visiva del file. */
   viaText?: boolean;
+  /** Perché è stata scelta quella strada: si ritrova in ai_logs, senza dover leggere i log Vercel. */
+  textReason?: string;
+  usage?: GeminiUsage;
 }
 
 export async function parseTranscriptWithGemini(
@@ -57,33 +67,54 @@ export async function parseTranscriptWithGemini(
   const instruction = "Estrai tutti i dati da questo libretto universitario. SOLO esami completati con data e voto.";
   const options = { timeoutMs: GEMINI_TIMEOUT_MS, thinkingLevel: TRANSCRIPT_THINKING };
 
-  const pdfText = mimeType === "application/pdf" ? await extractPdfText(base64Data) : null;
+  const extraction =
+    mimeType === "application/pdf" ? await extractPdfText(base64Data) : { text: null, reason: "non_pdf" };
 
   const readFile = () =>
     geminiGenerateJson(model, EXTRACTION_PROMPT, instruction, base64Data, mimeType, options);
 
-  if (!pdfText) {
-    const parsed = JSON.parse(await readFile()) as ParsedTranscript;
-    return { parsed, elapsedMs: Date.now() - start, model, viaText: false };
+  if (!extraction.text) {
+    const result = await readFile();
+    return {
+      parsed: JSON.parse(result.text) as ParsedTranscript,
+      elapsedMs: Date.now() - start,
+      model,
+      viaText: false,
+      textReason: extraction.reason,
+      usage: result.usage,
+    };
   }
 
-  const parsed = JSON.parse(
-    await geminiGenerateJsonFromText(
-      model,
-      EXTRACTION_PROMPT,
-      `${instruction}\n\nTESTO DEL LIBRETTO:\n${pdfText}`,
-      options
-    )
-  ) as ParsedTranscript;
+  const fromText = await geminiGenerateJsonFromText(
+    model,
+    EXTRACTION_PROMPT,
+    `${instruction}\n\nTESTO DEL LIBRETTO:\n${extraction.text}`,
+    options
+  );
+  const parsed = JSON.parse(fromText.text) as ParsedTranscript;
 
   // Se dal testo non esce nemmeno un esame, il PDF aveva sì del testo ma non quello che
   // serve (intestazioni in immagine, tabella disegnata): si rilegge il file come prima.
   if (!parsed.courses?.length) {
-    const fromFile = JSON.parse(await readFile()) as ParsedTranscript;
-    return { parsed: fromFile, elapsedMs: Date.now() - start, model, viaText: false };
+    const result = await readFile();
+    return {
+      parsed: JSON.parse(result.text) as ParsedTranscript,
+      elapsedMs: Date.now() - start,
+      model,
+      viaText: false,
+      textReason: "testo_senza_esami",
+      usage: result.usage,
+    };
   }
 
-  return { parsed, elapsedMs: Date.now() - start, model, viaText: true };
+  return {
+    parsed,
+    elapsedMs: Date.now() - start,
+    model,
+    viaText: true,
+    textReason: extraction.reason,
+    usage: fromText.usage,
+  };
 }
 
 export async function parseCVWithGemini(
@@ -92,7 +123,7 @@ export async function parseCVWithGemini(
   model: GeminiModel
 ): Promise<GeminiParseResult<ParsedCV>> {
   const start = Date.now();
-  const raw = await geminiGenerateJson(
+  const result = await geminiGenerateJson(
     model,
     CV_EXTRACTION_PROMPT,
     "Estrai le informazioni da questo CV. Ignora la sezione Education.",
@@ -100,8 +131,8 @@ export async function parseCVWithGemini(
     mimeType,
     { timeoutMs: GEMINI_TIMEOUT_MS, thinkingLevel: CV_THINKING }
   );
-  const parsed = JSON.parse(raw) as ParsedCV;
-  return { parsed, elapsedMs: Date.now() - start, model };
+  const parsed = JSON.parse(result.text) as ParsedCV;
+  return { parsed, elapsedMs: Date.now() - start, model, usage: result.usage };
 }
 
 // Recompute the weighted average in code — the same correction the production

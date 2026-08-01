@@ -7,8 +7,8 @@ export type { ParsedTranscript, ParsedCourse } from "./modules/transcript-parser
 export { parseCVFile, formatCVForChat } from "./modules/cv-parser";
 export type { ParsedCV, ParsedCVExperience } from "./modules/cv-parser";
 export { syncCardBlockStructuredData } from "./modules/card-block-sync";
-export { GEMINI_MODELS } from "./modules/gemini-client";
-export type { GeminiModel } from "./modules/gemini-client";
+export { GEMINI_MODELS, GEMINI_PRICING, estimateGeminiCost } from "./modules/gemini-client";
+export type { GeminiModel, GeminiUsage } from "./modules/gemini-client";
 export {
   parseTranscriptWithGemini,
   parseCVWithGemini,

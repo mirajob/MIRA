@@ -9,9 +9,56 @@
 // them (rather than a pinned 2.5/3.x id) because Google gates specific versions
 // by account: the 2.5 series returns 404 "no longer available to new users" on
 // newer accounts, while `-latest` resolves to whatever that account can call.
-export type GeminiModel = "gemini-flash-latest" | "gemini-pro-latest";
+export type GeminiModel =
+  | "gemini-flash-latest"
+  | "gemini-pro-latest"
+  | "gemini-2.5-flash"
+  | "gemini-3.1-flash-lite"
+  | "gemini-3.5-flash-lite";
 
-export const GEMINI_MODELS: GeminiModel[] = ["gemini-flash-latest", "gemini-pro-latest"];
+// I primi due sono gli alias sempre validi; gli altri sono versioni pinnate molto piu
+// economiche, da provare dal playground /admin/ai-test: se l'account puo chiamarle
+// (Google gatea alcune versioni per account) conviene passare a quelle.
+export const GEMINI_MODELS: GeminiModel[] = [
+  "gemini-flash-latest",
+  "gemini-pro-latest",
+  "gemini-2.5-flash",
+  "gemini-3.1-flash-lite",
+  "gemini-3.5-flash-lite",
+];
+
+/**
+ * Prezzo in dollari per 1 milione di token, tariffa standard.
+ * Fonte: ai.google.dev/gemini-api/docs/pricing, letta il 2026-08-01.
+ * L'output include i token di ragionamento. null = prezzo non verificato.
+ */
+export const GEMINI_PRICING: Record<string, { input: number; output: number } | null> = {
+  // L'alias -latest oggi risolve su Flash 3.6, la piu cara della famiglia.
+  "gemini-flash-latest": { input: 1.5, output: 7.5 },
+  "gemini-pro-latest": null,
+  "gemini-2.5-flash": { input: 0.3, output: 2.5 },
+  "gemini-3.1-flash-lite": { input: 0.25, output: 1.5 },
+  "gemini-3.5-flash-lite": { input: 0.3, output: 2.5 },
+};
+
+export interface GeminiUsage {
+  inputTokens: number;
+  outputTokens: number;
+  /** Token di ragionamento: sono gia dentro outputTokens, qui solo per capire quanto pesano. */
+  thoughtsTokens: number;
+}
+
+export interface GeminiResult {
+  text: string;
+  usage: GeminiUsage;
+}
+
+/** Costo stimato in dollari, null se non conosciamo il listino di quel modello. */
+export function estimateGeminiCost(model: string, usage: GeminiUsage): number | null {
+  const price = GEMINI_PRICING[model];
+  if (!price) return null;
+  return (usage.inputTokens * price.input + usage.outputTokens * price.output) / 1_000_000;
+}
 
 // Gemini 3.x replaced the numeric `thinkingBudget` with a coarse `thinkingLevel`.
 // The current Flash rejects `thinkingBudget` outright (400), so we drive thinking
@@ -47,7 +94,7 @@ export async function geminiGenerateJsonFromText(
   systemPrompt: string,
   userText: string,
   options: GeminiOptions = {}
-): Promise<string> {
+): Promise<GeminiResult> {
   return generate(model, systemPrompt, [{ text: userText }], options);
 }
 
@@ -62,7 +109,7 @@ export async function geminiGenerateJson(
   fileBase64: string,
   fileMimeType: string,
   options: GeminiOptions = {}
-): Promise<string> {
+): Promise<GeminiResult> {
   return generate(
     model,
     systemPrompt,
@@ -76,7 +123,7 @@ async function generate(
   systemPrompt: string,
   parts: Array<Record<string, unknown>>,
   options: GeminiOptions
-): Promise<string> {
+): Promise<GeminiResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
 
@@ -121,7 +168,7 @@ async function callGemini(
   apiKey: string,
   body: unknown,
   options: GeminiOptions
-): Promise<string> {
+): Promise<GeminiResult> {
   const controller = options.timeoutMs ? new AbortController() : null;
   const timer = controller ? setTimeout(() => controller.abort(), options.timeoutMs) : null;
 
@@ -154,8 +201,8 @@ async function callGemini(
 
   const data = await response.json();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const parts = data.candidates?.[0]?.content?.parts as Array<{ text?: string }> | undefined;
-  const textOutput = parts?.map((p) => p.text ?? "").join("").trim();
+  const responseParts = data.candidates?.[0]?.content?.parts as Array<{ text?: string }> | undefined;
+  const textOutput = responseParts?.map((p) => p.text ?? "").join("").trim();
 
   if (!textOutput) {
     // A finishReason of MAX_TOKENS with no text usually means thinkingBudget ate
@@ -164,5 +211,13 @@ async function callGemini(
     throw new Error(`Nessuna risposta da Gemini (finishReason: ${finishReason ?? "unknown"}).`);
   }
 
-  return textOutput;
+  const meta = data.usageMetadata ?? {};
+  return {
+    text: textOutput,
+    usage: {
+      inputTokens: meta.promptTokenCount ?? 0,
+      outputTokens: (meta.candidatesTokenCount ?? 0) + (meta.thoughtsTokenCount ?? 0),
+      thoughtsTokens: meta.thoughtsTokenCount ?? 0,
+    },
+  };
 }
