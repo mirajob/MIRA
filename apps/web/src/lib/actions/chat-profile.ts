@@ -4,6 +4,7 @@ import { chatCompletion } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { getLocale } from "next-intl/server";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

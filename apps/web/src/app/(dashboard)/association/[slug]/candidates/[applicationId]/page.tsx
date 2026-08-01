@@ -5,6 +5,7 @@ import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { CandidateActions } from "./candidate-actions";
 import { RegenerateEvaluationButton } from "./regenerate-evaluation-button";
 import { MiraCardDocument } from "@/components/card-view/mira-card-document";
+import { APP_TIME_ZONE } from "@/lib/format-date";
 
 interface Props {
   params: Promise<{ slug: string; applicationId: string }>;
