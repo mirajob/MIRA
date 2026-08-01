@@ -10,6 +10,7 @@ import { parseWindows } from "@/lib/interview-slots";
 import { AvailabilityGrid, type AvailabilityBlock } from "./availability-grid";
 import { SessionActions } from "./session-actions";
 import { EditSessionPanel } from "./edit-session-panel";
+import { InvitePanel, type InvitableCandidate } from "./invite-panel";
 
 interface Props {
   params: Promise<{ slug: string; sessionId: string }>;
@@ -92,6 +93,32 @@ export default async function InterviewSessionPage({ params }: Props) {
         }),
       mine: covering.some((a) => a.user_id === profileId),
       bookedName: booked?.applications?.profiles?.full_name ?? (booked ? "—" : null),
+    };
+  });
+
+  // Chi si può invitare a questo round: i candidati del ciclo che non sono stati
+  // scartati o ritirati. Chi è già stato invitato resta in elenco col suo stato.
+  const { data: candidates } = await (supabase.from("applications") as any)
+    .select("id, status, profiles!applications_student_user_id_fkey(full_name, email)")
+    .eq("application_cycle_id", session.application_cycle_id)
+    .not("status", "in", "(rejected,withdrawn,draft)");
+
+  const { data: invites } = await (supabase.from("interview_invites") as any)
+    .select("application_id, slot_id")
+    .eq("session_id", sessionId);
+
+  const inviteByApplication = new Map(
+    ((invites ?? []) as any[]).map((i) => [i.application_id, i])
+  );
+
+  const invitableCandidates: InvitableCandidate[] = ((candidates ?? []) as any[]).map((a) => {
+    const invite = inviteByApplication.get(a.id);
+    return {
+      applicationId: a.id,
+      name: a.profiles?.full_name ?? "—",
+      email: a.profiles?.email ?? "",
+      invited: Boolean(invite),
+      booked: Boolean(invite?.slot_id),
     };
   });
 
@@ -182,6 +209,13 @@ export default async function InterviewSessionPage({ params }: Props) {
           <SessionActions sessionId={sessionId} slug={slug} status={session.status} canManage={canManage} />
         </div>
       </div>
+
+      <InvitePanel
+        sessionId={sessionId}
+        slug={slug}
+        candidates={invitableCandidates}
+        sessionOpen={session.status === "open"}
+      />
 
       <AvailabilityGrid
         sessionId={sessionId}

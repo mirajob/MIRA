@@ -21,6 +21,7 @@ interface SidebarNavProps {
 const STUDENT_LINKS = [
   { labelKey: "profile", href: "/student" },
   { labelKey: "associations", href: "/student/associazioni" },
+  { labelKey: "interviews", href: "/student/colloqui" },
   { labelKey: "companies", href: "/student/aziende" },
 ] as const;
 

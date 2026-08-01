@@ -341,7 +341,8 @@
     "associations": "Associazioni",
     "companies": "Aziende",
     "workspacesHeader": "Associazioni",
-    "adminHeader": "Admin"
+    "adminHeader": "Admin",
+    "interviews": "Colloqui"
   },
   "MobileNav": {
     "openMenu": "Apri menu",
@@ -1668,6 +1669,31 @@
     "stepNoAvailability": "Nessuno del board ha ancora dato la disponibilità.",
     "stepReadyToOpen": "Pronta: apri le prenotazioni per far scegliere ai candidati.",
     "stepOpen": "Prenotazioni aperte · {booked} prenotati su {covered} orari disponibili",
-    "stepClosed": "Prenotazioni chiuse."
+    "stepClosed": "Prenotazioni chiuse.",
+    "inviteHeading": "Invita i candidati",
+    "inviteSummary": "{toInvite} da invitare · {waiting} senza orario",
+    "inviteNeedsOpen": "Apri prima le prenotazioni: senza, chi inviti non troverebbe orari da scegliere.",
+    "noCandidates": "Nessun candidato in questo ciclo.",
+    "candidateBooked": "ha prenotato",
+    "candidateWaiting": "non ha ancora scelto",
+    "inviteCta": "Invita {count}"
+  },
+  "StudentInterviews": {
+    "pageTitle": "Colloqui",
+    "pageSubtitle": "Gli inviti da fissare e i colloqui in programma.",
+    "empty": "Nessun colloquio per ora.",
+    "toBookHeading": "Da fissare",
+    "upcomingHeading": "In programma",
+    "pastHeading": "Passati ({count})",
+    "chooseNow": "Scegli quando farlo",
+    "online": "Online",
+    "inPerson": "In presenza",
+    "backToInterviews": "Tutti i colloqui",
+    "pickPrompt": "Scegli l'orario che ti va meglio.",
+    "bookedTitle": "Il tuo colloquio",
+    "canReschedule": "Puoi ancora cambiare orario scegliendone un altro qui sotto.",
+    "linkComingLater": "Il link te lo manda l'associazione prima del colloquio.",
+    "noSlotsLeft": "Non ci sono orari disponibili al momento. L'associazione ti contatterà.",
+    "bookingsClosed": "Le prenotazioni per questo round sono chiuse."
   }
 }

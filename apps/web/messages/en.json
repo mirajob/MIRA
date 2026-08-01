@@ -341,7 +341,8 @@
     "associations": "Associations",
     "companies": "Companies",
     "workspacesHeader": "Associations",
-    "adminHeader": "Admin"
+    "adminHeader": "Admin",
+    "interviews": "Interviews"
   },
   "MobileNav": {
     "openMenu": "Open menu",
@@ -1668,6 +1669,31 @@
     "stepNoAvailability": "Nobody from the board has given their availability yet.",
     "stepReadyToOpen": "Ready: open bookings so candidates can pick a time.",
     "stepOpen": "Bookings open · {booked} booked out of {covered} available times",
-    "stepClosed": "Bookings closed."
+    "stepClosed": "Bookings closed.",
+    "inviteHeading": "Invite candidates",
+    "inviteSummary": "{toInvite} to invite · {waiting} without a time",
+    "inviteNeedsOpen": "Open bookings first: otherwise whoever you invite finds no times to pick.",
+    "noCandidates": "No candidates in this cycle.",
+    "candidateBooked": "booked",
+    "candidateWaiting": "has not picked yet",
+    "inviteCta": "Invite {count}"
+  },
+  "StudentInterviews": {
+    "pageTitle": "Interviews",
+    "pageSubtitle": "Invitations to schedule and interviews coming up.",
+    "empty": "No interviews yet.",
+    "toBookHeading": "To schedule",
+    "upcomingHeading": "Coming up",
+    "pastHeading": "Past ({count})",
+    "chooseNow": "Pick a time",
+    "online": "Online",
+    "inPerson": "In person",
+    "backToInterviews": "All interviews",
+    "pickPrompt": "Pick the time that works best for you.",
+    "bookedTitle": "Your interview",
+    "canReschedule": "You can still change time by picking another one below.",
+    "linkComingLater": "The association will send you the link before the interview.",
+    "noSlotsLeft": "No times available right now. The association will get in touch.",
+    "bookingsClosed": "Bookings for this round are closed."
   }
 }

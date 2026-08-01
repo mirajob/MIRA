@@ -80,6 +80,136 @@ export async function sendAdminNewSignupNotification({
  * associazione"). Oggetto e testo arrivano dalla bozza modificabile dell'admin; il link CTA
  * è fisso per tipo di sollecito e non è modificabile lato admin.
  */
+/**
+ * "Sei arrivato al colloquio, scegli quando." Non contiene un orario: l'orario lo
+ * sceglie lo studente fra quelli che il board ha coperto, ed è tutto il punto.
+ */
+export async function sendInterviewBookingInvite({
+  email,
+  studentName,
+  associationName,
+  sessionTitle,
+  sessionDescription,
+  bookingUrl,
+  deadlineNote,
+}: {
+  email: string;
+  studentName: string | null;
+  associationName: string;
+  sessionTitle: string;
+  sessionDescription?: string | null;
+  bookingUrl: string;
+  deadlineNote?: string | null;
+}) {
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    subject: `${associationName}: scegli quando fare il colloquio`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
+        <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 24px; margin-bottom: 32px;" />
+        <p style="color: #1a202c; font-size: 14px; line-height: 1.6;">
+          ${studentName ? `Ciao ${studentName},` : "Ciao,"}
+        </p>
+        <p style="color: #1a202c; font-size: 14px; line-height: 1.6;">
+          <strong>${associationName}</strong> ti invita a <strong>${sessionTitle}</strong>.
+          Scegli tu l'orario che ti va meglio fra quelli disponibili.
+        </p>
+        ${sessionDescription ? `<p style="color: #4a5568; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${sessionDescription}</p>` : ""}
+        <a href="${bookingUrl}" style="display: inline-block; background: #0a1628; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; margin: 8px 0 16px;">
+          Scegli l'orario
+        </a>
+        ${deadlineNote ? `<p style="color: #718096; font-size: 13px;">${deadlineNote}</p>` : ""}
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
+        <p style="color: #a0aec0; font-size: 12px;">
+          MIRA · University Talent Platform<br/>
+          <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
+        </p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error("Resend interview booking invite error:", error);
+    return { error: error.message };
+  }
+  return { success: true };
+}
+
+/**
+ * Conferma della prenotazione, con l'evento in allegato.
+ *
+ * L'allegato .ics è la parte che conta: fa comparire il colloquio nel calendario
+ * di chi lo riceve, con il promemoria, senza che nessuno debba ricopiare niente.
+ */
+export async function sendInterviewConfirmation({
+  email,
+  recipientName,
+  associationName,
+  sessionTitle,
+  whenLabel,
+  placeLabel,
+  placeIsLink,
+  icsContent,
+}: {
+  email: string;
+  recipientName: string | null;
+  associationName: string;
+  sessionTitle: string;
+  whenLabel: string;
+  placeLabel: string | null;
+  placeIsLink: boolean;
+  icsContent: string;
+}) {
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    subject: `Colloquio confermato: ${associationName}, ${whenLabel}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
+        <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 24px; margin-bottom: 32px;" />
+        <p style="color: #1a202c; font-size: 14px; line-height: 1.6;">
+          ${recipientName ? `Ciao ${recipientName},` : "Ciao,"} il colloquio è confermato.
+        </p>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #1a202c; margin: 16px 0;">
+          <tr><td style="padding: 6px 0; color: #718096; width: 110px;">Associazione</td><td style="padding: 6px 0;">${associationName}</td></tr>
+          <tr><td style="padding: 6px 0; color: #718096;">Round</td><td style="padding: 6px 0;">${sessionTitle}</td></tr>
+          <tr><td style="padding: 6px 0; color: #718096;">Quando</td><td style="padding: 6px 0;"><strong>${whenLabel}</strong></td></tr>
+          ${
+            placeLabel
+              ? `<tr><td style="padding: 6px 0; color: #718096;">${placeIsLink ? "Link" : "Dove"}</td><td style="padding: 6px 0;">${
+                  placeIsLink
+                    ? `<a href="${placeLabel}" style="color: #2b6cb0;">${placeLabel}</a>`
+                    : placeLabel
+                }</td></tr>`
+              : ""
+          }
+        </table>
+        <p style="color: #718096; font-size: 13px;">
+          In allegato trovi l'evento da aggiungere al calendario.
+        </p>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
+        <p style="color: #a0aec0; font-size: 12px;">
+          MIRA · University Talent Platform<br/>
+          <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
+        </p>
+      </div>
+    `,
+    attachments: [
+      {
+        filename: "colloquio.ics",
+        content: Buffer.from(icsContent, "utf8").toString("base64"),
+      },
+    ],
+  });
+
+  if (error) {
+    console.error("Resend interview confirmation error:", error);
+    return { error: error.message };
+  }
+  return { success: true };
+}
+
 export async function sendReminderEmail({
   email,
   subject,
