@@ -16,7 +16,16 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
 
 export type TranscriptTestResult =
-  | { ok: true; parsed: ParsedTranscript; elapsedMs: number; model: GeminiModel; cost: number | null; tokens: string; viaText: boolean }
+  | {
+      ok: true;
+      parsed: ParsedTranscript;
+      elapsedMs: number;
+      model: GeminiModel;
+      cost: number | null;
+      tokens: string;
+      viaText: boolean;
+      thinking: "low" | "high";
+    }
   | { ok: false; error: string };
 
 export type CvTestResult =
@@ -47,11 +56,17 @@ async function readFile(formData: FormData): Promise<{ base64: string; type: str
 
 export async function testTranscriptGemini(formData: FormData): Promise<TranscriptTestResult> {
   const model = resolveModel(formData.get("model"));
+  const thinking = formData.get("thinking") === "low" ? "low" : "high";
   const read = await readFile(formData);
   if ("error" in read) return { ok: false, error: read.error };
 
   try {
-    const { parsed, elapsedMs, usage, viaText } = await parseTranscriptWithGemini(read.base64, read.type, model);
+    const { parsed, elapsedMs, usage, viaText } = await parseTranscriptWithGemini(
+      read.base64,
+      read.type,
+      model,
+      thinking
+    );
     return {
       ok: true,
       parsed: recomputeTranscriptAverages(parsed),
@@ -60,6 +75,7 @@ export async function testTranscriptGemini(formData: FormData): Promise<Transcri
       cost: usage ? estimateGeminiCost(model, usage) : null,
       tokens: usage ? `${usage.inputTokens} in / ${usage.outputTokens} out` : "n/d",
       viaText: !!viaText,
+      thinking,
     };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Errore sconosciuto." };

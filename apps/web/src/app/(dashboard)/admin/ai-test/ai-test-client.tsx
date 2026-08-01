@@ -28,12 +28,14 @@ function Timing({
   cost,
   tokens,
   viaText,
+  thinking,
 }: {
   ms: number;
   model: string;
   cost?: number | null;
   tokens?: string;
   viaText?: boolean;
+  thinking?: "low" | "high";
 }) {
   const s = (ms / 1000).toFixed(1);
   const slow = ms > 15000;
@@ -45,6 +47,7 @@ function Timing({
         }`}
       >
         ⏱ {s}s · {model.replace("gemini-", "").replace("-latest", "")}
+        {thinking && ` · ragionamento ${thinking === "high" ? "alto" : "basso"}`}
       </span>
       {tokens && (
         <span className="rounded-full bg-navy-50 px-3 py-1 text-xs text-navy">
@@ -88,11 +91,15 @@ export function AiTestClient() {
 
 function TranscriptSection() {
   const [model, setModel] = useState(DEFAULT_MODEL);
+  // Il livello di ragionamento è la variabile che cambia di più il risultato sui voti:
+  // qui si confronta sullo stesso file, invece di deciderlo a sensazione.
+  const [thinking, setThinking] = useState<"low" | "high">("high");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TranscriptTestResult | null>(null);
 
   async function run(formData: FormData) {
     formData.set("model", model);
+    formData.set("thinking", thinking);
     setLoading(true);
     setResult(null);
     setResult(await testTranscriptGemini(formData));
@@ -103,11 +110,19 @@ function TranscriptSection() {
     <Section title="1 · Libretto (transcript)">
       <form action={run} className="space-y-3">
         <input name="file" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" required className={fileInputClass} />
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <select value={model} onChange={(e) => setModel(e.target.value)} className={selectClass}>
             {MODELS.map((m) => (
               <option key={m.value} value={m.value}>{m.label}</option>
             ))}
+          </select>
+          <select
+            value={thinking}
+            onChange={(e) => setThinking(e.target.value as "low" | "high")}
+            className={selectClass}
+          >
+            <option value="high">Ragionamento alto (in uso oggi)</option>
+            <option value="low">Ragionamento basso (veloce)</option>
           </select>
           <button
             type="submit"
@@ -144,6 +159,7 @@ function TranscriptOutput({ result }: { result: Extract<TranscriptTestResult, { 
           cost={result.cost}
           tokens={result.tokens}
           viaText={result.viaText}
+          thinking={result.thinking}
         />
       </div>
 

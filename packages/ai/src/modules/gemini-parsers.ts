@@ -15,11 +15,13 @@ import { CV_EXTRACTION_PROMPT, type ParsedCV } from "./cv-parser";
 
 const GEMINI_TIMEOUT_MS = 90_000;
 
-// Ragionamento basso su entrambi (2026-08-01). Sul transcript era "high" da quando il
-// modello sbagliava a leggere le tabelle, ma quel costo si pagava su OGNI caricamento: un
-// minuto di attesa e un conto molto più salato, mentre il CV con "low" viene letto bene.
-// La media, che è il numero più delicato, la ricalcoliamo comunque noi in codice.
-const TRANSCRIPT_THINKING: "low" = "low";
+// Il CV sta bene con "low". Il transcript no: provato con lo stesso libretto Bocconi, a
+// ragionamento basso lo stesso esame è stato letto 25, 25, 25 e poi 27, mentre il voto vero
+// è 26. Quella cifra nel PDF è ambigua e senza ragionamento il modello tira a indovinare,
+// diversamente ogni volta. Un voto sbagliato sulla card di uno studente costa molto più dei
+// secondi che si risparmiano, quindi il libretto resta su "high" finché non abbiamo di meglio.
+// Dal playground /admin/ai-test si può confrontare l'uno contro l'altro sullo stesso file.
+const TRANSCRIPT_THINKING: "high" | "low" = "high";
 const CV_THINKING: "low" = "low";
 
 /** Sotto questa soglia il PDF è di sole immagini (una scansione): serve la lettura visiva. */
@@ -79,11 +81,13 @@ export interface GeminiParseResult<T> {
 export async function parseTranscriptWithGemini(
   base64Data: string,
   mimeType: string,
-  model: GeminiModel
+  model: GeminiModel,
+  /** Solo per il playground: in produzione vale sempre TRANSCRIPT_THINKING. */
+  thinkingOverride?: "low" | "high"
 ): Promise<GeminiParseResult<ParsedTranscript>> {
   const start = Date.now();
   const instruction = "Estrai tutti i dati da questo libretto universitario. SOLO esami completati con data e voto.";
-  const options = { timeoutMs: GEMINI_TIMEOUT_MS, thinkingLevel: TRANSCRIPT_THINKING };
+  const options = { timeoutMs: GEMINI_TIMEOUT_MS, thinkingLevel: thinkingOverride ?? TRANSCRIPT_THINKING };
 
   const extraction =
     mimeType === "application/pdf" ? await extractPdfText(base64Data) : { text: null, reason: "non_pdf" };

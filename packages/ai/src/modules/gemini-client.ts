@@ -132,7 +132,10 @@ async function generate(
     contents: [{ role: "user", parts }],
     generationConfig: {
       responseMimeType: "application/json",
-      temperature: 0.1,
+      // Zero, non 0.1: qui si estraggono voti da un documento, non si scrive niente di
+      // creativo. Con 0.1 lo stesso file rispondeva 25 o 27 sullo stesso esame a seconda
+      // del tentativo, ed è il tipo di errore che finisce sulla card di uno studente.
+      temperature: 0,
       maxOutputTokens: 16384,
       thinkingConfig: { thinkingLevel: options.thinkingLevel ?? "low" },
     },
