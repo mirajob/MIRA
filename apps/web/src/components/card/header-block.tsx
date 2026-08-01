@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { updateCardBlockProseContent, updateHeaderVisibility } from "@/lib/actions/card-blocks";
+import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
 import { EsamiEditor } from "./esami-block";
+import { MediaVisibilityToggles } from "./media-visibility-toggles";
 import type { CardBlockStatus, FormazioneItem, HeaderProseContent, HeaderVisibility } from "@mira/types";
 
 const LEVEL_KEYS = ["triennale", "magistrale", "ciclo_unico", "phd"] as const;
@@ -28,9 +29,9 @@ export function HeaderBlock({
 }) {
   const t = useTranslations("CardBlocks");
   const [form, setForm] = useState(proseContent);
-  const [vis, setVis] = useState<HeaderVisibility>(
-    visibility?.media_voti ? visibility : { media_voti: { associazioni: false, aziende: false } }
-  );
+  const vis: HeaderVisibility = visibility?.media_voti
+    ? visibility
+    : { media_voti: { associazioni: false, aziende: false } };
   const [dirty, setDirty] = useState(false);
   // In onboarding proseContent arriva in modo asincrono (es. dopo il parsing del libretto):
   // se non c'è un edit locale in corso, riflette sempre l'ultimo dato dal server.
@@ -38,10 +39,6 @@ export function HeaderBlock({
     if (!dirty) setForm(proseContent);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proseContent]);
-  useEffect(() => {
-    if (visibility?.media_voti) setVis(visibility);
-  }, [visibility]);
-
   function update<K extends keyof HeaderProseContent>(key: K, value: HeaderProseContent[K]) {
     setForm((f) => ({ ...f, [key]: value }));
     setDirty(true);
@@ -65,12 +62,6 @@ export function HeaderBlock({
   async function handleSave() {
     await updateCardBlockProseContent("header", form);
     setDirty(false);
-  }
-
-  async function toggleVisibility(key: keyof HeaderVisibility["media_voti"]) {
-    const next = { media_voti: { ...vis.media_voti, [key]: !vis.media_voti[key] } };
-    setVis(next);
-    await updateHeaderVisibility(next);
   }
 
   return (
@@ -198,44 +189,8 @@ export function HeaderBlock({
           </div>
         )}
 
-        <div className="border-t border-border pt-4 space-y-3">
-          <p className="text-body-sm font-medium text-ink">{t("header.visibilitaTitle")}</p>
-          <label className="flex items-center justify-between gap-4 cursor-pointer">
-            <span className="text-body-sm text-ink-secondary">{t("header.visibilitaAssociazioni")}</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={vis.media_voti.associazioni}
-              onClick={() => toggleVisibility("associazioni")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
-                vis.media_voti.associazioni ? "bg-petrol" : "bg-border"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                  vis.media_voti.associazioni ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
-          </label>
-          <label className="flex items-center justify-between gap-4 cursor-pointer">
-            <span className="text-body-sm text-ink-secondary">{t("header.visibilitaAziende")}</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={vis.media_voti.aziende}
-              onClick={() => toggleVisibility("aziende")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
-                vis.media_voti.aziende ? "bg-petrol" : "bg-border"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                  vis.media_voti.aziende ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
-          </label>
+        <div className="border-t border-border pt-4">
+          <MediaVisibilityToggles visibility={vis} />
         </div>
       </div>
     </div>

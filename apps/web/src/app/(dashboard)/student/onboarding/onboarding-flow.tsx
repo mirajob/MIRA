@@ -9,10 +9,9 @@ import {
   prefillLingueFromCV,
   startFaseBFlow,
   completeGateFlow,
-  forceCompleteOnboarding,
+  skipEsamiStep,
 } from "@/lib/actions/onboarding-flow";
 import type { OnboardingFlowState, OnboardingFlowPhase, OnboardingBlocksState } from "@/lib/actions/onboarding-flow";
-import { uploadTranscript } from "@/lib/actions/transcript-upload";
 import { uploadCV } from "@/lib/actions/cv-upload";
 import { signOut } from "@/lib/actions/auth";
 import { LocaleSwitcher } from "@/components/locale-switcher";
@@ -22,6 +21,7 @@ import { DisponibilitaEPianoBlock } from "@/components/card/disponibilita-block"
 import { CompetenzeBlock } from "@/components/card/competenze-block";
 import { LingueBlock } from "@/components/card/lingue-block";
 import { ProseBlock } from "@/components/card/prose-block";
+import { EsamiBlock } from "@/components/card/esami-block";
 import type { CardBlockStatus } from "@mira/types";
 
 // I 6 blocchi visibili della card, nell'ordine del flusso. Due sono "virtuali" rispetto
@@ -83,41 +83,6 @@ function MiraGuide({ text, children }: { text: string; children?: React.ReactNod
   );
 }
 
-/** La proposta di caricare il libretto una volta che la card è già in piedi. */
-function TranscriptPrompt({
-  title,
-  body,
-  uploadLabel,
-  disabled,
-  onUpload,
-  children,
-}: {
-  title: string;
-  body: string;
-  uploadLabel: string;
-  disabled: boolean;
-  onUpload: () => void;
-  children?: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-lg border border-petrol/25 bg-petrol-50/60 px-5 py-4">
-      {children}
-      <p className="text-eyebrow text-petrol uppercase mb-1.5 flex items-center gap-1.5">
-        <span aria-hidden="true">✦</span> MIRA
-      </p>
-      <p className="text-body font-medium text-ink">{title}</p>
-      <p className="mt-1 text-body-sm text-ink-secondary whitespace-pre-line">{body}</p>
-      <button
-        onClick={onUpload}
-        disabled={disabled}
-        className="mt-3 text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
-      >
-        {uploadLabel}
-      </button>
-    </div>
-  );
-}
-
 function CollapsedRow({ title, approvedLabel }: { title: string; approvedLabel: string }) {
   return (
     <div className="rounded-lg border border-border bg-white px-5 py-3 flex items-center justify-between">
@@ -139,13 +104,10 @@ export function OnboardingFlow({ userName }: { userName: string }) {
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [transcriptStats, setTranscriptStats] = useState<{ courses: number; credits: number; avg: number | null } | null>(null);
-  const [skippedTranscript, setSkippedTranscript] = useState(false);
   const [skippedCV, setSkippedCV] = useState(false);
   const [linkedinOpen, setLinkedinOpen] = useState(false);
   const [gatePct, setGatePct] = useState<number | null>(null);
   const [complete, setComplete] = useState(false);
-  const transcriptFileRef = useRef<HTMLInputElement>(null);
   const cvFileRef = useRef<HTMLInputElement>(null);
   const linguePrefilledRef = useRef(false);
   const redirectedRef = useRef(false);
@@ -209,28 +171,6 @@ export function OnboardingFlow({ userName }: { userName: string }) {
     await refresh();
   }
 
-  async function handleTranscriptFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    setUploadError(null);
-    const formData = new FormData();
-    formData.append("file", file);
-    const result = await uploadTranscript(formData);
-    if (result.error || !result.parsed) {
-      setUploadError(t("transcriptReadError", { error: result.error ?? t("unknownError") }));
-    } else {
-      setTranscriptStats({
-        courses: result.parsed.courses.length,
-        credits: result.parsed.total_credits,
-        avg: result.parsed.weighted_average,
-      });
-      await refresh();
-    }
-    setUploading(false);
-    if (transcriptFileRef.current) transcriptFileRef.current.value = "";
-  }
-
   async function handleCVFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -263,6 +203,21 @@ export function OnboardingFlow({ userName }: { userName: string }) {
     }
   }
 
+  function isMagistrale(livello: string | null | undefined): boolean {
+    return livello === "magistrale" || livello === "phd";
+  }
+
+  async function handleSkipEsami() {
+    setBusy(true);
+    try {
+      await skipEsamiStep();
+      await refresh();
+    } catch (err) {
+      console.error("[MIRA] skipEsamiStep failed:", err);
+    }
+    setBusy(false);
+  }
+
   async function handleStartFaseB() {
     setBusy(true);
     try {
@@ -270,15 +225,6 @@ export function OnboardingFlow({ userName }: { userName: string }) {
       await refresh();
     } catch (err) {
       console.error("[MIRA] startFaseBFlow failed:", err);
-    }
-    setBusy(false);
-  }
-
-  async function handleForceComplete() {
-    setBusy(true);
-    const result = await forceCompleteOnboarding();
-    if (result.success) {
-      finishAndRedirect(1500);
     }
     setBusy(false);
   }
@@ -316,23 +262,10 @@ export function OnboardingFlow({ userName }: { userName: string }) {
         if (skippedCV) return t("guideEsperienzeManual");
         return t("guideEsperienze");
       }
-      case "header": {
-        if (transcriptStats) {
-          const avg = transcriptStats.avg ? t("avgSuffix", { avg: transcriptStats.avg.toFixed(1) }) : "";
-          return t("guideHeaderAfterUpload", { courses: transcriptStats.courses, credits: transcriptStats.credits, avg });
-        }
-        if (flow.transcriptUploaded) return t("guideHeaderUploaded");
+      case "header":
         return t("guideHeader");
-      }
-      case "competenze": {
-        // La parte teorica la coprono gli esami del libretto: qui si chiede solo cosa lo
-        // studente sa usare. Se il libretto manca, questo resta il punto in cui proporlo,
-        // perché è dove la differenza tra "cosa ho studiato" e "cosa so fare" si spiega da sé.
-        if (!flow.transcriptUploaded && !skippedTranscript) {
-          return t("guideCompetenzeNoTranscript", { hint: flow.isBocconi ? t("hintBocconi") : t("hintGeneric") });
-        }
+      case "competenze":
         return t("guideCompetenze");
-      }
       case "lingue":
         return blocks.lingue.data.items.length > 0 ? t("guideLingueWithCV") : t("guideLingue");
       case "profilo":
@@ -391,29 +324,6 @@ export function OnboardingFlow({ userName }: { userName: string }) {
       );
     }
 
-    // Competenze: è qui che si spiega la differenza tra cosa hai studiato (gli esami del
-    // libretto) e cosa sai usare (queste), quindi è qui che il libretto si chiede.
-    if (phase === "competenze" && !flow.transcriptUploaded && !skippedTranscript) {
-      return (
-        <>
-          <input ref={transcriptFileRef} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleTranscriptFile} className="hidden" />
-          <button
-            onClick={() => transcriptFileRef.current?.click()}
-            disabled={uploading}
-            className="text-body-sm bg-navy text-white px-4 py-2 rounded-md hover:bg-navy-700 transition-colors disabled:opacity-40"
-          >
-            {uploading ? t("uploadingLabel") : t("uploadTranscript")}
-          </button>
-          <button
-            onClick={() => setSkippedTranscript(true)}
-            disabled={uploading}
-            className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
-          >
-            {t("skipTranscript")}
-          </button>
-        </>
-      );
-    }
     return null;
   }
 
@@ -428,6 +338,7 @@ export function OnboardingFlow({ userName }: { userName: string }) {
             visibility={blocks.header.visibility}
             status={blocks.header.status}
             formazioneItems={blocks.formazione.data.items}
+            showEsami={false}
             onApproved={() => handleBlockApproved("header")}
           />
         );
@@ -489,15 +400,6 @@ export function OnboardingFlow({ userName }: { userName: string }) {
         <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
         <div className="flex items-center gap-4">
           <LocaleSwitcher />
-          {!complete && flow && (
-            <button
-              onClick={handleForceComplete}
-              disabled={busy || uploading}
-              className="text-body-sm text-ink-secondary hover:text-navy border border-border rounded-md px-3 py-1.5 hover:border-border-strong transition-colors duration-100 disabled:opacity-40"
-            >
-              {t("completeProfile")}
-            </button>
-          )}
           <span className="text-body-sm text-ink-secondary hidden sm:inline">{userName}</span>
           <form action={signOut}>
             <button type="submit" className="text-body-sm text-ink-tertiary hover:text-navy transition-colors duration-100">
@@ -588,6 +490,38 @@ export function OnboardingFlow({ userName }: { userName: string }) {
           )}
 
 
+          {/* Libretto: tappa a sé dopo il gate. Testi diversi per triennale e magistrale,
+              e si può sempre saltare: chi non ce l'ha sottomano non deve fermarsi qui. */}
+          {phase === "esami" && !complete && flow && blocks && (
+            <div className="space-y-3">
+              <MiraGuide
+                text={t(
+                  isMagistrale(blocks.header.data.livello) ? "guideEsamiMagistrale" : "guideEsamiTriennale"
+                )}
+              >
+                <button
+                  onClick={handleSkipEsami}
+                  disabled={busy}
+                  className="text-body-sm text-ink-secondary border border-border rounded-md px-4 py-2 hover:border-border-strong transition-colors disabled:opacity-40"
+                >
+                  {t("skipEsami")}
+                </button>
+                <p className="w-full text-body-sm text-ink-tertiary">
+                  {flow.isBocconi ? t("hintBocconi") : t("hintGeneric")} {t("skipEsamiNote")}
+                </p>
+              </MiraGuide>
+              <EsamiBlock
+                key={`esami-${blocks.formazione.data.items.length}`}
+                formazioneItems={blocks.formazione.data.items}
+                status={blocks.formazione.status}
+                livello={blocks.header.data.livello}
+                showPurpose={false}
+                visibility={blocks.header.visibility}
+                onApproved={() => refresh()}
+              />
+            </div>
+          )}
+
           {/* Chiusura: prima si spiega cosa succede adesso, poi si va al Profilo. Il redirect
               automatico è stato tolto — chi finiva la card veniva spostato senza sapere a
               cosa servisse quello che aveva appena costruito. */}
@@ -616,20 +550,6 @@ export function OnboardingFlow({ userName }: { userName: string }) {
             </div>
           )}
 
-          {/* Libretto: proposto al gate e alla chiusura, cioè quando la card è già in piedi
-              e caricarlo è un guadagno (media + esami + competenze accademiche proposte),
-              non un pedaggio all'ingresso. Sempre in coda, dopo il messaggio della fase. */}
-          {(phase === "gate" || phase === "chiusura" || complete) && flow && !flow.transcriptUploaded && (
-            <TranscriptPrompt
-              title={t("transcriptPromptTitle")}
-              body={t("transcriptPromptBody", { hint: flow.isBocconi ? t("hintBocconi") : t("hintGeneric") })}
-              uploadLabel={uploading ? t("uploadingLabel") : t("uploadTranscript")}
-              disabled={uploading}
-              onUpload={() => transcriptFileRef.current?.click()}
-            >
-              <input ref={transcriptFileRef} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleTranscriptFile} className="hidden" />
-            </TranscriptPrompt>
-          )}
         </div>
       </div>
     </div>

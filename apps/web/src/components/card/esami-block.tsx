@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { uploadTranscript } from "@/lib/actions/transcript-upload";
 import { CardBlockHeader } from "./card-block-header";
+import { MediaVisibilityToggles } from "./media-visibility-toggles";
 import { getCicloEsame } from "@mira/types";
-import type { CardBlockStatus, CicloEsame, FormazioneItem } from "@mira/types";
+import type { CardBlockStatus, CicloEsame, FormazioneItem, HeaderVisibility } from "@mira/types";
 
 /**
  * Gli esami del libretto. Dal rework 2026-07-31 sono la parte teorica della card (cosa lo
@@ -22,11 +23,18 @@ export function EsamiEditor({
   formazioneItems,
   allowPreviousDegree = false,
   livello,
+  showPurpose = true,
+  visibility,
 }: {
   formazioneItems: FormazioneItem[];
   /** Il libretto del corso precedente si carica solo dal Profilo, a card già costruita. */
   allowPreviousDegree?: boolean;
   livello?: string | null;
+  /** In onboarding il perché lo dice già il riquadro di MIRA sopra il blocco. */
+  showPurpose?: boolean;
+  /** Se passata, gli interruttori su media e voti compaiono qui: è il momento in cui
+   * lo studente si chiede chi vedrà i suoi voti. */
+  visibility?: HeaderVisibility | null;
 }) {
   const t = useTranslations("CardBlocks");
   const router = useRouter();
@@ -66,7 +74,7 @@ export function EsamiEditor({
 
   return (
     <div>
-      <p className="text-body-sm text-ink-secondary">{t("header.transcriptPurpose")}</p>
+      {showPurpose && <p className="text-body-sm text-ink-secondary">{t("header.transcriptPurpose")}</p>}
 
       {formazioneItems.length > 0 && (
         <button
@@ -156,6 +164,12 @@ export function EsamiEditor({
       )}
 
       {error && <p className="mt-2 text-xs text-error">{t("header.transcriptUploadError", { error })}</p>}
+
+      {visibility && (
+        <div className="mt-4 border-t border-border pt-4">
+          <MediaVisibilityToggles visibility={visibility} />
+        </div>
+      )}
     </div>
   );
 }
@@ -165,11 +179,15 @@ export function EsamiBlock({
   formazioneItems,
   status,
   livello,
+  showPurpose = true,
+  visibility,
   onApproved,
 }: {
   formazioneItems: FormazioneItem[];
   status: CardBlockStatus;
   livello?: string | null;
+  showPurpose?: boolean;
+  visibility?: HeaderVisibility | null;
   onApproved?: () => void;
 }) {
   const t = useTranslations("CardBlocks");
@@ -185,7 +203,13 @@ export function EsamiBlock({
         onApproved={onApproved}
       />
       <div className="p-5">
-        <EsamiEditor formazioneItems={formazioneItems} allowPreviousDegree livello={livello} />
+        <EsamiEditor
+          formazioneItems={formazioneItems}
+          allowPreviousDegree
+          livello={livello}
+          showPurpose={showPurpose}
+          visibility={visibility}
+        />
       </div>
     </div>
   );

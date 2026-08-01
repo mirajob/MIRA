@@ -207,7 +207,9 @@ export async function uploadTranscript(formData: FormData) {
         }
       : {
           universita: existingHeader.universita ?? parsed.university_name ?? null,
-          corso: existingHeader.corso ?? parsed.degree_program ?? null,
+          // Il nome del corso del libretto VINCE su quello scritto a mano in fase di
+          // registrazione: è il documento ufficiale, e sulla card ci va il nome giusto.
+          corso: parsed.degree_program?.trim() || existingHeader.corso || null,
           livello: existingHeader.livello ?? parsed.degree_level ?? null,
           anno: existingHeader.anno ?? null,
           anno_inizio: existingHeader.anno_inizio ?? null,

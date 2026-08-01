@@ -55,6 +55,7 @@ export type OnboardingFlowPhase =
   | "esperienze"
   | "header"
   | "gate"
+  | "esami"
   | "competenze"
   | "lingue"
   | "profilo"
@@ -70,6 +71,7 @@ export interface OnboardingFlowState {
   cvExperienceCount: number;
   cvLanguageCount: number;
   faseBStarted: boolean;
+  esamiSkipped: boolean;
 }
 
 const ALL_BLOCK_TYPES = [
@@ -147,13 +149,20 @@ function computePctFromBlocks(blocks: OnboardingBlocksState): number {
   return Math.round((approved / 6) * 100);
 }
 
+// Il libretto non si chiede più dentro l'Header (2026-08-01): è una tappa a sé, subito
+// dopo il gate, con testi diversi per triennale e magistrale e la possibilità di saltare.
+// Chiederlo due volte nello stesso percorso lo faceva sembrare un pedaggio.
+//
 // Ordine della Fase A invertito (2026-07-29): si parte da "cosa cerchi", cioè la domanda
 // per cui lo studente è arrivato su MIRA, e l'Header viene per ultimo — università e livello
 // li abbiamo già dalla registrazione, quindi sono pochi campi. Il libretto NON è più uno step
-// del percorso obbligatorio: si carica dal blocco Header, dal gate o dal passo Competenze,
-// dove serve davvero (gli esami sono la parte teorica della card). Motivo: chiedere il transcript
-// come primissima schermata faceva abbandonare la maggior parte dei registrati.
-function derivePhase(blocks: OnboardingBlocksState, faseBStarted: boolean): OnboardingFlowPhase {
+// del percorso obbligatorio. Motivo: chiedere il transcript come primissima schermata faceva
+// abbandonare la maggior parte dei registrati.
+function derivePhase(
+  blocks: OnboardingBlocksState,
+  faseBStarted: boolean,
+  esamiSkipped: boolean
+): OnboardingFlowPhase {
   if (!(blocks.disponibilita.status === "approved" && blocks.piano_carriera.status === "approved")) return "disponibilita";
   if (blocks.esperienze.status !== "approved") return "esperienze";
   if (blocks.header.status !== "approved") return "header";
@@ -164,6 +173,8 @@ function derivePhase(blocks: OnboardingBlocksState, faseBStarted: boolean): Onbo
     blocks.autodescrizione.status === "approved";
   if (faseBDone) return "chiusura";
   if (!faseBStarted) return "gate";
+  // Gli esami sono facoltativi: si esce da questa tappa confermando o saltando.
+  if (blocks.formazione.status !== "approved" && !esamiSkipped) return "esami";
   if (blocks.competenze.status !== "approved") return "competenze";
   if (blocks.lingue.status !== "approved") return "lingue";
   return "profilo";
@@ -173,10 +184,11 @@ export async function loadOnboardingFlow(): Promise<OnboardingFlowState> {
   const { student, blocks } = await getOnboardingContext();
   const answers = (student.onboarding_answers as Record<string, unknown>) ?? {};
   const faseBStarted = !!answers.fase_b_started;
+  const esamiSkipped = !!answers.esami_skipped;
   const cv = student.cv_summary as { experiences?: unknown[]; languages?: unknown[] } | null;
 
   return {
-    phase: derivePhase(blocks, faseBStarted),
+    phase: derivePhase(blocks, faseBStarted, esamiSkipped),
     blocks,
     isBocconi: isBocconiStudent(student, blocks),
     transcriptUploaded: !!student.transcript_uploaded,
@@ -184,7 +196,28 @@ export async function loadOnboardingFlow(): Promise<OnboardingFlowState> {
     cvExperienceCount: cv?.experiences?.length ?? 0,
     cvLanguageCount: cv?.languages?.length ?? 0,
     faseBStarted,
+    esamiSkipped,
   };
+}
+
+/** "Non ce l'ho ora": si va avanti, il libretto resta caricabile dal Profilo. */
+export async function skipEsamiStep(): Promise<{ success: true }> {
+  const { supabase, profileId, studentProfileId, blocks } = await getOnboardingContext();
+  await saveAnswersFlags(supabase, profileId, { esami_skipped: true });
+
+  // Chi ha caricato il libretto e poi tira dritto senza premere Conferma non deve
+  // ritrovarsi gli esami invisibili a tutti: qui non c'è niente da correggere a mano,
+  // il caricamento È il consenso. I voti restano coperti dai loro interruttori.
+  if (blocks.formazione.status !== "approved" && blocks.formazione.data.items.length > 0) {
+    await (supabase.from("card_blocks") as any)
+      .update({ status: "approved", approved_at: new Date().toISOString() })
+      .eq("student_profile_id", studentProfileId)
+      .eq("block_type", "formazione");
+  }
+
+  revalidatePath("/student/onboarding");
+  revalidatePath("/student");
+  return { success: true };
 }
 
 // ---------------------------------------------------------------------------
@@ -399,48 +432,4 @@ export async function completeGateFlow(): Promise<{ progressPct: number }> {
 
   revalidatePath("/student");
   return { progressPct: computePctFromBlocks(blocks) };
-}
-
-export async function forceCompleteOnboarding() {
-  const { studentProfileId, supabase } = await getOnboardingContext();
-
-  const placeholders: Record<string, unknown> = {
-    header: { corso: "[test] Corso placeholder", livello: "triennale", anno: 1, anno_inizio: null, laurea_anno: null, media_voti: null },
-    formazione: { items: [] },
-    esperienze: { items: [{ id: crypto.randomUUID(), titolo: "[test] Esperienza placeholder", ruolo: "", organizzazione: "", periodo: "", descrizione: "[test] descrizione placeholder", verified: false, origin: "onboarding" }] },
-    disponibilita: { attiva: true, cosa_cerca: "[test] internship", ambito: "[test] finance", periodo: "[test] from now", durata: null, dove: "[test] Milano" },
-    competenze: { items: [{ id: crypto.randomUUID(), testo: "[test] competenza placeholder", livello: "intermediate", evidenza_ref: "[test]", verified: false, origin: "onboarding" }], soft_skills: [] },
-    lingue: { items: [{ id: crypto.randomUUID(), lingua: "[test] English", livello: "B2", certificazione: null, verified: false, origin: "onboarding" }] },
-    interessi: { testo: null },
-    autodescrizione: { testo: "[test] profilo personale placeholder" },
-    piano_carriera: { stato: "esplorazione", testo: "[test] piano placeholder" },
-  };
-
-  for (const blockType of ALL_BLOCK_TYPES) {
-    const { data: row } = await (supabase.from("card_blocks") as any)
-      .select("status, prose_content")
-      .eq("student_profile_id", studentProfileId)
-      .eq("block_type", blockType)
-      .single();
-
-    if (row?.status === "empty") {
-      await (supabase.from("card_blocks") as any)
-        .update({ prose_content: placeholders[blockType], status: "approved", approved_at: new Date().toISOString() })
-        .eq("student_profile_id", studentProfileId)
-        .eq("block_type", blockType);
-    } else if (row?.status === "draft") {
-      await (supabase.from("card_blocks") as any)
-        .update({ status: "approved", approved_at: new Date().toISOString() })
-        .eq("student_profile_id", studentProfileId)
-        .eq("block_type", blockType);
-    }
-  }
-
-  await (supabase.from("student_profiles") as any)
-    .update({ onboarding_completed: true, onboarding_completed_at: new Date().toISOString() })
-    .eq("id", studentProfileId);
-
-  revalidatePath("/student");
-
-  return { success: true };
 }
