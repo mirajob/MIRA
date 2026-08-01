@@ -7,6 +7,7 @@ import {
   GEMINI_MODELS,
   estimateGeminiCost,
   type GeminiModel,
+  type GeminiUsage,
   type ParsedTranscript,
   type ParsedCV,
 } from "@mira/ai";
@@ -23,7 +24,7 @@ import { createServiceClient } from "@mira/supabase/server";
 async function logTest(input: {
   kind: "transcript" | "cv";
   model: string;
-  usage?: { inputTokens: number; outputTokens: number };
+  usage?: GeminiUsage;
   summary: Record<string, unknown>;
   error?: string;
 }) {
