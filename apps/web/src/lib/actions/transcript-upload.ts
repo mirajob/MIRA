@@ -70,7 +70,9 @@ export async function uploadTranscript(formData: FormData) {
     return { error: `Errore nel caricamento: ${uploadError.message}` };
   }
 
-  const { data: uploadedFile } = await (supabase
+  // L'esito si controlla: con visibility_scope sbagliato questo insert falliva in silenzio
+  // e la tabella dei file caricati è rimasta vuota per settimane.
+  const { data: uploadedFile, error: uploadedFileError } = await (supabase
     .from("uploaded_files") as any)
     .insert({
       owner_user_id: profileId,
@@ -79,12 +81,13 @@ export async function uploadTranscript(formData: FormData) {
       file_type: file.type,
       file_name: file.name,
       file_size: file.size,
-      visibility_scope: "private",
+      visibility_scope: "private_to_student",
       linked_entity_type: "student_profile",
       linked_entity_id: studentProfile.id,
     })
     .select("id")
-    .single() as { data: AnyRow | null };
+    .single() as { data: AnyRow | null; error: unknown };
+  if (uploadedFileError) console.error("[MIRA] uploaded_files insert fallito:", uploadedFileError);
 
   const { data: transcript } = await (supabase
     .from("student_transcripts") as any)

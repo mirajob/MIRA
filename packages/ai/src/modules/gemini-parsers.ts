@@ -25,6 +25,23 @@ const CV_THINKING: "low" = "low";
 /** Sotto questa soglia il PDF è di sole immagini (una scansione): serve la lettura visiva. */
 const MIN_TEXT_CHARS = 400;
 
+/** Quante parole vere servono perché il testo estratto sia considerato leggibile. */
+const MIN_REAL_WORDS = 10;
+
+/**
+ * Il testo estratto è davvero leggibile?
+ *
+ * Alcuni PDF universitari (l'autocertificazione Bocconi è uno) usano font con una mappa
+ * dei caratteri non standard: pdf.js restituisce sì del testo, ma è spazzatura del tipo
+ * `!!"#! $$% "& '`. Mandarla al modello significa buttare una chiamata per poi rileggere
+ * il file lo stesso. Le parole di almeno quattro lettere sono il segnale più semplice:
+ * un libretto vero ne ha a decine (nomi degli esami), quella spazzatura quasi zero.
+ */
+function looksReadable(text: string): boolean {
+  const words = text.match(/[A-Za-zÀ-ÿ]{4,}/g);
+  return (words?.length ?? 0) >= MIN_REAL_WORDS;
+}
+
 /**
  * Il testo di un PDF, estratto in locale. Le autocertificazioni universitarie sono quasi
  * sempre PDF di testo: leggerlo qui costa millisecondi ed evita di far "guardare" al
@@ -38,8 +55,9 @@ async function extractPdfText(base64Data: string): Promise<{ text: string | null
     const pdf = await getDocumentProxy(bytes);
     const { text } = await extractText(pdf, { mergePages: true });
     const cleaned = (text ?? "").replace(/[ \t]+\n/g, "\n").trim();
-    if (cleaned.length >= MIN_TEXT_CHARS) return { text: cleaned, reason: `ok:${cleaned.length}` };
-    return { text: null, reason: `poco_testo:${cleaned.length}` };
+    if (cleaned.length < MIN_TEXT_CHARS) return { text: null, reason: `poco_testo:${cleaned.length}` };
+    if (!looksReadable(cleaned)) return { text: null, reason: `testo_illeggibile:${cleaned.length}` };
+    return { text: cleaned, reason: `ok:${cleaned.length}` };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("[MIRA AI] estrazione testo PDF fallita, si passa alla lettura visiva:", err);

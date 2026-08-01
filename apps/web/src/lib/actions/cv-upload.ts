@@ -55,7 +55,7 @@ export async function uploadCV(formData: FormData) {
     file_type: file.type,
     file_name: file.name,
     file_size: file.size,
-    visibility_scope: "private",
+    visibility_scope: "private_to_student",
     linked_entity_type: "student_cv",
     linked_entity_id: studentProfile.id,
   });
