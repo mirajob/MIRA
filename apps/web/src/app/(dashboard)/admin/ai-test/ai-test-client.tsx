@@ -3,9 +3,16 @@
 import { useState } from "react";
 import { testTranscriptGemini, testCvGemini, type TranscriptTestResult, type CvTestResult } from "@/lib/actions/ai-test";
 
+// Prezzi per milione di token (ingresso/uscita), tariffa standard, da
+// ai.google.dev/gemini-api/docs/pricing letta il 2026-08-01. L'alias -latest oggi risolve
+// su Flash 3.6, la più cara: le versioni pinnate servono a vedere se questo account può
+// chiamarle e se leggono il libretto altrettanto bene, a un quinto del costo.
 const MODELS = [
-  { value: "gemini-flash-latest", label: "Gemini Flash (veloce)" },
+  { value: "gemini-flash-latest", label: "Gemini Flash (in uso oggi) · 1.50/7.50" },
   { value: "gemini-pro-latest", label: "Gemini Pro (accurato)" },
+  { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash · 0.30/2.50" },
+  { value: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite · 0.30/2.50" },
+  { value: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash-Lite · 0.25/1.50" },
 ];
 
 const DEFAULT_MODEL = "gemini-flash-latest";
@@ -15,16 +22,39 @@ const fileInputClass =
 const selectClass =
   "px-3 py-2 rounded-md bg-white border border-border text-body-sm text-ink focus:outline-none focus:border-petrol";
 
-function Timing({ ms, model }: { ms: number; model: string }) {
+function Timing({
+  ms,
+  model,
+  cost,
+  tokens,
+  viaText,
+}: {
+  ms: number;
+  model: string;
+  cost?: number | null;
+  tokens?: string;
+  viaText?: boolean;
+}) {
   const s = (ms / 1000).toFixed(1);
   const slow = ms > 15000;
   return (
-    <span
-      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
-        slow ? "bg-warning-bg text-warning" : "bg-success-bg text-success"
-      }`}
-    >
-      ⏱ {s}s · {model.replace("gemini-", "").replace("-latest", "")}
+    <span className="inline-flex flex-wrap items-center gap-2">
+      <span
+        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
+          slow ? "bg-warning-bg text-warning" : "bg-success-bg text-success"
+        }`}
+      >
+        ⏱ {s}s · {model.replace("gemini-", "").replace("-latest", "")}
+      </span>
+      {tokens && (
+        <span className="rounded-full bg-navy-50 px-3 py-1 text-xs text-navy">
+          {tokens}
+          {cost != null && ` · $${cost.toFixed(5)}`}
+        </span>
+      )}
+      {viaText && (
+        <span className="rounded-full bg-petrol-50 px-3 py-1 text-xs text-petrol-700">letto dal testo estratto</span>
+      )}
     </span>
   );
 }
@@ -108,7 +138,13 @@ function TranscriptOutput({ result }: { result: Extract<TranscriptTestResult, { 
             {[p.university_name, p.degree_level].filter(Boolean).join(" · ") || "—"}
           </p>
         </div>
-        <Timing ms={result.elapsedMs} model={result.model} />
+        <Timing
+          ms={result.elapsedMs}
+          model={result.model}
+          cost={result.cost}
+          tokens={result.tokens}
+          viaText={result.viaText}
+        />
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs">
@@ -192,7 +228,13 @@ function CvOutput({ result }: { result: Extract<CvTestResult, { ok: true }> }) {
   return (
     <div className="mt-4 space-y-4">
       <div className="flex items-center justify-end">
-        <Timing ms={result.elapsedMs} model={result.model} />
+        <Timing
+          ms={result.elapsedMs}
+          model={result.model}
+          cost={result.cost}
+          tokens={result.tokens}
+          viaText={result.viaText}
+        />
       </div>
 
       {p.raw_text_summary && (

@@ -5,6 +5,7 @@ import {
   parseCVWithGemini,
   recomputeTranscriptAverages,
   GEMINI_MODELS,
+  estimateGeminiCost,
   type GeminiModel,
   type ParsedTranscript,
   type ParsedCV,
@@ -15,11 +16,11 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
 
 export type TranscriptTestResult =
-  | { ok: true; parsed: ParsedTranscript; elapsedMs: number; model: GeminiModel }
+  | { ok: true; parsed: ParsedTranscript; elapsedMs: number; model: GeminiModel; cost: number | null; tokens: string; viaText: boolean }
   | { ok: false; error: string };
 
 export type CvTestResult =
-  | { ok: true; parsed: ParsedCV; elapsedMs: number; model: GeminiModel }
+  | { ok: true; parsed: ParsedCV; elapsedMs: number; model: GeminiModel; cost: number | null; tokens: string; viaText: boolean }
   | { ok: false; error: string };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -50,8 +51,16 @@ export async function testTranscriptGemini(formData: FormData): Promise<Transcri
   if ("error" in read) return { ok: false, error: read.error };
 
   try {
-    const { parsed, elapsedMs } = await parseTranscriptWithGemini(read.base64, read.type, model);
-    return { ok: true, parsed: recomputeTranscriptAverages(parsed), elapsedMs, model };
+    const { parsed, elapsedMs, usage, viaText } = await parseTranscriptWithGemini(read.base64, read.type, model);
+    return {
+      ok: true,
+      parsed: recomputeTranscriptAverages(parsed),
+      elapsedMs,
+      model,
+      cost: usage ? estimateGeminiCost(model, usage) : null,
+      tokens: usage ? `${usage.inputTokens} in / ${usage.outputTokens} out` : "n/d",
+      viaText: !!viaText,
+    };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Errore sconosciuto." };
   }
@@ -63,8 +72,16 @@ export async function testCvGemini(formData: FormData): Promise<CvTestResult> {
   if ("error" in read) return { ok: false, error: read.error };
 
   try {
-    const { parsed, elapsedMs } = await parseCVWithGemini(read.base64, read.type, model);
-    return { ok: true, parsed, elapsedMs, model };
+    const { parsed, elapsedMs, usage } = await parseCVWithGemini(read.base64, read.type, model);
+    return {
+      ok: true,
+      parsed,
+      elapsedMs,
+      model,
+      cost: usage ? estimateGeminiCost(model, usage) : null,
+      tokens: usage ? `${usage.inputTokens} in / ${usage.outputTokens} out` : "n/d",
+      viaText: false,
+    };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Errore sconosciuto." };
   }
