@@ -11,6 +11,43 @@ import {
   type ParsedCV,
 } from "@mira/ai";
 import { getUserContext } from "@/lib/auth";
+import { createServiceClient } from "@mira/supabase/server";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/**
+ * Anche le prove del playground sono chiamate vere che Google fattura: se non finissero in
+ * ai_logs, la pagina Consumi AI mostrerebbe meno di quanto spendiamo davvero. Il modulo
+ * "ai_test" le tiene distinte dai caricamenti degli studenti.
+ */
+async function logTest(input: {
+  kind: "transcript" | "cv";
+  model: string;
+  usage?: { inputTokens: number; outputTokens: number };
+  summary: Record<string, unknown>;
+  error?: string;
+}) {
+  try {
+    const ctx = await getUserContext();
+    const supabase = await createServiceClient();
+    await (supabase.from("ai_logs") as any).insert({
+      module: "ai_test",
+      provider: "google",
+      model: input.model,
+      entity_type: input.kind === "transcript" ? "student_transcript" : "student_profile",
+      user_id: (ctx.profile as any).id,
+      input_metadata: { playground: true, kind: input.kind },
+      output_summary: input.summary,
+      tokens_input: input.usage?.inputTokens ?? null,
+      tokens_output: input.usage?.outputTokens ?? null,
+      estimated_cost: input.usage ? estimateGeminiCost(input.model, input.usage) : null,
+      status: input.error ? "error" : "success",
+      error_message: input.error ?? null,
+    });
+  } catch (err) {
+    console.error("[MIRA] log della prova playground fallito:", err);
+  }
+}
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
@@ -67,9 +104,16 @@ export async function testTranscriptGemini(formData: FormData): Promise<Transcri
       model,
       thinking
     );
+    const corrected = recomputeTranscriptAverages(parsed);
+    await logTest({
+      kind: "transcript",
+      model,
+      usage,
+      summary: { courses_found: corrected.courses.length, thinking, via_text: !!viaText },
+    });
     return {
       ok: true,
-      parsed: recomputeTranscriptAverages(parsed),
+      parsed: corrected,
       elapsedMs,
       model,
       cost: usage ? estimateGeminiCost(model, usage) : null,
@@ -78,7 +122,9 @@ export async function testTranscriptGemini(formData: FormData): Promise<Transcri
       thinking,
     };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Errore sconosciuto." };
+    const message = err instanceof Error ? err.message : "Errore sconosciuto.";
+    await logTest({ kind: "transcript", model, summary: {}, error: message });
+    return { ok: false, error: message };
   }
 }
 
@@ -89,6 +135,12 @@ export async function testCvGemini(formData: FormData): Promise<CvTestResult> {
 
   try {
     const { parsed, elapsedMs, usage } = await parseCVWithGemini(read.base64, read.type, model);
+    await logTest({
+      kind: "cv",
+      model,
+      usage,
+      summary: { experiences_found: parsed.experiences.length, skills_found: parsed.skills.length },
+    });
     return {
       ok: true,
       parsed,
@@ -99,6 +151,8 @@ export async function testCvGemini(formData: FormData): Promise<CvTestResult> {
       viaText: false,
     };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Errore sconosciuto." };
+    const message = err instanceof Error ? err.message : "Errore sconosciuto.";
+    await logTest({ kind: "cv", model, summary: {}, error: message });
+    return { ok: false, error: message };
   }
 }

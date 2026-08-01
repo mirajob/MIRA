@@ -63,6 +63,10 @@ export default async function AdminAiUsagePage() {
           Costo stimato al momento della chiamata: token effettivi per il listino del modello. È una nostra
           stima, non la fattura di Google, ma basta per accorgersi se qualcosa raddoppia il conto.
         </p>
+        <p className="mt-1 text-body-sm text-ink-tertiary">
+          Le righe senza token sono chiamate fatte prima che iniziassimo a contarli. Google aggiorna la sua
+          fatturazione anche 24 ore dopo, quindi i due numeri non coincidono mai in tempo reale.
+        </p>
       </div>
 
       <div className="grid gap-2 sm:grid-cols-3">

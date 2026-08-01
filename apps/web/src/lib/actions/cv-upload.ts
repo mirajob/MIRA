@@ -1,6 +1,6 @@
 "use server";
 
-import { parseCVWithGemini, formatCVForChat } from "@mira/ai";
+import { parseCVWithGemini, formatCVForChat, estimateGeminiCost } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 
@@ -63,7 +63,7 @@ export async function uploadCV(formData: FormData) {
 
   try {
     const base64 = buffer.toString("base64");
-    const { parsed } = await parseCVWithGemini(base64, file.type, CV_MODEL);
+    const { parsed, usage } = await parseCVWithGemini(base64, file.type, CV_MODEL);
 
     await (supabase.from("student_profiles") as any)
       .update({
@@ -83,6 +83,9 @@ export async function uploadCV(formData: FormData) {
         experiences_found: parsed.experiences.length,
         skills_found: parsed.skills.length,
       },
+      tokens_input: usage?.inputTokens ?? null,
+      tokens_output: usage?.outputTokens ?? null,
+      estimated_cost: usage ? estimateGeminiCost(CV_MODEL, usage) : null,
       status: "success",
     });
 
