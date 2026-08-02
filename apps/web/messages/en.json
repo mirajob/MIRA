@@ -736,7 +736,7 @@
   },
   "AssociationLayout": {
     "onboardingBanner": "Before continuing, complete your MiraCard profile (~5 minutes) →",
-    "navCicli": "Cycles",
+    "navCicli": "Recruiting",
     "navCandidati": "Candidates",
     "navMembri": "Members",
     "navPaginaPubblica": "Public page",
@@ -850,24 +850,32 @@
     "demote": "Dismiss as admin"
   },
   "Cycles": {
-    "heading": "Application cycles",
+    "heading": "Recruiting rounds",
     "subhead": "Manage your selection cycles",
-    "newCycle": "+ New cycle",
-    "noCycles": "No cycles created yet",
+    "newCycle": "Open a round",
+    "noCycles": "No recruiting round yet. Open one to start receiving applications.",
     "questionsCount": "{count} questions",
     "applicationsCount": "{count} applications",
     "closesOn": "Closes: {date}",
     "edit": "Edit",
     "details": "Details",
-    "history": "History ({count} closed cycles)",
+    "history": "Closed rounds ({count})",
     "statusLabels": {
-      "open": "Open",
       "draft": "Draft",
+      "scheduled": "Scheduled",
+      "open": "Applications open",
+      "applications_closed": "Applications closed",
       "closed": "Closed",
-      "scheduled": "Scheduled"
+      "archived": "Archived"
     },
     "untitledDraft": "Untitled cycle",
-    "oneCycleAtATime": "Close the current cycle to open a new one."
+    "oneCycleAtATime": "Close the current round to open a new one.",
+    "explainer": "A recruiting round is one full hiring cycle. Pick the window when people can apply: during it, students send their applications. When it expires you stop receiving applications, but the round goes on and you invite whoever you want to the interviews. When everything is decided, close it.",
+    "explainOpen": "People can apply until {date}.",
+    "explainScheduled": "Applications open on {date}.",
+    "explainApplicationsClosed": "Applications are closed, but the round is still running: you can invite the people who applied to interviews.",
+    "explainClosed": "Round closed.",
+    "explainDraft": "Draft: fill in the details and open applications."
   },
   "CycleCard": {
     "startIntro": "Let's build your application cycle together. I'll ask one question at a time and you'll watch the card fill in below: six blocks, then you decide when to open applications.",
@@ -1674,7 +1682,7 @@
     "manyDays": "{count} days, from {from} to {to}",
     "stepNoAvailability": "Nobody from the board has given their availability yet.",
     "inviteHeading": "Invite candidates",
-    "inviteSummary": "{toInvite} to invite · {waiting} without a time",
+    "inviteSummary": "{toInvite} to invite",
     "inviteNeedsOpen": "Open bookings first: otherwise whoever you invite finds no times to pick.",
     "noCandidates": "No candidates in this cycle.",
     "candidateBooked": "booked",
@@ -1701,7 +1709,9 @@
     "stepInviteCandidates": "Ready: invite candidates and they will pick a time.",
     "stepBooked": "{booked} booked, out of {covered} available times",
     "archivedRound": "This round belongs to a closed selection: it stays here as history and cannot be changed.",
-    "archivedSummary": "{booked} interviews held"
+    "archivedSummary": "{booked} interviews held",
+    "bookedUpcoming": "Coming up",
+    "bookedPast": "Already held"
   },
   "StudentInterviews": {
     "pageTitle": "Interviews",

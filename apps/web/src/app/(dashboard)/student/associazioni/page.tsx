@@ -80,7 +80,10 @@ export default async function StudentAssociazioniPage({
 
   const { data: openCycles } = await (supabase.from("application_cycles") as any)
     .select("id, title, closes_at, association_id")
-    .eq("status", "open");
+    .eq("status", "open")
+    // Scaduto il termine la selezione va avanti coi colloqui, ma non compare
+    // piu' come "candidature aperte" allo studente.
+    .or(`closes_at.is.null,closes_at.gt.${new Date().toISOString()}`);
 
   const { data: myApplications } = await (supabase.from("applications") as any)
     .select(`

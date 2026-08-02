@@ -20,12 +20,17 @@ export async function submitApplication(cycleId: string, formData: FormData) {
 
   const { data: cycle } = await supabase
     .from("application_cycles")
-    .select("id, association_id, status")
+    .select("id, association_id, status, closes_at")
     .eq("id", cycleId)
     .single();
 
   if (!cycle) return { error: "Ciclo non trovato" };
-  if (cycle.status !== "open") return { error: "Le candidature per questo ciclo sono chiuse" };
+  if (cycle.status !== "open") return { error: "Le candidature per questa selezione sono chiuse" };
+  // Il controllo sulla scadenza sta qui e non solo nella pagina: questo endpoint
+  // e' raggiungibile conoscendo un cycleId.
+  if ((cycle as any).closes_at && new Date((cycle as any).closes_at) < new Date()) {
+    return { error: "Il termine per candidarsi e' passato" };
+  }
 
   // Ogni associazione ha ereditato l'università del presidente che l'ha candidata: solo
   // gli studenti della stessa università possono candidarsi — controllo server-side, non

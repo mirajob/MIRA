@@ -104,8 +104,13 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   }
 
   const notYetOpen = cycle && (cycle as any).opens_at && new Date((cycle as any).opens_at) > new Date();
+  // La selezione non si chiude piu' da sola alla scadenza: resta aperta per i
+  // colloqui. Le candidature pero' si fermano qui, altrimenti si potrebbe fare
+  // domanda dopo il termine.
+  const applicationsClosed =
+    cycle && (cycle as any).closes_at && new Date((cycle as any).closes_at) < new Date();
 
-  if (!cycle || notYetOpen) {
+  if (!cycle || notYetOpen || applicationsClosed) {
     return (
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="max-w-md text-center space-y-4 px-4">

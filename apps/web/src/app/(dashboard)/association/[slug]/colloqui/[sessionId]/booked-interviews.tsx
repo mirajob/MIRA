@@ -77,7 +77,12 @@ export function BookedInterviews({
     );
   }
 
-  const missingLinks = needsLink ? interviews.filter((i) => !i.meetingLink).length : 0;
+  // Solo i colloqui ancora da fare possono avere un link mancante: rincorrere
+  // quelli passati non serve a nessuno.
+  const now = Date.now();
+  const upcoming = interviews.filter((i) => new Date(i.startsAt).getTime() >= now);
+  const past = interviews.filter((i) => new Date(i.startsAt).getTime() < now);
+  const missingLinks = needsLink ? upcoming.filter((i) => !i.meetingLink).length : 0;
 
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-white">
@@ -90,8 +95,26 @@ export function BookedInterviews({
         )}
       </div>
 
-      <div className="divide-y divide-border">
-        {interviews.map((interview) => {
+      {renderGroup(upcoming, false)}
+      {past.length > 0 && renderGroup(past, true)}
+    </div>
+  );
+
+  function renderGroup(group: BookedInterview[], isPast: boolean) {
+    if (!group.length) return null;
+
+    return (
+      <div key={isPast ? "past" : "upcoming"}>
+        {(past.length > 0 || isPast) && (
+          <div className="border-b border-border px-3 py-1">
+            <p className="text-eyebrow uppercase text-navy/50">
+              {isPast ? t("bookedPast") : t("bookedUpcoming")}
+            </p>
+          </div>
+        )}
+
+        <div className={`divide-y divide-border ${isPast ? "opacity-60" : ""}`}>
+          {group.map((interview) => {
           const when = new Date(interview.startsAt).toLocaleString(dateLocale, {
             timeZone: APP_TIME_ZONE,
             weekday: "short",
@@ -114,7 +137,8 @@ export function BookedInterviews({
                 </span>
               </div>
 
-              {needsLink && (
+              {/* Il posto si mette solo sui colloqui ancora da fare. */}
+              {needsLink && !isPast && (
                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
                   <input
                     value={drafts[interview.slotId] ?? interview.meetingLink ?? ""}
@@ -139,7 +163,8 @@ export function BookedInterviews({
             </div>
           );
         })}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }

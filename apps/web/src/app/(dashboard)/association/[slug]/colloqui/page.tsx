@@ -194,7 +194,7 @@ export default async function AssociationInterviewsPage({ params }: Props) {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">{currentSessions.map(renderSession)}</div>
+        <div className="space-y-2">{currentSessions.map((x: any) => renderSession(x))}</div>
       )}
 
       {pastSessions.length > 0 && (

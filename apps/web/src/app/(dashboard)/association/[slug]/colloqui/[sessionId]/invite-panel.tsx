@@ -73,10 +73,7 @@ export function InvitePanel({
       >
         <span className="text-body-sm font-medium text-navy">{t("inviteHeading")}</span>
         <span className="text-body-sm text-ink-tertiary">
-          {t("inviteSummary", {
-            toInvite: notInvited.length,
-            waiting: waiting.length,
-          })}
+          {t("inviteSummary", { toInvite: notInvited.length })}
         </span>
         <span className="ml-auto text-body-sm text-ink-tertiary">{open ? "−" : "+"}</span>
       </button>

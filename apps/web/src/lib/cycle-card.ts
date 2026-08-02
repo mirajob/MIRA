@@ -85,7 +85,13 @@ export function cycleProgressPct(approved: CycleBlock[]): number {
   return Math.round((done / CYCLE_BLOCK_ORDER.length) * 100);
 }
 
-export type CycleDisplayStatus = "draft" | "scheduled" | "open" | "closed" | "archived";
+export type CycleDisplayStatus =
+  | "draft"
+  | "scheduled"
+  | "open"
+  | "applications_closed"
+  | "closed"
+  | "archived";
 
 /**
  * Stato mostrato, distinto da quello salvato. Un ciclo "open" con data di apertura nel futuro
@@ -95,11 +101,19 @@ export type CycleDisplayStatus = "draft" | "scheduled" | "open" | "closed" | "ar
  */
 export function displayCycleStatus(
   status: string,
-  opensAt: string | null | undefined
+  opensAt: string | null | undefined,
+  closesAt?: string | null
 ): CycleDisplayStatus {
   if (status === "open" && opensAt) {
     const opens = new Date(opensAt);
     if (!Number.isNaN(opens.getTime()) && opens > new Date()) return "scheduled";
+  }
+  // Scaduta la data non si chiude la selezione: smette solo di ricevere
+  // candidature. I colloqui con chi si è già candidato vanno avanti, ed è la
+  // distinzione che prima mancava e faceva sembrare tutto finito.
+  if (status === "open" && closesAt) {
+    const closes = new Date(closesAt);
+    if (!Number.isNaN(closes.getTime()) && closes < new Date()) return "applications_closed";
   }
   return status as CycleDisplayStatus;
 }

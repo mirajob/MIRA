@@ -736,7 +736,7 @@
   },
   "AssociationLayout": {
     "onboardingBanner": "Prima di continuare, completa il tuo profilo MiraCard (~5 minuti) →",
-    "navCicli": "Cicli",
+    "navCicli": "Selezioni",
     "navCandidati": "Candidati",
     "navMembri": "Membri",
     "navPaginaPubblica": "Pagina pubblica",
@@ -850,24 +850,32 @@
     "demote": "Rimuovi da amministratore"
   },
   "Cycles": {
-    "heading": "Cicli di candidatura",
+    "heading": "Selezioni",
     "subhead": "Gestisci i cicli di selezione",
-    "newCycle": "+ Nuovo ciclo",
-    "noCycles": "Nessun ciclo ancora creato",
+    "newCycle": "Apri una selezione",
+    "noCycles": "Nessuna selezione. Aprine una per iniziare a ricevere candidature.",
     "questionsCount": "{count} domande",
     "applicationsCount": "{count} candidature",
     "closesOn": "Scade: {date}",
     "edit": "Modifica",
     "details": "Dettagli",
-    "history": "Storico ({count} cicli chiusi)",
+    "history": "Selezioni concluse ({count})",
     "statusLabels": {
-      "open": "Aperto",
       "draft": "Bozza",
-      "closed": "Chiuso",
-      "scheduled": "Programmato"
+      "scheduled": "Programmata",
+      "open": "Candidature aperte",
+      "applications_closed": "Candidature chiuse",
+      "closed": "Conclusa",
+      "archived": "Archiviata"
     },
     "untitledDraft": "Ciclo senza nome",
-    "oneCycleAtATime": "Chiudi il ciclo in corso per aprirne uno nuovo."
+    "oneCycleAtATime": "Concludi la selezione in corso per aprirne una nuova.",
+    "explainer": "Una selezione è un giro di reclutamento. Scegli il periodo in cui si può fare domanda: in quella finestra gli studenti si candidano. Quando scade smetti di ricevere candidature, ma la selezione va avanti e inviti ai colloqui chi vuoi fra quelli raccolti. Quando avete deciso tutto, concludi la selezione.",
+    "explainOpen": "Si può fare domanda fino al {date}.",
+    "explainScheduled": "Le candidature aprono il {date}.",
+    "explainApplicationsClosed": "Le candidature sono chiuse, ma la selezione è in corso: puoi ancora convocare ai colloqui chi si è candidato.",
+    "explainClosed": "Selezione conclusa.",
+    "explainDraft": "Bozza: completa i dati e apri le candidature."
   },
   "CycleCard": {
     "startIntro": "Costruiamo insieme il vostro ciclo di candidatura. Ti faccio una domanda alla volta e vedi la card riempirsi sotto: sono sei blocchi, poi decidete voi quando aprire le candidature.",
@@ -1674,7 +1682,7 @@
     "manyDays": "{count} giornate, dal {from} al {to}",
     "stepNoAvailability": "Nessuno del board ha ancora dato la disponibilità.",
     "inviteHeading": "Invita i candidati",
-    "inviteSummary": "{toInvite} da invitare · {waiting} senza orario",
+    "inviteSummary": "{toInvite} da invitare",
     "inviteNeedsOpen": "Apri prima le prenotazioni: senza, chi inviti non troverebbe orari da scegliere.",
     "noCandidates": "Nessun candidato in questo ciclo.",
     "candidateBooked": "ha prenotato",
@@ -1701,7 +1709,9 @@
     "stepInviteCandidates": "Pronto: invita i candidati e sceglieranno l'orario.",
     "stepBooked": "{booked} hanno prenotato, su {covered} orari disponibili",
     "archivedRound": "Questo round appartiene a una selezione conclusa: resta qui come storico e non si modifica più.",
-    "archivedSummary": "{booked} colloqui svolti"
+    "archivedSummary": "{booked} colloqui svolti",
+    "bookedUpcoming": "In programma",
+    "bookedPast": "Già svolti"
   },
   "StudentInterviews": {
     "pageTitle": "Colloqui",
