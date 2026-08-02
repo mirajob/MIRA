@@ -23,16 +23,34 @@ export function ApplicationForm({ cycleId, positions, questions, slug }: { cycle
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  async function handleSubmit(formData: FormData) {
+  /**
+   * Invio gestito con onSubmit e non con `action={...}`.
+   *
+   * Con la form action React esegue tutto dentro una transizione, e il
+   * router.push che porta via a fine invio veniva perso: la candidatura partiva
+   * ma la schermata restava ferma, e al secondo tentativo arrivava "hai già
+   * inviato". Fuori dalla transizione la navigazione avviene davvero.
+   */
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (loading) return;
+
     setLoading(true);
     setError(null);
+
+    const formData = new FormData(event.currentTarget);
     const res = await submitApplication(cycleId, formData);
+
     if (res.error) {
       setError(res.error);
       setLoading(false);
       return;
     }
-    router.push("/student");
+
+    // Niente setLoading(false): il pulsante resta disabilitato fino al cambio
+    // pagina, così non si può inviare due volte mentre la navigazione parte.
+    router.push("/student/associazioni");
+    router.refresh();
   }
 
   function renderInput(q: Question) {
@@ -93,7 +111,7 @@ export function ApplicationForm({ cycleId, positions, questions, slug }: { cycle
   }
 
   return (
-    <form action={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="rounded-md bg-error-bg p-3 text-body-sm text-error">{error}</div>
       )}
