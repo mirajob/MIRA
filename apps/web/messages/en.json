@@ -1048,7 +1048,11 @@
     "historyHeading": "History",
     "systemFallback": "System",
     "notesHeading": "Internal notes",
-    "noNotes": "No notes"
+    "noNotes": "No notes",
+    "backToCandidates": "All candidates",
+    "interviewBooked": "Interview booked: {date}.",
+    "interviewDone": "Interview held on {date}.",
+    "interviewInvitedNotBooked": "Invited to interview, has not picked a time yet."
   },
   "CandidateActions": {
     "pipeline": {
@@ -1069,7 +1073,30 @@
     "sendEmailLoading": "Sending...",
     "sendEmail": "Send email",
     "notePlaceholder": "Write a note...",
-    "addNote": "+ Add note"
+    "addNote": "+ Add note",
+    "badgeApplied": "Applied",
+    "badgeInterview": "Interviewing",
+    "badgeAccepted": "Accepted",
+    "badgeRejected": "Rejected",
+    "stateApplied": "Applied and waiting for an answer.",
+    "stateAccepted": "Accepted: now a member of the association.",
+    "stateRejected": "Not selected in this round of recruiting.",
+    "inviteToRound": "Invite to interview",
+    "accept": "Accept",
+    "reject": "Reject",
+    "pickRound": "Which round do you want to invite them to?",
+    "roundLabel": "Round {index}",
+    "alreadyInvited": "already invited",
+    "noRoundsYet": "You have not created any interview round yet. Create one, pick the days and the hours, and then you can invite candidates.",
+    "goCreateRound": "Go to interviews",
+    "invitedDone": "Invite sent to {email}: they will pick the time.",
+    "draftIntro": "This email goes to {email}. Read it and edit it before sending.",
+    "confirmAccept": "Accept and send",
+    "confirmReject": "Reject and send",
+    "sending": "Sending...",
+    "cancel": "Cancel",
+    "acceptedDone": "Accepted. Added to members and notified by email.",
+    "rejectedDone": "Rejected. Notified by email."
   },
   "RegenerateEvaluationButton": {
     "notAvailable": "The AI evaluation isn't available yet.",
@@ -1711,5 +1738,13 @@
     "confirmMove": "Move your interview to {date}?",
     "confirmMoveCta": "Yes, move it",
     "cancel": "Cancel"
+  },
+  "CandidateNotes": {
+    "heading": "Board notes",
+    "explainer": "Internal notes on this candidate: impressions from the interview, doubts, things to check. The candidate never sees them. Grouped by who wrote them.",
+    "placeholder": "Write a note...",
+    "save": "Save",
+    "saving": "Saving...",
+    "empty": "No notes yet."
   }
 }

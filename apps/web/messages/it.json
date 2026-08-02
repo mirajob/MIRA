@@ -1048,7 +1048,11 @@
     "historyHeading": "Cronologia",
     "systemFallback": "Sistema",
     "notesHeading": "Note interne",
-    "noNotes": "Nessuna nota"
+    "noNotes": "Nessuna nota",
+    "backToCandidates": "Tutti i candidati",
+    "interviewBooked": "Colloquio fissato: {date}.",
+    "interviewDone": "Colloquio sostenuto il {date}.",
+    "interviewInvitedNotBooked": "Invitato al colloquio, non ha ancora scelto l'orario."
   },
   "CandidateActions": {
     "pipeline": {
@@ -1069,7 +1073,30 @@
     "sendEmailLoading": "Invio...",
     "sendEmail": "Invia email",
     "notePlaceholder": "Scrivi una nota...",
-    "addNote": "+ Aggiungi nota"
+    "addNote": "+ Aggiungi nota",
+    "badgeApplied": "Candidato",
+    "badgeInterview": "Al colloquio",
+    "badgeAccepted": "Accettato",
+    "badgeRejected": "Rifiutato",
+    "stateApplied": "Si è candidato e aspetta una risposta.",
+    "stateAccepted": "Accettato: è entrato fra i membri dell'associazione.",
+    "stateRejected": "Non è stato preso in questa selezione.",
+    "inviteToRound": "Convoca a colloquio",
+    "accept": "Accetta",
+    "reject": "Rifiuta",
+    "pickRound": "A quale round vuoi convocarlo?",
+    "roundLabel": "Round {index}",
+    "alreadyInvited": "già invitato",
+    "noRoundsYet": "Non hai ancora creato nessun round di colloqui. Creane uno, scegli i giorni e la fascia oraria, e poi potrai convocare i candidati.",
+    "goCreateRound": "Vai ai colloqui",
+    "invitedDone": "Invito mandato a {email}: sceglierà lui l'orario.",
+    "draftIntro": "Questa email arriva a {email}. Rileggila e correggila prima di mandarla.",
+    "confirmAccept": "Accetta e manda",
+    "confirmReject": "Rifiuta e manda",
+    "sending": "Invio...",
+    "cancel": "Annulla",
+    "acceptedDone": "Accettato. È stato aggiunto ai membri e ha ricevuto l'email.",
+    "rejectedDone": "Rifiutato. Ha ricevuto l'email."
   },
   "RegenerateEvaluationButton": {
     "notAvailable": "La valutazione AI non è ancora disponibile.",
@@ -1711,5 +1738,13 @@
     "confirmMove": "Vuoi spostare il colloquio a {date}?",
     "confirmMoveCta": "Sì, sposta",
     "cancel": "Annulla"
+  },
+  "CandidateNotes": {
+    "heading": "Note del board",
+    "explainer": "Appunti interni su questo candidato: impressioni durante il colloquio, dubbi, cose da verificare. Il candidato non le vede mai. Sono divise per chi le ha scritte.",
+    "placeholder": "Scrivi una nota...",
+    "save": "Salva",
+    "saving": "Salvo...",
+    "empty": "Nessuna nota ancora."
   }
 }

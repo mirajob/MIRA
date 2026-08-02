@@ -1,196 +1,228 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { changeCandidateStatus, addCandidateNote } from "@/lib/actions/candidates";
-import { generateEmailDraft, sendInterviewEmail, sendStatusEmail } from "@/lib/actions/interview";
+import { inviteCandidatesToSession } from "@/lib/actions/interview-booking";
+import { decideCandidate, buildDecisionDraft } from "@/lib/actions/candidate-decision";
 
-function getPipelineFlow(t: ReturnType<typeof useTranslations>): Record<string, Array<{ value: string; label: string; style: string }>> {
-  return {
-    submitted: [
-      { value: "in_review", label: t("pipeline.evaluate"), style: "border border-border text-navy hover:bg-navy-50" },
-      { value: "rejected", label: t("pipeline.reject"), style: "border border-error text-error hover:bg-error-bg" },
-    ],
-    in_review: [
-      { value: "interview", label: t("pipeline.scheduleInterview"), style: "border border-petrol text-petrol hover:bg-petrol-50" },
-      { value: "accepted", label: t("pipeline.accept"), style: "bg-navy text-white hover:bg-navy-700" },
-      { value: "rejected", label: t("pipeline.reject"), style: "border border-error text-error hover:bg-error-bg" },
-    ],
-    interview: [
-      { value: "accepted", label: t("pipeline.accept"), style: "bg-navy text-white hover:bg-navy-700" },
-      { value: "rejected", label: t("pipeline.reject"), style: "border border-error text-error hover:bg-error-bg" },
-    ],
-    accepted: [],
-    rejected: [],
-  };
+export interface RoundOption {
+  id: string;
+  title: string;
+  roundIndex: number;
+  /** true se il candidato è già stato invitato a questo round. */
+  alreadyInvited: boolean;
 }
 
+/**
+ * Stato del candidato e cosa si può fare adesso.
+ *
+ * Sostituisce il vecchio blocco di pulsanti scollegati: qui si legge in una riga
+ * a che punto è la candidatura, e sotto ci sono solo le azioni che hanno senso
+ * da quel punto. "Convoca a colloquio" non scrive più un'email a mano: sceglie
+ * il round, che è la cosa che poi fa partire davvero la prenotazione.
+ */
 export function CandidateActions({
   applicationId,
+  slug,
   currentStatus,
-  candidateEmail,
   candidateName,
+  candidateEmail,
   associationName,
+  rounds,
+  interviewSummary,
 }: {
   applicationId: string;
+  slug: string;
   currentStatus: string;
-  candidateEmail?: string;
-  candidateName?: string;
-  associationName?: string;
+  candidateName: string;
+  candidateEmail: string;
+  associationName: string;
+  rounds: RoundOption[];
+  /** Riga già pronta sullo stato del colloquio, calcolata sul server. */
+  interviewSummary: string | null;
 }) {
   const t = useTranslations("CandidateActions");
-  const c = useTranslations("Common");
+  const router = useRouter();
+
   const [status, setStatus] = useState(currentStatus);
-  const [showNote, setShowNote] = useState(false);
-  const [showComposer, setShowComposer] = useState(false);
-  const [composerAction, setComposerAction] = useState<string>("");
-  const [noteText, setNoteText] = useState("");
-  const [emailMessage, setEmailMessage] = useState("");
+  const [panel, setPanel] = useState<"none" | "rounds" | "accepted" | "rejected">("none");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [generatingMsg, setGeneratingMsg] = useState(false);
-  const [emailSent, setEmailSent] = useState<string | null>(null);
+  const [done, setDone] = useState<string | null>(null);
 
-  const PIPELINE_FLOW = getPipelineFlow(t);
-  const nextSteps = PIPELINE_FLOW[status] ?? [];
+  const decided = status === "accepted" || status === "rejected";
 
-  const ACTION_LABELS: Record<string, string> = {
-    interview: t("emailType.interview"),
-    accepted: t("emailType.accepted"),
-    rejected: t("emailType.rejected"),
-  };
+  async function openDecision(decision: "accepted" | "rejected") {
+    setPanel(decision);
+    setLoading(true);
+    const draft = await buildDecisionDraft({ decision, candidateName, associationName });
+    setMessage(draft.message);
+    setLoading(false);
+  }
 
-  async function handleStatusChange(newStatus: string) {
-    if (["interview", "accepted", "rejected"].includes(newStatus)) {
-      setComposerAction(newStatus);
-      setShowComposer(true);
-      setGeneratingMsg(true);
-      const type = newStatus as "interview" | "accepted" | "rejected";
-      const result = await generateEmailDraft(type, candidateName || "candidato/a", associationName || "l'associazione");
-      setEmailMessage(result.message);
-      setGeneratingMsg(false);
+  async function confirmDecision(decision: "accepted" | "rejected") {
+    setLoading(true);
+    const result = await decideCandidate({ applicationId, decision, message });
+    if (result.error) {
+      window.alert(result.error);
+      setLoading(false);
       return;
     }
-    setLoading(true);
-    const result = await changeCandidateStatus(applicationId, newStatus);
-    if (!result.error) setStatus(newStatus);
+    setStatus(decision);
+    setPanel("none");
+    setDone(decision === "accepted" ? t("acceptedDone") : t("rejectedDone"));
+    router.refresh();
     setLoading(false);
   }
 
-  async function handleSendEmail() {
-    if (!emailMessage.trim()) return;
+  async function invite(roundId: string) {
     setLoading(true);
-    let result;
-    if (composerAction === "interview") {
-      result = await sendInterviewEmail(applicationId, emailMessage);
-    } else {
-      result = await sendStatusEmail(applicationId, composerAction, emailMessage);
+    const result = await inviteCandidatesToSession({
+      sessionId: roundId,
+      slug,
+      applicationIds: [applicationId],
+    });
+    if (result.error) {
+      window.alert(result.error);
+      setLoading(false);
+      return;
     }
-    if (!result?.error) {
-      setStatus(composerAction);
-      setShowComposer(false);
-      setEmailSent(ACTION_LABELS[composerAction] || composerAction);
-    }
+    setPanel("none");
+    setDone(t("invitedDone", { email: candidateEmail }));
+    setStatus("interview");
+    router.refresh();
     setLoading(false);
   }
 
-  async function handleAddNote() {
-    if (!noteText.trim()) return;
-    setLoading(true);
-    await addCandidateNote(applicationId, noteText);
-    setNoteText("");
-    setShowNote(false);
-    setLoading(false);
-  }
+  const statusLine = decided
+    ? status === "accepted"
+      ? t("stateAccepted")
+      : t("stateRejected")
+    : interviewSummary ?? t("stateApplied");
 
   return (
-    <div className="flex flex-col gap-3 items-end">
-      {nextSteps.length > 0 && (
-        <div className="flex flex-wrap gap-2 justify-end">
-          {nextSteps.map((s) => (
+    <div className="rounded-lg border border-border bg-white px-4 py-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <span
+          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+            status === "accepted"
+              ? "bg-success-bg text-success"
+              : status === "rejected"
+                ? "bg-error-bg text-error"
+                : "bg-petrol-50 text-petrol-700"
+          }`}
+        >
+          {status === "accepted"
+            ? t("badgeAccepted")
+            : status === "rejected"
+              ? t("badgeRejected")
+              : status === "interview"
+                ? t("badgeInterview")
+                : t("badgeApplied")}
+        </span>
+
+        <p className="text-body-sm text-ink">{statusLine}</p>
+
+        {!decided && (
+          <div className="ml-auto flex flex-wrap items-center gap-2">
             <button
-              key={s.value}
-              onClick={() => handleStatusChange(s.value)}
+              onClick={() => setPanel(panel === "rounds" ? "none" : "rounds")}
               disabled={loading}
-              className={`px-4 py-2 rounded-md text-label transition-colors duration-100 disabled:opacity-40 ${s.style}`}
+              className="rounded-md border border-petrol px-3 py-1.5 text-body-sm text-petrol transition-colors duration-100 hover:bg-petrol-50 disabled:opacity-40"
             >
-              {s.label}
+              {t("inviteToRound")}
             </button>
-          ))}
-        </div>
-      )}
-
-      {emailSent && (
-        <div className="w-full max-w-md rounded-md bg-success-bg px-4 py-2 text-body-sm text-success">
-          {emailSent}{t("emailSentSuffix", { email: candidateEmail ?? "" })}
-        </div>
-      )}
-
-      {showComposer && (
-        <div className={`w-full max-w-md space-y-3 rounded-lg border p-4 ${
-          composerAction === "rejected" ? "border-error/30 bg-error-bg/30" : "border-petrol/30 bg-petrol-50"
-        }`}>
-          <p className="text-label text-navy">{ACTION_LABELS[composerAction]}</p>
-          <p className="text-xs text-ink-secondary">
-            {t("editBeforeSending")}
-          </p>
-          {generatingMsg ? (
-            <div className="px-3 py-4 text-body-sm text-ink-tertiary text-center">{t("generatingDraft")}</div>
-          ) : (
-            <textarea
-              value={emailMessage}
-              onChange={(e) => setEmailMessage(e.target.value)}
-              rows={8}
-              className="w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:border-petrol resize-y"
-            />
-          )}
-          {candidateEmail && (
-            <p className="text-xs text-ink-tertiary">{t("toPrefix", { email: candidateEmail })}</p>
-          )}
-          <div className="flex gap-2">
             <button
-              onClick={handleSendEmail}
-              disabled={loading || generatingMsg || !emailMessage.trim()}
-              className={`flex-1 px-4 py-2 rounded-md text-body-sm text-white disabled:opacity-40 ${
-                composerAction === "rejected" ? "bg-error hover:bg-error/80" : "bg-petrol hover:bg-petrol-700"
+              onClick={() => openDecision("accepted")}
+              disabled={loading}
+              className="rounded-md bg-navy px-3 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-navy-700 disabled:opacity-40"
+            >
+              {t("accept")}
+            </button>
+            <button
+              onClick={() => openDecision("rejected")}
+              disabled={loading}
+              className="rounded-md border border-error px-3 py-1.5 text-body-sm text-error transition-colors duration-100 hover:bg-error-bg disabled:opacity-40"
+            >
+              {t("reject")}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {done && <p className="mt-2 rounded-md bg-success-bg px-3 py-2 text-body-sm text-success">{done}</p>}
+
+      {/* Scelta del round: senza round creati non si può convocare nessuno, e
+          dirlo qui evita di far cercare al board dove sta il problema. */}
+      {panel === "rounds" && (
+        <div className="mt-3 rounded-md border border-border bg-paper p-3">
+          {rounds.length === 0 ? (
+            <div className="space-y-2">
+              <p className="text-body-sm text-ink">{t("noRoundsYet")}</p>
+              <Link
+                href={`/association/${slug}/colloqui`}
+                className="inline-block rounded-md bg-navy px-3 py-1.5 text-body-sm text-white hover:bg-navy-700"
+              >
+                {t("goCreateRound")}
+              </Link>
+            </div>
+          ) : (
+            <>
+              <p className="mb-2 text-body-sm text-ink-secondary">{t("pickRound")}</p>
+              <div className="space-y-1">
+                {rounds.map((round) => (
+                  <button
+                    key={round.id}
+                    onClick={() => invite(round.id)}
+                    disabled={loading || round.alreadyInvited}
+                    className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-white disabled:opacity-50"
+                  >
+                    <span className="text-eyebrow uppercase text-navy/50">
+                      {t("roundLabel", { index: round.roundIndex })}
+                    </span>
+                    <span className="text-body-sm text-navy">{round.title}</span>
+                    {round.alreadyInvited && (
+                      <span className="ml-auto text-body-sm text-ink-tertiary">
+                        {t("alreadyInvited")}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {(panel === "accepted" || panel === "rejected") && (
+        <div className="mt-3 space-y-2 rounded-md border border-border bg-paper p-3">
+          <p className="text-body-sm text-ink">{t("draftIntro", { email: candidateEmail })}</p>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            rows={10}
+            className="w-full rounded-md border border-border px-3 py-2 text-body-sm text-ink focus:border-petrol focus:outline-none"
+          />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => confirmDecision(panel)}
+              disabled={loading}
+              className={`rounded-md px-4 py-1.5 text-body-sm text-white transition-colors duration-100 disabled:opacity-40 ${
+                panel === "accepted" ? "bg-navy hover:bg-navy-700" : "bg-error hover:bg-error/80"
               }`}
             >
-              {loading ? t("sendEmailLoading") : t("sendEmail")}
+              {loading ? t("sending") : panel === "accepted" ? t("confirmAccept") : t("confirmReject")}
             </button>
             <button
-              onClick={() => setShowComposer(false)}
-              className="px-3 py-2 text-body-sm text-ink-secondary hover:text-navy"
+              onClick={() => setPanel("none")}
+              className="text-body-sm text-ink-secondary hover:underline"
             >
-              {c("cancel")}
+              {t("cancel")}
             </button>
           </div>
         </div>
-      )}
-
-      {showNote ? (
-        <div className="flex gap-2 w-full max-w-sm">
-          <input
-            type="text"
-            value={noteText}
-            onChange={(e) => setNoteText(e.target.value)}
-            placeholder={t("notePlaceholder")}
-            className="flex-1 px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:border-petrol"
-            onKeyDown={(e) => e.key === "Enter" && handleAddNote()}
-          />
-          <button
-            onClick={handleAddNote}
-            disabled={loading}
-            className="px-3 py-2 bg-navy text-white rounded-md text-label hover:bg-navy-700 disabled:opacity-40"
-          >
-            {c("save")}
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={() => setShowNote(true)}
-          className="text-body-sm text-petrol hover:text-petrol-700 transition-colors duration-100"
-        >
-          {t("addNote")}
-        </button>
       )}
     </div>
   );
