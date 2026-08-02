@@ -101,16 +101,80 @@ export default async function AssociationInterviewsPage({ params }: Props) {
     stats.set(slot.session_id, entry);
   }
 
-  const cycleOptions: CycleOption[] = ((cycles ?? []) as any[]).map((c) => ({
-    id: c.id,
-    title: c.title,
-  }));
+  // Una selezione conclusa non riceve piu' round: i suoi finiscono nello storico.
+  const activeCycleIds = new Set(
+    ((cycles ?? []) as any[]).filter((c) => c.status !== "closed").map((c) => c.id)
+  );
+
+  const cycleOptions: CycleOption[] = ((cycles ?? []) as any[])
+    .filter((c) => c.status !== "closed")
+    .map((c) => ({ id: c.id, title: c.title }));
+
+  const allSessions = (sessions ?? []) as any[];
+  const currentSessions = allSessions.filter((x) => activeCycleIds.has(x.application_cycle_id));
+  const pastSessions = allSessions.filter((x) => !activeCycleIds.has(x.application_cycle_id));
 
   const statusClass: Record<string, string> = {
     draft: "bg-amber-100 text-amber-700",
     open: "bg-emerald-100 text-emerald-700",
     closed: "bg-navy-50 text-ink-tertiary",
   };
+
+  function renderSession(session: any) {
+    const st = stats.get(session.id) ?? { total: 0, covered: 0, booked: 0, first: null };
+    const days = (parseWindows(session.windows) ?? []).map((w) => w.date).sort();
+    const dayLabel = (iso: string) =>
+      new Date(`${iso}T12:00:00Z`).toLocaleDateString(dateLocale, {
+        timeZone: APP_TIME_ZONE,
+        day: "numeric",
+        month: "long",
+      });
+
+    // Una frase che dice cosa manca per andare avanti, invece di far entrare in
+    // ogni round per scoprirlo.
+    const nextStep =
+      st.covered === 0
+        ? { text: t("stepNoAvailability"), tone: "text-warning" }
+        : st.booked === 0
+          ? { text: t("stepInviteCandidates"), tone: "text-petrol" }
+          : { text: t("stepBooked", { booked: st.booked, covered: st.covered }), tone: "text-ink-secondary" };
+
+    return (
+      <Link
+        key={session.id}
+        href={`/association/${slug}/colloqui/${session.id}`}
+        className="block rounded-lg border border-border bg-white px-4 py-3 transition-colors duration-100 hover:border-border-strong"
+      >
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <span className="text-eyebrow uppercase text-navy/50">
+            {t("roundLabel", { index: session.round_index })}
+          </span>
+          <span className="font-sans text-h3 text-navy">{session.title}</span>
+          <span className="ml-auto text-body-sm text-ink-tertiary">
+            {session.application_cycles?.title}
+          </span>
+        </div>
+
+        <p className="mt-1 text-body-sm text-ink-secondary">
+          {session.mode === "online" ? t("modeOnline") : t("modeInPerson")}
+          {days.length > 0 && (
+            <>
+              {" · "}
+              {days.length === 1
+                ? t("oneDay", { date: dayLabel(days[0]!) })
+                : t("manyDays", {
+                    count: days.length,
+                    from: dayLabel(days[0]!),
+                    to: dayLabel(days[days.length - 1]!),
+                  })}
+            </>
+          )}
+        </p>
+
+        <p className={`mt-0.5 text-body-sm ${nextStep.tone}`}>{nextStep.text}</p>
+      </Link>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -122,76 +186,23 @@ export default async function AssociationInterviewsPage({ params }: Props) {
 
       <NewSessionPanel associationId={association.id} slug={slug} cycles={cycleOptions} />
 
-      {!(sessions ?? []).length ? (
+      {currentSessions.length === 0 ? (
         <div className="rounded-lg border border-border bg-white p-6 text-center">
-          <p className="text-body-sm text-ink-secondary">{t("noSessions")}</p>
+          <p className="text-body-sm text-ink-secondary">
+            {cycleOptions.length ? t("noRoundsForCurrent", { cycle: cycleOptions[0]!.title }) : t("noOpenSelection")}
+          </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {((sessions ?? []) as any[]).map((session) => {
-            const s = stats.get(session.id) ?? { total: 0, covered: 0, booked: 0, first: null };
-            const days = (parseWindows(session.windows) ?? []).map((w) => w.date).sort();
-            const dayLabel = (iso: string) =>
-              new Date(`${iso}T12:00:00Z`).toLocaleDateString(dateLocale, {
-                timeZone: APP_TIME_ZONE,
-                day: "numeric",
-                month: "long",
-              });
+        <div className="space-y-2">{currentSessions.map(renderSession)}</div>
+      )}
 
-            // La riga deve dire in una frase cosa manca per andare avanti, altrimenti
-            // bisogna entrare in ogni round per capirlo.
-            const nextStep =
-              s.covered === 0
-                ? { text: t("stepNoAvailability"), tone: "text-warning" }
-                : session.status === "draft"
-                  ? { text: t("stepReadyToOpen"), tone: "text-petrol" }
-                  : session.status === "open"
-                    ? { text: t("stepOpen", { booked: s.booked, covered: s.covered }), tone: "text-ink-secondary" }
-                    : { text: t("stepClosed"), tone: "text-ink-tertiary" };
-
-            return (
-              <Link
-                key={session.id}
-                href={`/association/${slug}/colloqui/${session.id}`}
-                className="block rounded-lg border border-border bg-white px-4 py-3 transition-colors duration-100 hover:border-border-strong"
-              >
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span className="text-eyebrow uppercase text-navy/50">
-                    {t("roundLabel", { index: session.round_index })}
-                  </span>
-                  <span className="font-sans text-h3 text-navy">{session.title}</span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass[session.status] ?? ""}`}
-                  >
-                    {t(`status.${session.status}`)}
-                  </span>
-                  <span className="ml-auto text-body-sm text-ink-tertiary">
-                    {session.application_cycles?.title}
-                  </span>
-                </div>
-
-                <p className="mt-1 text-body-sm text-ink-secondary">
-                  {session.mode === "online" ? t("modeOnline") : t("modeInPerson")}
-                  {days.length > 0 && (
-                    <>
-                      {" · "}
-                      {days.length === 1
-                        ? t("oneDay", { date: dayLabel(days[0]!) })
-                        : t("manyDays", {
-                            count: days.length,
-                            from: dayLabel(days[0]!),
-                            to: dayLabel(days[days.length - 1]!),
-                          })}
-                    </>
-                  )}
-                  {s.total > 0 && <>{" · "}{t("slotCount", { count: s.total })}</>}
-                </p>
-
-                <p className={`mt-0.5 text-body-sm ${nextStep.tone}`}>{nextStep.text}</p>
-              </Link>
-            );
-          })}
-        </div>
+      {pastSessions.length > 0 && (
+        <details className="group">
+          <summary className="cursor-pointer select-none text-body-sm text-ink-tertiary transition-colors hover:text-ink-secondary">
+            {t("pastRounds", { count: pastSessions.length })}
+          </summary>
+          <div className="mt-3 space-y-2 opacity-70">{pastSessions.map(renderSession)}</div>
+        </details>
       )}
     </div>
   );

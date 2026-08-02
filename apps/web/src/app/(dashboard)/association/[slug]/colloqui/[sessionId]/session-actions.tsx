@@ -3,22 +3,22 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { setInterviewSessionStatus, deleteInterviewSession } from "@/lib/actions/interview-sessions";
+import { deleteInterviewSession } from "@/lib/actions/interview-sessions";
 
 /**
- * Apri, chiudi, rigenera, elimina. Le azioni che cambiano lo stato di una sessione
- * stanno insieme perché sono tutte irreversibili dal punto di vista di chi ha già
- * prenotato: le protezioni vere però sono server-side, non qui.
+ * Le azioni sul round.
+ *
+ * "Apri le prenotazioni" e "Chiudi" sono state tolte: le date le hai già messe e
+ * decidi tu chi invitare, quindi l'invito È l'apertura. Lo stato del round si
+ * legge dai fatti, non da un interruttore in più da ricordarsi di premere.
  */
 export function SessionActions({
   sessionId,
   slug,
-  status,
   canManage,
 }: {
   sessionId: string;
   slug: string;
-  status: "draft" | "open" | "closed";
   canManage: boolean;
 }) {
   const t = useTranslations("Interviews");
@@ -27,50 +27,23 @@ export function SessionActions({
 
   if (!canManage) return null;
 
-  async function run(fn: () => Promise<{ error?: string }>) {
-    setLoading(true);
-    const result = await fn();
-    if (result.error) window.alert(result.error);
-    router.refresh();
-    setLoading(false);
-  }
-
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      {status !== "open" ? (
-        <button
-          onClick={() => run(() => setInterviewSessionStatus({ sessionId, slug, status: "open" }))}
-          disabled={loading}
-          className="rounded-md bg-petrol px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-petrol-700 disabled:opacity-40"
-        >
-          {t("openSession")}
-        </button>
-      ) : (
-        <button
-          onClick={() => run(() => setInterviewSessionStatus({ sessionId, slug, status: "closed" }))}
-          disabled={loading}
-          className="rounded-md bg-navy px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-navy-700 disabled:opacity-40"
-        >
-          {t("closeSession")}
-        </button>
-      )}
-
-      {/* "Rigenera la griglia" e' stato tolto: non si capiva cosa facesse, e la
-          griglia si rifa' da sola quando si modifica il round. */}
-      <button
-        onClick={() => {
-          if (!window.confirm(t("deleteConfirm"))) return;
-          run(async () => {
-            const result = await deleteInterviewSession({ sessionId, slug });
-            if (!result.error) router.push(`/association/${slug}/colloqui`);
-            return result;
-          });
-        }}
-        disabled={loading}
-        className="text-body-sm text-error hover:underline disabled:opacity-40"
-      >
-        {t("deleteSession")}
-      </button>
-    </div>
+    <button
+      onClick={async () => {
+        if (!window.confirm(t("deleteConfirm"))) return;
+        setLoading(true);
+        const result = await deleteInterviewSession({ sessionId, slug });
+        if (result.error) {
+          window.alert(result.error);
+          setLoading(false);
+          return;
+        }
+        router.push(`/association/${slug}/colloqui`);
+      }}
+      disabled={loading}
+      className="text-body-sm text-error hover:underline disabled:opacity-40"
+    >
+      {t("deleteSession")}
+    </button>
   );
 }

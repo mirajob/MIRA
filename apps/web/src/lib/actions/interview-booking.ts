@@ -44,8 +44,26 @@ export async function inviteCandidatesToSession(input: {
     .maybeSingle();
 
   if (!session) return { error: "Sessione non trovata." };
-  if (session.status !== "open") {
-    return { error: "Apri prima le prenotazioni: senza, gli invitati non troverebbero orari." };
+  if (session.status === "closed") return { error: "Questo round è chiuso." };
+
+  // Invitare È l'apertura: non ha senso un pulsante "apri le prenotazioni"
+  // separato, visto che le date ci sono già e chi invitare lo decidi tu. Serve
+  // però che qualcuno del board sia disponibile, altrimenti gli invitati non
+  // troverebbero un solo orario da scegliere.
+  const { count: availabilityCount } = await (supabase.from("interview_availability") as any)
+    .select("id", { count: "exact", head: true })
+    .eq("session_id", input.sessionId);
+
+  if (!availabilityCount) {
+    return {
+      error: "Nessuno del board ha ancora segnato la propria disponibilità: chi inviti non troverebbe orari.",
+    };
+  }
+
+  if (session.status === "draft") {
+    await (supabase.from("interview_sessions") as any)
+      .update({ status: "open" })
+      .eq("id", input.sessionId);
   }
 
   const { data: membership } = await (supabase.from("association_memberships") as any)

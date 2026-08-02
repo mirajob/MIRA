@@ -143,11 +143,6 @@ export default async function InterviewSessionPage({ params }: Props) {
       };
     });
 
-  const total = blocks.length;
-  const covered = blocks.filter(
-    (b) => b.others.length + (b.mine ? 1 : 0) >= session.required_interviewers
-  ).length;
-  const booked = blocks.filter((b) => b.bookedName).length;
 
   return (
     <div className="space-y-4">
@@ -181,54 +176,29 @@ export default async function InterviewSessionPage({ params }: Props) {
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border border-border bg-white px-4 py-3">
-        <div>
-          <p className="text-eyebrow uppercase text-navy/50">{t("statTotal")}</p>
-          <p className="text-body font-medium text-navy tabular-nums">{total}</p>
-        </div>
-        <div>
-          <p className="text-eyebrow uppercase text-navy/50">{t("statCovered")}</p>
-          <p className={`text-body font-medium tabular-nums ${covered < total ? "text-warning" : "text-navy"}`}>
-            {covered}
-          </p>
-        </div>
-        <div>
-          <p className="text-eyebrow uppercase text-navy/50">{t("statBooked")}</p>
-          <p className="text-body font-medium text-navy tabular-nums">{booked}</p>
-        </div>
-        {session.required_interviewers > 1 && (
-          <div>
-            <p className="text-eyebrow uppercase text-navy/50">{t("statRequired")}</p>
-            <p className="text-body font-medium text-navy tabular-nums">
-              {session.required_interviewers}
-            </p>
-          </div>
+      <div className="flex flex-wrap items-center gap-3">
+        {canManage && (
+          <EditSessionPanel
+            associationId={session.association_id}
+            slug={slug}
+            cycleId={session.application_cycle_id}
+            sessionId={sessionId}
+            initial={{
+              title: session.title,
+              description: session.description ?? "",
+              mode: session.mode,
+              linkMode: session.link_mode,
+              location: session.location ?? "",
+              meetingLink: session.meeting_link ?? "",
+              slotDurationMinutes: session.slot_duration_minutes,
+              breakMinutes: session.break_minutes,
+              parallelTracks: session.parallel_tracks,
+              requiredInterviewers: session.required_interviewers,
+              windows: parseWindows(session.windows),
+            }}
+          />
         )}
-
-        <div className="ml-auto flex flex-wrap items-center gap-4">
-          {canManage && (
-            <EditSessionPanel
-              associationId={session.association_id}
-              slug={slug}
-              cycleId={session.application_cycle_id}
-              sessionId={sessionId}
-              initial={{
-                title: session.title,
-                description: session.description ?? "",
-                mode: session.mode,
-                linkMode: session.link_mode,
-                location: session.location ?? "",
-                meetingLink: session.meeting_link ?? "",
-                slotDurationMinutes: session.slot_duration_minutes,
-                breakMinutes: session.break_minutes,
-                parallelTracks: session.parallel_tracks,
-                requiredInterviewers: session.required_interviewers,
-                windows: parseWindows(session.windows),
-              }}
-            />
-          )}
-          <SessionActions sessionId={sessionId} slug={slug} status={session.status} canManage={canManage} />
-        </div>
+        <SessionActions sessionId={sessionId} slug={slug} canManage={canManage} />
       </div>
 
       <BookedInterviews
