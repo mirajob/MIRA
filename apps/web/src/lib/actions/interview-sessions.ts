@@ -60,7 +60,7 @@ export async function createInterviewSession(input: {
   title: string;
   description?: string;
   mode: "online" | "in_person";
-  linkMode: "shared" | "per_interview";
+  linkMode: "shared" | "per_interview" | "auto";
   location?: string;
   meetingLink?: string;
   slotDurationMinutes: number;
@@ -142,7 +142,7 @@ export async function updateInterviewSession(input: {
   title: string;
   description?: string;
   mode: "online" | "in_person";
-  linkMode: "shared" | "per_interview";
+  linkMode: "shared" | "per_interview" | "auto";
   location?: string;
   meetingLink?: string;
   slotDurationMinutes: number;

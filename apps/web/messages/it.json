@@ -1719,7 +1719,9 @@
     "bookedUpcoming": "In programma",
     "bookedPast": "Già svolti",
     "placeBeforeInvite": "Dove si fanno questi colloqui?",
-    "placeBeforeInviteHint": "Se lo metti adesso, al candidato arriva una mail sola con orario e posto. Altrimenti dovrai mandarlo dopo, colloquio per colloquio."
+    "placeBeforeInviteHint": "Se lo metti adesso, al candidato arriva una mail sola con orario e posto. Altrimenti dovrai mandarlo dopo, colloquio per colloquio.",
+    "linkModeAuto": "Link generato da MIRA (consigliato)",
+    "linkModeAutoHint": "Quando un candidato prenota, MIRA crea un link di videochiamata solo per quel colloquio e lo manda subito a lui e a chi conduce, dentro la stessa email dell'orario. Non devi creare né incollare niente. Usiamo Jitsi Meet, un servizio di videochiamata gratuito che si apre dal browser, anche da telefono, senza installare né registrarsi: si clicca il link e si entra. La stanza ha un indirizzo lungo e casuale, quindi ci arriva solo chi ha ricevuto l'email."
   },
   "StudentInterviews": {
     "pageTitle": "Colloqui",

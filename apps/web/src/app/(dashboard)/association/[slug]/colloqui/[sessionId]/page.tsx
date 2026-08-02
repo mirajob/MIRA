@@ -176,7 +176,9 @@ export default async function InterviewSessionPage({ params }: Props) {
             ? session.location
             : session.link_mode === "shared"
               ? session.meeting_link
-              : t("linkModePerInterview")}
+              : session.link_mode === "auto"
+                ? t("linkModeAuto")
+                : t("linkModePerInterview")}
         </p>
       </div>
 
@@ -219,7 +221,7 @@ export default async function InterviewSessionPage({ params }: Props) {
         slug={slug}
         candidates={invitableCandidates}
         sessionOpen={session.status !== "closed"}
-        placeMissing={session.link_mode !== "shared" || !(session.mode === "in_person" ? session.location : session.meeting_link)}
+        placeMissing={session.link_mode !== "auto" && (session.link_mode !== "shared" || !(session.mode === "in_person" ? session.location : session.meeting_link))}
         placeIsLink={session.mode === "online"}
       />}
 

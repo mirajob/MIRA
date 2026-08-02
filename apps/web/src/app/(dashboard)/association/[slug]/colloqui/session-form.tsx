@@ -20,7 +20,7 @@ export interface SessionInitialValues {
   title: string;
   description: string;
   mode: "online" | "in_person";
-  linkMode: "shared" | "per_interview";
+  linkMode: "shared" | "per_interview" | "auto";
   location: string;
   meetingLink: string;
   slotDurationMinutes: number;
@@ -54,8 +54,8 @@ export function SessionForm({
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [mode, setMode] = useState<"online" | "in_person">(initial?.mode ?? "in_person");
-  const [linkMode, setLinkMode] = useState<"shared" | "per_interview">(
-    initial?.linkMode ?? "per_interview"
+  const [linkMode, setLinkMode] = useState<"shared" | "per_interview" | "auto">(
+    initial?.linkMode ?? "auto"
   );
   const [location, setLocation] = useState(initial?.location ?? "");
   const [meetingLink, setMeetingLink] = useState(initial?.meetingLink ?? "");
@@ -198,7 +198,10 @@ export function SessionForm({
           <span className={label}>
             {mode === "online" ? t("linkModeLabel") : t("placeModeLabel")}
           </span>
-          {(["shared", "per_interview"] as const).map((lm) => (
+          {(mode === "online"
+            ? (["auto", "shared", "per_interview"] as const)
+            : (["shared", "per_interview"] as const)
+          ).map((lm) => (
             <label key={lm} className="flex items-start gap-2 cursor-pointer">
               <input
                 type="radio"
@@ -210,18 +213,22 @@ export function SessionForm({
               <span>
                 <span className="block text-body-sm text-ink">
                   {mode === "online"
-                    ? lm === "shared"
-                      ? t("linkModeShared")
-                      : t("linkModePerInterview")
+                    ? lm === "auto"
+                      ? t("linkModeAuto")
+                      : lm === "shared"
+                        ? t("linkModeShared")
+                        : t("linkModePerInterview")
                     : lm === "shared"
                       ? t("placeModeShared")
                       : t("placeModePerInterview")}
                 </span>
                 <span className="block text-body-sm text-ink-tertiary">
                   {mode === "online"
-                    ? lm === "shared"
-                      ? t("linkModeSharedHint")
-                      : t("linkModePerInterviewHint")
+                    ? lm === "auto"
+                      ? t("linkModeAutoHint")
+                      : lm === "shared"
+                        ? t("linkModeSharedHint")
+                        : t("linkModePerInterviewHint")
                     : lm === "shared"
                       ? t("placeModeSharedHint")
                       : t("placeModePerInterviewHint")}

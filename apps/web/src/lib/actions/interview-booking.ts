@@ -4,6 +4,7 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { rangeCoversBlock } from "@/lib/interview-slots";
 import { buildInterviewIcs } from "@/lib/ics";
+import { generateMeetingRoomUrl } from "@/lib/meeting-room";
 import { APP_TIME_ZONE } from "@/lib/format-date";
 import { sendInterviewBookingInvite, sendInterviewConfirmation } from "@/lib/email";
 import { revalidatePath } from "next/cache";
@@ -241,14 +242,25 @@ export async function bookInterviewSlot(input: { inviteId: string; slotId: strin
         .maybeSingle()
     : { data: null };
 
-  // Il posto è noto solo se la sessione ne ha uno solo per tutti. In per_interview
-  // arriva dopo, messo da chi conduce, e qui resta vuoto di proposito.
+  // Il posto. In "auto" nasce adesso, e questo e' il motivo per cui esiste quella
+  // modalita': cosi' la conferma di prenotazione lo contiene gia' e non serve una
+  // seconda email. In "per_interview" arriva dopo, messo da chi conduce.
+  const generatedRoom =
+    session.mode === "online" && session.link_mode === "auto" ? generateMeetingRoomUrl() : null;
+
   const place =
-    session.link_mode !== "shared"
+    generatedRoom ??
+    (session.link_mode !== "shared"
       ? null
       : session.mode === "in_person"
         ? session.location
-        : session.meeting_link ?? interviewerProfile?.meeting_link ?? null;
+        : session.meeting_link ?? interviewerProfile?.meeting_link ?? null);
+
+  if (generatedRoom) {
+    await (supabase.from("interview_slots") as any)
+      .update({ meeting_link: generatedRoom })
+      .eq("id", input.slotId);
+  }
 
   await (supabase.from("interview_invites") as any)
     .update({
