@@ -1018,18 +1018,16 @@
   "CandidatesList": {
     "heading": "Candidates",
     "countLabel": "{count} applications",
-    "openCyclesSuffix": " (open cycles)",
     "allFilter": "All",
     "noApplications": "No applications received yet",
-    "tableHeaders": {
-      "candidate": "Candidate",
-      "position": "Position",
-      "status": "Status",
-      "evaluation": "Evaluation",
-      "date": "Date"
-    },
-    "genericPosition": "Generic",
-    "evaluated": "Evaluated"
+    "groupApplied": "To review",
+    "groupAppliedHint": "They applied and are waiting for an answer.",
+    "groupInterview": "Interviewing",
+    "groupInterviewHint": "Invited to a round: booked, or still to book.",
+    "groupAccepted": "Accepted",
+    "groupAcceptedHint": "They are now members of the association.",
+    "groupRejected": "Not selected",
+    "groupRejectedHint": "They got the answer and the process is closed for them."
   },
   "CandidateDetail": {
     "fallbackName": "Candidate",
@@ -1097,11 +1095,6 @@
     "cancel": "Cancel",
     "acceptedDone": "Accepted. Added to members and notified by email.",
     "rejectedDone": "Rejected. Notified by email."
-  },
-  "RegenerateEvaluationButton": {
-    "notAvailable": "The AI evaluation isn't available yet.",
-    "generating": "Generating...",
-    "generate": "Generate evaluation"
   },
   "InterviewsPage": {
     "heading": "Interviews",
@@ -1706,7 +1699,9 @@
     "noOpenSelection": "No selection is open. Open one from the Cycles tab to create rounds.",
     "pastRounds": "Rounds from closed selections ({count})",
     "stepInviteCandidates": "Ready: invite candidates and they will pick a time.",
-    "stepBooked": "{booked} booked, out of {covered} available times"
+    "stepBooked": "{booked} booked, out of {covered} available times",
+    "archivedRound": "This round belongs to a closed selection: it stays here as history and cannot be changed.",
+    "archivedSummary": "{booked} interviews held"
   },
   "StudentInterviews": {
     "pageTitle": "Interviews",

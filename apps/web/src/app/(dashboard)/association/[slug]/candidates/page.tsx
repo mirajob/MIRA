@@ -3,29 +3,28 @@ import { createServiceClient } from "@mira/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { APPLICATION_STATUS_LABELS } from "@mira/domain";
 import { APP_TIME_ZONE } from "@/lib/format-date";
+import { CandidatesBoard, type CandidateRow } from "./candidates-board";
+import type { RoundOption } from "./[applicationId]/candidate-actions";
 
 interface Props {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ cycle?: string }>;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  submitted: "bg-petrol-50 text-petrol-700",
-  in_review: "bg-warning-bg text-warning",
-  interview: "bg-petrol-50 text-petrol-700",
-  accepted: "bg-success-bg text-success",
-  rejected: "bg-error-bg text-error",
-  waitlisted: "bg-navy-50 text-navy",
-  withdrawn: "bg-navy-50 text-ink-tertiary",
-};
-
+/**
+ * I candidati della selezione, divisi per il punto in cui sono.
+ *
+ * Le colonne di prima (stato, valutazione, data) erano etichette da leggere e
+ * interpretare. Le fasi invece si guardano: chi aspetta una risposta, chi è al
+ * colloquio, chi è dentro, chi è fuori.
+ */
 export default async function CandidatesPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const { cycle: cycleFilter } = await searchParams;
   const supabase = await createServiceClient();
   const t = await getTranslations("CandidatesList");
+  const d = await getTranslations("CandidateDetail");
   const locale = await getLocale();
   const dateLocale = locale === "it" ? "it-IT" : "en-US";
 
@@ -41,55 +40,119 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
     .eq("association_id", association.id)
     .order("created_at", { ascending: false });
 
-  const openCycleIds = (cycles ?? []).filter((c: any) => c.status === "open").map((c: any) => c.id);
+  const activeCycles = ((cycles ?? []) as any[]).filter((c) => c.status !== "closed");
   const showAll = cycleFilter === "all";
-  const effectiveFilter = showAll ? null : (cycleFilter || (openCycleIds.length === 1 ? openCycleIds[0] : null));
+  const selectedCycle = showAll
+    ? null
+    : cycleFilter || activeCycles[0]?.id || (cycles ?? [])[0]?.id || null;
 
   let query = (supabase.from("applications") as any)
     .select(`
-      id, status, submitted_at, last_status_change_at, application_cycle_id, selected_role_preferences,
-      profiles(full_name, email),
-      student_profiles(degree_program, current_year),
-      application_cycles(title, status),
-      candidate_ai_evaluations(id)
+      id, status, submitted_at, application_cycle_id, selected_role_preferences,
+      profiles(full_name, email)
     `)
     .eq("association_id", association.id)
     .neq("status", "draft")
     .order("submitted_at", { ascending: false });
 
-  if (effectiveFilter) {
-    query = query.eq("application_cycle_id", effectiveFilter);
+  if (selectedCycle) query = query.eq("application_cycle_id", selectedCycle);
+
+  const { data: applications } = await query;
+
+  // I round della selezione mostrata: sono le opzioni di "convoca a colloquio".
+  const { data: roundRows } = selectedCycle
+    ? await (supabase.from("interview_sessions") as any)
+        .select("id, title, round_index")
+        .eq("application_cycle_id", selectedCycle)
+        .order("round_index", { ascending: true })
+    : { data: [] };
+
+  const rounds: RoundOption[] = ((roundRows ?? []) as any[]).map((r) => ({
+    id: r.id,
+    title: r.title,
+    roundIndex: r.round_index,
+    alreadyInvited: false,
+  }));
+
+  // Lo stato del colloquio in una riga, per chi è già stato invitato.
+  const applicationIds = ((applications ?? []) as any[]).map((a) => a.id);
+  const { data: invites } = applicationIds.length
+    ? await (supabase.from("interview_invites") as any)
+        .select("application_id, selected_time")
+        .in("application_id", applicationIds)
+    : { data: [] };
+
+  const inviteByApplication = new Map<string, any>();
+  for (const invite of ((invites ?? []) as any[])) {
+    const existing = inviteByApplication.get(invite.application_id);
+    if (!existing || (invite.selected_time && !existing.selected_time)) {
+      inviteByApplication.set(invite.application_id, invite);
+    }
   }
 
-  const { data: allApplications } = await query;
+  const rows: CandidateRow[] = ((applications ?? []) as any[]).map((app) => {
+    const invite = inviteByApplication.get(app.id);
+    const summary = invite?.selected_time
+      ? new Date(invite.selected_time).getTime() < Date.now()
+        ? d("interviewDone", {
+            date: new Date(invite.selected_time).toLocaleString(dateLocale, {
+              timeZone: APP_TIME_ZONE,
+              day: "numeric",
+              month: "long",
+            }),
+          })
+        : d("interviewBooked", {
+            date: new Date(invite.selected_time).toLocaleString(dateLocale, {
+              timeZone: APP_TIME_ZONE,
+              weekday: "short",
+              day: "numeric",
+              month: "long",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          })
+      : invite
+        ? d("interviewInvitedNotBooked")
+        : null;
 
-  const openApps = (allApplications ?? []).filter((a: any) => a.application_cycles?.status === "open");
-  const closedApps = (allApplications ?? []).filter((a: any) => a.application_cycles?.status !== "open");
-  const applications = showAll ? (allApplications ?? []) : (effectiveFilter ? (allApplications ?? []) : openApps);
+    return {
+      applicationId: app.id,
+      name: app.profiles?.full_name ?? "—",
+      email: app.profiles?.email ?? "",
+      position: app.selected_role_preferences?.[0] ?? null,
+      status: app.status,
+      interviewSummary: summary,
+    };
+  });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
-          <p className="mt-1 text-body text-ink-secondary">
-            {t("countLabel", { count: applications?.length ?? 0 })}{effectiveFilter ? "" : t("openCyclesSuffix")}
+          <p className="mt-0.5 text-body-sm text-ink-secondary">
+            {t("countLabel", { count: rows.length })}
           </p>
         </div>
+
         {(cycles?.length ?? 0) > 1 && (
-          <div className="flex flex-wrap gap-2">
-            {(cycles ?? []).filter((c: any) => c.status === "open").map((c: any) => (
+          <div className="flex flex-wrap gap-1.5">
+            {((cycles ?? []) as any[]).map((c) => (
               <Link
                 key={c.id}
                 href={`/association/${slug}/candidates?cycle=${c.id}`}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${effectiveFilter === c.id ? "bg-navy text-white" : "border border-border text-ink-secondary hover:text-navy"}`}
+                className={`rounded-full px-3 py-1 text-body-sm transition-colors ${
+                  selectedCycle === c.id ? "bg-navy text-white" : "bg-navy-50 text-navy hover:bg-navy-100"
+                }`}
               >
                 {c.title}
               </Link>
             ))}
             <Link
               href={`/association/${slug}/candidates?cycle=all`}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${cycleFilter === "all" ? "bg-navy text-white" : "border border-border text-ink-tertiary hover:text-navy"}`}
+              className={`rounded-full px-3 py-1 text-body-sm transition-colors ${
+                showAll ? "bg-navy text-white" : "bg-navy-50 text-navy hover:bg-navy-100"
+              }`}
             >
               {t("allFilter")}
             </Link>
@@ -97,66 +160,7 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
         )}
       </div>
 
-      {!applications?.length ? (
-        <div className="rounded-lg border border-border bg-white p-8 text-center">
-          <p className="text-body text-ink-secondary">{t("noApplications")}</p>
-        </div>
-      ) : (
-        <div className="rounded-lg border border-border bg-white overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaders.candidate")}</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaders.position")}</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaders.status")}</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaders.evaluation")}</th>
-                <th className="text-left text-eyebrow text-navy/60 uppercase py-3 px-4">{t("tableHeaders.date")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {applications.map((app: any) => {
-                const profile = app.profiles as { full_name: string | null; email: string } | null;
-                const studentProfile = app.student_profiles as { degree_program: string | null; current_year: number | null } | null;
-                const cycle = app.application_cycles as { title: string } | null;
-                const aiEval = (app.candidate_ai_evaluations as Array<Record<string, unknown>>)?.[0];
-
-                return (
-                  <tr key={app.id} className="border-b border-border last:border-0 hover:bg-navy-50/50">
-                    <td className="py-4 px-4">
-                      <Link href={`/association/${slug}/candidates/${app.id}`} className="block">
-                        <p className="text-body font-medium text-navy hover:text-petrol transition-colors">
-                          {profile?.full_name ?? "—"}
-                        </p>
-                        <p className="text-body-sm text-ink-tertiary">{profile?.email}</p>
-                      </Link>
-                    </td>
-                    <td className="py-4 px-4 text-body-sm text-ink">
-                      {app.selected_role_preferences?.[0] || t("genericPosition")}
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium ${STATUS_COLORS[app.status] ?? "bg-navy-50 text-navy"}`}>
-                        {APPLICATION_STATUS_LABELS[app.status] ?? app.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-body-sm text-ink">
-                      {aiEval ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-eyebrow font-medium uppercase bg-petrol-50 text-petrol-700">
-                          {t("evaluated")}
-                        </span>
-                      ) : (
-                        <span className="text-ink-tertiary">—</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-4 text-body-sm text-ink-secondary">
-                      {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE }) : "—"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <CandidatesBoard slug={slug} rows={rows} rounds={rounds} />
     </div>
   );
 }

@@ -1018,18 +1018,16 @@
   "CandidatesList": {
     "heading": "Candidati",
     "countLabel": "{count} candidature",
-    "openCyclesSuffix": " (cicli aperti)",
     "allFilter": "Tutti",
     "noApplications": "Nessuna candidatura ancora ricevuta",
-    "tableHeaders": {
-      "candidate": "Candidato",
-      "position": "Posizione",
-      "status": "Stato",
-      "evaluation": "Valutazione",
-      "date": "Data"
-    },
-    "genericPosition": "Generica",
-    "evaluated": "Valutata"
+    "groupApplied": "Da valutare",
+    "groupAppliedHint": "Si sono candidati e aspettano una risposta.",
+    "groupInterview": "Al colloquio",
+    "groupInterviewHint": "Invitati a un round: hanno prenotato o devono ancora farlo.",
+    "groupAccepted": "Accettati",
+    "groupAcceptedHint": "Sono entrati fra i membri dell'associazione.",
+    "groupRejected": "Non selezionati",
+    "groupRejectedHint": "Hanno ricevuto la risposta e la selezione per loro è chiusa."
   },
   "CandidateDetail": {
     "fallbackName": "Candidato",
@@ -1097,11 +1095,6 @@
     "cancel": "Annulla",
     "acceptedDone": "Accettato. È stato aggiunto ai membri e ha ricevuto l'email.",
     "rejectedDone": "Rifiutato. Ha ricevuto l'email."
-  },
-  "RegenerateEvaluationButton": {
-    "notAvailable": "La valutazione AI non è ancora disponibile.",
-    "generating": "Generazione in corso...",
-    "generate": "Genera valutazione"
   },
   "InterviewsPage": {
     "heading": "Colloqui",
@@ -1706,7 +1699,9 @@
     "noOpenSelection": "Non c'è nessuna selezione aperta. Aprine una dalla scheda Cicli per poter creare i round.",
     "pastRounds": "Round di selezioni concluse ({count})",
     "stepInviteCandidates": "Pronto: invita i candidati e sceglieranno l'orario.",
-    "stepBooked": "{booked} hanno prenotato, su {covered} orari disponibili"
+    "stepBooked": "{booked} hanno prenotato, su {covered} orari disponibili",
+    "archivedRound": "Questo round appartiene a una selezione conclusa: resta qui come storico e non si modifica più.",
+    "archivedSummary": "{booked} colloqui svolti"
   },
   "StudentInterviews": {
     "pageTitle": "Colloqui",

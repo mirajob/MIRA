@@ -23,7 +23,7 @@ export default async function InterviewSessionPage({ params }: Props) {
   const supabase = await createServiceClient();
 
   const { data: session } = await (supabase.from("interview_sessions") as any)
-    .select("*, association_profiles(id, slug), application_cycles(title)")
+    .select("*, association_profiles(id, slug), application_cycles(title, status)")
     .eq("id", sessionId)
     .maybeSingle();
 
@@ -43,6 +43,10 @@ export default async function InterviewSessionPage({ params }: Props) {
     membership?.role === "association_admin" ||
     membership?.role === "association_president" ||
     Boolean((membership?.permissions as Record<string, boolean> | null)?.manage_interview_slots);
+
+  // Round di una selezione conclusa: si guarda cosa è successo, non si tocca più
+  // niente. Mostrarlo attivo faceva sembrare che ci fosse ancora da lavorarci.
+  const archived = session.application_cycles?.status === "closed";
 
   const t = await getTranslations("Interviews");
   const locale = await getLocale();
@@ -177,7 +181,7 @@ export default async function InterviewSessionPage({ params }: Props) {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        {canManage && (
+        {canManage && !archived && (
           <EditSessionPanel
             associationId={session.association_id}
             slug={slug}
@@ -198,7 +202,7 @@ export default async function InterviewSessionPage({ params }: Props) {
             }}
           />
         )}
-        <SessionActions sessionId={sessionId} slug={slug} canManage={canManage} />
+        <SessionActions sessionId={sessionId} slug={slug} canManage={canManage && !archived} />
       </div>
 
       <BookedInterviews
@@ -210,13 +214,18 @@ export default async function InterviewSessionPage({ params }: Props) {
         dateLocale={dateLocale}
       />
 
-      <InvitePanel
+      {!archived && <InvitePanel
         sessionId={sessionId}
         slug={slug}
         candidates={invitableCandidates}
-        sessionOpen={session.status === "open"}
-      />
+        sessionOpen={session.status !== "closed"}
+      />}
 
+      {archived ? (
+        <p className="rounded-lg border border-border bg-white px-4 py-3 text-body-sm text-ink-secondary">
+          {t("archivedRound")}
+        </p>
+      ) : (
       <AvailabilityGrid
         sessionId={sessionId}
         slug={slug}
@@ -224,6 +233,7 @@ export default async function InterviewSessionPage({ params }: Props) {
         requiredInterviewers={session.required_interviewers}
         dateLocale={dateLocale}
       />
+      )}
     </div>
   );
 }

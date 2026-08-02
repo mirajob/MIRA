@@ -120,7 +120,7 @@ export default async function AssociationInterviewsPage({ params }: Props) {
     closed: "bg-navy-50 text-ink-tertiary",
   };
 
-  function renderSession(session: any) {
+  function renderSession(session: any, archived = false) {
     const st = stats.get(session.id) ?? { total: 0, covered: 0, booked: 0, first: null };
     const days = (parseWindows(session.windows) ?? []).map((w) => w.date).sort();
     const dayLabel = (iso: string) =>
@@ -132,8 +132,9 @@ export default async function AssociationInterviewsPage({ params }: Props) {
 
     // Una frase che dice cosa manca per andare avanti, invece di far entrare in
     // ogni round per scoprirlo.
-    const nextStep =
-      st.covered === 0
+    const nextStep = archived
+      ? { text: t("archivedSummary", { booked: st.booked }), tone: "text-ink-tertiary" }
+      : st.covered === 0
         ? { text: t("stepNoAvailability"), tone: "text-warning" }
         : st.booked === 0
           ? { text: t("stepInviteCandidates"), tone: "text-petrol" }
@@ -201,7 +202,7 @@ export default async function AssociationInterviewsPage({ params }: Props) {
           <summary className="cursor-pointer select-none text-body-sm text-ink-tertiary transition-colors hover:text-ink-secondary">
             {t("pastRounds", { count: pastSessions.length })}
           </summary>
-          <div className="mt-3 space-y-2 opacity-70">{pastSessions.map(renderSession)}</div>
+          <div className="mt-3 space-y-2 opacity-70">{pastSessions.map((x: any) => renderSession(x, true))}</div>
         </details>
       )}
     </div>
