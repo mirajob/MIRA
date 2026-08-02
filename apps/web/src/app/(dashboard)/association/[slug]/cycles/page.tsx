@@ -92,12 +92,19 @@ export default async function CyclesPage({ params }: Props) {
           <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
           <p className="mt-1 text-body text-ink-secondary">{t("subhead")}</p>
         </div>
-        <Link
-          href={`/association/${slug}/cycles/new`}
-          className="bg-navy text-white px-5 py-2.5 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100"
-        >
-          {t("newCycle")}
-        </Link>
+        {/* Un solo ciclo per volta: due selezioni aperte insieme confondono i
+            candidati e non corrispondono a come lavora un'associazione. Il
+            pulsante torna quando quello in corso viene chiuso. */}
+        {openCycles.length === 0 ? (
+          <Link
+            href={`/association/${slug}/cycles/new`}
+            className="bg-navy text-white px-5 py-2.5 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100"
+          >
+            {t("newCycle")}
+          </Link>
+        ) : (
+          <p className="max-w-[240px] text-body-sm text-ink-tertiary">{t("oneCycleAtATime")}</p>
+        )}
       </div>
 
       {openCycles.length === 0 && closedCycles.length === 0 ? (

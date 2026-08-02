@@ -33,6 +33,9 @@ export function SlotPicker({
   const router = useRouter();
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Chi ha già un orario deve confermare prima di spostarlo: un click per sbaglio
+  // faceva partire una mail di conferma e cambiava l'appuntamento senza chiedere.
+  const [confirming, setConfirming] = useState<string | null>(null);
 
   const days = useMemo(() => {
     const byDay = new Map<string, BookableSlot[]>();
@@ -48,8 +51,18 @@ export function SlotPicker({
     return [...byDay.entries()];
   }, [slots, dateLocale]);
 
+  function requestPick(slotId: string) {
+    // Prima prenotazione: un click basta. Spostamento: si conferma.
+    if (currentSlotId) {
+      setConfirming(slotId);
+      return;
+    }
+    pick(slotId);
+  }
+
   async function pick(slotId: string) {
     setError(null);
+    setConfirming(null);
     setPending(slotId);
     const result = await bookInterviewSlot({ inviteId, slotId });
     if (result.error) {
@@ -74,6 +87,40 @@ export function SlotPicker({
     <div className="space-y-3">
       {error && <p className="rounded-md bg-error-bg px-3 py-2 text-body-sm text-error">{error}</p>}
 
+      {confirming && (
+        <div className="rounded-lg border border-petrol/30 bg-petrol-50 px-4 py-3">
+          <p className="text-body-sm text-ink">
+            {t("confirmMove", {
+              date: new Date(
+                slots.find((s) => s.id === confirming)?.startsAt ?? ""
+              ).toLocaleString(dateLocale, {
+                timeZone: APP_TIME_ZONE,
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            })}
+          </p>
+          <div className="mt-2 flex items-center gap-3">
+            <button
+              onClick={() => pick(confirming)}
+              disabled={pending !== null}
+              className="rounded-md bg-petrol px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-petrol-700 disabled:opacity-40"
+            >
+              {t("confirmMoveCta")}
+            </button>
+            <button
+              onClick={() => setConfirming(null)}
+              className="text-body-sm text-ink-secondary hover:underline"
+            >
+              {t("cancel")}
+            </button>
+          </div>
+        </div>
+      )}
+
       {days.map(([day, daySlots]) => (
         <div key={day} className="overflow-hidden rounded-lg border border-border bg-white">
           <div className="border-b border-border bg-navy-50/50 px-3 py-1.5">
@@ -90,12 +137,14 @@ export function SlotPicker({
               return (
                 <button
                   key={slot.id}
-                  onClick={() => pick(slot.id)}
+                  onClick={() => requestPick(slot.id)}
                   disabled={pending !== null || isCurrent}
                   className={`rounded-md px-4 py-2 text-body-sm tabular-nums transition-colors duration-100 disabled:opacity-60 ${
                     isCurrent
                       ? "bg-petrol text-white"
-                      : "border border-border text-navy hover:border-petrol hover:bg-petrol-50"
+                      : confirming === slot.id
+                        ? "border-2 border-petrol bg-petrol-50 text-navy"
+                        : "border border-border text-navy hover:border-petrol hover:bg-petrol-50"
                   }`}
                 >
                   {pending === slot.id ? "..." : time}

@@ -3,11 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  setInterviewSessionStatus,
-  regenerateSlots,
-  deleteInterviewSession,
-} from "@/lib/actions/interview-sessions";
+import { setInterviewSessionStatus, deleteInterviewSession } from "@/lib/actions/interview-sessions";
 
 /**
  * Apri, chiudi, rigenera, elimina. Le azioni che cambiano lo stato di una sessione
@@ -59,17 +55,8 @@ export function SessionActions({
         </button>
       )}
 
-      <button
-        onClick={() => {
-          if (!window.confirm(t("regenerateConfirm"))) return;
-          run(() => regenerateSlots(sessionId));
-        }}
-        disabled={loading}
-        className="text-body-sm text-ink-secondary hover:underline disabled:opacity-40"
-      >
-        {t("regenerate")}
-      </button>
-
+      {/* "Rigenera la griglia" e' stato tolto: non si capiva cosa facesse, e la
+          griglia si rifa' da sola quando si modifica il round. */}
       <button
         onClick={() => {
           if (!window.confirm(t("deleteConfirm"))) return;

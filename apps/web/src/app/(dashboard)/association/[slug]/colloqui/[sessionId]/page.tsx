@@ -235,7 +235,8 @@ export default async function InterviewSessionPage({ params }: Props) {
         slug={slug}
         sessionId={sessionId}
         interviews={bookedInterviews}
-        needsLink={session.mode === "online" && session.link_mode === "per_interview"}
+        needsLink={session.link_mode === "per_interview"}
+        placeIsLink={session.mode === "online"}
         dateLocale={dateLocale}
       />
 

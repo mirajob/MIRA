@@ -223,14 +223,14 @@ export async function bookInterviewSlot(input: { inviteId: string; slotId: strin
         .maybeSingle()
     : { data: null };
 
-  // Il posto: l'aula se in presenza, altrimenti la stanza condivisa o quella di chi
-  // conduce. In modalità per_interview il link arriva dopo e qui resta vuoto.
+  // Il posto è noto solo se la sessione ne ha uno solo per tutti. In per_interview
+  // arriva dopo, messo da chi conduce, e qui resta vuoto di proposito.
   const place =
-    session.mode === "in_person"
-      ? session.location
-      : session.link_mode === "shared"
-        ? session.meeting_link ?? interviewerProfile?.meeting_link ?? null
-        : interviewerProfile?.meeting_link ?? null;
+    session.link_mode !== "shared"
+      ? null
+      : session.mode === "in_person"
+        ? session.location
+        : session.meeting_link ?? interviewerProfile?.meeting_link ?? null;
 
   await (supabase.from("interview_invites") as any)
     .update({
@@ -359,6 +359,7 @@ export async function setSlotMeetingLink(input: {
       placeLabel: link,
       placeIsLink: true,
       icsContent: ics,
+      variant: "details",
     }).catch(() => {});
 
     const studentUserId = slot.applications?.student_user_id;

@@ -73,8 +73,10 @@ export async function createInterviewSession(input: {
   if (!canManage(membership, ctx.isMiraAdmin)) return { error: "Non hai i permessi." };
 
   if (!input.title.trim()) return { error: "Dai un titolo alla sessione." };
-  if (input.mode === "in_person" && !input.location?.trim()) {
-    return { error: "Una sessione in presenza ha bisogno del luogo." };
+  // Il posto serve solo se e' uno per tutti: in per_interview arriva dopo,
+  // colloquio per colloquio, sia che sia un'aula sia che sia un link.
+  if (input.linkMode === "shared" && input.mode === "in_person" && !input.location?.trim()) {
+    return { error: "Con un luogo solo per tutti serve indicare dove." };
   }
   // In modalità per_interview il link non esiste ancora: lo mette chi conduce dopo
   // la prenotazione. Serve solo se la stanza è una sola per tutti.
@@ -102,7 +104,7 @@ export async function createInterviewSession(input: {
       round_index: (existing?.round_index ?? 0) + 1,
       mode: input.mode,
       link_mode: input.linkMode,
-      location: input.mode === "in_person" ? input.location!.trim() : null,
+      location: input.mode === "in_person" ? input.location?.trim() || null : null,
       meeting_link:
         input.mode === "online" && input.linkMode === "shared"
           ? input.meetingLink!.trim()
@@ -162,8 +164,10 @@ export async function updateInterviewSession(input: {
   if (!canManage(membership, ctx.isMiraAdmin)) return { error: "Non hai i permessi." };
 
   if (!input.title.trim()) return { error: "Dai un titolo alla sessione." };
-  if (input.mode === "in_person" && !input.location?.trim()) {
-    return { error: "Una sessione in presenza ha bisogno del luogo." };
+  // Il posto serve solo se e' uno per tutti: in per_interview arriva dopo,
+  // colloquio per colloquio, sia che sia un'aula sia che sia un link.
+  if (input.linkMode === "shared" && input.mode === "in_person" && !input.location?.trim()) {
+    return { error: "Con un luogo solo per tutti serve indicare dove." };
   }
   if (input.mode === "online" && input.linkMode === "shared" && !input.meetingLink?.trim()) {
     return { error: "Con una stanza sola serve il link, oppure scegli un link per colloquio." };
@@ -202,7 +206,7 @@ export async function updateInterviewSession(input: {
       description: input.description?.trim() || null,
       mode: input.mode,
       link_mode: input.linkMode,
-      location: input.mode === "in_person" ? input.location!.trim() : null,
+      location: input.mode === "in_person" ? input.location?.trim() || null : null,
       meeting_link:
         input.mode === "online" && input.linkMode === "shared" ? input.meetingLink!.trim() : null,
       slot_duration_minutes: input.slotDurationMinutes,

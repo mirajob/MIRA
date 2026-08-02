@@ -104,20 +104,20 @@ export async function sendInterviewBookingInvite({
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: `${associationName}: scegli quando fare il colloquio`,
+    subject: `${associationName}: choose your interview time`,
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
         <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 24px; margin-bottom: 32px;" />
         <p style="color: #1a202c; font-size: 14px; line-height: 1.6;">
-          ${studentName ? `Ciao ${studentName},` : "Ciao,"}
+          ${studentName ? `Hi ${studentName},` : "Hi,"}
         </p>
         <p style="color: #1a202c; font-size: 14px; line-height: 1.6;">
-          <strong>${associationName}</strong> ti invita a <strong>${sessionTitle}</strong>.
-          Scegli tu l'orario che ti va meglio fra quelli disponibili.
+          <strong>${associationName}</strong> has invited you to <strong>${sessionTitle}</strong>.
+          Pick the time that works best for you.
         </p>
         ${sessionDescription ? `<p style="color: #4a5568; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${sessionDescription}</p>` : ""}
         <a href="${bookingUrl}" style="display: inline-block; background: #0a1628; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; margin: 8px 0 16px;">
-          Scegli l'orario
+          Choose your time
         </a>
         ${deadlineNote ? `<p style="color: #718096; font-size: 13px;">${deadlineNote}</p>` : ""}
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
@@ -151,6 +151,7 @@ export async function sendInterviewConfirmation({
   placeLabel,
   placeIsLink,
   icsContent,
+  variant = "booked",
 }: {
   email: string;
   recipientName: string | null;
@@ -160,24 +161,29 @@ export async function sendInterviewConfirmation({
   placeLabel: string | null;
   placeIsLink: boolean;
   icsContent: string;
+  /** "booked" alla prenotazione, "details" quando il posto arriva dopo. */
+  variant?: "booked" | "details";
 }) {
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: `Colloquio confermato: ${associationName}, ${whenLabel}`,
+    subject:
+      variant === "details"
+        ? `Interview details: ${associationName}, ${whenLabel}`
+        : `Interview confirmed: ${associationName}, ${whenLabel}`,
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
         <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 24px; margin-bottom: 32px;" />
         <p style="color: #1a202c; font-size: 14px; line-height: 1.6;">
-          ${recipientName ? `Ciao ${recipientName},` : "Ciao,"} il colloquio è confermato.
+          ${recipientName ? `Hi ${recipientName},` : "Hi,"} ${variant === "details" ? "here are the details for your interview." : "your interview is confirmed."}
         </p>
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #1a202c; margin: 16px 0;">
-          <tr><td style="padding: 6px 0; color: #718096; width: 110px;">Associazione</td><td style="padding: 6px 0;">${associationName}</td></tr>
+          <tr><td style="padding: 6px 0; color: #718096; width: 110px;">Association</td><td style="padding: 6px 0;">${associationName}</td></tr>
           <tr><td style="padding: 6px 0; color: #718096;">Round</td><td style="padding: 6px 0;">${sessionTitle}</td></tr>
-          <tr><td style="padding: 6px 0; color: #718096;">Quando</td><td style="padding: 6px 0;"><strong>${whenLabel}</strong></td></tr>
+          <tr><td style="padding: 6px 0; color: #718096;">When</td><td style="padding: 6px 0;"><strong>${whenLabel}</strong></td></tr>
           ${
             placeLabel
-              ? `<tr><td style="padding: 6px 0; color: #718096;">${placeIsLink ? "Link" : "Dove"}</td><td style="padding: 6px 0;">${
+              ? `<tr><td style="padding: 6px 0; color: #718096;">${placeIsLink ? "Link" : "Where"}</td><td style="padding: 6px 0;">${
                   placeIsLink
                     ? `<a href="${placeLabel}" style="color: #2b6cb0;">${placeLabel}</a>`
                     : placeLabel
@@ -186,7 +192,7 @@ export async function sendInterviewConfirmation({
           }
         </table>
         <p style="color: #718096; font-size: 13px;">
-          In allegato trovi l'evento da aggiungere al calendario.
+          The calendar invite is attached: open it to add the interview to your calendar.
         </p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
         <p style="color: #a0aec0; font-size: 12px;">

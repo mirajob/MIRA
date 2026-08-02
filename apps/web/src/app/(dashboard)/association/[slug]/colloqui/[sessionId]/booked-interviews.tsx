@@ -29,13 +29,16 @@ export function BookedInterviews({
   sessionId,
   interviews,
   needsLink,
+  placeIsLink,
   dateLocale,
 }: {
   slug: string;
   sessionId: string;
   interviews: BookedInterview[];
-  /** true quando la sessione è online con un link per ogni colloquio. */
+  /** true quando ogni colloquio ha il suo posto, deciso dopo la prenotazione. */
   needsLink: boolean;
+  /** true se quel posto è un link, false se è un'aula. */
+  placeIsLink: boolean;
   dateLocale: string;
 }) {
   const t = useTranslations("Interviews");
@@ -52,7 +55,15 @@ export function BookedInterviews({
       link: drafts[slotId] ?? "",
     });
     if (result.error) window.alert(result.error);
-    else setDrafts((d) => ({ ...d, [slotId]: "" }));
+    else {
+      // La bozza si toglie, non si svuota: con la stringa vuota il campo mostrava
+      // "" invece del link appena salvato, e sembrava che si fosse cancellato.
+      setDrafts((d) => {
+        const next = { ...d };
+        delete next[slotId];
+        return next;
+      });
+    }
     router.refresh();
     setSaving(null);
   }
@@ -75,7 +86,7 @@ export function BookedInterviews({
           {t("bookedHeading")} ({interviews.length})
         </p>
         {missingLinks > 0 && (
-          <p className="text-body-sm text-warning">{t("missingLinks", { count: missingLinks })}</p>
+          <p className="text-body-sm text-warning">{placeIsLink ? t("missingLinks", { count: missingLinks }) : t("missingPlaces", { count: missingLinks })}</p>
         )}
       </div>
 
@@ -110,7 +121,7 @@ export function BookedInterviews({
                     onChange={(e) =>
                       setDrafts((d) => ({ ...d, [interview.slotId]: e.target.value }))
                     }
-                    placeholder={t("linkPlaceholder")}
+                    placeholder={placeIsLink ? t("linkPlaceholder") : t("locationPlaceholder")}
                     className="min-w-[240px] flex-1 rounded-md border border-border px-3 py-1 text-body-sm text-ink focus:border-petrol focus:outline-none"
                   />
                   <button

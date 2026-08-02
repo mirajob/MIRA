@@ -143,6 +143,8 @@ export function SessionForm({
         {sessionId ? t("editSessionHeading") : t("newSessionHeading")}
       </p>
 
+      <p className="rounded-md bg-navy-50 px-3 py-2 text-body-sm text-ink-secondary">{t("howItWorks")}</p>
+
       {error && <p className="rounded-md bg-error-bg px-3 py-2 text-body-sm text-error">{error}</p>}
 
       {/* 1. Che round è */}
@@ -190,49 +192,61 @@ export function SessionForm({
           </div>
         </div>
 
-        {mode === "in_person" ? (
-          <label className="block">
-            <span className={label}>{t("locationLabel")}</span>
-            <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder={t("locationPlaceholder")}
-              className={field}
-            />
-          </label>
-        ) : (
-          <div className="space-y-2">
-            <span className={label}>{t("linkModeLabel")}</span>
-            {(["per_interview", "shared"] as const).map((lm) => (
-              <label key={lm} className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="linkMode"
-                  checked={linkMode === lm}
-                  onChange={() => setLinkMode(lm)}
-                  className="mt-1"
-                />
-                <span>
-                  <span className="block text-body-sm text-ink">
-                    {lm === "per_interview" ? t("linkModePerInterview") : t("linkModeShared")}
-                  </span>
-                  <span className="block text-body-sm text-ink-tertiary">
-                    {lm === "per_interview" ? t("linkModePerInterviewHint") : t("linkModeSharedHint")}
-                  </span>
+        {/* Stessa scelta per entrambe le modalità: un posto solo per tutti, oppure
+            uno diverso per ogni colloquio, deciso dopo che il candidato prenota. */}
+        <div className="space-y-2">
+          <span className={label}>
+            {mode === "online" ? t("linkModeLabel") : t("placeModeLabel")}
+          </span>
+          {(["shared", "per_interview"] as const).map((lm) => (
+            <label key={lm} className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="linkMode"
+                checked={linkMode === lm}
+                onChange={() => setLinkMode(lm)}
+                className="mt-1"
+              />
+              <span>
+                <span className="block text-body-sm text-ink">
+                  {mode === "online"
+                    ? lm === "shared"
+                      ? t("linkModeShared")
+                      : t("linkModePerInterview")
+                    : lm === "shared"
+                      ? t("placeModeShared")
+                      : t("placeModePerInterview")}
                 </span>
-              </label>
-            ))}
+                <span className="block text-body-sm text-ink-tertiary">
+                  {mode === "online"
+                    ? lm === "shared"
+                      ? t("linkModeSharedHint")
+                      : t("linkModePerInterviewHint")
+                    : lm === "shared"
+                      ? t("placeModeSharedHint")
+                      : t("placeModePerInterviewHint")}
+                </span>
+              </span>
+            </label>
+          ))}
 
-            {linkMode === "shared" && (
+          {linkMode === "shared" &&
+            (mode === "online" ? (
               <input
                 value={meetingLink}
                 onChange={(e) => setMeetingLink(e.target.value)}
                 placeholder={t("linkPlaceholder")}
                 className={field}
               />
-            )}
-          </div>
-        )}
+            ) : (
+              <input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder={t("locationPlaceholder")}
+                className={field}
+              />
+            ))}
+        </div>
       </div>
 
       {/* 3. Quando */}
@@ -336,18 +350,7 @@ export function SessionForm({
             className={field}
           />
         </label>
-        <label className="block">
-          <span className={label}>{t("tracksLabel")}</span>
-          <input
-            type="number"
-            min={1}
-            max={12}
-            value={tracks}
-            onChange={(e) => setTracks(Number(e.target.value))}
-            className={field}
-          />
-        </label>
-        <label className="block">
+        <label className="block sm:col-span-2">
           <span className={label}>{t("requiredInterviewersLabel")}</span>
           <input
             type="number"
@@ -357,6 +360,9 @@ export function SessionForm({
             onChange={(e) => setRequiredInterviewers(Number(e.target.value))}
             className={field}
           />
+          <span className="mt-1 block text-body-sm text-ink-tertiary">
+            {t("requiredInterviewersHint")}
+          </span>
         </label>
       </div>
 
