@@ -22,12 +22,18 @@ comment on column interview_sessions.link_mode is
 -- Il vincolo pretendeva un link sulla sessione per ogni round online che non
 -- fosse per_interview. Con 'auto' quel link non esiste: nasce a ogni
 -- prenotazione, quindi la sessione ne resta senza ed e' corretto cosi'.
+--
+-- Il confronto e' su link_mode::text e non sull'enum: Postgres vieta di USARE un
+-- valore di enum appena aggiunto nella stessa transazione, e l'editor SQL esegue
+-- tutto il file in una transazione sola. Confrontando il testo, 'auto' e' una
+-- stringa e non un letterale dell'enum, quindi il vincolo si crea subito senza
+-- dover spezzare la migrazione in due esecuzioni.
 alter table interview_sessions drop constraint if exists interview_sessions_place_present;
 
 alter table interview_sessions
   add constraint interview_sessions_place_present check (
     status = 'draft'
-    or link_mode in ('per_interview', 'auto')
+    or link_mode::text in ('per_interview', 'auto')
     or (mode = 'in_person' and location is not null and length(trim(location)) > 0)
     or (mode = 'online' and meeting_link is not null and length(trim(meeting_link)) > 0)
   );
