@@ -289,56 +289,68 @@ export default async function StudentAssociazioniPage({
             <p className="text-body-sm text-ink-secondary">{t("noApplications")}</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {(myApplications as any[]).map((app) => {
-              const assoc = app.association_profiles as { name: string; slug: string; logo_url: string | null } | null;
+              const assoc = app.association_profiles as { name: string; slug: string } | null;
               const cycle = app.application_cycles as { title: string } | null;
-              const interviews = (app.interview_invites ?? []) as Array<{
+              const invites = (app.interview_invites ?? []) as Array<{
                 id: string; selected_time: string | null; location_or_link: string | null; status: string;
               }>;
-              const upcomingInterview = interviews.find((i) => i.selected_time && i.status !== "cancelled");
+              const booking = invites.find((i) => i.selected_time && i.status !== "cancelled");
+              const pendingInvite = invites.find((i) => !i.selected_time && i.status !== "cancelled");
+              const past = booking && new Date(booking.selected_time!).getTime() < Date.now();
+
+              // Una riga sola che dice a che punto è, e cosa deve fare adesso.
+              const state =
+                app.status === "accepted"
+                  ? { text: t("stateAccepted"), tone: "text-success" }
+                  : app.status === "rejected"
+                    ? { text: t("stateRejected"), tone: "text-ink-tertiary" }
+                    : pendingInvite
+                      ? { text: t("statePickTime"), tone: "text-petrol", href: `/student/colloqui/${pendingInvite.id}` }
+                      : booking && past
+                        ? { text: t("stateInterviewDone"), tone: "text-ink-secondary" }
+                        : booking
+                          ? {
+                              text: t("stateInterviewBooked", {
+                                date: new Date(booking.selected_time!).toLocaleString(dateLocale, {
+                                  timeZone: APP_TIME_ZONE,
+                                  weekday: "long",
+                                  day: "numeric",
+                                  month: "long",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }),
+                              }),
+                              tone: "text-ink",
+                            }
+                          : { text: t("stateWaiting"), tone: "text-ink-secondary" };
 
               return (
-                <div
-                  key={app.id}
-                  className="rounded-lg border border-border bg-white p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      {assoc?.logo_url && (
-                        <img src={assoc.logo_url} alt="" className="h-9 w-9 rounded-md object-cover shrink-0 mt-0.5" />
-                      )}
-                      <div>
-                        <p className="font-sans text-h3 text-navy">{assoc?.name ?? c("associationFallback")}</p>
-                        <p className="text-body-sm text-ink-tertiary mt-0.5">
-                          {cycle?.title}
-                          {app.submitted_at && c("submittedOn", { date: new Date(app.submitted_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE }) })}
-                        </p>
-                      </div>
-                    </div>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${STATUS_COLORS[app.status] ?? "bg-navy-50 text-navy"}`}>
-                      {APPLICATION_STATUS_LABELS[app.status] ?? app.status}
+                <div key={app.id} className="rounded-lg border border-border bg-white px-4 py-3">
+                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span className="text-body-sm font-medium text-navy">
+                      {assoc?.name ?? c("associationFallback")}
                     </span>
+                    {cycle?.title && (
+                      <span className="text-body-sm text-ink-tertiary">{cycle.title}</span>
+                    )}
                   </div>
 
-                  {upcomingInterview && (
-                    <div className="mt-3 rounded-md bg-petrol-50 px-3 py-2">
-                      <p className="text-xs font-medium text-navy">{t("interviewScheduled")}</p>
-                      <p className="text-body-sm text-ink mt-0.5">
-                        {new Date(upcomingInterview.selected_time!).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE,
-                          weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
-                        })}
-                      </p>
-                      {upcomingInterview.location_or_link && (
-                        <p className="text-body-sm text-ink-secondary">{upcomingInterview.location_or_link}</p>
-                      )}
-                    </div>
-                  )}
+                  <p className={`mt-1 text-body-sm ${state.tone}`}>
+                    {"href" in state && state.href ? (
+                      <Link href={state.href} className="underline underline-offset-2">
+                        {state.text}
+                      </Link>
+                    ) : (
+                      state.text
+                    )}
+                  </p>
 
-                  {app.status === "accepted" && (
-                    <div className="mt-3 rounded-md bg-success-bg px-3 py-2">
-                      <p className="text-body-sm text-success font-medium">{t("congratsAccepted")}</p>
-                    </div>
+                  {booking && !past && booking.location_or_link && (
+                    <p className="mt-0.5 truncate text-body-sm text-ink-tertiary">
+                      {booking.location_or_link}
+                    </p>
                   )}
                 </div>
               );
@@ -347,8 +359,7 @@ export default async function StudentAssociazioniPage({
         )}
       </div>
 
-      {/* Indice delle associazioni dell'ateneo: sezioni per ambito, righe compatte.
-          La query e' gia' filtrata per universita'. */}
+
       <div>
         <h2 className="font-sans text-h3 text-navy mb-3">{t("allAssociationsHeading")}</h2>
 

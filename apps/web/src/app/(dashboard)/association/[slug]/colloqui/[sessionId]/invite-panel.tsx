@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { inviteCandidatesToSession } from "@/lib/actions/interview-booking";
+import { setSessionSharedPlace } from "@/lib/actions/interview-sessions";
 
 export interface InvitableCandidate {
   applicationId: string;
@@ -27,17 +28,24 @@ export function InvitePanel({
   slug,
   candidates,
   sessionOpen,
+  placeMissing,
+  placeIsLink,
 }: {
   sessionId: string;
   slug: string;
   candidates: InvitableCandidate[];
   sessionOpen: boolean;
+  /** true quando il posto del colloquio non e' ancora noto per tutti. */
+  placeMissing: boolean;
+  /** true se quel posto e' un link, false se e' un'aula. */
+  placeIsLink: boolean;
 }) {
   const t = useTranslations("Interviews");
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [place, setPlace] = useState("");
 
   const notInvited = candidates.filter((c) => !c.invited);
   const waiting = candidates.filter((c) => c.invited && !c.booked);
@@ -54,6 +62,18 @@ export function InvitePanel({
   async function invite() {
     if (!selected.size) return;
     setLoading(true);
+
+    // Il posto prima dell'invito: cosi' la conferma di prenotazione lo contiene
+    // gia' e al candidato arriva una mail sola invece di due.
+    if (placeMissing && place.trim()) {
+      const saved = await setSessionSharedPlace({ sessionId, slug, place });
+      if (saved.error) {
+        window.alert(saved.error);
+        setLoading(false);
+        return;
+      }
+    }
+
     const result = await inviteCandidatesToSession({
       sessionId,
       slug,
@@ -116,6 +136,19 @@ export function InvitePanel({
                   </label>
                 ))}
               </div>
+
+              {placeMissing && (
+                <div className="mt-3 rounded-md bg-navy-50 p-3">
+                  <p className="text-body-sm text-ink">{t("placeBeforeInvite")}</p>
+                  <input
+                    value={place}
+                    onChange={(e) => setPlace(e.target.value)}
+                    placeholder={placeIsLink ? t("linkPlaceholder") : t("locationPlaceholder")}
+                    className="mt-1.5 w-full rounded-md border border-border px-3 py-1.5 text-body-sm text-ink focus:border-petrol focus:outline-none"
+                  />
+                  <p className="mt-1 text-body-sm text-ink-tertiary">{t("placeBeforeInviteHint")}</p>
+                </div>
+              )}
 
               {selected.size > 0 && (
                 <button

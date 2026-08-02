@@ -219,6 +219,8 @@ export default async function InterviewSessionPage({ params }: Props) {
         slug={slug}
         candidates={invitableCandidates}
         sessionOpen={session.status !== "closed"}
+        placeMissing={session.link_mode !== "shared" || !(session.mode === "in_person" ? session.location : session.meeting_link)}
+        placeIsLink={session.mode === "online"}
       />}
 
       {archived ? (

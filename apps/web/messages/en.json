@@ -554,7 +554,13 @@
     "claimStatusPending": "Pending",
     "claimStatusApproved": "Approved",
     "claimStatusRejected": "Not approved",
-    "adminPreviewNotice": "Admin preview: this is the student view, with pages still in draft included."
+    "adminPreviewNotice": "Admin preview: this is the student view, with pages still in draft included.",
+    "stateWaiting": "Application sent: waiting for an answer.",
+    "statePickTime": "You were invited to an interview: pick a time",
+    "stateInterviewBooked": "Interview booked: {date}",
+    "stateInterviewDone": "Interview done: waiting for the outcome.",
+    "stateAccepted": "You were accepted: you are now part of the association.",
+    "stateRejected": "You were not selected this time."
   },
   "Applications": {
     "backLink": "← Associations",
@@ -1711,7 +1717,9 @@
     "archivedRound": "This round belongs to a closed selection: it stays here as history and cannot be changed.",
     "archivedSummary": "{booked} interviews held",
     "bookedUpcoming": "Coming up",
-    "bookedPast": "Already held"
+    "bookedPast": "Already held",
+    "placeBeforeInvite": "Where do these interviews happen?",
+    "placeBeforeInviteHint": "Set it now and the candidate gets one single email with time and place. Otherwise you will have to send it later, one interview at a time."
   },
   "StudentInterviews": {
     "pageTitle": "Interviews",

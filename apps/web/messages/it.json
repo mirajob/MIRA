@@ -554,7 +554,13 @@
     "claimStatusPending": "In attesa",
     "claimStatusApproved": "Approvata",
     "claimStatusRejected": "Non approvata",
-    "adminPreviewNotice": "Anteprima admin: vedi questa schermata come la vede uno studente, con dentro anche le pagine ancora in bozza."
+    "adminPreviewNotice": "Anteprima admin: vedi questa schermata come la vede uno studente, con dentro anche le pagine ancora in bozza.",
+    "stateWaiting": "Candidatura inviata: aspetti una risposta.",
+    "statePickTime": "Sei stato invitato a un colloquio: scegli l'orario",
+    "stateInterviewBooked": "Colloquio fissato: {date}",
+    "stateInterviewDone": "Colloquio sostenuto: aspetti l'esito.",
+    "stateAccepted": "Sei stato accettato: ora fai parte dell'associazione.",
+    "stateRejected": "Non sei stato selezionato in questa occasione."
   },
   "Applications": {
     "backLink": "← Associazioni",
@@ -1711,7 +1717,9 @@
     "archivedRound": "Questo round appartiene a una selezione conclusa: resta qui come storico e non si modifica più.",
     "archivedSummary": "{booked} colloqui svolti",
     "bookedUpcoming": "In programma",
-    "bookedPast": "Già svolti"
+    "bookedPast": "Già svolti",
+    "placeBeforeInvite": "Dove si fanno questi colloqui?",
+    "placeBeforeInviteHint": "Se lo metti adesso, al candidato arriva una mail sola con orario e posto. Altrimenti dovrai mandarlo dopo, colloquio per colloquio."
   },
   "StudentInterviews": {
     "pageTitle": "Colloqui",

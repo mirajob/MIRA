@@ -152,6 +152,7 @@ export async function sendInterviewConfirmation({
   placeIsLink,
   icsContent,
   variant = "booked",
+  counterpartName,
 }: {
   email: string;
   recipientName: string | null;
@@ -161,24 +162,38 @@ export async function sendInterviewConfirmation({
   placeLabel: string | null;
   placeIsLink: boolean;
   icsContent: string;
-  /** "booked" alla prenotazione, "details" quando il posto arriva dopo. */
-  variant?: "booked" | "details";
+  /**
+   * "booked" al candidato quando prenota, "interviewer" a chi conduce, "details"
+   * quando il posto arriva dopo. Mandare la stessa frase a tutti faceva leggere
+   * a chi conduce "il tuo colloquio è confermato", che non vuol dire niente.
+   */
+  variant?: "booked" | "details" | "interviewer";
+  /** Nome del candidato: serve solo nella variante per chi conduce. */
+  counterpartName?: string | null;
 }) {
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: email,
     subject:
-      variant === "details"
-        ? `Interview details: ${associationName}, ${whenLabel}`
-        : `Interview confirmed: ${associationName}, ${whenLabel}`,
+      variant === "interviewer"
+        ? `Interview booked: ${counterpartName ?? "a candidate"}, ${whenLabel}`
+        : variant === "details"
+          ? `Interview details: ${associationName}, ${whenLabel}`
+          : `Interview confirmed: ${associationName}, ${whenLabel}`,
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
         <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 24px; margin-bottom: 32px;" />
         <p style="color: #1a202c; font-size: 14px; line-height: 1.6;">
-          ${recipientName ? `Hi ${recipientName},` : "Hi,"} ${variant === "details" ? "here are the details for your interview." : "your interview is confirmed."}
+          ${recipientName ? `Hi ${recipientName},` : "Hi,"} ${
+            variant === "interviewer"
+              ? `${counterpartName ?? "A candidate"} booked an interview with you.`
+              : variant === "details"
+                ? "here are the details for your interview."
+                : "your interview is confirmed."
+          }
         </p>
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #1a202c; margin: 16px 0;">
-          <tr><td style="padding: 6px 0; color: #718096; width: 110px;">Association</td><td style="padding: 6px 0;">${associationName}</td></tr>
+          <tr><td style="padding: 6px 0; color: #718096; width: 110px;">${variant === "interviewer" ? "Candidate" : "Association"}</td><td style="padding: 6px 0;">${variant === "interviewer" ? (counterpartName ?? "—") : associationName}</td></tr>
           <tr><td style="padding: 6px 0; color: #718096;">Round</td><td style="padding: 6px 0;">${sessionTitle}</td></tr>
           <tr><td style="padding: 6px 0; color: #718096;">When</td><td style="padding: 6px 0;"><strong>${whenLabel}</strong></td></tr>
           ${

@@ -294,11 +294,13 @@ export async function bookInterviewSlot(input: { inviteId: string; slotId: strin
       email: interviewerProfile.email,
       recipientName: interviewerProfile.full_name ?? null,
       associationName: session.association_profiles?.name ?? "",
-      sessionTitle: `${session.title} · ${student?.full_name ?? "candidato"}`,
+      sessionTitle: session.title,
       whenLabel: label,
       placeLabel: place,
       placeIsLink: session.mode === "online",
       icsContent: ics,
+      variant: "interviewer",
+      counterpartName: student?.full_name ?? null,
     }).catch(() => {});
   }
 

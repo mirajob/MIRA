@@ -367,6 +367,45 @@ export async function setMyAvailability(input: {
   return { success: true, ranges: ranges.length };
 }
 
+/**
+ * Il posto valido per tutti i colloqui del round, impostato al momento
+ * dell'invito.
+ *
+ * Serve a mandare una mail sola: se il posto si conosce prima, la conferma di
+ * prenotazione lo contiene già e non serve la seconda email con i dettagli.
+ */
+export async function setSessionSharedPlace(input: {
+  sessionId: string;
+  slug: string;
+  place: string;
+}) {
+  const supabase = await createServiceClient();
+
+  const { data: session } = await (supabase.from("interview_sessions") as any)
+    .select("association_id, mode")
+    .eq("id", input.sessionId)
+    .maybeSingle();
+
+  if (!session) return { error: "Sessione non trovata." };
+
+  const { ctx, membership } = await loadMembership(session.association_id);
+  if (!canManage(membership, ctx.isMiraAdmin)) return { error: "Non hai i permessi." };
+  if (!input.place.trim()) return { error: "Indica dove si fanno i colloqui." };
+
+  const { error } = await (supabase.from("interview_sessions") as any)
+    .update({
+      link_mode: "shared",
+      location: session.mode === "in_person" ? input.place.trim() : null,
+      meeting_link: session.mode === "online" ? input.place.trim() : null,
+    })
+    .eq("id", input.sessionId);
+
+  if (error) return { error: error.message };
+
+  revalidateSession(input.slug, input.sessionId);
+  return { success: true };
+}
+
 /** Il link della propria stanza permanente, usato su tutti i colloqui che si conducono. */
 export async function setMyMeetingLink(link: string) {
   const ctx = await getUserContext();
