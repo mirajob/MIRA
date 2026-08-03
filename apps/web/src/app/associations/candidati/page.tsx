@@ -168,7 +168,6 @@ export default function CandidatiAssociazionePage() {
 
       <div className="flex-1 flex items-start justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          <p className="text-eyebrow text-petrol uppercase tracking-wider mb-3">{t("eyebrow")}</p>
           <h1 className="font-display text-h1 text-navy mb-2">{t("heading")}</h1>
           <p className="text-body text-ink-secondary mb-8">
             {t("intro")}

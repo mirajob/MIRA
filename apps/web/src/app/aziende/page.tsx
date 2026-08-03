@@ -201,7 +201,6 @@ export default function AziendePage() {
       <main className="max-w-4xl mx-auto px-6 py-16">
         {/* Hero */}
         <div className="mb-16">
-          <p className="text-eyebrow text-petrol uppercase tracking-wider mb-4">{t("landing.eyebrow")}</p>
           <h1 className="font-display text-display-lg text-navy mb-6 max-w-2xl">
             {t("landing.heading")}
           </h1>

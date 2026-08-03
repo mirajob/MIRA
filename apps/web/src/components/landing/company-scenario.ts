@@ -30,7 +30,6 @@ export type MatchDimension = "skills" | "availability" | "both";
 
 export interface CompanyData {
   name: string;
-  monogram: string;
   brief: string;
   candidates: { code: string; degree: string; dimension: MatchDimension; reason: string }[];
   detail: {
@@ -46,7 +45,6 @@ export interface CompanyData {
 
 export const companyData: CompanyData = {
   name: "Northwind Partners",
-  monogram: "N",
   brief:
     "Analyst for our M&A team. Bocconi or similar, Bachelor or Master in finance, curious and rigorous, genuinely into markets. Fluent English, available for a summer internship in Milan.",
   candidates: [

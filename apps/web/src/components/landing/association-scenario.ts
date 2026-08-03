@@ -27,7 +27,6 @@ export interface AssocFrame extends BaseFrame {
 
 export interface AssociationData {
   name: string;
-  monogram: string;
   compose: string;
   cycleTitle: string;
   roles: string[];
@@ -54,7 +53,6 @@ export interface AssociationData {
 
 export const associationData: AssociationData = {
   name: "Meridian Consulting Club",
-  monogram: "M",
   compose: "Opening Analyst and Business Development roles: finance fundamentals, available from October.",
   cycleTitle: "Fall Recruitment 2026",
   roles: ["Analyst", "Business Development"],

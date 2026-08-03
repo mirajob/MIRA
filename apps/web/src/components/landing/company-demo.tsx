@@ -25,7 +25,6 @@ export function CompanyDemo() {
 
   const renderMeter = () => (
     <div className="flex items-center gap-2 border-b border-border bg-white px-3.5 py-2">
-      <span className="flex h-5 w-5 items-center justify-center rounded bg-navy text-[10px] font-semibold text-white">{co.monogram}</span>
       <span className="text-[11px] font-medium text-navy">{co.name}</span>
       <span className="ml-auto text-[9px] tracking-[0.14em] text-navy/40 uppercase">{t("talentSearch")}</span>
     </div>
@@ -123,7 +122,10 @@ function CompanyScene({ frame, t, setTarget }: { frame: CompanyFrame; t: T; setT
   // ——— DETTAGLIO (anonimo) ———
   if (block === "detail") {
     const d = co.detail;
-    const chips = [...studentData.availability.slice(0, 2), ...studentData.hardSkills.slice(0, 2)];
+    const chips = [
+      ...studentData.availabilityPills.slice(0, 2),
+      ...studentData.hardSkills.slice(0, 2).map((s) => s.name),
+    ];
     return (
       <div className="grid h-full grid-cols-[1fr_1.1fr] gap-3">
         {/* Card anonima */}

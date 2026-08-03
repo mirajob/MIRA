@@ -2,23 +2,30 @@
  * Dati e timeline del reel dimostrativo della landing.
  *
  * Lo SCENARIO è separato dal motore che lo anima (`landing-demo.tsx`): un motore
- * generico + N scenari. Oggi esiste solo lo scenario studente; domani si possono
- * aggiungere `associationScenario` (dashboard: candidature + valutazione) e
- * `companyScenario` (ricerca → card → contatto) con la stessa forma, senza toccare
- * il motore.
+ * generico + N scenari (studente, associazione, azienda).
+ *
+ * L'ordine dei beat è quello VERO dell'onboarding (vedi `derivePhase` in
+ * `lib/actions/onboarding-flow.ts`): disponibilità e piano, esperienze, studi,
+ * gate della candidatura, esami (facoltativi), competenze, lingue, profilo
+ * personale. Il libretto NON è più la prima cosa che si chiede: chiederlo per
+ * primo faceva abbandonare, e il reel non può raccontare un percorso che non
+ * esiste più.
  *
  * Il CONTENUTO della card è sempre in inglese (la MIRA Card lo è per prodotto),
- * anche quando la chat/guida è in italiano. Qui i dati sono quindi hardcoded in
- * inglese; la "cornice" (testi guida, etichette bottoni) è invece localizzata e
- * vive nei messaggi i18n, non qui.
+ * anche quando la chat/guida è in italiano: qui i dati sono quindi in inglese,
+ * tranne i testi "grezzi" che lo studente scrive di suo pugno prima che
+ * ✦ Migliora con MIRA li riscriva. La cornice localizzata (guide, etichette dei
+ * bottoni) vive nei messaggi i18n, non qui.
  */
 
 import type { CursorTarget } from "./demo-reel";
 
 export type StudentBlock =
-  | "header"
-  | "esperienze"
   | "disponibilita"
+  | "esperienze"
+  | "studi"
+  | "gate"
+  | "esami"
   | "competenze"
   | "lingue"
   | "profilo"
@@ -26,7 +33,7 @@ export type StudentBlock =
 
 export interface Frame {
   block: StudentBlock;
-  /** Sotto-stato interno del blocco (es. header: intro → uploading → filled). */
+  /** Sotto-stato interno del blocco (es. esperienze: ask → reading → filled). */
   phase: string;
   /** Quanti blocchi risultano confermati a questo frame (guida la barra e lo stack). */
   approved: number;
@@ -40,76 +47,102 @@ export interface Frame {
 
 export interface StudentData {
   name: string;
-  header: {
-    course: string;
-    university: string;
-    level: string;
-    year: string;
-    average: string;
-  };
-  /** Testo grezzo che lo studente "scrive" (volutamente informale, misto IT). */
-  experienceRaw: string;
-  /** Come MIRA lo riscrive: bullet in stile CV inglese. */
-  experienceRefined: string;
-  experienceOrg: string;
-  availability: string[];
-  availabilityNote: string;
+  /** I quattro campi della disponibilità, gli stessi del blocco vero. */
+  availability: { cosaCerca: string; ambito: string; periodo: string; dove: string };
+  /** Le pill che finiscono sulla card. */
+  availabilityPills: string[];
   plan: string;
-  /** Gli esami letti dal libretto: sono la parte teorica della card. */
-  exams: string[];
-  hardSkills: string[];
+  /** Le esperienze come le tira fuori il CV, già in inglese. */
+  experiences: { title: string; org: string; period: string }[];
+  studi: { course: string; university: string; level: string; years: string };
+  exams: { name: string; grade: string }[];
+  average: string;
+  hardSkills: { name: string; level: string }[];
   languages: string[];
+  /** Come lo scrive lo studente, in italiano e senza filtri. */
+  personalProfileRaw: string;
+  /** Come lo riscrive ✦ Migliora con MIRA: prima persona, inglese. */
   personalProfile: string;
 }
 
 /** Studente d'esempio, fisso. Contenuto card in inglese. */
 export const studentData: StudentData = {
   name: "Giulia Ferrari",
-  header: {
+  availability: {
+    cosaCerca: "Internship",
+    ambito: "Strategy consulting",
+    periodo: "From June, 6 months",
+    dove: "Milan",
+  },
+  availabilityPills: ["Internship", "Strategy consulting", "From June", "Milan"],
+  plan: "On exchange next spring, then a master's in Finance. Leaning toward consulting, still exploring.",
+  experiences: [
+    {
+      title: "Led a 4-person team for the freshman orientation event (300+ students)",
+      org: "Bocconi Students Association",
+      period: "2025 – 2026",
+    },
+    {
+      title: "Equity research on three listed retail companies, presented to the club",
+      org: "Investment Club",
+      period: "2025",
+    },
+  ],
+  studi: {
     course: "BSc Economics & Management (CLEAM)",
     university: "Università Bocconi",
     level: "Bachelor",
-    year: "2nd year",
-    average: "28.5/30",
+    years: "2024 – 2027",
   },
-  experienceRaw:
-    "ho aiutato a organizzare l'evento di orientamento per le matricole, eravamo un team di 4 persone",
-  experienceRefined:
-    "Led a 4-person team to organize the freshman orientation event for 300+ incoming students.",
-  experienceOrg: "Bocconi Students Association",
-  availability: ["Internship", "Strategy consulting", "Boutique firm", "Milan", "6 months", "From June"],
-  availabilityNote: "Open to relocation for the right team.",
-  plan: "On exchange next spring, then a master's in Finance. Leaning toward consulting, still exploring.",
-  exams: ["Corporate Finance 30", "Financial Statement Analysis 29", "Statistics 28", "Microeconomics 30L"],
-  hardSkills: ["Excel", "Python", "PowerPoint", "Bloomberg"],
-  languages: ["Italian · Native", "English · C1", "Spanish · B2"],
+  exams: [
+    { name: "Corporate Finance", grade: "30" },
+    { name: "Financial Statement Analysis", grade: "29" },
+    { name: "Statistics", grade: "28" },
+    { name: "Microeconomics", grade: "30L" },
+  ],
+  average: "28.5/30",
+  hardSkills: [
+    { name: "Excel", level: "Advanced" },
+    { name: "Python", level: "Intermediate" },
+    { name: "Financial statement analysis", level: "Advanced" },
+    { name: "Bloomberg", level: "Basic" },
+  ],
+  languages: ["Italian · Native", "English · C1 (IELTS 7.5)", "Spanish · B2"],
+  personalProfileRaw:
+    "seguo i mercati da anni, ho una newsletter di investimenti per i miei amici, e mi alleno per il triathlon quasi ogni giorno",
   personalProfile:
     "I've run a small investing newsletter for my friends for two years, and I follow markets more closely than most of my exams. Outside study I train for triathlons, and the discipline carries into how I work. People who know me say I over-prepare and can't leave things half-done.",
 };
 
 /**
- * Timeline dello scenario studente. Beat "recitati" (leggibili) per Header,
- * Esperienze, Disponibilità e Profilo personale; Competenze e Lingue in montaggio
- * più veloce; chiusura con reveal della card completa.
+ * Timeline dello scenario studente. I beat parlati (disponibilità, esperienze,
+ * profilo personale) hanno più respiro; competenze e lingue sono un montaggio
+ * veloce. Chiusura con il reveal della card completa.
  */
 export const studentFrames: Frame[] = [
-  { block: "header", phase: "intro", approved: 0, cursor: "upload", tap: true, duration: 2400 },
-  { block: "header", phase: "uploading", approved: 0, cursor: null, duration: 1300 },
-  { block: "header", phase: "filled", approved: 0, cursor: "confirm", tap: true, duration: 2600 },
+  { block: "disponibilita", phase: "intro", approved: 0, cursor: null, duration: 2400 },
+  { block: "disponibilita", phase: "filled", approved: 0, cursor: "confirm", tap: true, duration: 3000 },
 
-  { block: "esperienze", phase: "ask", approved: 1, cursor: null, duration: 1300 },
-  { block: "esperienze", phase: "typing", approved: 1, cursor: null, duration: 2400 },
-  { block: "esperienze", phase: "improve", approved: 1, cursor: "improve", tap: true, duration: 1700 },
-  { block: "esperienze", phase: "improved", approved: 1, cursor: "confirm", tap: true, duration: 2500 },
+  { block: "esperienze", phase: "ask", approved: 1, cursor: "upload", tap: true, duration: 2400 },
+  { block: "esperienze", phase: "reading", approved: 1, cursor: null, duration: 1400 },
+  { block: "esperienze", phase: "filled", approved: 1, cursor: "confirm", tap: true, duration: 2800 },
 
-  { block: "disponibilita", phase: "ask", approved: 2, cursor: null, duration: 1200 },
-  { block: "disponibilita", phase: "filled", approved: 2, cursor: "confirm", tap: true, duration: 3200 },
+  { block: "studi", phase: "filled", approved: 2, cursor: "confirm", tap: true, duration: 2600 },
 
-  { block: "competenze", phase: "filled", approved: 3, cursor: "confirm", tap: true, duration: 2000 },
+  { block: "gate", phase: "unlocked", approved: 3, cursor: "confirm", tap: true, duration: 2800 },
+
+  { block: "esami", phase: "ask", approved: 3, cursor: "upload", tap: true, duration: 2200 },
+  { block: "esami", phase: "reading", approved: 3, cursor: null, duration: 1300 },
+  { block: "esami", phase: "filled", approved: 3, cursor: "confirm", tap: true, duration: 2400 },
+
+  { block: "competenze", phase: "filled", approved: 3, cursor: "confirm", tap: true, duration: 2200 },
   { block: "lingue", phase: "filled", approved: 4, cursor: "confirm", tap: true, duration: 1800 },
-  { block: "profilo", phase: "filled", approved: 5, cursor: "confirm", tap: true, duration: 3400 },
 
-  { block: "reveal", phase: "card", approved: 6, cursor: null, duration: 4200 },
+  { block: "profilo", phase: "typing", approved: 5, cursor: null, duration: 2600 },
+  { block: "profilo", phase: "improve", approved: 5, cursor: "improve", tap: true, duration: 1700 },
+  { block: "profilo", phase: "improved", approved: 5, cursor: "confirm", tap: true, duration: 2600 },
+
+  { block: "reveal", phase: "card", approved: 6, cursor: null, duration: 4500 },
 ];
 
 export const TOTAL_BLOCKS = 6;

@@ -17,7 +17,6 @@ export function AssociationDemo() {
 
   const renderMeter = () => (
     <div className="flex items-center gap-2 border-b border-border bg-white px-3.5 py-2">
-      <span className="flex h-5 w-5 items-center justify-center rounded bg-navy text-[10px] font-semibold text-white">{a.monogram}</span>
       <span className="text-[11px] font-medium text-navy">{a.name}</span>
       <span className="ml-auto text-[9px] tracking-[0.14em] text-navy/40 uppercase">{t("dashboard")}</span>
     </div>

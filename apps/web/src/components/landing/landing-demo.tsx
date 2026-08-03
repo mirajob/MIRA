@@ -21,26 +21,30 @@ import {
 /**
  * Scenario STUDENTE del reel della landing (cornice telefono).
  *
- * Mostra la meccanica reale dell'onboarding: la guida di MIRA, i campi che si
- * compilano da soli, il cursore finto che tocca i bottoni, "Migliora con MIRA"
- * che riscrive il testo grezzo in inglese — fino al reveal della MIRA Card
- * completa. Il motore (timing, cursore, cornice, pausa, reduced-motion) sta in
+ * Mostra la meccanica reale dell'onboarding, nell'ordine vero: si parte da cosa
+ * cerchi, poi le esperienze (dal CV), i dati del corso, lo sblocco della
+ * candidatura, gli esami dal libretto (facoltativi), competenze, lingue e il
+ * profilo personale, dove ✦ Migliora con MIRA riscrive in inglese quello che lo
+ * studente ha buttato giù in italiano. Chiude il reveal della card.
+ *
+ * Il motore (timing, cursore, cornice, pausa, reduced-motion) sta in
  * `demo-reel.tsx`; qui vivono solo le scene dello studente.
  */
 
-const ORDER: Exclude<StudentBlock, "reveal">[] = [
-  "header",
-  "esperienze",
+/** I sei blocchi che contano nella percentuale: gate ed esami non ne fanno parte. */
+const ORDER: Exclude<StudentBlock, "reveal" | "gate" | "esami">[] = [
   "disponibilita",
+  "esperienze",
+  "studi",
   "competenze",
   "lingue",
   "profilo",
 ];
 
-const TITLE_KEY: Record<Exclude<StudentBlock, "reveal">, string> = {
-  header: "header",
-  esperienze: "experience",
+const TITLE_KEY: Record<(typeof ORDER)[number], string> = {
   disponibilita: "availability",
+  esperienze: "experience",
+  studi: "studies",
   competenze: "skills",
   lingue: "languages",
   profilo: "profile",
@@ -121,106 +125,123 @@ function ConfirmButton({ setTarget, label }: { setTarget: SetTarget; label: stri
   );
 }
 
+/** Riga "etichetta · valore" dei blocchi a campi (disponibilità, studi). */
+function FieldRow({ label, value, i = 0 }: { label: string; value?: string; i?: number }) {
+  return (
+    <div className="flex items-baseline gap-2 py-[3px]" style={{ animation: "mira-pop .4s var(--ease-out) both", animationDelay: `${i * 70}ms` }}>
+      <span className="w-[62px] shrink-0 text-[9px] text-ink-tertiary">{label}</span>
+      {value ? (
+        <span className="text-[11px] leading-snug text-ink">{value}</span>
+      ) : (
+        <span className="h-2 flex-1 rounded bg-border" />
+      )}
+    </div>
+  );
+}
+
+/** L'interruttore "in cerca / aperto a opportunità" del blocco disponibilità. */
+function Toggle({ label, on }: { label: string; on: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-[10px] text-ink-secondary">{label}</span>
+      <span className={`flex h-3.5 w-6 shrink-0 items-center rounded-full px-[2px] transition-colors ${on ? "justify-end bg-petrol" : "justify-start bg-border-strong"}`}>
+        <span className="h-2.5 w-2.5 rounded-full bg-white" />
+      </span>
+    </div>
+  );
+}
+
+/** Il riquadro che "legge" un file caricato (CV, libretto). */
+function Scanning({ label }: { label: string }) {
+  return (
+    <div className="relative h-16 overflow-hidden rounded-md bg-navy-50">
+      <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-petrol/25 to-transparent" style={{ animation: "mira-scan 1.1s var(--ease-in-out) infinite" }} />
+      <div className="flex h-full items-center justify-center">
+        <span className="text-[11px] text-ink-secondary">{label}</span>
+      </div>
+    </div>
+  );
+}
+
 function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: SetTarget }) {
   const { block, phase } = frame;
+  const d = studentData;
 
-  // ——— HEADER ———
-  if (block === "header") {
-    if (phase === "intro") {
-      return (
-        <div className="space-y-2">
-          <Guide text={t("guide.headerIntro", { name: studentData.name.split(" ")[0] ?? studentData.name })} typing duration={900} />
-          <Panel>
-            <SectionLabel>{t("titles.header")}</SectionLabel>
-            <div className="space-y-1.5">
-              <div className="h-2 w-4/5 rounded bg-border" />
-              <div className="h-2 w-3/5 rounded bg-border" />
-            </div>
-            <button ref={setTarget("upload")} type="button" className="mt-2.5 w-full rounded-md bg-navy py-2 text-[12px] font-medium text-white">
-              {t("uploadTranscript")}
-            </button>
-          </Panel>
-        </div>
-      );
-    }
-    if (phase === "uploading") {
-      return (
-        <div className="space-y-2">
-          <Guide text={t("guide.headerUploading")} />
-          <Panel>
-            <div className="relative h-16 overflow-hidden rounded-md bg-navy-50">
-              <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-petrol/25 to-transparent" style={{ animation: "mira-scan 1.1s var(--ease-in-out) infinite" }} />
-              <div className="flex h-full items-center justify-center gap-1.5">
-                <span className="text-[11px] text-ink-secondary">{t("reading")}</span>
-              </div>
-            </div>
-          </Panel>
-        </div>
-      );
-    }
+  // ——— DISPONIBILITÀ E PIANO · la prima cosa che MIRA chiede ———
+  if (block === "disponibilita") {
+    const filled = phase === "filled";
     return (
       <div className="space-y-2">
-        <Guide text={t("guide.headerFilled")} />
+        <Guide
+          text={filled ? t("guide.availabilityPlan") : t("guide.availabilityIntro", { name: d.name.split(" ")[0] ?? d.name })}
+          typing={!filled}
+          duration={1100}
+        />
         <Panel>
-          <SectionLabel>{t("titles.header")}</SectionLabel>
-          <p className="text-[12px] font-medium text-ink" style={{ animation: "mira-pop .4s var(--ease-out) both" }}>{studentData.header.course}</p>
-          <p className="text-[11px] text-ink-secondary" style={{ animation: "mira-pop .4s var(--ease-out) both", animationDelay: "80ms" }}>{studentData.header.university}</p>
-          <div className="mt-1.5 flex flex-wrap items-center gap-1.5" style={{ animation: "mira-pop .4s var(--ease-out) both", animationDelay: "160ms" }}>
-            <Chip>{studentData.header.level}</Chip>
-            <Chip i={1}>{studentData.header.year}</Chip>
-            <span className="text-[11px] font-semibold text-ink">{studentData.header.average}</span>
+          <SectionLabel>{t("titles.availability")}</SectionLabel>
+          <Toggle label={t("seekingToggle")} on />
+          <div className="mt-1.5 border-t border-border pt-1.5">
+            <FieldRow label={t("fields.cosaCerca")} value={filled ? d.availability.cosaCerca : undefined} i={0} />
+            <FieldRow label={t("fields.ambito")} value={filled ? d.availability.ambito : undefined} i={1} />
+            <FieldRow label={t("fields.periodo")} value={filled ? d.availability.periodo : undefined} i={2} />
+            <FieldRow label={t("fields.dove")} value={filled ? d.availability.dove : undefined} i={3} />
           </div>
-          <ConfirmButton setTarget={setTarget} label={t("confirm")} />
+          {filled && (
+            <div className="mt-2 border-t border-border pt-2" style={{ animation: "mira-pop .4s var(--ease-out) both", animationDelay: "320ms" }}>
+              <SectionLabel>{t("planLabel")}</SectionLabel>
+              <p className="text-[11px] leading-snug text-ink-secondary">{d.plan}</p>
+            </div>
+          )}
+          {filled && <ConfirmButton setTarget={setTarget} label={t("confirm")} />}
         </Panel>
       </div>
     );
   }
 
-  // ——— ESPERIENZE ———
+  // ——— ESPERIENZE · tre strade, il CV è la più veloce ———
   if (block === "esperienze") {
     if (phase === "ask") {
       return (
         <div className="space-y-2">
-          <Guide text={t("guide.expAsk")} typing duration={800} />
+          <Guide text={t("guide.experienceAsk")} typing duration={1000} />
           <Panel>
-            <div className="min-h-[52px] rounded-md border border-border bg-paper px-2.5 py-2 text-[12px] text-ink-tertiary">{t("expPlaceholder")}</div>
-          </Panel>
-        </div>
-      );
-    }
-    if (phase === "typing") {
-      return (
-        <div className="space-y-2">
-          <Guide text={t("guide.expAsk")} />
-          <Panel>
-            <div className="min-h-[52px] rounded-md border border-petrol/40 bg-white px-2.5 py-2 text-[12px] text-ink">
-              <Typewriter text={studentData.experienceRaw} duration={2000} />
+            <button ref={setTarget("upload")} type="button" className="w-full rounded-md bg-navy py-2 text-[12px] font-medium text-white">
+              {t("uploadCV")}
+            </button>
+            <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+              <button type="button" className="rounded-md border border-border bg-white py-1.5 text-[11px] text-ink-secondary">
+                {t("linkedinOption")}
+              </button>
+              <button type="button" className="rounded-md border border-border bg-white py-1.5 text-[11px] text-ink-secondary">
+                {t("manualOption")}
+              </button>
             </div>
           </Panel>
         </div>
       );
     }
-    if (phase === "improve") {
+    if (phase === "reading") {
       return (
         <div className="space-y-2">
-          <Guide text={t("guide.expImprove")} />
+          <Guide text={t("guide.experienceReading")} />
           <Panel>
-            <div className="min-h-[52px] rounded-md border border-border bg-paper px-2.5 py-2 text-[12px] text-ink">{studentData.experienceRaw}</div>
-            <button ref={setTarget("improve")} type="button" className="mt-2.5 w-full rounded-md border border-petrol bg-petrol-50 py-2 text-[12px] font-medium text-petrol-700">
-              {t("improve")}
-            </button>
+            <Scanning label={t("readingCV")} />
           </Panel>
         </div>
       );
     }
     return (
       <div className="space-y-2">
-        <Guide text={t("guide.expImproved")} />
+        <Guide text={t("guide.experienceFilled", { count: d.experiences.length })} />
         <Panel>
           <SectionLabel>{t("titles.experience")}</SectionLabel>
-          <div style={{ animation: "mira-pop .45s var(--ease-out) both" }}>
-            <p className="text-[12px] font-medium text-ink leading-snug">{studentData.experienceRefined}</p>
-            <p className="mt-0.5 text-[10px] text-ink-tertiary">{studentData.experienceOrg}</p>
+          <div className="space-y-2">
+            {d.experiences.map((exp, i) => (
+              <div key={exp.title} style={{ animation: "mira-pop .45s var(--ease-out) both", animationDelay: `${i * 110}ms` }}>
+                <p className="text-[11px] font-medium leading-snug text-ink">{exp.title}</p>
+                <p className="text-[10px] text-ink-tertiary">{exp.org} · {exp.period}</p>
+              </div>
+            ))}
           </div>
           <ConfirmButton setTarget={setTarget} label={t("confirm")} />
         </Panel>
@@ -228,30 +249,100 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
     );
   }
 
-  // ——— DISPONIBILITÀ E PIANO ———
-  if (block === "disponibilita") {
+  // ——— STUDI · università e livello arrivano dalla registrazione ———
+  if (block === "studi") {
+    return (
+      <div className="space-y-2">
+        <Guide text={t("guide.studies")} />
+        <Panel>
+          <SectionLabel>{t("titles.studies")}</SectionLabel>
+          <FieldRow label={t("fields.universita")} value={d.studi.university} i={0} />
+          <FieldRow label={t("fields.livello")} value={d.studi.level} i={1} />
+          <FieldRow label={t("fields.corso")} value={d.studi.course} i={2} />
+          <FieldRow label={t("fields.anni")} value={d.studi.years} i={3} />
+          <ConfirmButton setTarget={setTarget} label={t("confirm")} />
+        </Panel>
+      </div>
+    );
+  }
+
+  // ——— GATE · con questi tre blocchi ci si candida già ———
+  if (block === "gate") {
+    return (
+      <div className="space-y-2">
+        <div
+          className="rounded-lg border border-success/40 bg-success-bg px-3.5 py-3"
+          style={{ animation: "mira-pop .45s var(--ease-out) both" }}
+        >
+          <p className="flex items-center gap-1.5 text-[12px] font-semibold text-success">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+            {t("gateTitle")}
+          </p>
+          <p className="mt-1 text-[11px] leading-snug text-ink">{t("gateBody", { pct: 50 })}</p>
+        </div>
+        <Panel>
+          <button ref={setTarget("confirm")} type="button" className="w-full rounded-md bg-navy py-2 text-[12px] font-medium text-white">
+            {t("gateContinue")}
+          </button>
+          <button type="button" className="mt-1.5 w-full rounded-md border border-border bg-white py-1.5 text-[11px] text-ink-secondary">
+            {t("gateExit")}
+          </button>
+        </Panel>
+      </div>
+    );
+  }
+
+  // ——— ESAMI · facoltativi, dal libretto ———
+  if (block === "esami") {
     if (phase === "ask") {
       return (
         <div className="space-y-2">
-          <Guide text={t("guide.availability")} typing duration={900} />
-          <Panel><div className="h-10 rounded-md bg-navy-50" /></Panel>
+          <Guide text={t("guide.exams")} typing duration={1000} />
+          <Panel>
+            <button ref={setTarget("upload")} type="button" className="w-full rounded-md bg-navy py-2 text-[12px] font-medium text-white">
+              {t("uploadTranscript")}
+            </button>
+            <button type="button" className="mt-1.5 w-full rounded-md border border-border bg-white py-1.5 text-[11px] text-ink-secondary">
+              {t("skipStep")}
+            </button>
+          </Panel>
+        </div>
+      );
+    }
+    if (phase === "reading") {
+      return (
+        <div className="space-y-2">
+          <Guide text={t("guide.examsReading")} />
+          <Panel>
+            <Scanning label={t("readingTranscript")} />
+          </Panel>
         </div>
       );
     }
     return (
       <div className="space-y-2">
-        <Guide text={t("guide.availability")} />
+        <Guide text={t("guide.examsFilled")} />
         <Panel>
-          <SectionLabel>{t("titles.availability")}</SectionLabel>
-          <div className="flex flex-wrap gap-1.5">
-            {studentData.availability.map((a, i) => (
-              <Chip key={a} i={i}>{a}</Chip>
+          <div className="flex items-center justify-between">
+            <SectionLabel>{t("titles.exams")}</SectionLabel>
+            <span className="text-[11px] font-semibold text-ink">{studentData.average}</span>
+          </div>
+          <div className="space-y-1">
+            {d.exams.map((ex, i) => (
+              <div
+                key={ex.name}
+                className="flex items-baseline justify-between gap-2"
+                style={{ animation: "mira-pop .4s var(--ease-out) both", animationDelay: `${i * 80}ms` }}
+              >
+                <span className="truncate text-[11px] text-ink">{ex.name}</span>
+                <span className="text-[10px] tabular-nums text-ink-secondary">{ex.grade}</span>
+              </div>
             ))}
           </div>
-          <p className="mt-1.5 text-[10px] text-ink-tertiary" style={{ animation: "mira-pop .4s var(--ease-out) both", animationDelay: "300ms" }}>{studentData.availabilityNote}</p>
-          <div className="mt-2 border-t border-border pt-2" style={{ animation: "mira-pop .4s var(--ease-out) both", animationDelay: "400ms" }}>
-            <SectionLabel>{t("planLabel")}</SectionLabel>
-            <p className="text-[11px] leading-snug text-ink-secondary">{studentData.plan}</p>
+          <div className="mt-2 border-t border-border pt-2">
+            <Toggle label={t("showAverage")} on />
           </div>
           <ConfirmButton setTarget={setTarget} label={t("confirm")} />
         </Panel>
@@ -259,25 +350,24 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
     );
   }
 
-  // ——— COMPETENZE ———
+  // ——— COMPETENZE · solo pratiche, con il livello ———
   if (block === "competenze") {
     return (
       <div className="space-y-2">
         <Guide text={t("guide.skills")} />
         <Panel>
-          <SectionLabel>{t("examsLabel")}</SectionLabel>
-          <div className="flex flex-wrap gap-1.5">
-            {studentData.exams.map((s, i) => (
-              <Chip key={s} i={i} tone="muted">{s}</Chip>
+          <SectionLabel>{t("titles.skills")}</SectionLabel>
+          <div className="space-y-1">
+            {d.hardSkills.map((s, i) => (
+              <div
+                key={s.name}
+                className="flex items-center justify-between gap-2"
+                style={{ animation: "mira-pop .4s var(--ease-out) both", animationDelay: `${i * 80}ms` }}
+              >
+                <span className="truncate text-[11px] text-ink">{s.name}</span>
+                <span className="shrink-0 rounded-full bg-petrol-50 px-1.5 py-0.5 text-[9px] text-petrol-700">{s.level}</span>
+              </div>
             ))}
-          </div>
-          <div className="mt-2">
-            <SectionLabel>{t("hardLabel")}</SectionLabel>
-            <div className="flex flex-wrap gap-1.5">
-              {studentData.hardSkills.map((s, i) => (
-                <Chip key={s} i={i + studentData.exams.length}>{s}</Chip>
-              ))}
-            </div>
           </div>
           <ConfirmButton setTarget={setTarget} label={t("confirm")} />
         </Panel>
@@ -293,7 +383,7 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
         <Panel>
           <SectionLabel>{t("titles.languages")}</SectionLabel>
           <div className="flex flex-wrap gap-1.5">
-            {studentData.languages.map((l, i) => (
+            {d.languages.map((l, i) => (
               <Chip key={l} i={i}>{l}</Chip>
             ))}
           </div>
@@ -303,14 +393,41 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
     );
   }
 
-  // ——— PROFILO PERSONALE ———
+  // ——— PROFILO PERSONALE · scrivi come parli, MIRA lo riscrive ———
+  if (phase === "typing") {
+    return (
+      <div className="space-y-2">
+        <Guide text={t("guide.profileAsk")} />
+        <Panel>
+          <div className="min-h-[56px] rounded-md border border-petrol/40 bg-white px-2.5 py-2 text-[12px] text-ink">
+            <Typewriter text={d.personalProfileRaw} duration={2100} />
+          </div>
+        </Panel>
+      </div>
+    );
+  }
+  if (phase === "improve") {
+    return (
+      <div className="space-y-2">
+        <Guide text={t("guide.profileImprove")} />
+        <Panel>
+          <div className="min-h-[56px] rounded-md border border-border bg-paper px-2.5 py-2 text-[12px] text-ink">
+            {d.personalProfileRaw}
+          </div>
+          <button ref={setTarget("improve")} type="button" className="mt-2.5 w-full rounded-md border border-petrol bg-petrol-50 py-2 text-[12px] font-medium text-petrol-700">
+            {t("improve")}
+          </button>
+        </Panel>
+      </div>
+    );
+  }
   return (
     <div className="space-y-2">
-      <Guide text={t("guide.profile")} />
+      <Guide text={t("guide.profileImproved")} />
       <Panel>
         <SectionLabel>{t("titles.profile")}</SectionLabel>
-        <p className="font-display text-[12px] italic leading-relaxed text-ink">
-          <Typewriter text={studentData.personalProfile} duration={2600} caret={false} />
+        <p className="font-display text-[12px] italic leading-relaxed text-ink line-clamp-6">
+          {d.personalProfile}
         </p>
         <ConfirmButton setTarget={setTarget} label={t("confirm")} />
       </Panel>
@@ -343,19 +460,19 @@ function DemoCard() {
           <div className="mt-1.5 grid grid-cols-[1fr_92px] gap-x-2.5">
             <div className="min-w-0" style={rise()}>
               <p className="text-[9px] leading-snug text-ink">
-                <span className="font-medium">{d.header.course}</span>
-                <span className="text-ink-secondary"> · {d.header.university}</span>
+                <span className="font-medium">{d.studi.course}</span>
+                <span className="text-ink-secondary"> · {d.studi.university}</span>
               </p>
               <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[8px] text-ink-secondary">
-                <span>{d.header.level}</span>
-                <span>{d.header.year}</span>
-                <span className="font-medium text-ink">{d.header.average}</span>
+                <span>{d.studi.level}</span>
+                <span>{d.studi.years}</span>
+                <span className="font-medium text-ink">{d.average}</span>
               </div>
             </div>
             <div className="min-w-0 border-l border-border pl-2.5" style={rise()}>
               <SectionLabel>Availability</SectionLabel>
               <div className="flex flex-wrap gap-1">
-                {["Internship", "Milan", "From June"].map((a) => (
+                {d.availabilityPills.slice(0, 3).map((a) => (
                   <Pill key={a}>{a}</Pill>
                 ))}
               </div>
@@ -374,8 +491,12 @@ function DemoCard() {
             </div>
             <div style={rise()}>
               <SectionLabel>Experience</SectionLabel>
-              <p className="text-[10px] font-medium leading-snug text-ink">{d.experienceRefined}</p>
-              <p className="text-[8px] text-ink-tertiary">{d.experienceOrg}</p>
+              {d.experiences.map((exp) => (
+                <div key={exp.title} className="mt-1 first:mt-0">
+                  <p className="text-[9px] font-medium leading-snug text-ink line-clamp-2">{exp.title}</p>
+                  <p className="text-[8px] text-ink-tertiary">{exp.org}</p>
+                </div>
+              ))}
             </div>
           </div>
 
