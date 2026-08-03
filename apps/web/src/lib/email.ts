@@ -192,6 +192,8 @@ export async function sendInterviewConfirmation({
   icsContent,
   variant = "booked",
   counterpartName,
+  todoUrl,
+  todoIsLink,
 }: {
   email: string;
   recipientName: string | null;
@@ -209,7 +211,25 @@ export async function sendInterviewConfirmation({
   variant?: "booked" | "details" | "interviewer";
   /** Nome del candidato: serve solo nella variante per chi conduce. */
   counterpartName?: string | null;
+  /**
+   * La pagina del round, quando resta qualcosa da fare. Con "un posto diverso
+   * per ogni colloquio" il luogo o il link lo mette chi conduce, dopo la
+   * prenotazione: senza dirlo qui quel passo non lo fa nessuno, e il candidato
+   * resta con un appuntamento senza indirizzo.
+   */
+  todoUrl?: string | null;
+  /** true se quello che manca è un link, false se è un indirizzo. */
+  todoIsLink?: boolean;
 }) {
+  const todoBlock = todoUrl
+    ? `<div style="border-left: 3px solid #B47A14; background: #FAF1DD; padding: 10px 14px; margin: 16px 0;">
+         <p style="color: #1a202c; font-size: 14px; line-height: 1.6; margin: 0;">
+           <strong>Still to do:</strong> this round uses a different ${todoIsLink ? "link" : "place"} for
+           each interview, so ${todoIsLink ? "the video call link" : "the address"} has not reached the candidate yet.
+           <a href="${todoUrl}" style="color: #2b6cb0;">Open the round on MIRA</a> and add it: they get it straight away.
+         </p>
+       </div>`
+    : "";
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: email,
@@ -248,6 +268,7 @@ export async function sendInterviewConfirmation({
         <p style="color: #718096; font-size: 13px;">
           The calendar invite is attached: open it to add the interview to your calendar.
         </p>
+        ${todoBlock}
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
         <p style="color: #a0aec0; font-size: 12px;">
           MIRA · University Talent Platform<br/>

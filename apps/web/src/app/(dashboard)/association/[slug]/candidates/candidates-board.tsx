@@ -16,6 +16,12 @@ export interface CandidateRow {
   status: string;
   /** Riga già pronta sullo stato del colloquio, calcolata sul server. */
   interviewSummary: string | null;
+  /** A quale round è stato invitato, se lo è stato. */
+  roundId: string | null;
+  roundIndex: number | null;
+  roundTitle: string | null;
+  /** Dove si trova dentro il round: deve prenotare, ha prenotato, ha già fatto. */
+  interviewState: "toBook" | "booked" | "done" | null;
 }
 
 /**
@@ -42,6 +48,9 @@ export function CandidatesBoard({
   const [panel, setPanel] = useState<{ id: string; kind: "rounds" | "accepted" | "rejected" } | null>(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  // Il round scelto ma non ancora confermato: fra il click e la mail c'è
+  // l'anteprima, come nella pagina del round.
+  const [chosenRound, setChosenRound] = useState<RoundOption | null>(null);
 
   const groups = [
     { key: "applied", label: t("groupApplied"), hint: t("groupAppliedHint"), match: ["submitted", "in_review"] },
@@ -83,15 +92,90 @@ export function CandidatesBoard({
       applicationIds: [row.applicationId],
     });
     if (result.error) window.alert(result.error);
+    else if ("warning" in result && result.warning) window.alert(result.warning);
     setPanel(null);
+    setChosenRound(null);
     router.refresh();
     setLoading(false);
+  }
+
+  /** La riga sul posto, uguale a quella dell'anteprima nella pagina del round. */
+  function placeLine(round: RoundOption) {
+    if (round.linkMode === "auto") return a("previewPlaceAuto");
+    if (round.linkMode === "per_interview") return a("previewPlaceLater");
+    return round.place || a("previewPlaceMissing");
   }
 
   if (!rows.length) {
     return (
       <div className="rounded-lg border border-border bg-white p-8 text-center">
         <p className="text-body text-ink-secondary">{t("noApplications")}</p>
+      </div>
+    );
+  }
+
+  /** Un elenco di righe dentro il suo riquadro. */
+  function RowList({ list }: { list: CandidateRow[] }) {
+    return (
+      <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-white">
+        {list.map((row) => renderRow(row))}
+      </div>
+    );
+  }
+
+  /**
+   * La fase del colloquio, divisa per round e dentro ogni round per il punto in
+   * cui è il candidato: deve ancora scegliere l'orario, ce l'ha e deve andarci,
+   * l'ha già fatto. In un elenco unico "al colloquio" non si capiva chi stesse
+   * aspettando cosa.
+   */
+  function InterviewGroup({ list }: { list: CandidateRow[] }) {
+    const byRound = new Map<string, CandidateRow[]>();
+    for (const row of list) {
+      const key = row.roundId ?? "";
+      byRound.set(key, [...(byRound.get(key) ?? []), row]);
+    }
+    const ordered = [...byRound.entries()].sort(
+      (x, y) => (x[1][0]?.roundIndex ?? 99) - (y[1][0]?.roundIndex ?? 99)
+    );
+
+    const states = [
+      { key: "toBook" as const, label: t("stateToBook") },
+      { key: "booked" as const, label: t("stateBooked") },
+      { key: "done" as const, label: t("stateDone") },
+    ];
+
+    return (
+      <div className="space-y-4">
+        {ordered.map(([roundId, roundRows]) => {
+          const first = roundRows[0];
+          const roundLabel = first?.roundIndex
+            ? `${a("roundLabel", { index: first.roundIndex })} · ${first.roundTitle ?? ""}`
+            : t("roundUnknown");
+
+          return (
+            <div key={roundId || "senza-round"}>
+              <p className="mb-2 text-body-sm font-medium text-navy">
+                {roundLabel} <span className="font-normal text-ink-tertiary">{roundRows.length}</span>
+              </p>
+
+              <div className="space-y-2.5 border-l-2 border-border pl-3">
+                {states.map(({ key, label }) => {
+                  const stateRows = roundRows.filter((r) => r.interviewState === key);
+                  if (!stateRows.length) return null;
+                  return (
+                    <div key={key}>
+                      <p className="mb-1 text-eyebrow uppercase text-navy/50">
+                        {label} <span className="text-ink-tertiary">{stateRows.length}</span>
+                      </p>
+                      <RowList list={stateRows} />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   }
@@ -111,13 +195,24 @@ export function CandidatesBoard({
             </div>
             <p className="mb-2 text-body-sm text-ink-tertiary">{group.hint}</p>
 
-            <div className="overflow-hidden rounded-lg border border-border bg-white divide-y divide-border">
-              {groupRows.map((row) => {
-                const open = panel?.id === row.applicationId;
-                const decided = row.status === "accepted" || row.status === "rejected";
+            {group.key === "interview" ? (
+              <InterviewGroup list={groupRows} />
+            ) : (
+              <RowList list={groupRows} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 
-                return (
-                  <div key={row.applicationId} className="px-4 py-2.5">
+  /** Una riga candidato, con i pannelli che può aprire. */
+  function renderRow(row: CandidateRow) {
+    const open = panel?.id === row.applicationId;
+    const decided = row.status === "accepted" || row.status === "rejected";
+
+    return (
+      <div key={row.applicationId} className="px-4 py-2.5">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                       <Link
                         href={`/association/${slug}/candidates/${row.applicationId}`}
@@ -139,7 +234,10 @@ export function CandidatesBoard({
                         <div className="ml-auto flex items-center gap-3">
                           <button
                             onClick={() =>
-                              setPanel(open && panel?.kind === "rounds" ? null : { id: row.applicationId, kind: "rounds" })
+                              {
+                                setChosenRound(null);
+                                setPanel(open && panel?.kind === "rounds" ? null : { id: row.applicationId, kind: "rounds" });
+                              }
                             }
                             className="text-body-sm text-petrol hover:underline"
                           >
@@ -175,12 +273,54 @@ export function CandidatesBoard({
                           </div>
                         ) : (
                           <>
+                            {chosenRound ? (
+                              <div className="space-y-3">
+                                <p className="text-eyebrow uppercase text-navy/60">
+                                  {a("previewHeading", { name: row.name })}
+                                </p>
+                                <div className="space-y-1 text-body-sm">
+                                  <p className="font-medium text-navy">{chosenRound.title}</p>
+                                  {chosenRound.description && (
+                                    <p className="whitespace-pre-wrap text-ink-secondary">
+                                      {chosenRound.description}
+                                    </p>
+                                  )}
+                                  <p className="text-ink">
+                                    {chosenRound.mode === "online" ? a("modeOnline") : a("modeInPerson")}
+                                    {" · "}
+                                    <span className="text-ink-secondary">{placeLine(chosenRound)}</span>
+                                  </p>
+                                  {chosenRound.daysLabel && (
+                                    <p className="text-ink-tertiary">
+                                      {a("previewDays", { days: chosenRound.daysLabel })}
+                                    </p>
+                                  )}
+                                  <p className="text-ink-tertiary">{a("previewTimeNote")}</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <button
+                                    onClick={() => invite(row, chosenRound.id)}
+                                    disabled={loading}
+                                    className="rounded-md bg-petrol px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-petrol-700 disabled:opacity-40"
+                                  >
+                                    {loading ? a("sending") : a("previewSendCta")}
+                                  </button>
+                                  <button
+                                    onClick={() => setChosenRound(null)}
+                                    className="text-body-sm text-ink-secondary hover:underline"
+                                  >
+                                    {a("cancel")}
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                            <>
                             <p className="mb-2 text-body-sm text-ink-secondary">{a("pickRound")}</p>
                             <div className="space-y-1">
                               {rounds.map((round) => (
                                 <button
                                   key={round.id}
-                                  onClick={() => invite(row, round.id)}
+                                  onClick={() => setChosenRound(round)}
                                   disabled={loading}
                                   className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-white disabled:opacity-50"
                                 >
@@ -191,6 +331,8 @@ export function CandidatesBoard({
                                 </button>
                               ))}
                             </div>
+                            </>
+                            )}
                           </>
                         )}
                       </div>
@@ -229,12 +371,6 @@ export function CandidatesBoard({
                       </div>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+    );
+  }
 }

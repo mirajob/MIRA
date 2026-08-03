@@ -1054,7 +1054,11 @@
     "groupAccepted": "Accettati",
     "groupAcceptedHint": "Sono entrati fra i membri dell'associazione.",
     "groupRejected": "Non selezionati",
-    "groupRejectedHint": "Hanno ricevuto la risposta e la selezione per loro è chiusa."
+    "groupRejectedHint": "Hanno ricevuto la risposta e la selezione per loro è chiusa.",
+    "stateToBook": "Deve ancora scegliere l'orario",
+    "stateBooked": "Colloquio fissato",
+    "stateDone": "Colloquio sostenuto",
+    "roundUnknown": "Round non indicato"
   },
   "CandidateDetail": {
     "fallbackName": "Candidato",
@@ -1121,7 +1125,16 @@
     "sending": "Invio...",
     "cancel": "Annulla",
     "acceptedDone": "Accettato. È stato aggiunto ai membri e ha ricevuto l'email.",
-    "rejectedDone": "Rifiutato. Ha ricevuto l'email."
+    "rejectedDone": "Rifiutato. Ha ricevuto l'email.",
+    "previewHeading": "Cosa riceverà {name}",
+    "previewSendCta": "Manda l'invito",
+    "previewTimeNote": "L'orario lo sceglie lui fra quelli coperti dal board.",
+    "previewDays": "Giorni: {days}",
+    "previewPlaceAuto": "link della videochiamata generato al momento della prenotazione",
+    "previewPlaceLater": "il posto glielo indichi tu dopo che ha prenotato",
+    "previewPlaceMissing": "posto non ancora indicato",
+    "modeOnline": "Online",
+    "modeInPerson": "In presenza"
   },
   "InterviewsPage": {
     "heading": "Colloqui",
@@ -1751,7 +1764,9 @@
     "bookingsClosed": "Le prenotazioni per questo round sono chiuse.",
     "confirmMove": "Vuoi spostare il colloquio a {date}?",
     "confirmMoveCta": "Sì, sposta",
-    "cancel": "Annulla"
+    "cancel": "Annulla",
+    "confirmBook": "Confermi il colloquio {date}? Ti mandiamo la conferma per email.",
+    "confirmBookCta": "Sì, prenota"
   },
   "CandidateNotes": {
     "heading": "Note del board",

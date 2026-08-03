@@ -13,6 +13,14 @@ export interface RoundOption {
   roundIndex: number;
   /** true se il candidato è già stato invitato a questo round. */
   alreadyInvited: boolean;
+  description?: string | null;
+  mode?: "online" | "in_person";
+  /** "auto" | "shared" | "per_interview" */
+  linkMode?: string;
+  /** Il posto o il link, quando la sessione ne ha uno solo per tutti. */
+  place?: string | null;
+  /** L'arco di giorni in cui cadono i colloqui, già scritto. */
+  daysLabel?: string | null;
 }
 
 /**

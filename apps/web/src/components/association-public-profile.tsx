@@ -39,89 +39,85 @@ export async function AssociationPublicProfile({
         </div>
       )}
 
-      {/* Header. Senza logo non mettiamo un segnaposto con l'iniziale: una lettera
-          dentro un quadrato somiglia a un logo vero e non lo e'. Meglio il solo nome,
+      {/* Senza logo non mettiamo un segnaposto con l'iniziale: una lettera dentro
+          un quadrato somiglia a un logo vero e non lo e'. Meglio il solo nome,
           finche' l'associazione non carica il suo. */}
-      <div className="flex items-start gap-4 mb-8">
-        {association.logo_url && (
-          <img src={association.logo_url} alt="" className="h-16 w-16 rounded-lg object-cover" />
-        )}
-        <div>
-          <h1 className="font-display text-display-md text-navy">{association.name}</h1>
-          {association.category && (
-            <p className="text-body text-ink-secondary mt-1">
-              {associationCategoryLabel(association.category)}
-            </p>
+      <div className="mb-4 rounded-lg border border-border bg-white p-6">
+        <div className="flex items-start gap-4">
+          {association.logo_url && (
+            <img src={association.logo_url} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
           )}
+          <div className="min-w-0">
+            <h1 className="text-body-lg font-semibold text-navy">{association.name}</h1>
+            {association.category && (
+              <p className="text-body-sm text-ink-tertiary">
+                {associationCategoryLabel(association.category)}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Sectors */}
-      {association.sectors?.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-8">
-          {association.sectors.map((sector: string) => (
-            <span key={sector} className="inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium bg-navy-50 text-navy">
-              {sector}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Description */}
-      {association.short_description && (
-        <p className="text-body-lg text-ink-secondary mb-6">
-          {association.short_description}
-        </p>
-      )}
-      {association.long_description && (
-        <div className="prose text-body text-ink mb-8 whitespace-pre-wrap">
-          {association.long_description}
-        </div>
-      )}
-
-      {/* Links */}
-      <div className="flex gap-4 mb-10">
-        {association.website_url && (
-          <a
-            href={association.website_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2 text-body"
-          >
-            {t("websiteLink")}
-          </a>
+        {association.sectors?.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {association.sectors.map((sector: string) => (
+              <span key={sector} className="inline-flex items-center rounded-full bg-navy-50 px-2.5 py-0.5 text-body-sm text-navy">
+                {sector}
+              </span>
+            ))}
+          </div>
         )}
-        {association.contact_email && (
-          <a
-            href={`mailto:${association.contact_email}`}
-            className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700 hover:decoration-2 text-body"
-          >
-            {t("contactLink")}
-          </a>
+
+        {association.short_description && (
+          <p className="mt-4 text-body text-ink-secondary">{association.short_description}</p>
+        )}
+        {association.long_description && (
+          <div className="mt-3 whitespace-pre-wrap text-body-sm text-ink">
+            {association.long_description}
+          </div>
+        )}
+
+        {(association.website_url || association.contact_email) && (
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 border-t border-border pt-3 text-body-sm">
+            {association.website_url && (
+              <a
+                href={association.website_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-petrol hover:underline"
+              >
+                {t("websiteLink")}
+              </a>
+            )}
+            {association.contact_email && (
+              <a href={`mailto:${association.contact_email}`} className="text-petrol hover:underline">
+                {t("contactLink")}
+              </a>
+            )}
+          </div>
         )}
       </div>
 
       {/* Open cycles */}
       {showManage ? (
-        <div className="rounded-lg border-2 border-petrol/30 bg-petrol-50 p-6 text-center">
-          <p className="text-body text-ink mb-3">{t("boardMemberBanner")}</p>
+        <div className="rounded-lg border border-petrol/30 bg-petrol-50 p-4">
+          <p className="mb-3 text-body-sm text-ink">{t("boardMemberBanner")}</p>
           <Link
             href={`/association/${slug}`}
-            className="inline-block bg-petrol text-white px-6 py-3 rounded-md text-label hover:bg-petrol-700 transition-colors duration-100"
+            className="inline-block rounded-md bg-petrol px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-petrol-700"
           >
             {t("manageCta")}
           </Link>
         </div>
       ) : openCycles && openCycles.length > 0 ? (
         <div className="space-y-4">
-          <h2 className="font-display text-h2 text-navy">{t("openCyclesHeading")}</h2>
+          <h2 className="text-body font-medium text-navy">{t("openCyclesHeading")}</h2>
           {openCycles.map((cycle: any) => {
             const notYetOpen = cycle.opens_at && new Date(cycle.opens_at) > new Date();
             return (
-              <div key={cycle.id} className="rounded-lg border border-border bg-white p-6">
-                <h3 className="font-sans text-h3 text-navy">{cycle.title}</h3>
+              <div key={cycle.id} className="rounded-lg border border-border bg-white p-5">
+                <h3 className="text-body font-medium text-navy">{cycle.title}</h3>
                 {cycle.description && (
-                  <p className="mt-2 text-body text-ink-secondary">{cycle.description}</p>
+                  <p className="mt-1 text-body-sm text-ink-secondary">{cycle.description}</p>
                 )}
                 {notYetOpen ? (
                   <p className="mt-2 text-body-sm text-ink-tertiary">
@@ -136,7 +132,7 @@ export async function AssociationPublicProfile({
                     )}
                     <Link
                       href={`/associations/${slug}/apply?cycle=${cycle.id}`}
-                      className="mt-4 inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100"
+                      className="mt-3 inline-block rounded-md bg-navy px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-navy-700"
                     >
                       {t("applyCta")}
                     </Link>
@@ -147,10 +143,8 @@ export async function AssociationPublicProfile({
           })}
         </div>
       ) : (
-        <div className="rounded-lg border border-border bg-white p-8 text-center">
-          <p className="text-body text-ink-secondary">
-            {t("noCyclesOpen")}
-          </p>
+        <div className="rounded-lg border border-border bg-white px-5 py-6 text-center">
+          <p className="text-body-sm text-ink-secondary">{t("noCyclesOpen")}</p>
         </div>
       )}
     </>

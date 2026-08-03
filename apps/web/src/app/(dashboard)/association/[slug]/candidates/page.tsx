@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { APP_TIME_ZONE } from "@/lib/format-date";
+import { parseWindows } from "@/lib/interview-slots";
 import { CandidatesBoard, type CandidateRow } from "./candidates-board";
 import type { RoundOption } from "./[applicationId]/candidate-actions";
 
@@ -62,23 +63,40 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
   // I round della selezione mostrata: sono le opzioni di "convoca a colloquio".
   const { data: roundRows } = selectedCycle
     ? await (supabase.from("interview_sessions") as any)
-        .select("id, title, round_index")
+        .select("id, title, round_index, description, mode, link_mode, location, meeting_link, windows")
         .eq("application_cycle_id", selectedCycle)
         .order("round_index", { ascending: true })
     : { data: [] };
 
-  const rounds: RoundOption[] = ((roundRows ?? []) as any[]).map((r) => ({
-    id: r.id,
-    title: r.title,
-    roundIndex: r.round_index,
-    alreadyInvited: false,
-  }));
+  const dayFormat = (iso: string) =>
+    new Date(`${iso}T12:00:00Z`).toLocaleDateString(dateLocale, {
+      timeZone: APP_TIME_ZONE,
+      day: "numeric",
+      month: "long",
+    });
+
+  const rounds: RoundOption[] = ((roundRows ?? []) as any[]).map((r) => {
+    const days = [...new Set(parseWindows(r.windows).map((w) => w.date))].sort();
+    const first = days[0];
+    const last = days[days.length - 1];
+    return {
+      id: r.id,
+      title: r.title,
+      roundIndex: r.round_index,
+      alreadyInvited: false,
+      description: r.description ?? null,
+      mode: r.mode,
+      linkMode: r.link_mode,
+      place: r.link_mode === "shared" ? (r.mode === "online" ? r.meeting_link : r.location) ?? null : null,
+      daysLabel: !first ? null : first === last || !last ? dayFormat(first) : `${dayFormat(first)} - ${dayFormat(last)}`,
+    };
+  });
 
   // Lo stato del colloquio in una riga, per chi è già stato invitato.
   const applicationIds = ((applications ?? []) as any[]).map((a) => a.id);
   const { data: invites } = applicationIds.length
     ? await (supabase.from("interview_invites") as any)
-        .select("application_id, selected_time")
+        .select("application_id, selected_time, session_id, slot_id, interview_sessions(title, round_index)")
         .in("application_id", applicationIds)
     : { data: [] };
 
@@ -115,6 +133,15 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
         ? d("interviewInvitedNotBooked")
         : null;
 
+    const startsAt = invite?.selected_time ? new Date(invite.selected_time).getTime() : null;
+    const interviewState: CandidateRow["interviewState"] = !invite
+      ? null
+      : startsAt === null
+        ? "toBook"
+        : startsAt < Date.now()
+          ? "done"
+          : "booked";
+
     return {
       applicationId: app.id,
       name: app.profiles?.full_name ?? "–",
@@ -122,6 +149,10 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
       position: app.selected_role_preferences?.[0] ?? null,
       status: app.status,
       interviewSummary: summary,
+      roundId: invite?.session_id ?? null,
+      roundIndex: invite?.interview_sessions?.round_index ?? null,
+      roundTitle: invite?.interview_sessions?.title ?? null,
+      interviewState,
     };
   });
 

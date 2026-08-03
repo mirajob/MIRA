@@ -1054,7 +1054,11 @@
     "groupAccepted": "Accepted",
     "groupAcceptedHint": "They are now members of the association.",
     "groupRejected": "Not selected",
-    "groupRejectedHint": "They got the answer and the process is closed for them."
+    "groupRejectedHint": "They got the answer and the process is closed for them.",
+    "stateToBook": "Still has to pick a time",
+    "stateBooked": "Interview scheduled",
+    "stateDone": "Interview done",
+    "roundUnknown": "No round set"
   },
   "CandidateDetail": {
     "fallbackName": "Candidate",
@@ -1121,7 +1125,16 @@
     "sending": "Sending...",
     "cancel": "Cancel",
     "acceptedDone": "Accepted. Added to members and notified by email.",
-    "rejectedDone": "Rejected. Notified by email."
+    "rejectedDone": "Rejected. Notified by email.",
+    "previewHeading": "What {name} will get",
+    "previewSendCta": "Send the invite",
+    "previewTimeNote": "They pick the time among the ones the board covers.",
+    "previewDays": "Days: {days}",
+    "previewPlaceAuto": "video call link generated when they book",
+    "previewPlaceLater": "you tell them the place after they book",
+    "previewPlaceMissing": "place not set yet",
+    "modeOnline": "Online",
+    "modeInPerson": "In person"
   },
   "InterviewsPage": {
     "heading": "Interviews",
@@ -1751,7 +1764,9 @@
     "bookingsClosed": "Bookings for this round are closed.",
     "confirmMove": "Move your interview to {date}?",
     "confirmMoveCta": "Yes, move it",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "confirmBook": "Confirm your interview on {date}? We send you the confirmation by email.",
+    "confirmBookCta": "Yes, book it"
   },
   "CandidateNotes": {
     "heading": "Board notes",

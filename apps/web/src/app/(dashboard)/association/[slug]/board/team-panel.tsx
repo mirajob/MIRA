@@ -108,7 +108,7 @@ export function TeamPanel({
     const studies = [p.degreeLevel, p.degreeProgram].filter(Boolean).join(" · ");
 
     return (
-      <div className="flex items-center gap-3 px-3 py-2.5">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2.5">
         {p.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={p.avatarUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
@@ -118,8 +118,8 @@ export function TeamPanel({
           </div>
         )}
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
+        <div className="min-w-0 flex-1 basis-48">
+          <div className="flex flex-wrap items-baseline gap-x-2">
             <Link
               href={`/association/${slug}/board/${p.profileId}/card`}
               className="truncate text-body-sm font-medium text-navy underline-offset-2 hover:underline"
@@ -145,7 +145,7 @@ export function TeamPanel({
             onChange={(e) => handleAssign(p.membershipId, e.target.value)}
             disabled={pending}
             aria-label={t("assignSection")}
-            className="hidden w-36 shrink-0 rounded border border-border bg-paper px-2 py-1 text-body-sm text-ink-secondary focus:border-petrol focus:outline-none sm:block"
+            className="w-full shrink-0 rounded border border-border bg-paper px-2 py-1 text-body-sm text-ink-secondary focus:border-petrol focus:outline-none sm:w-36"
           >
             <option value="">{t("noSection")}</option>
             {sections.map((s) => (
@@ -156,7 +156,7 @@ export function TeamPanel({
           </select>
         )}
 
-        <div className="w-20 shrink-0 text-right">
+        <div className="shrink-0">
           {!p.isSelf && (
             <MemberActions
               membershipId={p.membershipId}

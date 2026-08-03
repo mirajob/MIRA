@@ -129,7 +129,9 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
   const companyName = (c: any) => c.company_profiles?.display_name ?? c.company_profiles?.legal_name ?? t("companyFallback");
 
   return (
-    <div className="px-6 py-8 space-y-6">
+    <div className="space-y-4">
+      <PageBar title={t("pageTitle")} />
+
       {/* Tabs */}
       <div className="max-w-3xl mx-auto flex gap-1 border-b border-border">
         <button

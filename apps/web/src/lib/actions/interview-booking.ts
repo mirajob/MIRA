@@ -40,7 +40,7 @@ export async function inviteCandidatesToSession(input: {
   const supabase = await createServiceClient();
 
   const { data: session } = await (supabase.from("interview_sessions") as any)
-    .select("*, association_profiles(name)")
+    .select("*, association_profiles(name, slug)")
     .eq("id", input.sessionId)
     .maybeSingle();
 
@@ -221,7 +221,7 @@ export async function bookInterviewSlot(input: { inviteId: string; slotId: strin
   if (!invite.session_id) return { error: "Invito non collegato a un round." };
 
   const { data: session } = await (supabase.from("interview_sessions") as any)
-    .select("*, association_profiles(name)")
+    .select("*, association_profiles(name, slug)")
     .eq("id", invite.session_id)
     .maybeSingle();
 
@@ -365,6 +365,13 @@ export async function bookInterviewSlot(input: { inviteId: string; slotId: strin
       icsContent: ics,
       variant: "interviewer",
       counterpartName: student?.full_name ?? null,
+      // Con un posto per ogni colloquio manca ancora un passo, ed è suo: senza
+      // dirglielo il candidato resta con un appuntamento senza indirizzo.
+      todoUrl:
+        session.link_mode === "per_interview" && !place
+          ? `https://mirajob.cloud/association/${session.association_profiles?.slug ?? ""}/colloqui/${session.id}`
+          : null,
+      todoIsLink: session.mode === "online",
     }).catch(() => {});
   }
 

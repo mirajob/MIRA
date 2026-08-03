@@ -106,7 +106,7 @@ export default async function StudentBookingPage({ params }: Props) {
           {place && (
             <p className="mt-1 text-body-sm text-ink-secondary break-all">
               {session.mode === "online" ? (
-                <a href={place} className="text-petrol underline underline-offset-2">
+                <a href={place} target="_blank" rel="noopener noreferrer" className="text-petrol underline underline-offset-2">
                   {place}
                 </a>
               ) : (

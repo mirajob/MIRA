@@ -33,8 +33,9 @@ export function SlotPicker({
   const router = useRouter();
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // Chi ha già un orario deve confermare prima di spostarlo: un click per sbaglio
-  // faceva partire una mail di conferma e cambiava l'appuntamento senza chiedere.
+  // Ogni scelta passa da una conferma: il click su un orario fa partire una mail
+  // e fissa un appuntamento vero, e sfiorare il pulsante sbagliato non deve
+  // bastare a convocarti.
   const [confirming, setConfirming] = useState<string | null>(null);
 
   const days = useMemo(() => {
@@ -52,12 +53,7 @@ export function SlotPicker({
   }, [slots, dateLocale]);
 
   function requestPick(slotId: string) {
-    // Prima prenotazione: un click basta. Spostamento: si conferma.
-    if (currentSlotId) {
-      setConfirming(slotId);
-      return;
-    }
-    pick(slotId);
+    setConfirming(slotId);
   }
 
   async function pick(slotId: string) {
@@ -90,7 +86,7 @@ export function SlotPicker({
       {confirming && (
         <div className="rounded-lg border border-petrol/30 bg-petrol-50 px-4 py-3">
           <p className="text-body-sm text-ink">
-            {t("confirmMove", {
+            {t(currentSlotId ? "confirmMove" : "confirmBook", {
               date: new Date(
                 slots.find((s) => s.id === confirming)?.startsAt ?? ""
               ).toLocaleString(dateLocale, {
@@ -109,7 +105,7 @@ export function SlotPicker({
               disabled={pending !== null}
               className="rounded-md bg-petrol px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-petrol-700 disabled:opacity-40"
             >
-              {t("confirmMoveCta")}
+              {t(currentSlotId ? "confirmMoveCta" : "confirmBookCta")}
             </button>
             <button
               onClick={() => setConfirming(null)}
