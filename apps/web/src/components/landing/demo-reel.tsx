@@ -194,7 +194,9 @@ export function DemoReel<F extends BaseFrame>({
           <div className="relative overflow-hidden rounded-[2.05rem] bg-cream" style={{ aspectRatio: "300 / 600" }}>
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between px-4 pt-4 pb-1">
-                <span className="font-display text-[15px] tracking-tight text-navy">MIRA</span>
+                {/* Logo vero, non la parola scritta col font display: nel mockup si nota. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/brand/mira-lockup.svg" alt="MIRA" width={58} height={20} className="h-[15px] w-auto" />
                 {pauseButton}
               </div>
               <div className="min-h-0 flex-1">{screen}</div>
@@ -211,7 +213,7 @@ export function DemoReel<F extends BaseFrame>({
               <span className="h-2.5 w-2.5 rounded-full bg-border-strong" />
             </span>
             <span className="mx-auto max-w-[60%] truncate rounded-md bg-white px-3 py-0.5 text-[10px] text-ink-tertiary">
-              {url ?? "app.mirajob.cloud"}
+              {url ?? "mirajob.cloud"}
             </span>
             {pauseButton}
           </div>

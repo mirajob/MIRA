@@ -81,9 +81,12 @@
     "noAts": "Nessun filtro per parole chiave: qui non vieni scartato da un ATS perché hai usato il termine sbagliato. Più racconti, più le aziende ti trovano.",
     "ctaStudent": "Crea la tua MiraCard, è gratis",
     "ctaMicrocopy": "Gratis per gli studenti, sempre. Con lo stesso profilo ti candidi anche alle associazioni del tuo campus.",
-    "orgEyebrow": "Sei un'azienda o un'associazione?",
+    "navLabel": "Sezioni del sito",
+    "navStudents": "Per studenti",
+    "navAssociations": "Per associazioni",
+    "navCompanies": "Per aziende",
     "associationTitle": "Associazione",
-    "associationBody": "Tutto il reclutamento della tua associazione in un posto solo, dalla candidatura al nuovo membro. Niente moduli da montare, niente Calendly, niente mail scritte a mano una per una.",
+    "associationBody": "MIRA è la piattaforma dove la tua associazione gestisce i suoi membri e, quando vuole, le selezioni per prenderne di nuovi. Le due cose sono indipendenti: puoi usare solo una delle due.",
     "associationCta": "Candida la tua associazione",
     "companyTitle": "Azienda",
     "companyBody": "Non aspettare candidature. Trova i candidati giusti: descrivi chi cerchi, MIRA ti mostra chi si adatta davvero.",
@@ -124,10 +127,32 @@
         "a": "Per gli studenti sì, e resta gratis. Non vendiamo i tuoi dati e non li diamo a nessuno al di fuori della piattaforma."
       }
     ],
-    "associationPointApply": "Apri le candidature dicendo che posizioni cerchi e cosa vuoi chiedere. Chi si candida arriva con la sua MiraCard: studi, esami, esperienze e competenze già verificate, non un CV da decifrare.",
-    "associationPointInterviews": "I colloqui li fissa la piattaforma. Scegli i giorni, ognuno del board segna quando c'è, i candidati prenotano solo dove qualcuno è libero. Il link della videochiamata lo creiamo noi, le conferme e gli appuntamenti in calendario partono da soli.",
-    "associationPointMembers": "Chi accetti diventa membro dell'associazione: lo organizzi in sezioni per area o ruolo, decidi chi amministra, e il team resta aggiornato senza fogli di calcolo.",
-    "associationPointCompanies": "I tuoi membri entrano nel bacino che le aziende partner cercano su MIRA. Quello che costruiscono da voi smette di restare dentro l'associazione e inizia a contare fuori."
+    "associationPoints": [
+      {
+        "title": "La tua associazione ha una pagina su MIRA",
+        "body": "Gli studenti della tua università vi trovano lì: chi siete, cosa fate e, se sono aperte, le candidature. La pagina la gestisci tu, e puoi dare i permessi da amministratore a chi lavora con te."
+      },
+      {
+        "title": "I membri li gestisci da qui, anche senza fare selezioni",
+        "body": "Inviti le persone del tuo team con un codice, loro si iscrivono e creano il proprio profilo. Tu hai l'elenco completo dei membri, li dividi per area o ruolo e decidi chi può amministrare insieme a te."
+      },
+      {
+        "title": "Le selezioni sono strutturate quanto vuoi tu",
+        "body": "Apri le candidature per un periodo e gli studenti si candidano dalla tua pagina. Da lì il processo lo costruisci tu: c'è chi si limita a leggere le candidature e accettare, e c'è chi aggiunge le posizioni per cui cerca, le domande da fare in fase di candidatura e uno o più round di colloqui. Ogni pezzo è facoltativo, e in tutti i casi chi accetti entra direttamente tra i membri dell'associazione."
+      },
+      {
+        "title": "Chi si candida arriva con la sua MiraCard",
+        "body": "La MiraCard è il profilo che ogni studente costruisce su MIRA: percorso di studi ed esami, esperienze, competenze, interessi e una parte più personale su come lavora e cosa cerca. Ha la stessa struttura per tutti, quindi confronti i candidati sugli stessi punti invece di leggere venti CV fatti in venti modi diversi."
+      },
+      {
+        "title": "Se fai i colloqui, a organizzarli ci pensa MIRA",
+        "body": "Funziona come Calendly, ma senza uscire dalla piattaforma: chi conduce i colloqui segna quando è disponibile, il candidato prenota uno degli orari liberi. Link della videochiamata, email di conferma e appuntamenti in calendario partono da soli."
+      },
+      {
+        "title": "I tuoi membri sono più visibili alle aziende",
+        "body": "MIRA lavora con aziende partner e dà molto peso al network delle associazioni. Chi fa parte della tua ha più occasioni di essere notato."
+      }
+    ]
   },
   "LandingDemo": {
     "progressTitle": "La tua MIRA Card",

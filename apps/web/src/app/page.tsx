@@ -8,7 +8,15 @@ import { SiteFooter } from "@/components/site-footer";
 import { LandingDemo } from "@/components/landing/landing-demo";
 import { AssociationDemo } from "@/components/landing/association-demo";
 import { CompanyDemo } from "@/components/landing/company-demo";
+import { SectionNav } from "@/components/landing/section-nav";
+import { Reveal } from "@/components/landing/reveal";
 
+/**
+ * Home pubblica: tre sezioni, una per chi arriva (studente, associazione, azienda).
+ * La barra agganciata in alto le collega e dice dove sei; scorrendo, i blocchi
+ * compaiono uno alla volta (`Reveal`). L'hero non è avvolto nel Reveal: è la prima
+ * cosa che si vede, deve esserci subito.
+ */
 export default async function HomePage() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -21,20 +29,32 @@ export default async function HomePage() {
   const c = await getTranslations("Common");
   const faq = t.raw("faq") as { q: string; a: string }[];
   const cardPoints = t.raw("cardPoints") as { title: string; body: string }[];
+  const associationPoints = t.raw("associationPoints") as { title: string; body: string }[];
 
   return (
     <div className="min-h-screen bg-cream">
-      <SiteHeader>
+      {/* Senza JS i blocchi non riceverebbero mai la classe che li mostra. */}
+      <noscript>
+        <style dangerouslySetInnerHTML={{ __html: ".mira-reveal{opacity:1;transform:none}" }} />
+      </noscript>
+
+      <SiteHeader nav={<SectionNav />}>
         <LocaleSwitcher />
-        <Link href="/login" className="text-body text-navy hover:text-petrol transition-colors duration-100">
+        <Link
+          href="/login"
+          className="text-body-sm text-navy transition-colors duration-100 hover:text-petrol"
+        >
           {c("login")}
         </Link>
-        <Link href="/signup" className="bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100">
+        <Link
+          href="/signup"
+          className="rounded-md bg-navy px-4 py-2 text-label text-white transition-colors duration-100 hover:bg-navy-700"
+        >
           {c("start")}
         </Link>
       </SiteHeader>
 
-      <main className="mx-auto max-w-6xl px-6 lg:px-12 py-12 lg:py-20">
+      <main id="studenti" className="mx-auto max-w-6xl scroll-mt-32 px-6 py-14 lg:px-12 lg:py-20">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div className="text-center lg:text-left">
             <p className="text-eyebrow text-navy/60 mb-4 uppercase">
@@ -79,69 +99,68 @@ export default async function HomePage() {
         </div>
       </main>
 
-      <section className="border-t border-border px-6 lg:px-12 py-16">
+      {/* ——— Associazioni: pitch + reel in alto, le sei funzioni sotto ——— */}
+      <section id="associazioni" className="scroll-mt-32 border-t border-border px-6 py-16 lg:px-12 lg:py-24">
         <div className="mx-auto max-w-6xl">
-          <p className="text-eyebrow text-navy/60 uppercase text-center mb-12">
-            {t("orgEyebrow")}
-          </p>
-
-          {/* Banda associazione: reel a sinistra, testo + CTA a destra */}
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-            <div className="order-2 flex justify-center lg:order-1 lg:justify-start">
+            <Reveal className="order-2 flex justify-center lg:order-1 lg:justify-start">
               <AssociationDemo />
-            </div>
-            <div className="order-1 text-center lg:order-2 lg:text-left">
-              <h2 className="font-display text-h1 text-navy mb-3">{t("associationTitle")}</h2>
-              <p className="text-body text-ink-secondary mb-4 max-w-md mx-auto lg:mx-0">
+            </Reveal>
+            <Reveal className="order-1 text-center lg:order-2 lg:text-left" delay={80}>
+              <h2 className="font-display text-display-md text-navy">{t("associationTitle")}</h2>
+              <p className="mt-4 max-w-md mx-auto text-body-lg text-ink-secondary lg:mx-0">
                 {t("associationBody")}
               </p>
-              {/* Le tre cose che l'associazione smette di fare a mano: sono il
-                  motivo per cui vale la pena registrarsi, e in una riga sola non
-                  si capivano. */}
-              <ul className="mb-6 space-y-2 text-body-sm text-ink-secondary max-w-md mx-auto lg:mx-0 text-left">
-                {["associationPointApply", "associationPointInterviews", "associationPointMembers", "associationPointCompanies"].map(
-                  (key) => (
-                    <li key={key} className="flex gap-2">
-                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-petrol" aria-hidden />
-                      <span>{t(key)}</span>
-                    </li>
-                  )
-                )}
-              </ul>
               <Link
                 href="/associations/candidati"
-                className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
+                className="mt-7 inline-block rounded-md bg-navy px-6 py-3 text-body text-white transition-colors duration-100 hover:bg-navy-700"
               >
                 {t("associationCta")}
               </Link>
-            </div>
+            </Reveal>
           </div>
 
-          {/* Banda azienda: testo + CTA a sinistra, reel a destra */}
-          <div className="mt-16 grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-            <div className="text-center lg:text-left">
-              <h2 className="font-display text-h1 text-navy mb-3">{t("companyTitle")}</h2>
-              <p className="text-body text-ink-secondary mb-6 max-w-md mx-auto lg:mx-0">
-                {t("companyBody")}
-              </p>
-              <Link
-                href="/aziende"
-                className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"
-              >
-                {t("companyCta")}
-              </Link>
-            </div>
-            <div className="flex justify-center lg:justify-end">
-              <CompanyDemo />
-            </div>
-          </div>
+          {/* Le funzioni una per una: due colonne su schermo largo, una in colonna stretta.
+              Stessa riga verticale petrol dell'elenco dello studente, così i due elenchi
+              della home si riconoscono come la stessa cosa. */}
+          <ul className="mt-14 grid gap-x-12 gap-y-8 sm:grid-cols-2">
+            {associationPoints.map((point, i) => (
+              <li key={point.title}>
+                <Reveal className="border-l-2 border-petrol/30 pl-4" delay={(i % 2) * 80}>
+                  <p className="text-body font-medium text-navy">{point.title}</p>
+                  <p className="mt-1 text-body-sm text-ink-secondary">{point.body}</p>
+                </Reveal>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* ——— Aziende ——— */}
+      <section id="aziende" className="scroll-mt-32 border-t border-border px-6 py-16 lg:px-12 lg:py-24">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <Reveal className="text-center lg:text-left">
+            <h2 className="font-display text-display-md text-navy">{t("companyTitle")}</h2>
+            <p className="mt-4 max-w-md mx-auto text-body-lg text-ink-secondary lg:mx-0">
+              {t("companyBody")}
+            </p>
+            <Link
+              href="/aziende"
+              className="mt-7 inline-block rounded-md bg-navy px-6 py-3 text-body text-white transition-colors duration-100 hover:bg-navy-700"
+            >
+              {t("companyCta")}
+            </Link>
+          </Reveal>
+          <Reveal className="flex justify-center lg:justify-end" delay={80}>
+            <CompanyDemo />
+          </Reveal>
         </div>
       </section>
 
       {/* FAQ studenti: accordion nativo <details>, nessun JS lato client. Larghezza da
           lettura, una domanda per riga, la crocetta ruota all'apertura. */}
       <section className="border-t border-border px-6 lg:px-12 py-16">
-        <div className="mx-auto max-w-3xl">
+        <Reveal className="mx-auto max-w-3xl">
           <p className="text-eyebrow text-navy/60 uppercase text-center mb-3">{t("faqEyebrow")}</p>
           <h2 className="font-display text-h1 text-navy text-center mb-10">{t("faqHeading")}</h2>
 
@@ -161,7 +180,7 @@ export default async function HomePage() {
               </details>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <SiteFooter />

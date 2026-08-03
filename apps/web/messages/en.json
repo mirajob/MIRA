@@ -81,9 +81,12 @@
     "noAts": "No keyword filters: no ATS drops you here for using the wrong term. The more you share, the more companies find you.",
     "ctaStudent": "Create your MiraCard, it's free",
     "ctaMicrocopy": "Free for students, always. The same profile applies to your campus associations.",
-    "orgEyebrow": "Are you a company or a university association?",
+    "navLabel": "Site sections",
+    "navStudents": "For students",
+    "navAssociations": "For associations",
+    "navCompanies": "For companies",
     "associationTitle": "Association",
-    "associationBody": "Your whole recruitment in one place, from the application to the new member. No forms to assemble, no Calendly, no emails written one by one.",
+    "associationBody": "MIRA is where your association manages its members and, whenever it wants, the selections to take on new ones. The two are independent: you can use just one of them.",
     "associationCta": "Put your association forward",
     "companyTitle": "Company",
     "companyBody": "Don't wait for applications. Find the right candidates: describe who you're looking for, MIRA shows you who really fits.",
@@ -124,10 +127,32 @@
         "a": "For students yes, and it stays free. We don't sell your data and we don't give it to anyone outside the platform."
       }
     ],
-    "associationPointApply": "Open applications by saying which roles you want and what you want to ask. Applicants arrive with their MiraCard: studies, exams, experience and skills already there, not a CV to decipher.",
-    "associationPointInterviews": "The platform schedules the interviews. You pick the days, everyone on the board marks when they are free, candidates only book where someone actually is. We create the video call link, and confirmations and calendar invites go out on their own.",
-    "associationPointMembers": "Whoever you accept becomes a member of the association: you arrange them into sections by area or role, decide who administers, and the team stays current without spreadsheets.",
-    "associationPointCompanies": "Your members join the pool partner companies search on MIRA. What they build with you stops staying inside the association and starts counting outside."
+    "associationPoints": [
+      {
+        "title": "Your association gets a page on MIRA",
+        "body": "Students at your university find you there: who you are, what you do and, when they're open, your applications. You run the page, and you can give admin rights to whoever works on it with you."
+      },
+      {
+        "title": "You manage your members here, even without running selections",
+        "body": "You invite your team with a code, they sign up and build their own profile. You get the full list of members, you split them by area or role and you decide who can administer alongside you."
+      },
+      {
+        "title": "Selections are as structured as you want them",
+        "body": "You open applications for a period and students apply from your page. From there you build the process: some just read the applications and accept, others add the positions they're hiring for, the questions to ask during the application and one or more interview rounds. Every piece is optional, and either way whoever you accept goes straight into your members."
+      },
+      {
+        "title": "Applicants arrive with their MiraCard",
+        "body": "The MiraCard is the profile every student builds on MIRA: studies and exams, experience, skills, interests and a more personal part about how they work and what they're after. It has the same structure for everyone, so you compare candidates on the same points instead of reading twenty CVs laid out twenty different ways."
+      },
+      {
+        "title": "If you run interviews, MIRA organises them",
+        "body": "It works like Calendly, without leaving the platform: whoever runs the interviews marks when they're free, the candidate books one of the open slots. Video call link, confirmation emails and calendar invites go out on their own."
+      },
+      {
+        "title": "Your members are more visible to companies",
+        "body": "MIRA works with partner companies and leans heavily on the association network. Being part of yours means more chances of being noticed."
+      }
+    ]
   },
   "LandingDemo": {
     "progressTitle": "Your MIRA Card",

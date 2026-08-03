@@ -88,6 +88,8 @@
   html {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* Le ancore delle pagine pubbliche (barra sezioni della home) scorrono, non saltano. */
+    scroll-behavior: smooth;
   }
 
   body {
@@ -118,9 +120,36 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }
+  }
+}
+
+/* Blocchi che compaiono scorrendo (componente Reveal della landing).
+   Lo stato di partenza è nascosto solo dove il JS può poi mostrarlo: senza JS la
+   regola qui sotto lo annulla, così la pagina resta leggibile comunque. */
+.mira-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s var(--ease-out),
+    transform 0.7s var(--ease-out);
+}
+
+.mira-reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mira-reveal {
+    opacity: 1;
+    transform: none;
   }
 }

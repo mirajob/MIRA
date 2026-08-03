@@ -322,53 +322,85 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
 // Reveal: MIRA Card completa (statica, in inglese)
 // ---------------------------------------------------------------------------
 
+function Pill({ children }: { children: React.ReactNode }) {
+  return <span className="rounded-full bg-petrol-50 px-1.5 py-0.5 text-[8px] leading-tight text-petrol-700">{children}</span>;
+}
+
 function DemoCard() {
   const d = studentData;
   let step = 0;
   const rise = () => ({ animation: "mira-cardin .5s var(--ease-out) both", animationDelay: `${(step++) * 90}ms` });
   return (
-    <div className="absolute inset-0 overflow-hidden px-3.5 py-3">
-      <div className="flex h-full flex-col rounded-xl border border-border bg-white px-3.5 py-3 shadow-sm">
-        <div className="flex items-baseline justify-between" style={rise()}>
-          <h3 className="font-display text-[16px] leading-tight text-navy">{d.name}</h3>
-          <span className="text-[8px] tracking-[0.18em] text-navy/40 uppercase">MIRA Card</span>
-        </div>
-        <p className="mt-0.5 text-[11px] text-ink" style={rise()}>
-          {d.header.course}
-          <span className="text-ink-tertiary"> · {d.header.average}</span>
-        </p>
-
-        <div className="mt-2 border-t border-border pt-2" style={rise()}>
-          <SectionLabel>Availability</SectionLabel>
-          <div className="flex flex-wrap gap-1">
-            {d.availability.slice(0, 4).map((a) => (
-              <span key={a} className="rounded-full bg-petrol-50 px-1.5 py-0.5 text-[9px] text-petrol-700">{a}</span>
-            ))}
+    <div className="absolute inset-0 overflow-hidden px-3 py-2.5">
+      <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+        {/* ——— Masthead: studi a sinistra, disponibilità etichettata a destra ———
+            Stessa impaginazione del documento vero (mira-card-document.tsx), in miniatura. */}
+        <div className="px-3 pt-3 pb-2.5">
+          <div className="flex items-start justify-between gap-2" style={rise()}>
+            <h3 className="font-display text-[15px] leading-tight text-navy">{d.name}</h3>
+            <span className="mt-[3px] shrink-0 text-[6px] tracking-[0.2em] text-navy/40 uppercase">MIRA Card</span>
+          </div>
+          <div className="mt-1.5 grid grid-cols-[1fr_92px] gap-x-2.5">
+            <div className="min-w-0" style={rise()}>
+              <p className="text-[9px] leading-snug text-ink">
+                <span className="font-medium">{d.header.course}</span>
+                <span className="text-ink-secondary"> · {d.header.university}</span>
+              </p>
+              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[8px] text-ink-secondary">
+                <span>{d.header.level}</span>
+                <span>{d.header.year}</span>
+                <span className="font-medium text-ink">{d.header.average}</span>
+              </div>
+            </div>
+            <div className="min-w-0 border-l border-border pl-2.5" style={rise()}>
+              <SectionLabel>Availability</SectionLabel>
+              <div className="flex flex-wrap gap-1">
+                {["Internship", "Milan", "From June"].map((a) => (
+                  <Pill key={a}>{a}</Pill>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="mt-2" style={rise()}>
-          <SectionLabel>Experience</SectionLabel>
-          <p className="text-[10px] leading-snug text-ink">{d.experienceRefined}</p>
-        </div>
+        <div className="border-t border-border" />
 
-        <div className="mt-2" style={rise()}>
-          <SectionLabel>Skills</SectionLabel>
-          <div className="flex flex-wrap gap-1">
-            {d.hardSkills.map((s) => (
-              <span key={s} className="rounded-full bg-petrol-50 px-1.5 py-0.5 text-[9px] text-petrol-700">{s}</span>
-            ))}
+        {/* ——— Due colonne tematiche: a sinistra chi è e cosa ha fatto, a destra studi e strumenti ——— */}
+        <div className="grid flex-1 grid-cols-[1fr_92px] gap-x-2.5 px-3 py-2.5">
+          <div className="min-w-0 space-y-2.5">
+            <div style={rise()}>
+              <SectionLabel>Personal profile</SectionLabel>
+              <p className="font-display text-[9px] italic leading-relaxed text-ink line-clamp-5">{d.personalProfile}</p>
+            </div>
+            <div style={rise()}>
+              <SectionLabel>Experience</SectionLabel>
+              <p className="text-[10px] font-medium leading-snug text-ink">{d.experienceRefined}</p>
+              <p className="text-[8px] text-ink-tertiary">{d.experienceOrg}</p>
+            </div>
           </div>
-        </div>
 
-        <div className="mt-2" style={rise()}>
-          <SectionLabel>Languages</SectionLabel>
-          <p className="text-[10px] text-ink-secondary">{d.languages.join("  ·  ")}</p>
-        </div>
-
-        <div className="mt-2 border-t border-border pt-2" style={rise()}>
-          <SectionLabel>Personal profile</SectionLabel>
-          <p className="font-display text-[10px] italic leading-relaxed text-ink line-clamp-4">{d.personalProfile}</p>
+          <div className="min-w-0 space-y-2.5 border-l border-border pl-2.5">
+            <div style={rise()}>
+              <SectionLabel>Exams</SectionLabel>
+              <p className="text-[9px] text-petrol">{d.exams.length} exams ▸</p>
+            </div>
+            <div style={rise()}>
+              <SectionLabel>Skills</SectionLabel>
+              <p className="text-[9px] text-petrol">{d.hardSkills.length} skills ▸</p>
+            </div>
+            <div style={rise()}>
+              <SectionLabel>Languages</SectionLabel>
+              <div className="flex flex-wrap gap-1">
+                {d.languages.map((l) => (
+                  <Pill key={l}>{l.replace(" · ", " ")}</Pill>
+                ))}
+              </div>
+            </div>
+            <div style={rise()}>
+              <SectionLabel>Career plan</SectionLabel>
+              <p className="text-[8px] leading-relaxed text-ink line-clamp-4">{d.plan}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
