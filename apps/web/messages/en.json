@@ -88,7 +88,7 @@
     "associationBody": "MIRA is where your association manages its members and, whenever it wants, the selections to take on new ones. The two are independent: you can use just one of them.",
     "associationCta": "Put your association forward",
     "companyTitle": "Company",
-    "companyBody": "Don't wait for applications. Find the right candidates: describe who you're looking for, MIRA shows you who really fits.",
+    "companyBody": "Today you get CVs laid out however each person felt like, you run them through keyword filters and hope the right profiles don't end up in the reject pile. On MIRA you start from the other end: describe who you're looking for and see the students who fit, with their availability already stated.",
     "companyCta": "Register your company",
     "faqEyebrow": "For students",
     "faqHeading": "Frequently asked questions",
@@ -150,6 +150,36 @@
       {
         "title": "Your members are more visible to companies",
         "body": "MIRA works with partner companies and leans heavily on the association network. Being part of yours means more chances of being noticed."
+      }
+    ],
+    "companyPoints": [
+      {
+        "title": "Every student has the same profile",
+        "body": "The MiraCard has the same structure for everyone: studies and exams, experience, skills, availability and a part about who the person is. You compare two candidates on the same points, not two CVs laid out two different ways."
+      },
+      {
+        "title": "No space limit, still one page",
+        "body": "On a CV you write as little as possible to get past the filters, so the candidate ends up saying very little. Here they put everything in: the card stays a single page, readable at a glance, and you open the detail where you need it."
+      },
+      {
+        "title": "You search by writing, not by ticking boxes",
+        "body": "Describe who you need the way you would say it to a colleague: course and university, average, exams taken, tools they must know, how they should hold a room, even their interests. MIRA reads the whole card, it doesn't hunt for the exact word."
+      },
+      {
+        "title": "You already know what they are available for",
+        "body": "Every student states what they are looking for, in which field, from when, for how long and where. You are not looking at someone who fired off a CV and doesn't remember where: you are looking at who is available for what you are after."
+      },
+      {
+        "title": "We tell you why, we don't give you a score",
+        "body": "No compatibility percentage. For every student you get the reason we are putting them in front of you, and the full card to check it yourself."
+      },
+      {
+        "title": "From the search to the interview, without the wait",
+        "body": "You don't open a selection and wait two months. You make the request, contact whoever interests you, and interviews and business cases stay here. MIRA sits alongside your tools, it doesn't replace them."
+      },
+      {
+        "title": "Soon you'll be able to add your own tests",
+        "body": "If the card isn't enough, you'll be able to upload your own assessments and work simulations: students who want to be visible to you complete them, and you search directly among those who already have. One more screening step before you even write to the first candidate."
       }
     ]
   },
@@ -356,43 +386,50 @@
       "Altro": "Other"
     },
     "landing": {
-      "heading": "Discover the right talent before anyone else, beyond the résumé",
-      "subhead": "A résumé tells you what a student has done. MIRA also shows you who they are, what they're looking for, when they're available, and how well they fit the role.",
-      "ctaPilot": "Join the pilot →",
-      "pilotNote": "Pilot launching September 2026. Free initial access.",
+      "heading": "Describe who you're looking for. MIRA shows you who fits, and when they're free.",
+      "subhead": "Not another portal where you post ads and wait for CVs. On MIRA every student has the same structured profile and already says what they want, from when and where.",
+      "cta": "Register your company",
       "steps": {
         "step1": {
-          "title": "Describe what you're looking for",
-          "body": "Write in natural language the profile you need: role, skills, sector, attitude, availability, and much more."
+          "title": "Describe who you need",
+          "body": "In plain language and in as much detail as you want: course, exams, tools, how they work, when they need to be available."
         },
         "step2": {
-          "title": "MIRA finds the matches",
-          "body": "The system compares your search with student profiles and shows you the most relevant candidates, with an explanation for each."
+          "title": "See who fits, and why",
+          "body": "MIRA reads the cards in full and shows you the students that match your request, each with the reasoning. No compatibility score."
         },
         "step3": {
           "title": "Contact and interviews",
-          "body": "Send a contact request to the student. If they accept, a private chat opens where you can get to know each other and, if there's mutual interest, arrange an interview."
+          "body": "You send the request: the student stays anonymous until they accept. From there chat, interviews and business cases stay on the platform."
         }
       },
-      "whyHeading": "Why this isn't just another recruiting portal",
+      "whyHeading": "What changes compared to today",
       "comparison": {
-        "recruitingHeader": "Recruiting portals",
-        "miraHeader": "MIRA",
+        "todayHeader": "Today",
+        "miraHeader": "On MIRA",
         "row1": {
-          "left": "You receive applications and résumés to sift through",
-          "right": "No job postings to publish every time."
+          "left": "You get CVs laid out however each person felt like",
+          "right": "Every student has the same structured card"
         },
         "row2": {
-          "left": "Information limited to what's stated in the résumé",
-          "right": "Profiles enriched with experience, interests, attitude, availability, and goals"
+          "left": "Software filters by keyword and drops good profiles too",
+          "right": "MIRA reads the whole card, it doesn't hunt for the exact word"
         },
         "row3": {
-          "left": "You don't really know what's behind a candidate",
-          "right": "Define who you want and automatically discover the best-fitting candidates."
+          "left": "On a CV you write the minimum to get past the filters",
+          "right": "No space limit: the more they tell you, the better you judge"
         },
         "row4": {
-          "left": "The student only updates their profile when job hunting",
-          "right": "Every match comes with an explanation of why it fits"
+          "left": "You don't know whether the candidate is really free then",
+          "right": "Availability stated: field, from when, for how long, where"
+        },
+        "row5": {
+          "left": "You open applications and wait for weeks",
+          "right": "You make the request and contact exactly who you need"
+        },
+        "row6": {
+          "left": "How the person actually works you find out at the interview",
+          "right": "The card also covers how they work and what they follow outside study"
         }
       },
       "bottomCta": "Register your company"

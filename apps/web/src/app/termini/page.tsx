@@ -57,8 +57,7 @@ export default function TerminiPage() {
       <LegalSection heading="5. Costi">
         <p>
           MIRA è gratuita per gli studenti. Per le aziende, le condizioni economiche sono definite in accordi
-          separati (incluse le condizioni del programma pilota). Per le associazioni il servizio di gestione
-          candidature è gratuito.
+          separati. Per le associazioni il servizio di gestione candidature è gratuito.
         </p>
       </LegalSection>
 

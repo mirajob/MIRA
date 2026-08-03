@@ -30,6 +30,7 @@ export default async function HomePage() {
   const faq = t.raw("faq") as { q: string; a: string }[];
   const cardPoints = t.raw("cardPoints") as { title: string; body: string }[];
   const associationPoints = t.raw("associationPoints") as { title: string; body: string }[];
+  const companyPoints = t.raw("companyPoints") as { title: string; body: string }[];
 
   return (
     <div className="min-h-screen bg-cream">
@@ -135,24 +136,37 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ——— Aziende ——— */}
+      {/* ——— Aziende: stessa impaginazione della banda associazioni ——— */}
       <section id="aziende" className="scroll-mt-32 border-t border-border px-6 py-16 lg:px-12 lg:py-24">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
-          <Reveal className="text-center lg:text-left">
-            <h2 className="font-display text-display-md text-navy">{t("companyTitle")}</h2>
-            <p className="mt-4 max-w-md mx-auto text-body-lg text-ink-secondary lg:mx-0">
-              {t("companyBody")}
-            </p>
-            <Link
-              href="/aziende"
-              className="mt-7 inline-block rounded-md bg-navy px-6 py-3 text-body text-white transition-colors duration-100 hover:bg-navy-700"
-            >
-              {t("companyCta")}
-            </Link>
-          </Reveal>
-          <Reveal className="flex justify-center lg:justify-end" delay={80}>
-            <CompanyDemo />
-          </Reveal>
+        <div className="mx-auto max-w-6xl">
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+            <Reveal className="text-center lg:text-left">
+              <h2 className="font-display text-display-md text-navy">{t("companyTitle")}</h2>
+              <p className="mt-4 max-w-md mx-auto text-body-lg text-ink-secondary lg:mx-0">
+                {t("companyBody")}
+              </p>
+              <Link
+                href="/aziende"
+                className="mt-7 inline-block rounded-md bg-navy px-6 py-3 text-body text-white transition-colors duration-100 hover:bg-navy-700"
+              >
+                {t("companyCta")}
+              </Link>
+            </Reveal>
+            <Reveal className="flex justify-center lg:justify-end" delay={80}>
+              <CompanyDemo />
+            </Reveal>
+          </div>
+
+          <ul className="mt-14 grid gap-x-12 gap-y-8 sm:grid-cols-2">
+            {companyPoints.map((point, i) => (
+              <li key={point.title}>
+                <Reveal className="border-l-2 border-petrol/30 pl-4" delay={(i % 2) * 80}>
+                  <p className="text-body font-medium text-navy">{point.title}</p>
+                  <p className="mt-1 text-body-sm text-ink-secondary">{point.body}</p>
+                </Reveal>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 

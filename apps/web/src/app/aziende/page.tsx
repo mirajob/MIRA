@@ -182,12 +182,10 @@ export default function AziendePage() {
     { n: "03", title: t("landing.steps.step3.title"), body: t("landing.steps.step3.body") },
   ];
 
-  const comparisonRows = [
-    { left: t("landing.comparison.row1.left"), right: t("landing.comparison.row1.right") },
-    { left: t("landing.comparison.row2.left"), right: t("landing.comparison.row2.right") },
-    { left: t("landing.comparison.row3.left"), right: t("landing.comparison.row3.right") },
-    { left: t("landing.comparison.row4.left"), right: t("landing.comparison.row4.right") },
-  ];
+  const comparisonRows = ["row1", "row2", "row3", "row4", "row5", "row6"].map((row) => ({
+    left: t(`landing.comparison.${row}.left`),
+    right: t(`landing.comparison.${row}.right`),
+  }));
 
   return (
     <div className="min-h-screen bg-cream">
@@ -211,9 +209,8 @@ export default function AziendePage() {
             onClick={() => setStep("form")}
             className="bg-navy text-white px-8 py-4 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100"
           >
-            {t("landing.ctaPilot")}
+            {t("landing.cta")}
           </button>
-          <p className="mt-3 text-body-sm text-ink-tertiary">{t("landing.pilotNote")}</p>
         </div>
 
         {/* How it works */}
@@ -231,7 +228,7 @@ export default function AziendePage() {
         <div className="rounded-lg border border-border bg-white p-8 mb-16">
           <h2 className="font-display text-h2 text-navy mb-6">{t("landing.whyHeading")}</h2>
           <div className="grid grid-cols-2 gap-x-6">
-            <p className="text-label text-ink-secondary pb-3 border-b border-border">{t("landing.comparison.recruitingHeader")}</p>
+            <p className="text-label text-ink-secondary pb-3 border-b border-border">{t("landing.comparison.todayHeader")}</p>
             <p className="text-label text-navy pb-3 border-b border-border">{t("landing.comparison.miraHeader")}</p>
             {comparisonRows.map((row) => (
               <Fragment key={row.left}>

@@ -88,7 +88,7 @@
     "associationBody": "MIRA è la piattaforma dove la tua associazione gestisce i suoi membri e, quando vuole, le selezioni per prenderne di nuovi. Le due cose sono indipendenti: puoi usare solo una delle due.",
     "associationCta": "Candida la tua associazione",
     "companyTitle": "Azienda",
-    "companyBody": "Non aspettare candidature. Trova i candidati giusti: descrivi chi cerchi, MIRA ti mostra chi si adatta davvero.",
+    "companyBody": "Oggi ricevi CV impaginati ognuno a modo suo, li fai filtrare da un software per parole chiave e speri che i profili giusti non finiscano nello scarto. Su MIRA parti dall'altra parte: descrivi chi cerchi e vedi gli studenti che corrispondono, con la loro disponibilità già dichiarata.",
     "companyCta": "Registra la tua azienda",
     "faqEyebrow": "Per gli studenti",
     "faqHeading": "Domande frequenti",
@@ -150,6 +150,36 @@
       {
         "title": "I tuoi membri sono più visibili alle aziende",
         "body": "MIRA lavora con aziende partner e dà molto peso al network delle associazioni. Chi fa parte della tua ha più occasioni di essere notato."
+      }
+    ],
+    "companyPoints": [
+      {
+        "title": "Tutti gli studenti hanno lo stesso profilo",
+        "body": "La MiraCard ha la stessa struttura per tutti: studi ed esami, esperienze, competenze, disponibilità e una parte su chi è la persona. Confronti due candidati sugli stessi punti, non due CV impaginati in due modi diversi."
+      },
+      {
+        "title": "Niente limite di spazio, ma resta una pagina",
+        "body": "Sul CV si scrive il meno possibile per passare i filtri, e alla fine il candidato racconta poco di sé. Qui mette tutto: la card resta una pagina sola, si legge a colpo d'occhio, e il dettaglio lo apri dove ti serve."
+      },
+      {
+        "title": "Cerchi scrivendo, non spuntando caselle",
+        "body": "Descrivi chi ti serve come lo diresti a un collega: corso e università, media, esami dati, strumenti che deve saper usare, come deve stare davanti a un cliente, anche gli interessi. MIRA legge la card intera, non cerca la parola esatta."
+      },
+      {
+        "title": "Sai già per cosa sono disponibili",
+        "body": "Ogni studente dichiara cosa cerca, in che ambito, da quando, per quanto e dove. Non stai guardando chi ha mandato il CV a caso e non si ricorda nemmeno dove: stai guardando chi è disponibile per quello che cerchi tu."
+      },
+      {
+        "title": "Ti spieghiamo perché, non ti diamo un punteggio",
+        "body": "Niente percentuale di compatibilità. Per ogni studente trovi scritto perché te lo proponiamo, e la card completa per verificarlo da solo."
+      },
+      {
+        "title": "Dalla ricerca al colloquio, senza aspettare",
+        "body": "Non apri una selezione e aspetti due mesi. Fai la richiesta, contatti chi ti interessa, e colloqui e business case li gestisci qui. MIRA si affianca ai tuoi strumenti, non li sostituisce."
+      },
+      {
+        "title": "Presto potrai aggiungere i tuoi test",
+        "body": "Se la card non ti basta, potrai caricare le tue prove e simulazioni di lavoro: chi vuole farsi vedere dalla tua azienda le completa, e tu cerchi direttamente tra chi le ha già fatte. Uno screening in più prima ancora di scrivere al primo candidato."
       }
     ]
   },
@@ -356,43 +386,50 @@
       "Altro": "Altro"
     },
     "landing": {
-      "heading": "Scopri i talenti giusti prima degli altri, oltre il CV",
-      "subhead": "Un CV racconta ciò che uno studente ha fatto. MIRA ti mostra anche chi è, cosa cerca, quando è disponibile e quanto è adatto al ruolo.",
-      "ctaPilot": "Partecipa al pilot →",
-      "pilotNote": "Pilot in partenza a settembre 2026. Accesso iniziale gratuito.",
+      "heading": "Descrivi chi cerchi. MIRA ti mostra chi corrisponde, e quando è disponibile.",
+      "subhead": "Non un altro portale dove pubblicare annunci e aspettare CV. Su MIRA gli studenti hanno tutti lo stesso profilo strutturato e dicono già cosa cercano, da quando e dove.",
+      "cta": "Registra la tua azienda",
       "steps": {
         "step1": {
-          "title": "Descrivi cosa cerchi",
-          "body": "Scrivi in linguaggio naturale il profilo che ti serve: ruolo, competenze, settore, attitudine, disponibilità e molto altro."
+          "title": "Descrivi chi cerchi",
+          "body": "In linguaggio naturale e nel dettaglio che vuoi: corso, esami, strumenti, come lavora, quando deve essere disponibile."
         },
         "step2": {
-          "title": "MIRA trova i match",
-          "body": "Il sistema confronta la tua ricerca con i profili degli studenti e ti mostra i candidati più coerenti, con una spiegazione per ognuno."
+          "title": "Vedi chi corrisponde, e perché",
+          "body": "MIRA legge le card per intero e ti mostra gli studenti coerenti con la richiesta, ognuno con la spiegazione. Nessun punteggio di compatibilità."
         },
         "step3": {
           "title": "Contatti e colloqui",
-          "body": "Invia una richiesta di contatto allo studente. Se accetta, si apre una chat privata in cui potete conoscervi meglio e, se c'è interesse reciproco, organizzare un colloquio."
+          "body": "Mandi la richiesta: lo studente resta anonimo finchè non accetta. Da lì chat, colloqui e business case restano sulla piattaforma."
         }
       },
-      "whyHeading": "Perché non è il solito portale di recruiting",
+      "whyHeading": "Cosa cambia rispetto a oggi",
       "comparison": {
-        "recruitingHeader": "Portali di recruiting",
-        "miraHeader": "MIRA",
+        "todayHeader": "Oggi",
+        "miraHeader": "Su MIRA",
         "row1": {
-          "left": "Ricevi candidature e CV da scremare",
-          "right": "Niente annunci da pubblicare ogni volta."
+          "left": "Ricevi CV impaginati ognuno a modo suo",
+          "right": "Tutti gli studenti hanno la stessa card strutturata"
         },
         "row2": {
-          "left": "Informazioni limitate a quanto dichiarato nel CV",
-          "right": "Profili arricchiti con esperienza, interessi, attitudine, disponibilità e obiettivi"
+          "left": "Un software filtra per parole chiave e scarta anche i profili giusti",
+          "right": "MIRA legge tutta la card, non cerca la parola esatta"
         },
         "row3": {
-          "left": "Non sai cosa c'è davvero dentro un candidato",
-          "right": "Definisci chi vuoi e scopri automaticamente i candidati più adatti."
+          "left": "Sul CV si scrive il minimo per passare i filtri",
+          "right": "Niente limite di spazio: più raccontano, meglio li valuti"
         },
         "row4": {
-          "left": "Lo studente aggiorna il profilo solo quando cerca lavoro",
-          "right": "Ogni match è accompagnato da una spiegazione del perché è adatto"
+          "left": "Non sai se il candidato è davvero disponibile in quel periodo",
+          "right": "Disponibilita' dichiarata: ambito, da quando, per quanto, dove"
+        },
+        "row5": {
+          "left": "Apri le candidature e aspetti settimane",
+          "right": "Fai la richiesta e contatti direttamente chi ti serve"
+        },
+        "row6": {
+          "left": "Come lavora la persona lo scopri solo al colloquio",
+          "right": "La card racconta anche come lavora e cosa segue fuori dallo studio"
         }
       },
       "bottomCta": "Registra la tua azienda"
