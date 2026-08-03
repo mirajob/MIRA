@@ -33,7 +33,7 @@ import type {
  * antenato con transform verrebbe posizionato rispetto a quello, non al viewport.
  */
 
-const SHEET_W = 680; // larghezza foglio — più stretta dell'A4 per restare quasi quadrato una volta tagliato al contenuto
+const SHEET_W = 680; // larghezza foglio · più stretta dell'A4 per restare quasi quadrato una volta tagliato al contenuto
 const SHEET_MIN_H = 320; // altezza minima di sicurezza per profili con pochissimo contenuto
 const ZOOM_THRESHOLD = 0.7; // sotto questa scala il testo non è leggibile: si abilita il tap-to-zoom
 
@@ -180,7 +180,7 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
             <span className="text-ink">{it.esame}</span>
             {showMedia && (
               <span className="text-ink-secondary whitespace-nowrap">
-                {it.voto ?? "—"}
+                {it.voto ?? "–"}
                 {it.cfu != null && <span className="text-xs text-ink-tertiary">{t("header.cfuSuffix", { cfu: it.cfu })}</span>}
               </span>
             )}
@@ -329,7 +329,7 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                 <span className="shrink-0 text-[10px] uppercase tracking-[0.22em] text-navy/40">MIRA Card</span>
               </div>
 
-              {/* Studi a sinistra, Disponibilità etichettata a destra — stessa striscia,
+              {/* Studi a sinistra, Disponibilità etichettata a destra · stessa striscia,
                   allineata alle due colonne del corpo. */}
               <div className="mt-2.5 grid grid-cols-[1fr_260px] gap-x-7">
                 <div className="min-w-0">
@@ -337,13 +337,13 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                     <>
                       <p className="text-[14px] text-ink">
                         {header.corso && <span className="font-medium">{header.corso}</span>}
-                        {header.universita && <span className="text-ink-secondary"> — {header.universita}</span>}
+                        {header.universita && <span className="text-ink-secondary"> · {header.universita}</span>}
                       </p>
                       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-ink-secondary">
                         {levelLabel && <span>{levelLabel}</span>}
                         {header.anno && <span>{t("header.annoOrdinal", { n: header.anno })}</span>}
                         {(header.anno_inizio || header.laurea_anno) && (
-                          <span>{header.anno_inizio ?? "—"}–{header.laurea_anno ?? "—"}</span>
+                          <span>{header.anno_inizio ?? "–"}–{header.laurea_anno ?? "–"}</span>
                         )}
                         {header.media_voti != null &&
                           (showMedia ? (
@@ -354,8 +354,8 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                       </div>
                       {fp && (fp.corso || fp.universita) && (
                         <p className="mt-1 text-[11px] text-ink-tertiary">
-                          {t("header.previousDegreeSummaryPrefix")} {fp.corso ?? "—"}
-                          {fp.universita ? ` — ${fp.universita}` : ""}
+                          {t("header.previousDegreeSummaryPrefix")} {fp.corso ?? "–"}
+                          {fp.universita ? ` · ${fp.universita}` : ""}
                           {fp.voto_laurea ? ` (${fp.voto_laurea})` : ""}
                           {showMedia && fp.media_voti != null ? ` · ${Number(fp.media_voti).toFixed(1)}/30` : ""}
                         </p>

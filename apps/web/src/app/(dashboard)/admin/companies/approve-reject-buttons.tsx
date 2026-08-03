@@ -59,5 +59,5 @@ export function ApproveRejectButtons({ companyId, status }: { companyId: string;
     );
   }
 
-  return <span className="text-body-sm text-ink-tertiary">—</span>;
+  return <span className="text-body-sm text-ink-tertiary">–</span>;
 }

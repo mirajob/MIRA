@@ -36,3 +36,63 @@ export async function checkAccountType(email: string): Promise<"company" | "stud
   if (roleNames.includes("student")) return "student";
   return "other";
 }
+
+/**
+ * "Ho dimenticato la password": manda il link per rifarla.
+ *
+ * Diciamo apertamente se quell'indirizzo non ha un account. Nascondere il fatto
+ * protegge da chi va a caccia di indirizzi registrati, ma qui lascerebbe la
+ * persona ad aspettare una mail che non arriverà mai, che è il modo più comune
+ * di perdere qualcuno all'accesso.
+ */
+export async function requestPasswordReset(email: string, origin: string) {
+  const clean = email.trim().toLowerCase();
+  if (!clean.includes("@")) return { error: "Scrivi il tuo indirizzo email." };
+
+  const accountType = await checkAccountType(clean);
+  if (accountType === "unknown") {
+    return { error: "Non risulta nessun account con questa email." };
+  }
+
+  const supabase = await createServerClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(clean, {
+    redirectTo: `${origin}/auth/callback?next=/nuova-password`,
+  });
+
+  if (error) {
+    console.error("resetPasswordForEmail error:", error.message);
+    return { error: "Non è stato possibile mandare il link, riprova." };
+  }
+  return { success: true };
+}
+
+/** Imposta la nuova password. Vale sia dopo il link di recupero sia da dentro l'account. */
+export async function setNewPassword(password: string) {
+  if (password.length < 8) return { error: "La password deve avere almeno 8 caratteri." };
+
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Sessione scaduta: riapri il link dall'email." };
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: "Non è stato possibile cambiare la password." };
+  return { success: true };
+}
+
+/**
+ * Cambio password da dentro l'account. La vecchia si richiede davvero: senza,
+ * chiunque trovasse un computer sbloccato potrebbe prendersi l'account.
+ */
+export async function changePassword(currentPassword: string, newPassword: string) {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) return { error: "Sessione scaduta, rifai l'accesso." };
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  });
+  if (signInError) return { error: "La password attuale non è corretta." };
+
+  return setNewPassword(newPassword);
+}

@@ -110,7 +110,7 @@ export async function ensureCardBlocksExist(studentProfileId: string) {
     console.error(
       `[MIRA] ensureCardBlocksExist: attese ${ALL_BLOCK_TYPES.length} righe per studentProfileId ${studentProfileId}, trovate ${count}.`
     );
-    throw new Error("I blocchi della card non risultano tutti creati — riprova.");
+    throw new Error("I blocchi della card non risultano tutti creati · riprova.");
   }
 }
 

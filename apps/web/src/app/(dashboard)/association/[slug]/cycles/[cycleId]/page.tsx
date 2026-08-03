@@ -7,6 +7,7 @@ import { QuestionBuilder } from "./question-builder";
 import { CycleCardFlow } from "./cycle-card-flow";
 import { loadCycleCard } from "@/lib/actions/cycle-card";
 import { APP_TIME_ZONE } from "@/lib/format-date";
+import { DetailHeader } from "@/components/page-bar";
 
 interface Props {
   params: Promise<{ slug: string; cycleId: string }>;
@@ -16,6 +17,7 @@ export default async function CycleDetailPage({ params }: Props) {
   const { slug, cycleId } = await params;
   const supabase = await createServiceClient();
   const t = await getTranslations("CycleDetail");
+  const tc = await getTranslations("AssociationLayout");
   const locale = await getLocale();
   const dateLocale = locale === "it" ? "it-IT" : "en-US";
 
@@ -45,7 +47,15 @@ export default async function CycleDetailPage({ params }: Props) {
       );
     }
     if (!state) notFound();
-    return <CycleCardFlow initialState={state} />;
+    return (
+      <div className="space-y-4">
+        <DetailHeader
+          back={{ href: `/association/${slug}/cycles`, label: tc("navCicli") }}
+          title={cycle.title || t("untitled")}
+        />
+        <CycleCardFlow initialState={state} />
+      </div>
+    );
   }
 
   const { data: questions } = await (supabase.from("application_questions") as any)
@@ -58,13 +68,14 @@ export default async function CycleDetailPage({ params }: Props) {
 
   if (isClosed) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-6">
+        <DetailHeader
+          back={{ href: `/association/${slug}/cycles`, label: tc("navCicli") }}
+          title={cycle.title}
+          meta={t("closedBadge")}
+        />
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-body-lg font-semibold text-navy">{cycle.title}</h2>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium uppercase bg-navy-50 text-ink-tertiary">{t("closedBadge")}</span>
-          </div>
-          {cycle.description && <p className="text-body text-ink-secondary">{cycle.description}</p>}
+          {cycle.description && <p className="text-body-sm text-ink-secondary">{cycle.description}</p>}
           <div className="mt-2 flex gap-4 text-body-sm text-ink-tertiary">
             {cycle.opens_at && <span>{t("openedOn", { date: new Date(cycle.opens_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE }) })}</span>}
             {cycle.closes_at && <span>{t("closedOn", { date: new Date(cycle.closes_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE }) })}</span>}
@@ -103,7 +114,12 @@ export default async function CycleDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <DetailHeader
+        back={{ href: `/association/${slug}/cycles`, label: tc("navCicli") }}
+        title={cycle.title}
+      />
+
       <CycleEditor
         cycleId={cycleId}
         associationId={association.id}

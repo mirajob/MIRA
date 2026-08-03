@@ -13,12 +13,14 @@ export function PasswordInput({
   required,
   minLength,
   autoComplete,
+  placeholder,
 }: {
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
   minLength?: number;
   autoComplete?: string;
+  placeholder?: string;
 }) {
   const c = useTranslations("Common");
   const [visible, setVisible] = useState(false);
@@ -30,6 +32,7 @@ export function PasswordInput({
         required={required}
         minLength={minLength}
         autoComplete={autoComplete}
+        placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full px-4 py-3 pr-12 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
+import { BackLink } from "@/components/page-bar";
 import { associationCategoryLabel } from "@mira/domain";
 import { APP_TIME_ZONE } from "@/lib/format-date";
 
@@ -33,13 +34,9 @@ export async function AssociationPublicProfile({
       {/* Con un elenco di oltre cento associazioni si entra e si esce di continuo:
           senza questo si torna indietro solo dal menu laterale. */}
       {backHref && (
-        <Link
-          href={backHref}
-          className="mb-4 inline-flex items-center gap-1.5 text-body-sm text-ink-tertiary transition-colors hover:text-petrol"
-        >
-          <span aria-hidden>&larr;</span>
-          {t("backToDirectory")}
-        </Link>
+        <div className="mb-3">
+          <BackLink href={backHref} label={t("backToDirectory")} />
+        </div>
       )}
 
       {/* Header. Senza logo non mettiamo un segnaposto con l'iniziale: una lettera

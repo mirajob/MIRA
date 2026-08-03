@@ -181,7 +181,7 @@ export default async function AssociationInterviewsPage({ params }: Props) {
     <div className="space-y-4">
       <p className="max-w-3xl text-body-sm text-ink-secondary">{t("subhead")}</p>
 
-      <NewSessionPanel associationId={association.id} slug={slug} cycles={cycleOptions} />
+      <NewSessionPanel slug={slug} cycles={cycleOptions} />
 
       {currentSessions.length === 0 ? (
         <div className="rounded-lg border border-border bg-white p-6 text-center">

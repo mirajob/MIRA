@@ -65,7 +65,7 @@ export default async function KnowledgeBasePage() {
                       </span>
                     </td>
                     <td className="py-4 px-4 text-body-sm text-ink">
-                      {(doc.profiles as { full_name: string | null })?.full_name ?? "—"}
+                      {(doc.profiles as { full_name: string | null })?.full_name ?? "–"}
                     </td>
                     <td className="py-4 px-4 text-body-sm text-ink-secondary">
                       {new Date(doc.created_at).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE })}

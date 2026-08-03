@@ -216,9 +216,22 @@
     "submitLoading": "Accesso in corso...",
     "pendingRequest": "La tua richiesta di accesso è ancora in attesa di conferma da parte del team MIRA. Riceverai un'email non appena verrà approvata.",
     "wrongAccountType": "Questo è un account {accountType}. Passa su \"{targetLabel}\" qui sopra per accedere.",
-    "callbackFailed": "Il link di conferma risulta già usato — capita spesso perché alcuni filtri email lo aprono in automatico prima di te. Se hai già ricevuto l'email, la tua email è probabilmente già confermata: prova ad accedere qui sotto.",
+    "callbackFailed": "Il link di conferma risulta già usato, capita spesso perché alcuni filtri email lo aprono in automatico prima di te. Se hai già ricevuto l'email, la tua email è probabilmente già confermata: prova ad accedere qui sotto.",
     "accountTypeStudent": "studente",
-    "accountTypeCompany": "azienda"
+    "accountTypeCompany": "azienda",
+    "forgotPassword": "Password dimenticata?",
+    "forgotPasswordIntro": "Ti mandiamo un link per rifarla. Arriva all'indirizzo con cui ti sei registrato.",
+    "forgotPasswordPlaceholder": "La tua email",
+    "sendResetLink": "Mandami il link",
+    "cancelReset": "Lascia stare",
+    "resetSent": "Link mandato a {email}. Aprilo e scegli la password nuova.",
+    "working": "Un attimo...",
+    "newPasswordHeading": "Scegli la nuova password",
+    "newPasswordIntro": "Almeno 8 caratteri. Dopo il salvataggio entri direttamente.",
+    "newPasswordPlaceholder": "Nuova password",
+    "confirmPasswordPlaceholder": "Ripeti la password",
+    "newPasswordCta": "Salva ed entra",
+    "passwordMismatch": "Le due password non coincidono."
   },
   "CompleteProfilePage": {
     "heading": "Ancora due cose",
@@ -254,7 +267,7 @@
     "selectUniversityAndDegree": "Seleziona università e livello di studi.",
     "emailSentHeading": "Controlla la tua email",
     "emailSentBody": "Ti abbiamo inviato un link di conferma a {email}. Clicca sul link per attivare il tuo account.",
-    "emailSentDelayNote": "L'email può richiedere qualche minuto per arrivare — se non la vedi subito, controlla anche lo spam.",
+    "emailSentDelayNote": "L'email può richiedere qualche minuto per arrivare, se non la vedi subito, controlla anche lo spam.",
     "emailSentBackToLogin": "Torna al login",
     "codeHeading": "Inserisci il codice",
     "codeBody": "Ti abbiamo inviato un codice a 6 cifre a {email}. Inseriscilo qui sotto per confermare l'account.",
@@ -262,7 +275,7 @@
     "codeVerify": "Verifica e continua",
     "codeVerifying": "Verifica...",
     "codeResend": "Non l'hai ricevuto? Reinvia il codice",
-    "codeResent": "Codice reinviato — controlla la posta.",
+    "codeResent": "Codice reinviato, controlla la posta.",
     "codeInvalid": "Codice non valido o scaduto. Controlla e riprova.",
     "termsConsent": "Ho letto l''<privacyLink>Informativa Privacy</privacyLink> e accetto i <termsLink>Termini di Servizio</termsLink>."
   },
@@ -355,7 +368,7 @@
   },
   "StudentHome": {
     "greeting": "Ciao",
-    "autodescrizioneIntro": "Scritto con le tue parole — modificalo pure, ed è la parte più personale della card.",
+    "autodescrizioneIntro": "Scritto con le tue parole, modificalo pure, ed è la parte più personale della card.",
     "editCard": "Modifica la card",
     "backToCard": "Torna alla card",
     "cardPurpose": "La tua MIRA Card è il profilo con cui ti candidi alle associazioni ed è quello che le aziende leggono quando cercano un candidato.",
@@ -381,8 +394,8 @@
   },
   "CardBlocks": {
     "titles": {
-      "header": "Header",
-      "disponibilita": "Disponibilità",
+      "header": "Studi",
+      "disponibilita": "Disponibilità lavorative",
       "esperienze": "Esperienze",
       "formazione": "Formazione",
       "competenze": "Competenze",
@@ -390,7 +403,7 @@
       "autodescrizione": "Come si descrive",
       "interessi": "Interessi",
       "pianoCarriera": "Piano di carriera",
-      "disponibilitaEPiano": "Disponibilità e piano",
+      "disponibilitaEPiano": "Disponibilità lavorative e piano di carriera",
       "profiloPersonale": "Profilo personale",
       "esami": "Esami"
     },
@@ -494,7 +507,7 @@
         "advanced": "Avanzato"
       },
       "livelloLabel": "Livello",
-      "evidenzaHintHard": "Da un progetto, uno stage o la pratica — è la prova della competenza",
+      "evidenzaHintHard": "Da un progetto, uno stage o la pratica, è la prova della competenza",
       "evidenzaPlaceholderHard": "es. stage in consulting, progetto personale",
       "intro": "Le materie che hai studiato le prendiamo dal tuo libretto: qui metti solo quello che sai usare."
     },
@@ -716,7 +729,7 @@
     "heading": "Candidatura in attesa",
     "body": "Abbiamo ricevuto la candidatura della tua associazione. La verificheremo il prima possibile e riceverai una email con l'esito.",
     "meanwhileLabel": "Nel frattempo",
-    "meanwhileBody": "Inizia a costruire il tuo profilo studente su MIRA — la tua MiraCard. Non devi aspettare l'approvazione dell'associazione per farlo.",
+    "meanwhileBody": "Inizia a costruire il tuo profilo studente su MIRA, la tua MiraCard. Non devi aspettare l'approvazione dell'associazione per farlo.",
     "buildProfileCta": "Costruisci il tuo profilo →",
     "whatNowLabel": "Cosa succede ora",
     "steps": {
@@ -807,7 +820,8 @@
     "noCard": "Questa persona non ha ancora una MiraCard.",
     "guideMembers": "Ora invita i tuoi membri e gestiscili da qui. Condividi il link qui sotto: chi entra compare tra le persone dell'associazione, ognuno con la sua MiraCard. Puoi nominare altri amministratori o assegnare un ruolo a ciascuno.",
     "guideTeam": "Qui gestisci il tuo team. Condividi il link d'invito qui sotto: chi entra diventa un membro dell'associazione, con la sua MiraCard. Chi rendi amministratore ha accesso alla tua stessa dashboard e può svolgere le tue stesse funzioni; gli altri li organizzi in sezioni per ruolo, area o team.",
-    "generating": "Generazione..."
+    "generating": "Generazione...",
+    "teamExplainer": "Il link d'invito qui sotto fa entrare chi lo apre come membro, con la sua MiraCard. Chi rendi amministratore vede questa stessa dashboard e può fare le stesse cose; gli altri li organizzi in sezioni per ruolo o area."
   },
   "AssociationOnboarding": {
     "stepCounter": "Passo {current} di {total}",
@@ -824,7 +838,7 @@
         "intro": "Ora il tuo team. Invita i collaboratori e i membri dal link qui sotto: chi rendi amministratore gestisce la dashboard con te, gli altri li organizzi in sezioni. Puoi anche saltare e farlo più avanti."
       },
       "cycles": {
-        "intro": "Ultima tappa: prepara le candidature. Crea il vostro primo ciclo — ti guido nella costruzione, come per la pagina. Se non è il momento, puoi concludere e farlo dopo.",
+        "intro": "Ultima tappa: prepara le candidature. Crea il vostro primo ciclo, ti guido nella costruzione, come per la pagina. Se non è il momento, puoi concludere e farlo dopo.",
         "empty": "Non hai ancora un ciclo di candidatura.",
         "create": "Crea il primo ciclo"
       }
@@ -980,7 +994,8 @@
     "requirementsPrefix": "Requisiti: {requirements}",
     "questionsHeading": "Domande",
     "customQuestionsHeading": "Domande personalizzate",
-    "customQuestionsSubhead": "Queste domande verranno mostrate ai candidati durante la candidatura."
+    "customQuestionsSubhead": "Queste domande verranno mostrate ai candidati durante la candidatura.",
+    "untitled": "Selezione senza nome"
   },
   "CycleEditor": {
     "fallbackTitle": "Ciclo",
@@ -1076,7 +1091,7 @@
       "accepted": "Comunicazione accettazione",
       "rejected": "Comunicazione rifiuto"
     },
-    "emailSentSuffix": " — email inviata a {email}",
+    "emailSentSuffix": ", email inviata a {email}",
     "editBeforeSending": "Modifica il messaggio prima di inviarlo. L'email sarà inviata da MIRA a nome tuo.",
     "generatingDraft": "MIRA sta scrivendo una bozza...",
     "toPrefix": "A: {email}",
@@ -1123,7 +1138,7 @@
     "logoLabel": "Logo",
     "changeLogo": "Cambia logo",
     "uploadLogo": "Carica logo",
-    "logoHelper": "PNG, JPG — max 2MB. Se non caricato, viene usata la lettera iniziale.",
+    "logoHelper": "PNG, JPG, max 2MB. Se non caricato, viene usata la lettera iniziale.",
     "nameLabel": "Nome associazione",
     "categoryLabel": "Categoria",
     "categoryPlaceholder": "Seleziona",
@@ -1265,7 +1280,7 @@
     "dimensionCompetenze": "Match su competenze",
     "dimensionDisponibilita": "Match su disponibilità",
     "dimensionEntrambe": "Match forte",
-    "assistantIntro": "Descrivi il profilo che stai cercando — ruolo, competenze, settore, attitudine, disponibilità. Posso anche fare domande per capire meglio cosa ti serve.",
+    "assistantIntro": "Descrivi il profilo che stai cercando, ruolo, competenze, settore, attitudine, disponibilità. Posso anche fare domande per capire meglio cosa ti serve.",
     "viewMiraCard": "Guarda la MiraCard",
     "contact": "Contatta",
     "searchPlaceholder": "Descrivi il profilo che cerchi..."
@@ -1316,7 +1331,7 @@
     "companyNameLabel": "Nome azienda *",
     "companyNamePlaceholder": "es. McKinsey & Company",
     "emailMessageLabel": "Messaggio nell'email (opzionale)",
-    "emailMessagePlaceholder": "Cosa deve sapere o fare — questo testo comparirà nell'email che riceve.",
+    "emailMessagePlaceholder": "Cosa deve sapere o fare, questo testo comparirà nell'email che riceve.",
     "sendInvite": "Invia invito",
     "sendingInvite": "Invio in corso..."
   },
@@ -1414,7 +1429,7 @@
     "associationNameLabel": "Nome associazione *",
     "associationNamePlaceholder": "es. Finance Club, Debate Society...",
     "emailMessageLabel": "Messaggio nell'email (opzionale)",
-    "emailMessagePlaceholder": "Cosa deve sapere o fare — questo testo comparirà nell'email che riceve.",
+    "emailMessagePlaceholder": "Cosa deve sapere o fare, questo testo comparirà nell'email che riceve.",
     "sendInvite": "Invia invito",
     "sendingInvite": "Invio in corso...",
     "deleteConfirmPrompt": "Questa azione elimina definitivamente \"{name}\" e tutti i suoi dati (candidature, board, cicli, ecc). Non è reversibile.\n\nScrivi {word} per confermare.",
@@ -1489,11 +1504,11 @@
     "guideHeader": "Ultimo passo per sbloccare la candidatura: i dati del tuo corso. Università e livello li ho già presi dalla registrazione, controlla che sia tutto giusto e aggiungi corso e anni, poi premi Conferma.",
     "guideEsperienze": "Ora le esperienze. Per inserirle hai tre strade veloci: carica il tuo CV, scarica il profilo LinkedIn in PDF (ti spiego io come), oppure aggiungile a mano qui sotto. Ricorda che valgono anche progetti personali, sport, volontariato o attività associative: qualsiasi cosa parli di te!",
     "guideEsperienzeManual": "Va bene, le costruiamo a mano: aggiungi le tue esperienze qui sotto. Valgono anche progetti personali, sport, volontariato o attività associative: qualsiasi cosa parli di te. Scrivi le descrizioni come ti viene, ✦ Migliora con MIRA le riscrive in inglese stile CV. Poi premi Conferma.",
-    "guideEsperienzeAfterCV": "Ho trovato {count, plural, =0 {le tue esperienze} one {1 esperienza} other {# esperienze}} nel CV e le ho già preparate qui sotto in inglese. Controllale, correggile o aggiungine altre — anche quelle che non metteresti mai in un CV (progetti, sport, volontariato, attività associative). Poi premi Conferma.",
+    "guideEsperienzeAfterCV": "Ho trovato {count, plural, =0 {le tue esperienze} one {1 esperienza} other {# esperienze}} nel CV e le ho già preparate qui sotto in inglese. Controllale, correggile o aggiungine altre, anche quelle che non metteresti mai in un CV (progetti, sport, volontariato, attività associative). Poi premi Conferma.",
     "guideDisponibilitaIntro": "Ciao {name}! Io sono MIRA: costruiamo insieme la tua MIRA Card. Ti serve per candidarti alle associazioni ed è il profilo con cui le aziende potranno trovarti e contattarti (sarà in inglese, ci penso io a tradurre).\n\nPartiamo da cosa cerchi: usa l'interruttore per dirmi se sei in cerca o aperto a opportunità e compila i campi (tipo di esperienza, ambito, date e luogo). In basso raccontami il tuo piano di carriera: quali sono i tuoi prossimi passi di studio o formazione, in che ruolo vorresti inserirti subito dopo e dove punti ad arrivare nel lungo periodo. Se stai ancora esplorando va benissimo lo stesso. Scrivi come parli!\n\n✦ Migliora con MIRA lo sistema in inglese. Poi premi Conferma.",
-    "guideLingue": "Che lingue conosci? Aggiungile qui sotto con livello ed eventuale certificazione (es. English — C1 — IELTS 7.5). Poi premi Conferma.",
+    "guideLingue": "Che lingue conosci? Aggiungile qui sotto con livello ed eventuale certificazione (es. English, C1, IELTS 7.5). Poi premi Conferma.",
     "guideLingueWithCV": "Le lingue trovate nel CV le ho già inserite qui sotto: controlla livelli e certificazioni, aggiungi quelle che mancano, poi premi Conferma.",
-    "guideProfilo": "Ora la parte che sul CV di solito manca: come ti presenti oltre a esami ed esperienze. Niente elenco di hobby né frasi da colloquio — racconta qualcosa di autentico:\n— Cosa segui per conto tuo, fuori dai programmi d'esame?\n— Fuori dallo studio, cosa fai con costanza?\n— Come ti descriverebbero le persone che ti conoscono bene?\n— Cosa non sopporti nel lavoro o nello studio, oppure a cosa non rinunci?\n— Qual è la cosa più \"te\" che hai fatto nell'ultimo anno?\nScrivi come parli, anche in italiano: ✦ Migliora con MIRA lo trasforma in un testo in prima persona, in inglese. Poi premi Conferma.",
+    "guideProfilo": "Ora la parte che sul CV di solito manca: come ti presenti oltre a esami ed esperienze. Niente elenco di hobby né frasi da colloquio, racconta qualcosa di autentico:\n• Cosa segui per conto tuo, fuori dai programmi d'esame?\n• Fuori dallo studio, cosa fai con costanza?\n• Come ti descriverebbero le persone che ti conoscono bene?\n• Cosa non sopporti nel lavoro o nello studio, oppure a cosa non rinunci?\n• Qual è la cosa più \"te\" che hai fatto nell'ultimo anno?\nScrivi come parli, anche in italiano: ✦ Migliora con MIRA lo trasforma in un testo in prima persona, in inglese. Poi premi Conferma.",
     "gateTitle": "Candidatura sbloccata.",
     "gateBody": "La tua card è al {pct}%: puoi già candidarti alle associazioni su MIRA. Oppure completiamo le ultime sezioni in pochi minuti.",
     "gateWarning": "ATTENZIONE: Più completo è il profilo, più attrai l'attenzione delle aziende!",
@@ -1778,7 +1793,7 @@
     "gradesAssociations": "Associazioni universitarie",
     "gradesAssociationsHint": "Media e voti visibili alle associazioni a cui ti candidi",
     "gradesCompanies": "Aziende",
-    "gradesCompaniesHint": "Media e voti visibili alle aziende (parte non ancora attiva)",
+    "gradesCompaniesHint": "Media e voti visibili alle aziende",
     "dataHeading": "I tuoi dati",
     "dataWho": {
       "q": "Chi tiene i tuoi dati",
@@ -1798,6 +1813,28 @@
     },
     "linkPrivacy": "Informativa sulla privacy",
     "linkTerms": "Termini di servizio",
-    "linkContact": "Scrivici: privacy@mirajob.cloud"
+    "linkContact": "Scrivici: privacy@mirajob.cloud",
+    "edit": "Modifica",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "fieldPhone": "Telefono",
+    "phoneEmpty": "Non indicato",
+    "phonePlaceholder": "+39 333 1234567",
+    "phoneHint": "Facoltativo. Serve solo se decidi di mostrarlo, qui sotto.",
+    "emailLocked": "L'email è la tua credenziale di accesso: per cambiarla scrivi a privacy@mirajob.cloud, così verifichiamo il nuovo indirizzo prima di sostituirlo.",
+    "passwordHeading": "Password",
+    "passwordIntro": "Cambiala quando vuoi. Per farlo ti chiediamo prima quella attuale.",
+    "passwordChange": "Cambia password",
+    "passwordCurrent": "Password attuale",
+    "passwordNew": "Nuova password",
+    "passwordRepeat": "Ripeti la nuova password",
+    "passwordMismatch": "Le due password non coincidono.",
+    "passwordChanged": "Password aggiornata.",
+    "contactHeading": "Recapiti da mostrare",
+    "contactIntro": "Email e telefono non si vedono di default. Qui scegli a chi mostrarli.",
+    "phoneAssociations": "Telefono alle associazioni",
+    "phoneAssociationsHint": "Visibile alle associazioni a cui ti candidi",
+    "phoneCompanies": "Telefono alle aziende",
+    "phoneCompaniesHint": "Non c'è un interruttore: alle aziende i recapiti arrivano solo se accetti una loro richiesta, e in quel momento scegli tu cosa dare."
   }
 }

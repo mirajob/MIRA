@@ -72,7 +72,7 @@ export default async function CompanyCandidateCardPage({ params, searchParams }:
           </Link>
           <h1 className="font-semibold text-h1 text-navy mt-2">{t("candidateHeading", { code })}</h1>
           <p className="text-body-sm text-ink-tertiary">
-            {student.degree_program ?? "—"} {student.degree_level ? `· ${student.degree_level}` : ""}
+            {student.degree_program ?? "–"} {student.degree_level ? `· ${student.degree_level}` : ""}
           </p>
         </div>
         <ContactButton slug={slug} code={code} />

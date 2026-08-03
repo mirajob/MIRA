@@ -90,6 +90,7 @@ export function AssociationOnboarding({
         {stepName === "team" &&
           (data.team ? (
             <TeamPanel
+              guided
               associationId={associationId}
               slug={slug}
               currentCode={inviteCode}

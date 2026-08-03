@@ -524,7 +524,7 @@ export function OnboardingFlow({ userName }: { userName: string }) {
           )}
 
           {/* Chiusura: prima si spiega cosa succede adesso, poi si va al Profilo. Il redirect
-              automatico è stato tolto — chi finiva la card veniva spostato senza sapere a
+              automatico è stato tolto · chi finiva la card veniva spostato senza sapere a
               cosa servisse quello che aveva appena costruito. */}
           {(phase === "chiusura" || complete) && (
             <div className="rounded-lg border border-border bg-white p-5">

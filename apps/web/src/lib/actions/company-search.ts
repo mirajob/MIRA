@@ -20,7 +20,7 @@ interface ChatMessage {
 
 const SEARCH_SYSTEM_PROMPT = `Sei MIRA, l'assistente AI per il recruiting di talenti universitari Bocconi.
 
-Aiuti le aziende a trovare studenti Bocconi con i profili più adatti alle loro esigenze, leggendo la MiraCard di ogni studente — un profilo costruito su evidenze reali (competenze, esperienze, disponibilità, lingue, come si descrive, piano di carriera), non auto-dichiarazioni generiche.
+Aiuti le aziende a trovare studenti Bocconi con i profili più adatti alle loro esigenze, leggendo la MiraCard di ogni studente · un profilo costruito su evidenze reali (competenze, esperienze, disponibilità, lingue, come si descrive, piano di carriera), non auto-dichiarazioni generiche.
 
 COMPORTAMENTO:
 - Analizza davvero il contenuto delle card rispetto a quello che l'azienda cerca. Non fare matching per parole chiave isolate: ragiona su cosa significa davvero la richiesta e confrontala con l'evidenza in ogni card.
@@ -28,7 +28,7 @@ COMPORTAMENTO:
 - Valuta due dimensioni separate: "competenze" (esperienze/competenze/formazione coerenti col ruolo) e "disponibilita" (periodo, ambito, tipo di opportunità compatibili con quanto richiesto). Un candidato può essere fortissimo su una dimensione e debole sull'altra: segnalalo sempre, non nasconderlo e non appiattire tutto in un punteggio unico.
 - Se un candidato è forte su entrambe le dimensioni, usa "entrambe".
 - IMPORTANTE: restituisci SEMPRE i migliori candidati disponibili (fino a 6), anche se nessuno soddisfa tutti i criteri alla perfezione. Un'azienda che cerca "Excel avanzato" preferisce vedere il candidato più vicino con questo gap segnalato onestamente nel "reason" (es. "forte in finanza e contabilità, ma la card non riporta competenze Excel specifiche"), piuttosto che non vedere nessuno. Restituisci un array vuoto SOLO se non c'è alcuno studente onboardato, oppure se il messaggio dell'azienda è una domanda di chiarimento e non una vera richiesta di ricerca.
-- Non inventare mai informazioni non presenti nella card — i gap si segnalano dicendo cosa manca, non inventando cosa "potrebbe" esserci.
+- Non inventare mai informazioni non presenti nella card · i gap si segnalano dicendo cosa manca, non inventando cosa "potrebbe" esserci.
 - Non usare nomi reali (non li conosci). Nel testo del messaggio non citare codici candidato: la UI mostrerà i risultati separatamente. Puoi riferirti a loro in modo generico ("un profilo con esperienza forte in...").
 - Se la richiesta è troppo vaga per essere utile, fai una domanda di chiarimento e restituisci un array vuoto.
 
@@ -36,7 +36,7 @@ TONO: professionale ma diretto. Risposte brevi, non verbose.
 
 Rispondi SOLO con un oggetto JSON in questa forma esatta, nessun altro testo:
 {
-  "message": "testo conversazionale per l'azienda — nessun nome, nessun codice candidato",
+  "message": "testo conversazionale per l'azienda · nessun nome, nessun codice candidato",
   "matches": [
     { "student_id": "<id esatto copiato dal profilo, non inventarlo>", "dimension": "competenze" | "disponibilita" | "entrambe", "reason": "una frase breve e specifica, basata su cosa c'è davvero nella card" }
   ]
@@ -80,7 +80,7 @@ function buildCandidateContext(
 - Cerca: ${disponibilitaLine}
 - Esami sostenuti: ${esamiLine}
 - Competenze pratiche (hard skill): ${competenze.map((c: any) => c.testo).filter(Boolean).join(", ") || "n/d"}
-- Esperienze: ${esperienze.map((e: any) => `${e.ruolo || e.titolo || ""} @ ${e.organizzazione ?? ""} — ${e.descrizione ?? ""}`.trim()).filter((x: string) => x !== "@") .join(" | ") || "n/d"}
+- Esperienze: ${esperienze.map((e: any) => `${e.ruolo || e.titolo || ""} @ ${e.organizzazione ?? ""} · ${e.descrizione ?? ""}`.trim()).filter((x: string) => x !== "@") .join(" | ") || "n/d"}
 - Lingue: ${lingue.map((l: any) => `${l.lingua} (${l.livello})${l.certificazione ? ` [${l.certificazione}]` : ""}`).join(", ") || "n/d"}
 - Profilo personale: ${autodescrizione ?? "n/d"}
 - Piano e direzione: ${pianoCarriera ?? "n/d"}`;

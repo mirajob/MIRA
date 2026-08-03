@@ -1,8 +1,5 @@
-"use client";
-
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { SessionForm } from "./session-form";
+import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 export interface CycleOption {
   id: string;
@@ -10,22 +7,18 @@ export interface CycleOption {
 }
 
 /**
- * Il bottone "nuova sessione" e la scelta del ciclo a cui appartiene. La scelta sta
- * qui e non dentro il form perché un round di colloqui è sempre di un ciclo preciso,
- * e sbagliarlo significa invitare i candidati di una selezione all'altra.
+ * L'attacco per creare un round. Il modulo vero sta su una pagina sua: aprirlo qui
+ * dentro lasciava sopra e sotto l'elenco dei round esistenti, ancora cliccabili
+ * mentre si stava compilando.
  */
-export function NewSessionPanel({
-  associationId,
+export async function NewSessionPanel({
   slug,
   cycles,
 }: {
-  associationId: string;
   slug: string;
   cycles: CycleOption[];
 }) {
-  const t = useTranslations("Interviews");
-  const [open, setOpen] = useState(false);
-  const [cycleId, setCycleId] = useState(cycles[0]?.id ?? "");
+  const t = await getTranslations("Interviews");
 
   if (!cycles.length) {
     return (
@@ -35,42 +28,12 @@ export function NewSessionPanel({
     );
   }
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="rounded-md bg-navy px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-navy-700"
-      >
-        {t("newSessionCta")}
-      </button>
-    );
-  }
-
   return (
-    <div className="space-y-2">
-      {cycles.length > 1 && (
-        <label className="block">
-          <span className="mb-1 block text-eyebrow uppercase text-navy/60">{t("cycleLabel")}</span>
-          <select
-            value={cycleId}
-            onChange={(e) => setCycleId(e.target.value)}
-            className="w-full rounded-md border border-border px-3 py-1.5 text-body-sm text-ink focus:border-petrol focus:outline-none"
-          >
-            {cycles.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.title}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-
-      <SessionForm
-        associationId={associationId}
-        slug={slug}
-        cycleId={cycleId}
-        onDone={() => setOpen(false)}
-      />
-    </div>
+    <Link
+      href={`/association/${slug}/colloqui/nuovo`}
+      className="inline-block rounded-md bg-navy px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-navy-700"
+    >
+      {t("newSessionCta")}
+    </Link>
   );
 }

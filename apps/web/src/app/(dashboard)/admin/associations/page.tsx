@@ -36,10 +36,10 @@ function AssociationRow({ assoc, president, t, statusLabel, dateLocale, showRemi
         )}
       </td>
       <td className="px-3 py-2">
-        <p className="text-body-sm text-ink">{president?.full_name ?? "—"}</p>
-        <p className="text-eyebrow text-ink-tertiary">{president?.email ?? assoc.contact_email ?? "—"}</p>
+        <p className="text-body-sm text-ink">{president?.full_name ?? "–"}</p>
+        <p className="text-eyebrow text-ink-tertiary">{president?.email ?? assoc.contact_email ?? "–"}</p>
       </td>
-      <td className="px-3 py-2 text-body-sm text-ink">{assoc.category ?? "—"}</td>
+      <td className="px-3 py-2 text-body-sm text-ink">{assoc.category ?? "–"}</td>
       <td className="px-3 py-2">
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${STATUS_CLASS[assoc.verification_status] ?? "bg-gray-100 text-gray-600"}`}>
           {statusLabel[assoc.verification_status] ?? assoc.verification_status}

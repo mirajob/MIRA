@@ -67,7 +67,7 @@ export default async function AdminUsersPage() {
   const universities = [...byUniversity.keys()].sort((a, b) => a.localeCompare(b));
 
   function degreeLevelLabel(level: string | null) {
-    if (!level) return "—";
+    if (!level) return "–";
     return tDegree.has(`degreeLevels.${level}`) ? tDegree(`degreeLevels.${level}`) : level;
   }
 
@@ -100,14 +100,14 @@ export default async function AdminUsersPage() {
                     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-navy text-white text-eyebrow font-semibold">
                       {(s.fullName ?? s.email).charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-body-sm font-medium text-navy group-hover:underline underline-offset-2 decoration-1">{s.fullName ?? "—"}</span>
+                    <span className="text-body-sm font-medium text-navy group-hover:underline underline-offset-2 decoration-1">{s.fullName ?? "–"}</span>
                   </Link>
                 ) : (
                   <div className="flex items-center gap-2">
                     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-navy text-white text-eyebrow font-semibold">
                       {(s.fullName ?? s.email).charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-body-sm font-medium text-navy">{s.fullName ?? "—"}</span>
+                    <span className="text-body-sm font-medium text-navy">{s.fullName ?? "–"}</span>
                   </div>
                 )}
               </td>
@@ -135,7 +135,7 @@ export default async function AdminUsersPage() {
                       hour: "2-digit",
                       minute: "2-digit",
                     })
-                  : "—"}
+                  : "–"}
               </td>
               <td className="py-2 px-3">
                 <div className="flex items-center gap-3">

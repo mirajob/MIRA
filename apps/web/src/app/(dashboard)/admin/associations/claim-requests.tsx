@@ -68,7 +68,7 @@ export function ClaimRequests({ rows }: { rows: ClaimRequestRow[] }) {
                 {row.associationName}
               </Link>
               <span className="text-body-sm text-ink">
-                {row.requesterName ?? row.requesterEmail ?? "—"}
+                {row.requesterName ?? row.requesterEmail ?? "–"}
               </span>
               {row.roleInAssociation && (
                 <span className="text-body-sm text-ink-secondary">{row.roleInAssociation}</span>

@@ -40,6 +40,7 @@ export function TeamPanel({
   people,
   sections,
   pendingRequests,
+  guided = false,
 }: {
   associationId: string;
   slug: string;
@@ -47,6 +48,8 @@ export function TeamPanel({
   people: Person[];
   sections: Section[];
   pendingRequests: PendingRequest[];
+  /** Dentro il percorso guidato parla MIRA; sulla tab Membri basta una riga. */
+  guided?: boolean;
 }) {
   const t = useTranslations("Board");
   const [pending, startTransition] = useTransition();
@@ -236,7 +239,11 @@ export function TeamPanel({
 
   return (
     <div className="space-y-4">
-      <MiraGuide text={t("guideTeam")} />
+      {guided ? (
+        <MiraGuide text={t("guideTeam")} />
+      ) : (
+        <p className="max-w-3xl text-body-sm text-ink-secondary">{t("teamExplainer")}</p>
+      )}
 
       <InviteCodeSection associationId={associationId} currentCode={currentCode} membershipEnabled compact />
 

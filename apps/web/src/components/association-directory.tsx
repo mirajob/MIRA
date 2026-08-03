@@ -86,7 +86,7 @@ export function AssociationDirectory({ associations }: { associations: Directory
   return (
     <div>
       {/* Barra di ricerca e filtri: resta agganciata in alto perché la pagina è lunga */}
-      <div className="sticky top-0 z-20 -mx-2 bg-paper/95 px-2 pb-3 pt-1 backdrop-blur sm:-mx-6 sm:px-6">
+      <div className="pb-3">
         <div className="flex items-baseline gap-3">
           <input
             value={query}
@@ -178,7 +178,7 @@ function DirectoryRow({
   return (
     <Link
       href={`/student/associazioni/${association.slug}`}
-      className="group flex items-baseline gap-2 rounded-md border-b border-border/60 px-2 py-2 transition-colors duration-100 hover:bg-white"
+      className="group flex min-w-0 items-baseline gap-2 rounded-md border-b border-border/60 px-2 py-2 transition-colors duration-100 hover:bg-white"
     >
       {/* Il pallino segnala l'unica cosa azionabile subito: selezioni aperte */}
       <span

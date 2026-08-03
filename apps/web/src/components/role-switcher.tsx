@@ -32,7 +32,7 @@ export function RoleSwitcher({ isStudent, isMiraAdmin, memberships }: RoleSwitch
     const roleLabel = m.role === "association_member" ? "Membro" : "Amministratore";
 
     roles.push({
-      label: `${roleLabel} — ${m.association_profiles.name}`,
+      label: `${roleLabel} · ${m.association_profiles.name}`,
       href: `/association/${m.association_profiles.slug}`,
       initials: m.association_profiles.name.charAt(0).toUpperCase(),
     });

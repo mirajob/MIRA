@@ -79,7 +79,7 @@ export function AiTestClient() {
         <h1 className="text-body-lg font-semibold text-navy">Test parsing con Gemini</h1>
         <p className="mt-1 text-body-sm text-ink-secondary">
           Banco di prova isolato: carica un libretto o un CV, guarda l&apos;output e il tempo impiegato.
-          Non scrive nulla su nessun profilo — serve solo per confrontare Gemini con il parser attuale.
+          Non scrive nulla su nessun profilo · serve solo per confrontare Gemini con il parser attuale.
         </p>
       </div>
 
@@ -148,9 +148,9 @@ function TranscriptOutput({ result }: { result: Extract<TranscriptTestResult, { 
     <div className="mt-4 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="font-sans text-body font-semibold text-navy">{p.degree_program || "—"}</p>
+          <p className="font-sans text-body font-semibold text-navy">{p.degree_program || "–"}</p>
           <p className="text-body-sm text-ink-secondary">
-            {[p.university_name, p.degree_level].filter(Boolean).join(" · ") || "—"}
+            {[p.university_name, p.degree_level].filter(Boolean).join(" · ") || "–"}
           </p>
         </div>
         <Timing
@@ -164,7 +164,7 @@ function TranscriptOutput({ result }: { result: Extract<TranscriptTestResult, { 
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs">
-        <Stat label="Media ponderata" value={p.weighted_average != null ? `${p.weighted_average.toFixed(2)}/30` : "—"} />
+        <Stat label="Media ponderata" value={p.weighted_average != null ? `${p.weighted_average.toFixed(2)}/30` : "–"} />
         <Stat label="Esami" value={String(p.courses.length)} />
         <Stat label="CFU totali" value={String(p.total_credits)} />
         <Stat label="CFU con voto" value={String(p.graded_credits)} />
@@ -186,7 +186,7 @@ function TranscriptOutput({ result }: { result: Extract<TranscriptTestResult, { 
                 <td className="px-3 py-2 text-ink">{c.course_name}</td>
                 <td className="px-3 py-2 text-navy font-medium">{c.grade}</td>
                 <td className="px-3 py-2 text-ink-secondary">{c.credits}</td>
-                <td className="px-3 py-2 text-ink-tertiary">{c.academic_year || "—"}</td>
+                <td className="px-3 py-2 text-ink-tertiary">{c.academic_year || "–"}</td>
               </tr>
             ))}
           </tbody>

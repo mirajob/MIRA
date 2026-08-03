@@ -233,34 +233,34 @@ ${evalCriteria ? `\nCRITERI DI VALUTAZIONE DELL'ASSOCIAZIONE:\n${evalCriteria}` 
 
 POSIZIONE SCELTA DAL CANDIDATO: ${selectedPosition}
 POSIZIONI DISPONIBILI:
-${positionsText || "Nessuna posizione specifica — candidatura generica"}
+${positionsText || "Nessuna posizione specifica · candidatura generica"}
 
 ${cardContext}
 
 RISPOSTE CANDIDATURA:
 ${answers || "Nessuna risposta specifica"}
 
-Rispondi in JSON con questa struttura — la stessa valutazione in DUE lingue (il board può usare l'interfaccia in italiano o in inglese):
+Rispondi in JSON con questa struttura · la stessa valutazione in DUE lingue (il board può usare l'interfaccia in italiano o in inglese):
 {
   "it": {
     "rilevanza": [
-      {"claim": "affermazione su perché è rilevante per questa candidatura", "evidenza": "il fatto specifico della card da cui deriva (esame, esperienza, competenza — mai generico)"}
+      {"claim": "affermazione su perché è rilevante per questa candidatura", "evidenza": "il fatto specifico della card da cui deriva (esame, esperienza, competenza · mai generico)"}
     ],
-    "gap": ["cosa manca rispetto ai criteri di questo ciclo — SEZIONE OBBLIGATORIA, mai vuota. Se il matching non trova riscontri per un criterio, dillo esplicitamente invece di gonfiare la rilevanza."],
+    "gap": ["cosa manca rispetto ai criteri di questo ciclo · SEZIONE OBBLIGATORIA, mai vuota. Se il matching non trova riscontri per un criterio, dillo esplicitamente invece di gonfiare la rilevanza."],
     "domande_colloquio": ["1-2 domande concrete derivate direttamente dai gap sopra"]
   },
   "en": { "rilevanza": [...], "gap": [...], "domande_colloquio": [...] }
 }
 
 REGOLE:
-- Massimo 3 elementi in "rilevanza", ognuno con un riferimento esplicito a un fatto reale della card — mai un'affermazione senza evidenza
+- Massimo 3 elementi in "rilevanza", ognuno con un riferimento esplicito a un fatto reale della card · mai un'affermazione senza evidenza
 - "gap" non può mai essere vuoto: se non trovi lacune ovvie, indica cosa non è ancora emerso dalla card rispetto ai criteri
 - Vietati aggettivi di carattere o inferenze psicologiche (niente "leadership", "resiliente", "intraprendente")
-- Nessun punteggio, nessuna categoria di fit assoluta — solo fatti e gap rispetto A QUESTO ciclo
+- Nessun punteggio, nessuna categoria di fit assoluta · solo fatti e gap rispetto A QUESTO ciclo
 - "it" in italiano, "en" la stessa identica valutazione tradotta in inglese (stesse chiavi "rilevanza"/"gap"/"domande_colloquio", contenuto fedele)
 - Tono di nota interna di un recruiter, non lettera di presentazione`;
 
-  const systemMsg = `Sei MIRA. Generi un layer di valutazione per una specifica candidatura a una specifica associazione — mai un giudizio permanente sulla persona. Ogni affermazione deve citare un fatto della card. Non inventare informazioni. Vietate inferenze psicologiche o di carattere. Rispondi SOLO in JSON valido.`;
+  const systemMsg = `Sei MIRA. Generi un layer di valutazione per una specifica candidatura a una specifica associazione · mai un giudizio permanente sulla persona. Ogni affermazione deve citare un fatto della card. Non inventare informazioni. Vietate inferenze psicologiche o di carattere. Rispondi SOLO in JSON valido.`;
 
   try {
     const result = await chatCompletion(

@@ -151,7 +151,7 @@ async function createAssociationForProfile(
   await sendAdminNewSignupNotification({
     kind: "association",
     name: input.associationName,
-    email: contactEmail ?? "—",
+    email: contactEmail ?? "–",
     detail: [presidentName ? `Referente: ${presidentName}` : null, university || null]
       .filter(Boolean)
       .join(" · ") || null,

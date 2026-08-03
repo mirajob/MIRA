@@ -91,7 +91,7 @@ NOTA: gli esami pass/fail (es. seminari da 1 CFU) NON hanno voto numerico e NON 
         : m.role === "association_admin" ? "Admin"
         : m.title || "Membro";
       let desc = `- ${name}: ${role}`;
-      if (m.activity_description) desc += ` — ${m.activity_description}`;
+      if (m.activity_description) desc += ` · ${m.activity_description}`;
       return desc;
     }).join("\n");
     membershipData = `\nASSOCIAZIONI DELLO STUDENTE:\n${list}`;
@@ -127,7 +127,7 @@ ${platformData}
 
 OBIETTIVO: Trasformare informazioni sparse dello studente in dati strutturati utili per profilo, percorso, associazioni e futuro matching con aziende.
 
-PRIORITÀ — Se non hai ancora questi dati, chiedili UNO alla volta (ma in modo naturale, non come un form):
+PRIORITÀ · Se non hai ancora questi dati, chiedili UNO alla volta (ma in modo naturale, non come un form):
 
 1. DISPONIBILITÀ: "Nei prossimi mesi cerchi qualcosa di concreto, come uno stage, un progetto part-time, un'esperienza estiva o un lavoro dopo la laurea? Oppure per ora vuoi solo esplorare?"
    Se risponde con disponibilità, chiedi dettagli: città, periodo, full-time/part-time.
@@ -138,7 +138,7 @@ PRIORITÀ — Se non hai ancora questi dati, chiedili UNO alla volta (ma in modo
 3. PIANO CARRIERA: "Nei prossimi 6-24 mesi, che cosa vorresti costruire?" Adatta al livello (primo anno = esplorativo, magistrale = concreto).
 
 DOPO aver raccolto queste info:
-"Perfetto, il tuo profilo è più completo. Da ora puoi parlarmi di qualsiasi cosa — dubbi, esperienze, interessi, progetti. Tutto quello che mi dici migliora il tuo profilo e lo rende più utile quando le aziende arriveranno su MIRA."
+"Perfetto, il tuo profilo è più completo. Da ora puoi parlarmi di qualsiasi cosa · dubbi, esperienze, interessi, progetti. Tutto quello che mi dici migliora il tuo profilo e lo rende più utile quando le aziende arriveranno su MIRA."
 
 CONVERSAZIONE LIBERA:
 - Se racconta un'esperienza nuova: "Questa è un'informazione utile per il tuo profilo. Per salvarla bene, mi racconti cosa hai fatto concretamente, con chi e qual è stato il risultato?"
@@ -156,7 +156,7 @@ REGOLE:
 - UNA domanda alla volta. Reagisci prima, poi chiedi.
 - Come un amico intelligente. Diretto, genuino. Non generico.
 - NON ripresentarti. NON dire "Grazie per aver condiviso!" NON fare elenchi.
-- LINGUA: rispondi sempre in ${locale === "it" ? "italiano" : "inglese (English)"}, indipendentemente dalla lingua in cui scrive lo studente — segue la lingua dell'interfaccia, non quella del messaggio.`;
+- LINGUA: rispondi sempre in ${locale === "it" ? "italiano" : "inglese (English)"}, indipendentemente dalla lingua in cui scrive lo studente · segue la lingua dell'interfaccia, non quella del messaggio.`;
 }
 
 export async function sendProfileMessage(
@@ -240,7 +240,7 @@ async function updateProfileFromChat(profileId: string, conversation: ChatMessag
 {
   "interests": ["nuovi interessi/settori emersi"],
   "goals": ["nuovi obiettivi emersi"],
-  "experiences": ["Descrizione narrativa di 2-3 frasi per ogni nuova esperienza — COSA ha fatto, DOVE/PER CHI, risultati o competenze. NON solo il titolo. Es: 'Ha partecipato come analista a un progetto di consulenza interno, occupandosi di ricerca di mercato e presentazione dei risultati al team.'"],
+  "experiences": ["Descrizione narrativa di 2-3 frasi per ogni nuova esperienza · COSA ha fatto, DOVE/PER CHI, risultati o competenze. NON solo il titolo. Es: 'Ha partecipato come analista a un progetto di consulenza interno, occupandosi di ricerca di mercato e presentazione dei risultati al team.'"],
   "current_year": null,
   "association_roles": [{"association_name": "nome", "role_title": "ruolo"}],
   "availability": {

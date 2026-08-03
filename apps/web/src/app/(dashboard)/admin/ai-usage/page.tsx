@@ -42,7 +42,7 @@ export default async function AdminAiUsagePage() {
 
   const byKey = new Map<string, { calls: number; cost: number; tokensIn: number; tokensOut: number }>();
   for (const r of rows) {
-    const key = `${r.module} · ${r.model ?? "—"}`;
+    const key = `${r.module} · ${r.model ?? "–"}`;
     const agg = byKey.get(key) ?? { calls: 0, cost: 0, tokensIn: 0, tokensOut: 0 };
     agg.calls += 1;
     agg.cost += Number(r.estimated_cost ?? 0);
@@ -108,7 +108,7 @@ export default async function AdminAiUsagePage() {
                   </td>
                   <td className="px-3 py-2 tabular-nums text-ink">{money(agg.cost)}</td>
                   <td className="px-3 py-2 tabular-nums text-ink-tertiary">
-                    {agg.calls > 0 ? money(agg.cost / agg.calls) : "—"}
+                    {agg.calls > 0 ? money(agg.cost / agg.calls) : "–"}
                   </td>
                 </tr>
               ))}
@@ -158,7 +158,7 @@ export default async function AdminAiUsagePage() {
                       })}
                     </td>
                     <td className="px-3 py-2 text-ink">{r.module}</td>
-                    <td className="px-3 py-2 text-ink-secondary">{r.model ?? "—"}</td>
+                    <td className="px-3 py-2 text-ink-secondary">{r.model ?? "–"}</td>
                     <td className="px-3 py-2">
                       <span
                         className={`rounded px-2 py-0.5 text-xs font-medium ${
@@ -169,12 +169,12 @@ export default async function AdminAiUsagePage() {
                       </span>
                     </td>
                     <td className="px-3 py-2 tabular-nums text-ink-secondary whitespace-nowrap">
-                      {r.tokens_input != null ? `${r.tokens_input} / ${r.tokens_output ?? 0}` : "—"}
+                      {r.tokens_input != null ? `${r.tokens_input} / ${r.tokens_output ?? 0}` : "–"}
                     </td>
                     <td className="px-3 py-2 tabular-nums text-ink whitespace-nowrap">
-                      {r.estimated_cost != null ? money(Number(r.estimated_cost)) : "—"}
+                      {r.estimated_cost != null ? money(Number(r.estimated_cost)) : "–"}
                     </td>
-                    <td className="px-3 py-2 text-ink-tertiary">{detail || "—"}</td>
+                    <td className="px-3 py-2 text-ink-tertiary">{detail || "–"}</td>
                   </tr>
                 );
               })}

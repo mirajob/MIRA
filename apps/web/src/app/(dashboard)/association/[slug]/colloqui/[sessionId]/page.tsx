@@ -103,11 +103,11 @@ export default async function InterviewSessionPage({ params }: Props) {
           return {
             userId: a.user_id,
             initials: personInitials(person?.full_name, person?.email),
-            name: person?.full_name ?? person?.email ?? "—",
+            name: person?.full_name ?? person?.email ?? "–",
           };
         }),
       mine: covering.some((a) => a.user_id === profileId),
-      bookedName: booked?.applications?.profiles?.full_name ?? (booked ? "—" : null),
+      bookedName: booked?.applications?.profiles?.full_name ?? (booked ? "–" : null),
     };
   });
 
@@ -130,7 +130,7 @@ export default async function InterviewSessionPage({ params }: Props) {
     const invite = inviteByApplication.get(a.id);
     return {
       applicationId: a.id,
-      name: a.profiles?.full_name ?? "—",
+      name: a.profiles?.full_name ?? "–",
       email: a.profiles?.email ?? "",
       invited: Boolean(invite),
       booked: Boolean(invite?.slot_id),
@@ -145,7 +145,7 @@ export default async function InterviewSessionPage({ params }: Props) {
       return {
         slotId: s.id,
         startsAt: s.starts_at,
-        candidateName: s.applications?.profiles?.full_name ?? "—",
+        candidateName: s.applications?.profiles?.full_name ?? "–",
         candidateEmail: s.applications?.profiles?.email ?? "",
         interviewerName: interviewer?.full_name ?? interviewer?.email ?? null,
         meetingLink: s.meeting_link ?? null,

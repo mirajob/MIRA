@@ -173,7 +173,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
                 <p className="text-xs font-medium text-ink-tertiary uppercase mb-1">
                   {a.application_questions?.question_text}
                 </p>
-                <p className="text-body-sm text-ink whitespace-pre-wrap">{a.answer_text ?? "—"}</p>
+                <p className="text-body-sm text-ink whitespace-pre-wrap">{a.answer_text ?? "–"}</p>
               </div>
             ))}
           </div>

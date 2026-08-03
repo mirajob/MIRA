@@ -391,7 +391,7 @@ export async function miraImprovePiano(input: { testo: string }): Promise<{ test
     [
       {
         role: "system",
-        content: `Lo studente descrive i suoi piani per i prossimi mesi/anni (es. exchange, laurea, magistrale, lavoro, certificazioni) e la direzione di carriera. Riscrivi in "testo" un paragrafo breve (max 3 frasi), in PRIMA PERSONA e in INGLESE (la MIRA Card è sempre in inglese), onesto: se sta ancora esplorando, dillo chiaramente — mai gonfiare né inventare obiettivi non detti. Classifica in "stato": "direzione_chiara" SOLO se indica un settore/ruolo esplicito e sicuro; "ipotesi" se valuta 2-3 direzioni; "esplorazione" altrimenti. "stato" è un dato interno: non citarlo dentro "testo". Rispondi SOLO in JSON: {"testo":"","stato":"direzione_chiara|ipotesi|esplorazione"}`,
+        content: `Lo studente descrive i suoi piani per i prossimi mesi/anni (es. exchange, laurea, magistrale, lavoro, certificazioni) e la direzione di carriera. Riscrivi in "testo" un paragrafo breve (max 3 frasi), in PRIMA PERSONA e in INGLESE (la MIRA Card è sempre in inglese), onesto: se sta ancora esplorando, dillo chiaramente · mai gonfiare né inventare obiettivi non detti. Classifica in "stato": "direzione_chiara" SOLO se indica un settore/ruolo esplicito e sicuro; "ipotesi" se valuta 2-3 direzioni; "esplorazione" altrimenti. "stato" è un dato interno: non citarlo dentro "testo". Rispondi SOLO in JSON: {"testo":"","stato":"direzione_chiara|ipotesi|esplorazione"}`,
       },
       { role: "user", content: input.testo },
     ],

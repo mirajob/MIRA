@@ -6,6 +6,7 @@ import { checkPendingCompanyRequest } from "@/lib/actions/company-register";
 import { checkAccountType } from "@/lib/actions/auth";
 import { getAuthErrorKey } from "@/lib/auth-error-messages";
 import { PasswordInput } from "@/components/password-input";
+import { ForgotPassword } from "./forgot-password";
 import { GoogleSignInButton } from "@/components/google-signin-button";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -133,6 +134,8 @@ function LoginForm() {
           <span className="text-label text-navy mb-2 block">{c("password")}</span>
           <PasswordInput value={password} onChange={setPassword} required autoComplete="current-password" />
         </label>
+
+        <ForgotPassword email={email} />
 
         <button
           type="submit"

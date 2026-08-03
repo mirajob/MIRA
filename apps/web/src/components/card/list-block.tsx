@@ -107,7 +107,7 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
                 <div key={String(key)} className={type === "textarea" ? "sm:col-span-2" : ""}>
                   <label className="text-ink-tertiary text-body-sm">{label}</label>
                   {readOnly ? (
-                    <p className="mt-1 text-body-sm text-ink">{String((item as Record<string, unknown>)[key as string] ?? "—")}</p>
+                    <p className="mt-1 text-body-sm text-ink">{String((item as Record<string, unknown>)[key as string] ?? "–")}</p>
                   ) : type === "textarea" ? (
                     <textarea
                       value={String((item as Record<string, unknown>)[key as string] ?? "")}
@@ -123,7 +123,7 @@ export function ListBlock<T extends { id: string; verified: boolean }>({
                       onChange={(e) => updateItem(index, key, e.target.value || null)}
                       className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
                     >
-                      <option value="">—</option>
+                      <option value="">–</option>
                       {options?.map((opt) => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}

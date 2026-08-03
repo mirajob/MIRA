@@ -26,8 +26,8 @@ export default async function CandidateDetailPage({ params }: Props) {
     (supabase.from("applications") as any)
       .select(`
         *,
-        profiles(full_name, email, avatar_url),
-        student_profiles(id, degree_program, degree_level, current_year, transcript_summary),
+        profiles(full_name, email, avatar_url, phone),
+        student_profiles(id, degree_program, degree_level, current_year, transcript_summary, privacy_settings),
         application_cycles(title),
         application_answers(id, answer_text, answer_json, application_questions(question_text, question_type)),
         application_status_events(id, previous_status, new_status, note, created_at, profiles(full_name)),
@@ -74,7 +74,17 @@ export default async function CandidateDetailPage({ params }: Props) {
   transcriptUrl = signedTranscript.data?.signedUrl ?? null;
   cvUrl = signedCv.data?.signedUrl ?? null;
 
-  const profile = application.profiles as { full_name: string | null; email: string; avatar_url: string | null };
+  const profile = application.profiles as {
+    full_name: string | null;
+    email: string;
+    avatar_url: string | null;
+    phone: string | null;
+  };
+
+  // Il telefono si vede solo se lo studente ha acconsentito: è un recapito
+  // personale, e averlo nel profilo non vuol dire volerlo dare a tutti.
+  const studentPrivacy = ((application.student_profiles as any)?.privacy_settings ?? {}) as Record<string, boolean>;
+  const phoneVisible = Boolean(profile?.phone) && studentPrivacy.show_phone_to_associations === true;
   const student = application.student_profiles as Record<string, unknown>;
   const cycle = application.application_cycles as { title: string };
   const assocName = (association?.name as string) ?? "";
@@ -171,7 +181,10 @@ export default async function CandidateDetailPage({ params }: Props) {
       />
 
       <div>
-        <p className="text-body-sm text-ink-secondary">{profile?.email}</p>
+        <p className="text-body-sm text-ink-secondary">
+          {profile?.email}
+          {phoneVisible && <span className="text-ink-tertiary"> · {profile.phone}</span>}
+        </p>
         {(application as any).selected_role_preferences?.[0] && (
           <p className="mt-1 text-body-sm font-medium text-petrol">
             {t("applyingFor", { role: (application as any).selected_role_preferences[0] })}
@@ -222,7 +235,7 @@ export default async function CandidateDetailPage({ params }: Props) {
             {answers.map((a) => (
               <div key={a.id} className="rounded-lg border border-border bg-white p-5">
                 <p className="text-label text-navy mb-1 text-xs">{a.application_questions?.question_text}</p>
-                <p className="text-body-sm text-ink whitespace-pre-wrap">{a.answer_text ?? "—"}</p>
+                <p className="text-body-sm text-ink whitespace-pre-wrap">{a.answer_text ?? "–"}</p>
               </div>
             ))}
           </div>

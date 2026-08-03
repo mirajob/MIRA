@@ -70,11 +70,11 @@ export default async function AdminCompaniesPage() {
       <tr className="border-b border-border last:border-0 hover:bg-paper transition-colors">
         <td className="px-3 py-2">
           <p className="text-body-sm font-medium text-navy">{company.legal_name}</p>
-          <p className="text-eyebrow text-ink-secondary">{company.sector ?? "—"}</p>
+          <p className="text-eyebrow text-ink-secondary">{company.sector ?? "–"}</p>
         </td>
         <td className="px-3 py-2">
-          <p className="text-body-sm text-ink">{contact?.full_name ?? "—"}</p>
-          <p className="text-eyebrow text-ink-tertiary">{contact?.email ?? "—"}</p>
+          <p className="text-body-sm text-ink">{contact?.full_name ?? "–"}</p>
+          <p className="text-eyebrow text-ink-tertiary">{contact?.email ?? "–"}</p>
         </td>
         <td className="px-3 py-2">
           {company.website_url ? (
@@ -82,7 +82,7 @@ export default async function AdminCompaniesPage() {
               className="text-body-sm text-petrol underline underline-offset-2 decoration-1">
               {company.website_url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
             </a>
-          ) : <span className="text-body-sm text-ink-tertiary">—</span>}
+          ) : <span className="text-body-sm text-ink-tertiary">–</span>}
         </td>
         <td className="px-3 py-2">
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${statusClass[company.verification_status] ?? "bg-gray-100 text-gray-600"}`}>
@@ -132,7 +132,7 @@ export default async function AdminCompaniesPage() {
                   <tr key={r.id} className="border-b border-border last:border-0 hover:bg-paper transition-colors">
                     <td className="px-3 py-2">
                       <p className="text-body-sm font-medium text-navy">{r.legal_name}</p>
-                      <p className="text-eyebrow text-ink-secondary">{r.sector ?? "—"}</p>
+                      <p className="text-eyebrow text-ink-secondary">{r.sector ?? "–"}</p>
                     </td>
                     <td className="px-3 py-2">
                       <p className="text-body-sm text-ink">{r.contact_name}</p>
@@ -144,7 +144,7 @@ export default async function AdminCompaniesPage() {
                           className="text-body-sm text-petrol underline underline-offset-2 decoration-1">
                           {r.website_url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                         </a>
-                      ) : <span className="text-body-sm text-ink-tertiary">—</span>}
+                      ) : <span className="text-body-sm text-ink-tertiary">–</span>}
                     </td>
                     <td className="px-3 py-2 text-body-sm text-ink-tertiary whitespace-nowrap">
                       {new Date(r.created_at).toLocaleString(dateLocale, { timeZone: APP_TIME_ZONE, day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}

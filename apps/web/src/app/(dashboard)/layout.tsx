@@ -57,7 +57,7 @@ export default async function DashboardLayout({
   );
 
   return (
-    <div className="min-h-screen lg:flex">
+    <div className="flex min-h-screen flex-col lg:flex-row">
       <aside className="sticky top-0 hidden h-screen w-48 shrink-0 flex-col border-r border-border bg-white lg:flex">
         <div className="border-b border-border px-4 py-4">
           <Link href="/student">
@@ -72,7 +72,7 @@ export default async function DashboardLayout({
 
       <MobileHeader nav={navContent} user={userContent} />
 
-      <main className="flex-1 bg-paper">
+      <main className="min-w-0 flex-1 bg-paper">
         <div className="mx-auto max-w-app px-4 py-6 lg:px-8 lg:py-8">
           {children}
         </div>

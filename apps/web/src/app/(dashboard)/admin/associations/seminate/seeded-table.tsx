@@ -143,7 +143,7 @@ export function SeededTable({ rows }: { rows: SeededRow[] }) {
                     <p className="text-body-sm font-medium text-navy">{row.name}</p>
                     <p className="text-eyebrow text-ink-tertiary">/{row.slug}</p>
                   </td>
-                  <td className="px-3 py-2 text-body-sm text-ink">{row.university ?? "—"}</td>
+                  <td className="px-3 py-2 text-body-sm text-ink">{row.university ?? "–"}</td>
                   <td className="px-3 py-2">
                     <span
                       className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -153,7 +153,7 @@ export function SeededTable({ rows }: { rows: SeededRow[] }) {
                       {row.published ? t("statusPublished") : t("statusDraft")}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-body-sm text-ink">{row.interestCount || "—"}</td>
+                  <td className="px-3 py-2 text-body-sm text-ink">{row.interestCount || "–"}</td>
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-3">
                       <Link

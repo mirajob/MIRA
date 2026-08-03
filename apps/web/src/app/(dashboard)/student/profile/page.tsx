@@ -6,6 +6,8 @@ import { createServerClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { ProfilePhoto } from "./profile-photo";
 import { PrivacySettings } from "./privacy-settings";
+import { AccountDetails } from "./account-details";
+import { ChangePassword } from "./change-password";
 
 /**
  * L'account dello studente: foto, dati di accesso, cosa vede chi, i documenti.
@@ -31,12 +33,6 @@ export default async function StudentProfilePage() {
   const profile = ctx.profile as any;
   const privacy = ((student as any)?.privacy_settings ?? {}) as Record<string, boolean>;
 
-  const rows: Array<[string, string | null]> = [
-    [t("fieldName"), profile.full_name],
-    [t("fieldEmail"), profile.email],
-    [t("fieldUniversity"), (student as any)?.university ?? null],
-  ];
-
   return (
     <div className="space-y-4">
       <p className="text-body-sm text-ink-secondary">{t("intro")}</p>
@@ -46,23 +42,23 @@ export default async function StudentProfilePage() {
         fallback={(profile.full_name ?? profile.email ?? "?").charAt(0).toUpperCase()}
       />
 
-      <section className="rounded-lg border border-border bg-white p-5">
-        <h2 className="text-body font-medium text-navy">{t("accountHeading")}</h2>
-        <dl className="mt-3 divide-y divide-border">
-          {rows.map(([label, value]) => (
-            <div key={label} className="grid gap-1 py-2.5 sm:grid-cols-[160px_1fr] sm:gap-4">
-              <dt className="text-body-sm text-ink-tertiary">{label}</dt>
-              <dd className="text-body-sm text-ink">{value ?? "—"}</dd>
-            </div>
-          ))}
-        </dl>
-        <p className="mt-3 text-body-sm text-ink-tertiary">{t("accountHint")}</p>
-      </section>
+      <AccountDetails
+        email={profile.email}
+        initial={{
+          fullName: profile.full_name ?? "",
+          university: (student as any)?.university ?? "",
+          phone: profile.phone ?? "",
+        }}
+      />
+
+      <ChangePassword />
 
       <PrivacySettings
         initialSettings={{
           show_grades_to_associations: privacy.show_grades_to_associations ?? false,
           show_grades_to_companies: privacy.show_grades_to_companies ?? false,
+          show_phone_to_associations: privacy.show_phone_to_associations ?? false,
+          show_phone_to_companies: privacy.show_phone_to_companies ?? false,
         }}
       />
 

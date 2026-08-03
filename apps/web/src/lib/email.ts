@@ -55,8 +55,8 @@ export async function sendAdminNewSignupNotification({
         <p style="color: #718096; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">MIRA · Notifica admin</p>
         <h2 style="color: #0a1628; font-size: 18px; margin: 0 0 16px;">${label}</h2>
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #1a202c;">
-          <tr><td style="padding: 4px 0; color: #718096; width: 120px;">Nome</td><td style="padding: 4px 0;">${name || "—"}</td></tr>
-          <tr><td style="padding: 4px 0; color: #718096;">Email</td><td style="padding: 4px 0;">${email || "—"}</td></tr>
+          <tr><td style="padding: 4px 0; color: #718096; width: 120px;">Nome</td><td style="padding: 4px 0;">${name || "–"}</td></tr>
+          <tr><td style="padding: 4px 0; color: #718096;">Email</td><td style="padding: 4px 0;">${email || "–"}</td></tr>
           ${detail ? `<tr><td style="padding: 4px 0; color: #718096;">Dettagli</td><td style="padding: 4px 0;">${detail}</td></tr>` : ""}
           <tr><td style="padding: 4px 0; color: #718096;">Quando</td><td style="padding: 4px 0;">${now}</td></tr>
         </table>
@@ -232,7 +232,7 @@ export async function sendInterviewConfirmation({
           }
         </p>
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #1a202c; margin: 16px 0;">
-          <tr><td style="padding: 6px 0; color: #718096; width: 110px;">${variant === "interviewer" ? "Candidate" : "Association"}</td><td style="padding: 6px 0;">${variant === "interviewer" ? (counterpartName ?? "—") : associationName}</td></tr>
+          <tr><td style="padding: 6px 0; color: #718096; width: 110px;">${variant === "interviewer" ? "Candidate" : "Association"}</td><td style="padding: 6px 0;">${variant === "interviewer" ? (counterpartName ?? "–") : associationName}</td></tr>
           <tr><td style="padding: 6px 0; color: #718096;">Round</td><td style="padding: 6px 0;">${sessionTitle}</td></tr>
           <tr><td style="padding: 6px 0; color: #718096;">When</td><td style="padding: 6px 0;"><strong>${whenLabel}</strong></td></tr>
           ${
@@ -296,7 +296,7 @@ export async function sendReminderEmail({
         </a>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
         <p style="color: #a0aec0; font-size: 12px;">
-          MIRA — University Talent Platform<br/>
+          MIRA · University Talent Platform<br/>
           <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
         </p>
       </div>
@@ -328,7 +328,7 @@ export async function sendInterviewInvite({
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: candidateEmail,
-    subject: subject ?? `${associationName} — Invito a colloquio`,
+    subject: subject ?? `${associationName} · Invito a colloquio`,
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
         <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 24px; margin-bottom: 32px;" />
@@ -345,7 +345,7 @@ ${message}
         </p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
         <p style="color: #a0aec0; font-size: 12px;">
-          MIRA — University Talent Platform<br/>
+          MIRA · University Talent Platform<br/>
           <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
         </p>
       </div>
@@ -389,7 +389,7 @@ function invitationEmailHtml({
       </p>
       <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
       <p style="color: #a0aec0; font-size: 12px;">
-        MIRA — University Talent Platform<br/>
+        MIRA · University Talent Platform<br/>
         <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
       </p>
     </div>
@@ -483,7 +483,7 @@ export async function sendCompanyRejectionEmail({
         ${reason ? `<div style="background: #f7f8fa; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; color: #1a202c; font-size: 14px;">${reason}</div>` : ""}
         <p style="color: #718096; font-size: 13px;">Per domande, rispondi a questa email.</p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
-        <p style="color: #a0aec0; font-size: 12px;">MIRA — University Talent Platform</p>
+        <p style="color: #a0aec0; font-size: 12px;">MIRA · University Talent Platform</p>
       </div>
     `,
   });
@@ -531,7 +531,7 @@ export async function sendAssociationDecisionEmail({
           </a>
           <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
           <p style="color: #a0aec0; font-size: 12px;">
-            MIRA — University Talent Platform<br/>
+            MIRA · University Talent Platform<br/>
             <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
           </p>
         </div>
@@ -546,7 +546,7 @@ export async function sendAssociationDecisionEmail({
           ${reason ? `<div style="background: #f7f8fa; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; color: #1a202c; font-size: 14px;">${reason}</div>` : ""}
           <p style="color: #718096; font-size: 13px;">For any questions, just reply to this email.</p>
           <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
-          <p style="color: #a0aec0; font-size: 12px;">MIRA — University Talent Platform</p>
+          <p style="color: #a0aec0; font-size: 12px;">MIRA · University Talent Platform</p>
         </div>
       `,
   });

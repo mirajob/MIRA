@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 @theme {
+  /* Larghezza della colonna di contenuto della dashboard. */
+  --container-app: 72rem;
+
   /* === PRIMARY — Heritage Navy === */
   --color-navy-50: #F0F2F5;
   --color-navy-100: #D1D7DE;

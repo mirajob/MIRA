@@ -31,18 +31,22 @@ export default async function StudentAssociationPage({ params }: Props) {
 
   if (!association) notFound();
 
+  const membership = ctx.memberships.find(
+    (m: any) => m.association_id === association.id
+  ) as { role: string; permissions?: unknown } | undefined;
+
   const isPublished = association.public_page_status === "published";
-  if (!isPublished && !ctx.isMiraAdmin) notFound();
+  // La bozza la vede anche chi la sta scrivendo, non solo l'admin MIRA: è da qui
+  // che il board controlla la propria pagina. Fargli guardare una copia disegnata
+  // a parte la faceva divergere da quella vera al primo cambiamento.
+  const canSeeDraft = ctx.isMiraAdmin || (membership ? hasWorkspaceAccess(membership) : false);
+  if (!isPublished && !canSeeDraft) notFound();
 
   const { data: openCycles } = await (supabase.from("application_cycles") as any)
     .select("id, title, description, status, opens_at, closes_at, available_roles")
     .eq("association_id", association.id)
     .eq("status", "open")
     .order("closes_at", { ascending: true });
-
-  const membership = ctx.memberships.find(
-    (m: any) => m.association_id === association.id
-  ) as { role: string; permissions?: unknown } | undefined;
 
   const isSeeded = association.claim_status === "seeded";
   const isMember = !!membership;

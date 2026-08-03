@@ -87,9 +87,9 @@ export default async function CyclesPage({ params }: Props) {
             {/* Cosa vuol dire quello stato, in una riga */}
             <p className="mt-1 text-body-sm text-ink-secondary">
               {state === "open"
-                ? t("explainOpen", { date: dateLine(cycle.closes_at) ?? "—" })
+                ? t("explainOpen", { date: dateLine(cycle.closes_at) ?? "–" })
                 : state === "scheduled"
-                  ? t("explainScheduled", { date: dateLine(cycle.opens_at) ?? "—" })
+                  ? t("explainScheduled", { date: dateLine(cycle.opens_at) ?? "–" })
                   : state === "applications_closed"
                     ? t("explainApplicationsClosed")
                     : state === "closed"

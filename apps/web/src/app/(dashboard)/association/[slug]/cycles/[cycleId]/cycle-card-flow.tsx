@@ -129,7 +129,7 @@ export function CycleCardFlow({ initialState }: { initialState: CycleCardState }
       )}
 
       {/* Anteprima candidato: NON i blocchi del board, ma una copia fedele della vera pagina
-          di candidatura — sezioni vuote omesse, niente etichette interne, date leggibili. */}
+          di candidatura · sezioni vuote omesse, niente etichette interne, date leggibili. */}
       {!isBuilding && candidateView ? (
         <CandidatePreview state={state} locale={locale} t={t} />
       ) : (
@@ -352,7 +352,7 @@ function BlockSummary({
 
   switch (block) {
     case "nome":
-      return <p className="text-body text-ink">{d.nome || "—"}</p>;
+      return <p className="text-body text-ink">{d.nome || "–"}</p>;
     case "descrizione":
       return d.descrizione ? (
         <p className="text-body text-ink whitespace-pre-wrap">{d.descrizione}</p>
@@ -365,11 +365,11 @@ function BlockSummary({
         <div className="space-y-0.5 text-body text-ink">
           <p>
             <span className="text-ink-tertiary">{t("opensLabel")}: </span>
-            {d.opensAt ? formatDate(d.opensAt, locale) : "—"}
+            {d.opensAt ? formatDate(d.opensAt, locale) : "–"}
           </p>
           <p>
             <span className="text-ink-tertiary">{t("closesLabel")}: </span>
-            {d.closesAt ? formatDate(d.closesAt, locale) : "—"}
+            {d.closesAt ? formatDate(d.closesAt, locale) : "–"}
           </p>
         </div>
       );
@@ -381,7 +381,7 @@ function BlockSummary({
           {d.posizioni.map((p, i) => (
             <li key={i} className="text-body text-ink">
               {p.name}
-              {p.description && <span className="text-ink-secondary"> — {p.description}</span>}
+              {p.description && <span className="text-ink-secondary"> · {p.description}</span>}
             </li>
           ))}
         </ul>

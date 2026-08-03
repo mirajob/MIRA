@@ -124,7 +124,7 @@ export function EsamiEditor({
                     <div key={it.id} className="flex items-center justify-between gap-2 text-body-sm">
                       <span className="text-ink truncate">{it.esame}</span>
                       <span className="text-ink-secondary whitespace-nowrap">
-                        {it.voto ?? "—"}
+                        {it.voto ?? "–"}
                         {it.cfu != null && <span className="text-xs text-ink-tertiary">{t("header.cfuSuffix", { cfu: it.cfu })}</span>}
                         <span className="ml-2 text-xs text-success font-medium">{t("header.examVerified")}</span>
                       </span>
@@ -272,7 +272,7 @@ export function EsamiView({ formazioneItems }: { formazioneItems: FormazioneItem
                     )}
                   </span>
                   <span className="text-ink-secondary whitespace-nowrap">
-                    {it.voto ?? "—"}
+                    {it.voto ?? "–"}
                     {it.cfu != null && <span className="text-xs text-ink-tertiary">{t("header.cfuSuffix", { cfu: it.cfu })}</span>}
                   </span>
                 </div>

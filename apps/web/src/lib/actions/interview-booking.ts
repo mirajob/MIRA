@@ -160,7 +160,7 @@ export async function inviteCandidatesToSession(input: {
       data: { invite_id: inviteId },
     });
 
-    const name = application.profiles?.full_name ?? application.profiles?.email ?? "—";
+    const name = application.profiles?.full_name ?? application.profiles?.email ?? "–";
     if (!application.profiles?.email) {
       emailFailures.push(name);
     } else {

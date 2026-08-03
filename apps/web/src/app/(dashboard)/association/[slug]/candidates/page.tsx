@@ -117,7 +117,7 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
 
     return {
       applicationId: app.id,
-      name: app.profiles?.full_name ?? "—",
+      name: app.profiles?.full_name ?? "–",
       email: app.profiles?.email ?? "",
       position: app.selected_role_preferences?.[0] ?? null,
       status: app.status,

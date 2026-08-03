@@ -82,7 +82,7 @@ export function DisponibilitaEPianoBlock({
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
       <CardBlockHeader
-        title={t("titles.disponibilitaEPiano")}
+        title={showPiano ? t("titles.disponibilitaEPiano") : t("titles.disponibilita")}
         status={status}
         blockType="disponibilita"
         alsoApprove={showPiano ? ["piano_carriera"] : undefined}

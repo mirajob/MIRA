@@ -28,7 +28,6 @@ export function PublicPageCardFlow({ initialState }: { initialState: PageCardSta
   const [state, setState] = useState<PageCardState>(initialState);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [preview, setPreview] = useState(false);
 
   const isBuilding = state.phase !== "done";
   const progressPct = pageProgressPct(state.approved);
@@ -80,8 +79,6 @@ export function PublicPageCardFlow({ initialState }: { initialState: PageCardSta
         state={state}
         isBuilding={isBuilding}
         progressPct={progressPct}
-        preview={preview}
-        onTogglePreview={() => setPreview((v) => !v)}
         t={t}
       />
 
@@ -91,9 +88,7 @@ export function PublicPageCardFlow({ initialState }: { initialState: PageCardSta
         </div>
       )}
 
-      {!isBuilding && preview ? (
-        <PagePreview state={state} t={t} />
-      ) : (
+      {
         PAGE_BLOCK_ORDER.map((block) => {
           const isActive = block === state.phase;
           const isApproved = state.approved.includes(block);
@@ -133,9 +128,9 @@ export function PublicPageCardFlow({ initialState }: { initialState: PageCardSta
             />
           );
         })
-      )}
+      }
 
-      {!isBuilding && !preview && (
+      {!isBuilding && (
         <Footer state={state} busy={busy} onPublish={handlePublish} t={t} />
       )}
     </div>
@@ -148,15 +143,11 @@ function Header({
   state,
   isBuilding,
   progressPct,
-  preview,
-  onTogglePreview,
   t,
 }: {
   state: PageCardState;
   isBuilding: boolean;
   progressPct: number;
-  preview: boolean;
-  onTogglePreview: () => void;
   t: ReturnType<typeof useTranslations>;
 }) {
   if (isBuilding) {
@@ -180,7 +171,6 @@ function Header({
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <h2 className="text-body-lg font-semibold text-navy truncate">{t("heading")}</h2>
           <span
             className={`inline-flex shrink-0 items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${
               state.published ? "bg-success-bg text-success" : "bg-warning-bg text-warning"
@@ -190,15 +180,17 @@ function Header({
           </span>
         </div>
         <p className="mt-0.5 text-body-sm text-ink-secondary">
-          {preview ? t("previewHint") : t("boardHint")}
+          {t("boardHint")}
         </p>
       </div>
-      <button
-        onClick={onTogglePreview}
-        className="shrink-0 text-body-sm text-navy border border-border rounded-md px-3 py-1.5 hover:border-border-strong transition-colors duration-100"
+      <a
+        href={`/student/associazioni/${state.slug}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="shrink-0 rounded-md border border-border px-3 py-1.5 text-body-sm text-navy transition-colors duration-100 hover:border-border-strong"
       >
-        {preview ? t("backToEdit") : t("previewAsStudent")}
-      </button>
+        {t("previewAsStudent")}
+      </a>
     </div>
   );
 }
@@ -275,7 +267,7 @@ function BlockSummary({
         <div className="flex items-center gap-3">
           <Logo url={d.logoUrl} name={d.nome} />
           <div>
-            <p className="text-body text-ink">{d.nome || "—"}</p>
+            <p className="text-body text-ink">{d.nome || "–"}</p>
             {d.categoria && <p className="text-body-sm text-ink-secondary">{categoryLabel(d.categoria)}</p>}
           </div>
         </div>
@@ -313,44 +305,6 @@ function BlockSummary({
 }
 
 /* ------------------------------------------------------------------------- */
-
-/** Anteprima fedele della vetrina pubblica (association-public-profile.tsx). */
-function PagePreview({ state, t }: { state: PageCardState; t: ReturnType<typeof useTranslations> }) {
-  const d = state.data;
-  return (
-    <div className="rounded-lg border border-border bg-white px-6 py-8">
-      <div className="flex items-start gap-4 mb-6">
-        <Logo url={d.logoUrl} name={d.nome} size="lg" />
-        <div>
-          <h3 className="font-semibold text-display-md text-navy">{d.nome || t("yourAssociation")}</h3>
-          {d.categoria && <p className="text-body text-ink-secondary mt-1">{categoryLabel(d.categoria)}</p>}
-        </div>
-      </div>
-
-      {d.settori.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-6">
-          {d.settori.map((s) => (
-            <span key={s} className="inline-flex items-center px-3 py-1 rounded-full text-body-sm font-medium bg-navy-50 text-navy">
-              {s}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {d.descrizioneBreve && <p className="text-body-lg text-ink-secondary mb-4">{d.descrizioneBreve}</p>}
-      {d.descrizioneLunga && (
-        <div className="text-body text-ink mb-6 whitespace-pre-wrap">{d.descrizioneLunga}</div>
-      )}
-
-      {(d.sitoUrl || d.email) && (
-        <div className="flex gap-4">
-          {d.sitoUrl && <span className="text-petrol underline underline-offset-2 decoration-1 text-body">{t("preview.website")}</span>}
-          {d.email && <span className="text-petrol underline underline-offset-2 decoration-1 text-body">{t("preview.contact")}</span>}
-        </div>
-      )}
-    </div>
-  );
-}
 
 function Logo({ url, name, size = "md" }: { url: string | null; name: string; size?: "md" | "lg" }) {
   const cls = size === "lg" ? "h-16 w-16 text-h2" : "h-11 w-11 text-body-lg";

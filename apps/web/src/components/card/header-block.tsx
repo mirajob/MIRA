@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { updateCardBlockProseContent } from "@/lib/actions/card-blocks";
 import { CardBlockHeader } from "./card-block-header";
+import { UniversityCombobox } from "@/components/university-combobox";
 import { EsamiEditor } from "./esami-block";
 import type { CardBlockStatus, FormazioneItem, HeaderProseContent } from "@mira/types";
 
@@ -95,7 +96,7 @@ export function HeaderBlock({
               onChange={(e) => update("livello", e.target.value)}
               className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
             >
-              <option value="">—</option>
+              <option value="">–</option>
               {LEVEL_KEYS.map((value) => (
                 <option key={value} value={value}>{t(`header.levelLabels.${value}`)}</option>
               ))}
@@ -202,13 +203,13 @@ export function HeaderView({
       <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.header")}</p>
       <div className="flex flex-wrap items-baseline gap-x-2">
         {data.corso && <span className="text-body font-medium text-ink">{data.corso}</span>}
-        {data.universita && <span className="text-body-sm text-ink-tertiary">— {data.universita}</span>}
+        {data.universita && <span className="text-body-sm text-ink-tertiary">· {data.universita}</span>}
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-ink-secondary">
         {data.livello && <span>{t.has(`header.levelLabels.${data.livello}`) ? t(`header.levelLabels.${data.livello}`) : data.livello}</span>}
         {data.anno && <span>{t("header.annoOrdinal", { n: data.anno })}</span>}
         {(data.anno_inizio || data.laurea_anno) && (
-          <span>{data.anno_inizio ?? "—"}–{data.laurea_anno ?? "—"}</span>
+          <span>{data.anno_inizio ?? "–"}–{data.laurea_anno ?? "–"}</span>
         )}
         {data.media_voti != null &&
           (showMedia ? (
@@ -220,7 +221,7 @@ export function HeaderView({
 
       {fp && (fp.corso || fp.universita) && (
         <p className="mt-2 text-xs text-ink-tertiary">
-          {t("header.previousDegreeSummaryPrefix")} {fp.corso ?? "—"}{fp.universita ? ` — ${fp.universita}` : ""}
+          {t("header.previousDegreeSummaryPrefix")} {fp.corso ?? "–"}{fp.universita ? ` · ${fp.universita}` : ""}
           {fp.voto_laurea ? ` (${fp.voto_laurea})` : ""}
           {showMedia && fp.media_voti != null ? ` · ${Number(fp.media_voti).toFixed(1)}/30` : ""}
         </p>

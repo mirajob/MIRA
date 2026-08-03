@@ -56,8 +56,8 @@ export async function sendStatusEmail(
   const assocName = application.association_profiles?.name || "Associazione";
   const emailSubject = subject || (
     newStatus === "accepted" ? `Complimenti! Sei stato accettato in ${assocName}`
-    : newStatus === "rejected" ? `${assocName} — Esito candidatura`
-    : `${assocName} — Aggiornamento candidatura`
+    : newStatus === "rejected" ? `${assocName} · Esito candidatura`
+    : `${assocName} · Aggiornamento candidatura`
   );
 
   const { error: emailError } = await (await import("@/lib/email")).sendInterviewInvite({

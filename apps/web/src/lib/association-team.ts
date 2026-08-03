@@ -78,7 +78,7 @@ export async function loadTeamData(
         sectionId: (m.section_id as string | null) ?? null,
         isSelf: m.user_id === currentUserId,
         fullName: (p?.full_name as string | null) ?? null,
-        email: (p?.email as string) ?? "—",
+        email: (p?.email as string) ?? "–",
         avatarUrl: (p?.avatar_url as string | null) ?? null,
         degreeLevel: degreeLevelLabel((header?.livello as string | null) || ((s?.degree_level as string | null) ?? null)),
         degreeProgram: ((header?.corso as string | null)?.trim() || (s?.degree_program as string | null)) ?? null,
@@ -98,7 +98,7 @@ export async function loadTeamData(
     return {
       id: m.id as string,
       title: (m.title as string | null) ?? null,
-      profile: { full_name: (p?.full_name as string | null) ?? null, email: (p?.email as string) ?? "—" },
+      profile: { full_name: (p?.full_name as string | null) ?? null, email: (p?.email as string) ?? "–" },
     };
   });
 
