@@ -56,6 +56,9 @@ export function CandidateActions({
 
   const [status, setStatus] = useState(currentStatus);
   const [panel, setPanel] = useState<"none" | "rounds" | "accepted" | "rejected">("none");
+  // Fra il click sul round e la mail c'è l'anteprima: convocare qualcuno per
+  // sbaglio non si annulla.
+  const [chosenRound, setChosenRound] = useState<RoundOption | null>(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState<string | null>(null);
@@ -85,6 +88,13 @@ export function CandidateActions({
     setLoading(false);
   }
 
+  /** La riga sul posto, uguale a quella della pagina del round. */
+  function placeLine(round: RoundOption) {
+    if (round.linkMode === "auto") return t("previewPlaceAuto");
+    if (round.linkMode === "per_interview") return t("previewPlaceLater");
+    return round.place || t("previewPlaceMissing");
+  }
+
   async function invite(roundId: string) {
     setLoading(true);
     const result = await inviteCandidatesToSession({
@@ -98,6 +108,7 @@ export function CandidateActions({
       return;
     }
     setPanel("none");
+    setChosenRound(null);
     setDone(t("invitedDone", { email: candidateEmail }));
     setStatus("interview");
     router.refresh();
@@ -180,10 +191,47 @@ export function CandidateActions({
             <>
               <p className="mb-2 text-body-sm text-ink-secondary">{t("pickRound")}</p>
               <div className="space-y-1">
-                {rounds.map((round) => (
+                {chosenRound ? (
+                  <div className="space-y-3">
+                    <p className="text-eyebrow uppercase text-navy/60">
+                      {t("previewHeading", { name: candidateName || candidateEmail })}
+                    </p>
+                    <div className="space-y-1 text-body-sm">
+                      <p className="font-medium text-navy">{chosenRound.title}</p>
+                      {chosenRound.description && (
+                        <p className="whitespace-pre-wrap text-ink-secondary">{chosenRound.description}</p>
+                      )}
+                      <p className="text-ink">
+                        {chosenRound.mode === "online" ? t("modeOnline") : t("modeInPerson")}
+                        {" · "}
+                        <span className="text-ink-secondary">{placeLine(chosenRound)}</span>
+                      </p>
+                      {chosenRound.daysLabel && (
+                        <p className="text-ink-tertiary">{t("previewDays", { days: chosenRound.daysLabel })}</p>
+                      )}
+                      <p className="text-ink-tertiary">{t("previewTimeNote")}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => invite(chosenRound.id)}
+                        disabled={loading}
+                        className="rounded-md bg-petrol px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-petrol-700 disabled:opacity-40"
+                      >
+                        {loading ? t("sending") : t("previewSendCta")}
+                      </button>
+                      <button
+                        onClick={() => setChosenRound(null)}
+                        className="text-body-sm text-ink-secondary hover:underline"
+                      >
+                        {t("cancel")}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  rounds.map((round) => (
                   <button
                     key={round.id}
-                    onClick={() => invite(round.id)}
+                    onClick={() => setChosenRound(round)}
                     disabled={loading || round.alreadyInvited}
                     className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-white disabled:opacity-50"
                   >
@@ -197,7 +245,8 @@ export function CandidateActions({
                       </span>
                     )}
                   </button>
-                ))}
+                  ))
+                )}
               </div>
             </>
           )}

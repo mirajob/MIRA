@@ -1134,7 +1134,10 @@
     "previewPlaceLater": "il posto glielo indichi tu dopo che ha prenotato",
     "previewPlaceMissing": "posto non ancora indicato",
     "modeOnline": "Online",
-    "modeInPerson": "In presenza"
+    "modeInPerson": "In presenza",
+    "allRoundsUsed": "È già stato invitato a tutti i round di questa selezione.",
+    "conductedBy": "conduce {name}",
+    "openMeeting": "Apri la videochiamata"
   },
   "InterviewsPage": {
     "heading": "Colloqui",
@@ -1725,7 +1728,6 @@
     "noOpenSelection": "Non c'è nessuna selezione aperta. Aprine una dalla scheda Cicli per poter creare i round.",
     "pastRounds": "Round di selezioni concluse ({count})",
     "stepInviteCandidates": "Pronto: invita i candidati e sceglieranno l'orario.",
-    "stepBooked": "{booked} hanno prenotato, su {covered} orari disponibili",
     "archivedRound": "Questo round appartiene a una selezione conclusa: resta qui come storico e non si modifica più.",
     "archivedSummary": "{booked} colloqui svolti",
     "bookedUpcoming": "In programma",
@@ -1743,7 +1745,13 @@
     "previewTimeNote": "L'orario lo sceglie il candidato fra quelli coperti dal board.",
     "previewPlaceAuto": "link della videochiamata generato al momento della prenotazione",
     "previewPlaceLater": "il posto glielo indichi tu dopo che ha prenotato",
-    "previewPlaceMissing": "posto non ancora indicato"
+    "previewPlaceMissing": "posto non ancora indicato",
+    "stepUpcoming": "{upcoming, plural, one {1 colloquio da fare} other {# colloqui da fare}}",
+    "stepUpcomingAndDone": "{upcoming, plural, one {1 colloquio da fare} other {# colloqui da fare}}, {done, plural, one {1 già svolto} other {# già svolti}}",
+    "stepAllDone": "{done, plural, one {1 colloquio svolto, nessuno in programma} other {# colloqui svolti, nessuno in programma}}",
+    "todayHeading": "{count, plural, one {Oggi: 1 colloquio} other {Oggi: # colloqui}}",
+    "todayWith": "con {name}",
+    "todayJoin": "Entra"
   },
   "StudentInterviews": {
     "pageTitle": "Colloqui",

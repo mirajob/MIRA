@@ -96,17 +96,45 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
   const applicationIds = ((applications ?? []) as any[]).map((a) => a.id);
   const { data: invites } = applicationIds.length
     ? await (supabase.from("interview_invites") as any)
-        .select("application_id, selected_time, session_id, slot_id, interview_sessions(title, round_index)")
+        .select(`
+          application_id, selected_time, session_id, slot_id,
+          interview_sessions(title, round_index, mode, link_mode, location, meeting_link),
+          interview_slots(meeting_link, interviewer_user_id)
+        `)
         .in("application_id", applicationIds)
     : { data: [] };
 
   const inviteByApplication = new Map<string, any>();
+  // I round a cui ognuno è già stato invitato: si tolgono dalla lista di
+  // "convoca a colloquio", altrimenti si rimanda al round da cui esce.
+  const invitedRoundsByApplication = new Map<string, string[]>();
+
   for (const invite of ((invites ?? []) as any[])) {
     const existing = inviteByApplication.get(invite.application_id);
-    if (!existing || (invite.selected_time && !existing.selected_time)) {
+    // Vince l'invito più avanti nella selezione: è lì che il candidato si trova.
+    const laterRound =
+      (invite.interview_sessions?.round_index ?? 0) > (existing?.interview_sessions?.round_index ?? -1);
+    if (!existing || laterRound) {
       inviteByApplication.set(invite.application_id, invite);
     }
+    if (invite.session_id) {
+      invitedRoundsByApplication.set(invite.application_id, [
+        ...(invitedRoundsByApplication.get(invite.application_id) ?? []),
+        invite.session_id,
+      ]);
+    }
   }
+
+  // Chi conduce, per scriverlo accanto al colloquio già fissato.
+  const slotInterviewerIds = [
+    ...new Set(
+      ((invites ?? []) as any[]).map((i) => i.interview_slots?.interviewer_user_id).filter(Boolean)
+    ),
+  ];
+  const { data: slotInterviewers } = slotInterviewerIds.length
+    ? await (supabase.from("profiles") as any).select("id, full_name, email").in("id", slotInterviewerIds)
+    : { data: [] };
+  const slotInterviewerById = new Map(((slotInterviewers ?? []) as any[]).map((p) => [p.id, p]));
 
   const rows: CandidateRow[] = ((applications ?? []) as any[]).map((app) => {
     const invite = inviteByApplication.get(app.id);
@@ -142,6 +170,16 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
           ? "done"
           : "booked";
 
+    // Il posto: quello del singolo colloquio se c'è, altrimenti quello del round.
+    const round = invite?.interview_sessions;
+    const place =
+      invite?.interview_slots?.meeting_link ??
+      (round ? (round.mode === "online" ? round.meeting_link : round.location) : null) ??
+      null;
+    const interviewer = invite?.interview_slots?.interviewer_user_id
+      ? slotInterviewerById.get(invite.interview_slots.interviewer_user_id)
+      : null;
+
     return {
       applicationId: app.id,
       name: app.profiles?.full_name ?? "–",
@@ -150,9 +188,12 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
       status: app.status,
       interviewSummary: summary,
       roundId: invite?.session_id ?? null,
-      roundIndex: invite?.interview_sessions?.round_index ?? null,
-      roundTitle: invite?.interview_sessions?.title ?? null,
+      roundIndex: round?.round_index ?? null,
+      roundTitle: round?.title ?? null,
       interviewState,
+      invitedRoundIds: invitedRoundsByApplication.get(app.id) ?? [],
+      interviewPlace: interviewState === "toBook" ? null : place,
+      interviewerName: interviewer?.full_name ?? interviewer?.email ?? null,
     };
   });
 

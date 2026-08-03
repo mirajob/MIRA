@@ -22,6 +22,11 @@ export interface CandidateRow {
   roundTitle: string | null;
   /** Dove si trova dentro il round: deve prenotare, ha prenotato, ha già fatto. */
   interviewState: "toBook" | "booked" | "done" | null;
+  /** I round a cui è già stato invitato: non si ripropongono. */
+  invitedRoundIds: string[];
+  /** Link o indirizzo del colloquio fissato. */
+  interviewPlace: string | null;
+  interviewerName: string | null;
 }
 
 /**
@@ -230,6 +235,26 @@ export function CandidatesBoard({
                         <span className="text-body-sm text-ink-secondary">{row.interviewSummary}</span>
                       )}
 
+                      {row.interviewerName && (
+                        <span className="text-body-sm text-ink-tertiary">
+                          {a("conductedBy", { name: row.interviewerName })}
+                        </span>
+                      )}
+
+                      {row.interviewPlace &&
+                        (row.interviewPlace.startsWith("http") ? (
+                          <a
+                            href={row.interviewPlace}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-body-sm text-petrol hover:underline"
+                          >
+                            {a("openMeeting")}
+                          </a>
+                        ) : (
+                          <span className="text-body-sm text-ink-tertiary">{row.interviewPlace}</span>
+                        ))}
+
                       {!decided && (
                         <div className="ml-auto flex items-center gap-3">
                           <button
@@ -261,9 +286,11 @@ export function CandidatesBoard({
 
                     {open && panel?.kind === "rounds" && (
                       <div className="mt-2 rounded-md border border-border bg-paper p-3">
-                        {rounds.length === 0 ? (
+                        {rounds.filter((r) => !row.invitedRoundIds.includes(r.id)).length === 0 ? (
                           <div className="space-y-2">
-                            <p className="text-body-sm text-ink">{a("noRoundsYet")}</p>
+                            <p className="text-body-sm text-ink">
+                              {rounds.length === 0 ? a("noRoundsYet") : a("allRoundsUsed")}
+                            </p>
                             <Link
                               href={`/association/${slug}/colloqui`}
                               className="inline-block rounded-md bg-navy px-3 py-1.5 text-body-sm text-white hover:bg-navy-700"
@@ -317,7 +344,9 @@ export function CandidatesBoard({
                             <>
                             <p className="mb-2 text-body-sm text-ink-secondary">{a("pickRound")}</p>
                             <div className="space-y-1">
-                              {rounds.map((round) => (
+                              {rounds
+                                .filter((round) => !row.invitedRoundIds.includes(round.id))
+                                .map((round) => (
                                 <button
                                   key={round.id}
                                   onClick={() => setChosenRound(round)}

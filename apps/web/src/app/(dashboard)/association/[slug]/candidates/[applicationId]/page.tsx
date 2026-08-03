@@ -7,6 +7,7 @@ import { CandidateActions, type RoundOption } from "./candidate-actions";
 import { CandidateNotes, type CandidateNote } from "./candidate-notes";
 import { MiraCardDocument } from "@/components/card-view/mira-card-document";
 import { APP_TIME_ZONE } from "@/lib/format-date";
+import { parseWindows } from "@/lib/interview-slots";
 import { DetailHeader } from "@/components/page-bar";
 
 interface Props {
@@ -119,7 +120,7 @@ export default async function CandidateDetailPage({ params }: Props) {
 
   // I round del ciclo di questa candidatura: sono le opzioni di "convoca a colloquio".
   const { data: roundRows } = await (supabase.from("interview_sessions") as any)
-    .select("id, title, round_index")
+    .select("id, title, round_index, description, mode, link_mode, location, meeting_link, windows")
     .eq("application_cycle_id", (application as any).application_cycle_id)
     .order("round_index", { ascending: true });
 
@@ -129,12 +130,33 @@ export default async function CandidateDetailPage({ params }: Props) {
 
   const invitedSessionIds = new Set(((myInvites ?? []) as any[]).map((i) => i.session_id));
 
-  const rounds: RoundOption[] = ((roundRows ?? []) as any[]).map((r) => ({
-    id: r.id,
-    title: r.title,
-    roundIndex: r.round_index,
-    alreadyInvited: invitedSessionIds.has(r.id),
-  }));
+  const dayFormat = (iso: string) =>
+    new Date(`${iso}T12:00:00Z`).toLocaleDateString(dateLocale, {
+      timeZone: APP_TIME_ZONE,
+      day: "numeric",
+      month: "long",
+    });
+
+  const rounds: RoundOption[] = ((roundRows ?? []) as any[]).map((r) => {
+    const days = [...new Set(parseWindows(r.windows).map((w) => w.date))].sort();
+    const firstDay = days[0];
+    const lastDay = days[days.length - 1];
+    return {
+      id: r.id,
+      title: r.title,
+      roundIndex: r.round_index,
+      alreadyInvited: invitedSessionIds.has(r.id),
+      description: r.description ?? null,
+      mode: r.mode,
+      linkMode: r.link_mode,
+      place: r.link_mode === "shared" ? (r.mode === "online" ? r.meeting_link : r.location) ?? null : null,
+      daysLabel: !firstDay
+        ? null
+        : firstDay === lastDay || !lastDay
+          ? dayFormat(firstDay)
+          : `${dayFormat(firstDay)} - ${dayFormat(lastDay)}`,
+    };
+  });
 
   // Una riga sola che dice a che punto è il colloquio, invece di far dedurre lo
   // stato da tre riquadri sparsi.

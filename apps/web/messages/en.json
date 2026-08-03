@@ -1134,7 +1134,10 @@
     "previewPlaceLater": "you tell them the place after they book",
     "previewPlaceMissing": "place not set yet",
     "modeOnline": "Online",
-    "modeInPerson": "In person"
+    "modeInPerson": "In person",
+    "allRoundsUsed": "They have already been invited to every round of this selection.",
+    "conductedBy": "run by {name}",
+    "openMeeting": "Open the video call"
   },
   "InterviewsPage": {
     "heading": "Interviews",
@@ -1725,7 +1728,6 @@
     "noOpenSelection": "No selection is open. Open one from the Cycles tab to create rounds.",
     "pastRounds": "Rounds from closed selections ({count})",
     "stepInviteCandidates": "Ready: invite candidates and they will pick a time.",
-    "stepBooked": "{booked} booked, out of {covered} available times",
     "archivedRound": "This round belongs to a closed selection: it stays here as history and cannot be changed.",
     "archivedSummary": "{booked} interviews held",
     "bookedUpcoming": "Coming up",
@@ -1743,7 +1745,13 @@
     "previewTimeNote": "The candidate picks the time among those the board covers.",
     "previewPlaceAuto": "video call link generated when they book",
     "previewPlaceLater": "you tell them the place after they book",
-    "previewPlaceMissing": "place not set yet"
+    "previewPlaceMissing": "place not set yet",
+    "stepUpcoming": "{upcoming, plural, one {1 interview to run} other {# interviews to run}}",
+    "stepUpcomingAndDone": "{upcoming, plural, one {1 interview to run} other {# interviews to run}}, {done, plural, one {1 already done} other {# already done}}",
+    "stepAllDone": "{done, plural, one {1 interview done, none scheduled} other {# interviews done, none scheduled}}",
+    "todayHeading": "{count, plural, one {Today: 1 interview} other {Today: # interviews}}",
+    "todayWith": "with {name}",
+    "todayJoin": "Join"
   },
   "StudentInterviews": {
     "pageTitle": "Interviews",

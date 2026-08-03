@@ -58,8 +58,12 @@ export default async function AssociationInterviewsPage({ params }: Props) {
   const sessionIds = ((sessions ?? []) as any[]).map((s) => s.id);
   const { data: slots } = sessionIds.length
     ? await (supabase.from("interview_slots") as any)
-        .select("id, session_id, application_id, starts_at, ends_at")
+        .select(`
+          id, session_id, application_id, starts_at, ends_at, meeting_link, interviewer_user_id,
+          applications(profiles!applications_student_user_id_fkey(full_name, email))
+        `)
         .in("session_id", sessionIds)
+        .order("starts_at", { ascending: true })
     : { data: [] };
 
   const { data: availability } = sessionIds.length
@@ -77,15 +81,65 @@ export default async function AssociationInterviewsPage({ params }: Props) {
     ((sessions ?? []) as any[]).map((s) => [s.id, s.required_interviewers ?? 1])
   );
 
-  const stats = new Map<string, { total: number; covered: number; booked: number; first: string | null }>();
+  // Chi conduce, per scriverne il nome accanto al colloquio di oggi.
+  const interviewerIds = [
+    ...new Set(((slots ?? []) as any[]).map((s) => s.interviewer_user_id).filter(Boolean)),
+  ];
+  const { data: interviewers } = interviewerIds.length
+    ? await (supabase.from("profiles") as any).select("id, full_name, email").in("id", interviewerIds)
+    : { data: [] };
+  const interviewerById = new Map(((interviewers ?? []) as any[]).map((p) => [p.id, p]));
+
+  // I colloqui di oggi: sono l'unica cosa che serve leggere di corsa da questa
+  // pagina, quindi stanno attaccati al round con l'ora, chi viene e dove.
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const endOfToday = new Date(startOfToday);
+  endOfToday.setDate(endOfToday.getDate() + 1);
+
+  interface TodayInterview {
+    startsAt: string;
+    candidateName: string;
+    interviewerName: string | null;
+    place: string | null;
+  }
+  const todayBySession = new Map<string, TodayInterview[]>();
+
+  const stats = new Map<string, { total: number; covered: number; booked: number; done: number; upcoming: number; first: string | null }>();
   // Un orario con più colloqui in parallelo conta una volta sola nella copertura:
   // una persona non può condurne due insieme.
   const countedTimes = new Map<string, Set<string>>();
 
+  const nowMs = Date.now();
+
   for (const slot of (slots ?? []) as any[]) {
-    const entry = stats.get(slot.session_id) ?? { total: 0, covered: 0, booked: 0, first: null };
+    const entry =
+      stats.get(slot.session_id) ?? { total: 0, covered: 0, booked: 0, done: 0, upcoming: 0, first: null };
     entry.total++;
-    if (slot.application_id) entry.booked++;
+    if (slot.application_id) {
+      entry.booked++;
+      const startsMs = new Date(slot.starts_at).getTime();
+      if (startsMs < nowMs) entry.done++;
+      else entry.upcoming++;
+
+      if (startsMs >= startOfToday.getTime() && startsMs < endOfToday.getTime()) {
+        const interviewer = slot.interviewer_user_id ? interviewerById.get(slot.interviewer_user_id) : null;
+        const sessionRow = ((sessions ?? []) as any[]).find((x) => x.id === slot.session_id);
+        todayBySession.set(slot.session_id, [
+          ...(todayBySession.get(slot.session_id) ?? []),
+          {
+            startsAt: slot.starts_at,
+            candidateName:
+              slot.applications?.profiles?.full_name ?? slot.applications?.profiles?.email ?? "–",
+            interviewerName: interviewer?.full_name ?? interviewer?.email ?? null,
+            place:
+              slot.meeting_link ??
+              (sessionRow?.mode === "online" ? sessionRow?.meeting_link : sessionRow?.location) ??
+              null,
+          },
+        ]);
+      }
+    }
     if (!entry.first || slot.starts_at < entry.first) entry.first = slot.starts_at;
 
     const seen = countedTimes.get(slot.session_id) ?? new Set<string>();
@@ -121,7 +175,9 @@ export default async function AssociationInterviewsPage({ params }: Props) {
   };
 
   function renderSession(session: any, archived = false) {
-    const st = stats.get(session.id) ?? { total: 0, covered: 0, booked: 0, first: null };
+    const st =
+      stats.get(session.id) ?? { total: 0, covered: 0, booked: 0, done: 0, upcoming: 0, first: null };
+    const today = todayBySession.get(session.id) ?? [];
     const days = (parseWindows(session.windows) ?? []).map((w) => w.date).sort();
     const dayLabel = (iso: string) =>
       new Date(`${iso}T12:00:00Z`).toLocaleDateString(dateLocale, {
@@ -138,11 +194,19 @@ export default async function AssociationInterviewsPage({ params }: Props) {
         ? { text: t("stepNoAvailability"), tone: "text-warning" }
         : st.booked === 0
           ? { text: t("stepInviteCandidates"), tone: "text-petrol" }
-          : { text: t("stepBooked", { booked: st.booked, covered: st.covered }), tone: "text-ink-secondary" };
+          : st.upcoming === 0
+            ? { text: t("stepAllDone", { done: st.done }), tone: "text-ink-tertiary" }
+            : {
+                text:
+                  st.done > 0
+                    ? t("stepUpcomingAndDone", { upcoming: st.upcoming, done: st.done })
+                    : t("stepUpcoming", { upcoming: st.upcoming }),
+                tone: "text-ink-secondary",
+              };
 
     return (
+      <div key={session.id}>
       <Link
-        key={session.id}
         href={`/association/${slug}/colloqui/${session.id}`}
         className="block rounded-lg border border-border bg-white px-4 py-3 transition-colors duration-100 hover:border-border-strong"
       >
@@ -174,6 +238,45 @@ export default async function AssociationInterviewsPage({ params }: Props) {
 
         <p className={`mt-0.5 text-body-sm ${nextStep.tone}`}>{nextStep.text}</p>
       </Link>
+
+      {/* I colloqui di oggi, attaccati al round: con chi, a che ora, e dove si
+          entra. È l'unica cosa che serve leggere di corsa la mattina stessa. */}
+      {today.length > 0 && (
+        <div className="rounded-b-lg border border-t-0 border-error/40 bg-error-bg px-4 py-2.5">
+          <p className="text-body-sm font-medium text-error">{t("todayHeading", { count: today.length })}</p>
+          <div className="mt-1 space-y-1">
+            {today.map((it) => (
+              <div key={it.startsAt + it.candidateName} className="flex flex-wrap items-baseline gap-x-2 text-body-sm">
+                <span className="font-medium tabular-nums text-ink">
+                  {new Date(it.startsAt).toLocaleTimeString(dateLocale, {
+                    timeZone: APP_TIME_ZONE,
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+                <span className="text-ink">{it.candidateName}</span>
+                {it.interviewerName && (
+                  <span className="text-ink-tertiary">{t("todayWith", { name: it.interviewerName })}</span>
+                )}
+                {it.place &&
+                  (it.place.startsWith("http") ? (
+                    <a
+                      href={it.place}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-all text-petrol hover:underline"
+                    >
+                      {t("todayJoin")}
+                    </a>
+                  ) : (
+                    <span className="text-ink-secondary">{it.place}</span>
+                  ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      </div>
     );
   }
 
