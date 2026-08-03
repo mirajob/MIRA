@@ -121,7 +121,7 @@ export function DayPicker({
         </span>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid max-w-2xl gap-4 sm:grid-cols-2">
         {months.map(({ year, month }) => {
           const first = new Date(Date.UTC(year, month, 1));
           const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
@@ -169,7 +169,7 @@ export function DayPicker({
                       onPointerEnter={() => {
                         if (!isPast) extendDrag(iso);
                       }}
-                      className={`aspect-square rounded text-body-sm transition-colors duration-100 ${
+                      className={`h-9 rounded text-body-sm transition-colors duration-100 ${
                         isSelected
                           ? "bg-navy font-medium text-white"
                           : isPast

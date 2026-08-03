@@ -9,7 +9,6 @@ import { personInitials, rangeCoversBlock } from "@/lib/interview-slots";
 import { parseWindows } from "@/lib/interview-slots";
 import { AvailabilityGrid, type AvailabilityBlock } from "./availability-grid";
 import { SessionActions } from "./session-actions";
-import { EditSessionPanel } from "./edit-session-panel";
 import { InvitePanel, type InvitableCandidate } from "./invite-panel";
 import { BookedInterviews, type BookedInterview } from "./booked-interviews";
 
@@ -83,7 +82,12 @@ export default async function InterviewSessionPage({ params }: Props) {
     byTime.set(slot.starts_at, [...(byTime.get(slot.starts_at) ?? []), slot]);
   }
 
-  const blocks: AvailabilityBlock[] = [...byTime.entries()].map(([startsAt, group]) => {
+  // Le fasce gia' passate spariscono: la griglia serve a dire quando ci sarai,
+  // e su un orario di ieri non c'e' piu' niente da dichiarare.
+  const nowMs = Date.now();
+  const blocks: AvailabilityBlock[] = [...byTime.entries()]
+    .filter(([startsAt]) => new Date(startsAt).getTime() >= nowMs)
+    .map(([startsAt, group]) => {
     const block = { startsAt, endsAt: group[0].ends_at };
     const covering = ((availability ?? []) as any[]).filter((a) => rangeCoversBlock(a, block));
     const booked = group.find((s: any) => s.application_id);
@@ -168,41 +172,16 @@ export default async function InterviewSessionPage({ params }: Props) {
           </span>
         </div>
 
-        {session.description && (
-          <p className="mt-1 text-body-sm text-ink-secondary">{session.description}</p>
-        )}
-        <p className="mt-0.5 text-body-sm text-ink-tertiary">
-          {session.mode === "in_person"
-            ? session.location
-            : session.link_mode === "shared"
-              ? session.meeting_link
-              : session.link_mode === "auto"
-                ? t("linkModeAuto")
-                : t("linkModePerInterview")}
-        </p>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         {canManage && !archived && (
-          <EditSessionPanel
-            associationId={session.association_id}
-            slug={slug}
-            cycleId={session.application_cycle_id}
-            sessionId={sessionId}
-            initial={{
-              title: session.title,
-              description: session.description ?? "",
-              mode: session.mode,
-              linkMode: session.link_mode,
-              location: session.location ?? "",
-              meetingLink: session.meeting_link ?? "",
-              slotDurationMinutes: session.slot_duration_minutes,
-              breakMinutes: session.break_minutes,
-              parallelTracks: session.parallel_tracks,
-              requiredInterviewers: session.required_interviewers,
-              windows: parseWindows(session.windows),
-            }}
-          />
+          <Link
+            href={`/association/${slug}/colloqui/${sessionId}/modifica`}
+            className="text-body-sm font-medium text-navy hover:underline"
+          >
+            {t("editSession")}
+          </Link>
         )}
         <SessionActions sessionId={sessionId} slug={slug} canManage={canManage && !archived} />
       </div>
@@ -221,8 +200,18 @@ export default async function InterviewSessionPage({ params }: Props) {
         slug={slug}
         candidates={invitableCandidates}
         sessionOpen={session.status !== "closed"}
-        placeMissing={session.link_mode !== "auto" && (session.link_mode !== "shared" || !(session.mode === "in_person" ? session.location : session.meeting_link))}
+        placeMissing={
+          session.link_mode === "shared" &&
+          !(session.mode === "in_person" ? session.location : session.meeting_link)
+        }
         placeIsLink={session.mode === "online"}
+        preview={{
+          sessionTitle: session.title,
+          description: session.description ?? null,
+          mode: session.mode,
+          linkMode: session.link_mode,
+          place: session.mode === "in_person" ? session.location ?? null : session.meeting_link ?? null,
+        }}
       />}
 
       {archived ? (

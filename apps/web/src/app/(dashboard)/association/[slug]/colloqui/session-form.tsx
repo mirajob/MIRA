@@ -4,17 +4,17 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { createInterviewSession, updateInterviewSession } from "@/lib/actions/interview-sessions";
-import { generateSlots, type InterviewWindow } from "@/lib/interview-slots";
+import type { InterviewWindow } from "@/lib/interview-slots";
 import { DayPicker } from "@/components/day-picker";
 import { APP_TIME_ZONE } from "@/lib/format-date";
 
 /**
  * Creazione di un round di colloqui.
  *
- * I giorni si scelgono su un calendario, non digitando date: la prima versione
- * aveva dei campi data e non si capiva nemmeno che si potessero mettere più
- * giornate. L'orario ha un valore che vale per tutti i giorni scelti e si può
- * cambiare su quelli che fanno eccezione.
+ * I giorni si scelgono su un calendario e la fascia oraria e' una sola per tutti:
+ * le eccezioni della singola persona si gestiscono con le disponibilita', non
+ * moltiplicando i campi qui. Il conteggio degli slot generati e' stato tolto:
+ * era un numero che non portava a nessuna decisione.
  */
 export interface SessionInitialValues {
   title: string;
@@ -69,11 +69,6 @@ export function SessionForm({
   const [defaultStart, setDefaultStart] = useState(initial?.windows[0]?.start ?? "15:00");
   const [defaultEnd, setDefaultEnd] = useState(initial?.windows[0]?.end ?? "19:00");
   const [days, setDays] = useState<string[]>(initial?.windows.map((w) => w.date) ?? []);
-  const [perDay, setPerDay] = useState<Record<string, { start: string; end: string }>>(() =>
-    Object.fromEntries(
-      (initial?.windows ?? []).map((w) => [w.date, { start: w.start, end: w.end }])
-    )
-  );
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,21 +77,10 @@ export function SessionForm({
     () =>
       [...days].sort().map((date) => ({
         date,
-        start: perDay[date]?.start ?? defaultStart,
-        end: perDay[date]?.end ?? defaultEnd,
+        start: defaultStart,
+        end: defaultEnd,
       })),
-    [days, perDay, defaultStart, defaultEnd]
-  );
-
-  const preview = useMemo(
-    () =>
-      generateSlots({
-        windows,
-        slotDurationMinutes: duration,
-        breakMinutes: pause,
-        parallelTracks: tracks,
-      }),
-    [windows, duration, pause, tracks]
+    [days, defaultStart, defaultEnd]
   );
 
   async function handleSubmit(e: React.FormEvent) {
@@ -256,81 +240,33 @@ export function SessionForm({
         </div>
       </div>
 
-      {/* 3. Quando */}
+      {/* 3. Quando. Un solo orario per tutti i giorni: le eccezioni della singola
+          persona si gestiscono con le disponibilita', non moltiplicando i campi. */}
       <div className="space-y-3 border-t border-border pt-4">
-        <span className={label}>{t("daysLabel")}</span>
+        <div>
+          <span className={label}>{t("daysLabel")}</span>
+          <p className="mb-2 text-body-sm text-ink-secondary">{t("daysExplainer")}</p>
+        </div>
+
         <DayPicker selected={days} onChange={setDays} locale={dateLocale} />
-        <p className="text-body-sm text-ink-tertiary">{t("daysHint")}</p>
 
-        {days.length > 0 && (
-          <div className="space-y-2 rounded-md bg-navy-50/60 p-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-body-sm text-ink">{t("defaultHours")}</span>
-              <input
-                type="time"
-                value={defaultStart}
-                onChange={(e) => setDefaultStart(e.target.value)}
-                className={`${field} w-auto`}
-              />
-              <span className="text-body-sm text-ink-tertiary">{t("windowTo")}</span>
-              <input
-                type="time"
-                value={defaultEnd}
-                onChange={(e) => setDefaultEnd(e.target.value)}
-                className={`${field} w-auto`}
-              />
-            </div>
-
-            {[...days].sort().map((date) => {
-              const current = perDay[date] ?? { start: defaultStart, end: defaultEnd };
-              const custom = Boolean(perDay[date]);
-              return (
-                <div key={date} className="flex flex-wrap items-center gap-2">
-                  <span className="min-w-[150px] text-body-sm text-navy">
-                    {new Date(`${date}T12:00:00Z`).toLocaleDateString(dateLocale, {
-                      timeZone: APP_TIME_ZONE,
-                      weekday: "short",
-                      day: "numeric",
-                      month: "long",
-                    })}
-                  </span>
-                  <input
-                    type="time"
-                    value={current.start}
-                    onChange={(e) =>
-                      setPerDay((p) => ({ ...p, [date]: { ...current, start: e.target.value } }))
-                    }
-                    className={`${field} w-auto`}
-                  />
-                  <span className="text-body-sm text-ink-tertiary">{t("windowTo")}</span>
-                  <input
-                    type="time"
-                    value={current.end}
-                    onChange={(e) =>
-                      setPerDay((p) => ({ ...p, [date]: { ...current, end: e.target.value } }))
-                    }
-                    className={`${field} w-auto`}
-                  />
-                  {custom && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setPerDay((p) => {
-                          const next = { ...p };
-                          delete next[date];
-                          return next;
-                        })
-                      }
-                      className="text-body-sm text-petrol hover:underline"
-                    >
-                      {t("resetDay")}
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-body-sm text-ink">{t("hoursLabel")}</span>
+          <input
+            type="time"
+            value={defaultStart}
+            onChange={(e) => setDefaultStart(e.target.value)}
+            className={`${field} w-auto`}
+          />
+          <span className="text-body-sm text-ink-tertiary">{t("windowTo")}</span>
+          <input
+            type="time"
+            value={defaultEnd}
+            onChange={(e) => setDefaultEnd(e.target.value)}
+            className={`${field} w-auto`}
+          />
+        </div>
+        <p className="text-body-sm text-ink-tertiary">{t("hoursHint")}</p>
       </div>
 
       {/* 4. Come sono fatti i colloqui */}
@@ -373,16 +309,10 @@ export function SessionForm({
         </label>
       </div>
 
-      <div className="rounded-md bg-navy-50 px-3 py-2">
-        <p className="text-body-sm text-navy">
-          {days.length ? t("previewCount", { count: preview.length }) : t("previewNoDays")}
-        </p>
-      </div>
-
       <div className="flex items-center gap-3">
         <button
           type="submit"
-          disabled={loading || !preview.length}
+          disabled={loading || !days.length}
           className="rounded-md bg-navy px-4 py-1.5 text-body-sm text-white transition-colors duration-100 hover:bg-navy-700 disabled:opacity-40"
         >
           {loading ? t("creating") : sessionId ? t("saveChanges") : t("createCta")}
