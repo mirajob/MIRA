@@ -123,7 +123,7 @@ function CompanyScene({ frame, t, setTarget }: { frame: CompanyFrame; t: T; setT
   // ——— DETTAGLIO (anonimo) ———
   if (block === "detail") {
     const d = co.detail;
-    const chips = [...studentData.availability.slice(0, 2), ...studentData.academicSkills.slice(0, 2)];
+    const chips = [...studentData.availability.slice(0, 2), ...studentData.hardSkills.slice(0, 2)];
     return (
       <div className="grid h-full grid-cols-[1fr_1.1fr] gap-3">
         {/* Card anonima */}

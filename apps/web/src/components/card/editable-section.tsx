@@ -12,7 +12,20 @@ import { EditingSectionContext } from "./editing-section-context";
  * conferma e richiude (via EditingSectionContext). Il vecchio "Fatto" in fondo è stato tolto
  * perché con due pulsanti non si capiva quale dei due salvasse davvero.
  */
-export function EditableSection({ view, edit }: { view: React.ReactNode; edit: React.ReactNode }) {
+export function EditableSection({
+  view,
+  edit,
+  missing = false,
+}: {
+  view: React.ReactNode;
+  edit: React.ReactNode;
+  /**
+   * La sezione non ha contenuto. Il comando cambia parola e colore: in modifica
+   * l'avviso in cima non si vede più, e senza un segnale qui non si ricorda
+   * quali fossero i buchi da tappare.
+   */
+  missing?: boolean;
+}) {
   const t = useTranslations("CardBlocks");
   const [editing, setEditing] = useState(false);
   const router = useRouter();
@@ -36,9 +49,11 @@ export function EditableSection({ view, edit }: { view: React.ReactNode; edit: R
       {view}
       <button
         onClick={() => setEditing(true)}
-        className="absolute top-4 right-5 text-xs font-medium text-ink-tertiary hover:text-petrol transition-colors"
+        className={`absolute right-5 top-4 text-xs font-medium transition-colors ${
+          missing ? "text-error hover:text-error/80" : "text-ink-tertiary hover:text-petrol"
+        }`}
       >
-        {t("edit")}
+        {missing ? t("editMissing") : t("edit")}
       </button>
     </div>
   );

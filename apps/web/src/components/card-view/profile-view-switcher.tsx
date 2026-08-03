@@ -26,7 +26,7 @@ export function ProfileViewSwitcher({
   const [mode, setMode] = useState<"card" | "edit">("card");
 
   return (
-    <div className="space-y-3">
+    <div className="mx-auto w-full max-w-3xl space-y-3">
       {missingSections.length > 0 && (
         <button
           type="button"

@@ -92,9 +92,22 @@ export default async function HomePage() {
             </div>
             <div className="order-1 text-center lg:order-2 lg:text-left">
               <h2 className="font-display text-h1 text-navy mb-3">{t("associationTitle")}</h2>
-              <p className="text-body text-ink-secondary mb-6 max-w-md mx-auto lg:mx-0">
+              <p className="text-body text-ink-secondary mb-4 max-w-md mx-auto lg:mx-0">
                 {t("associationBody")}
               </p>
+              {/* Le tre cose che l'associazione smette di fare a mano: sono il
+                  motivo per cui vale la pena registrarsi, e in una riga sola non
+                  si capivano. */}
+              <ul className="mb-6 space-y-2 text-body-sm text-ink-secondary max-w-md mx-auto lg:mx-0 text-left">
+                {["associationPointApply", "associationPointInterviews", "associationPointMembers", "associationPointCompanies"].map(
+                  (key) => (
+                    <li key={key} className="flex gap-2">
+                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-petrol" aria-hidden />
+                      <span>{t(key)}</span>
+                    </li>
+                  )
+                )}
+              </ul>
               <Link
                 href="/associations/candidati"
                 className="inline-block bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 transition-colors duration-100"

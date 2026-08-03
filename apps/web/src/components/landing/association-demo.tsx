@@ -3,7 +3,6 @@
 import { useTranslations } from "next-intl";
 import { DemoReel, Typewriter, SectionLabel, type SetTarget } from "./demo-reel";
 import { associationData, associationFrames, type AssocFrame } from "./association-scenario";
-import { studentData } from "./demo-scenario";
 
 /**
  * Scenario ASSOCIAZIONE (cornice browser/laptop). Le scene vivono qui; il motore
@@ -38,7 +37,7 @@ export function AssociationDemo() {
       renderFrame={renderFrame}
       renderStatic={() => (
         <div className="absolute inset-0 overflow-hidden p-3.5">
-          <Pipeline t={t} />
+          <Members t={t} />
         </div>
       )}
       pauseLabel={t("pause")}
@@ -122,121 +121,142 @@ function AssocScene({ frame, t, setTarget }: { frame: AssocFrame; t: T; setTarge
     );
   }
 
-  // ——— CANDIDATURE: elenco ———
+  // ——— CANDIDATURE: arrivano già divise per fase ———
   if (block === "candidates") {
     return (
       <div className="mx-auto max-w-[420px]">
         <GuideBar text={t("guide.candidates")} />
         <div className="mb-2 flex items-center justify-between">
           <p className="text-[11px] font-medium text-navy">{t("applications")} · {a.cycleTitle}</p>
-          <span className="rounded-full bg-success-bg px-2 py-0.5 text-[9px] font-semibold text-success">{t("newCount", { n: a.candidates.length })}</span>
+          <span className="rounded-full bg-success-bg px-2 py-0.5 text-[9px] font-semibold text-success">
+            {t("newCount", { n: a.candidates.length })}
+          </span>
         </div>
         <div className="space-y-1.5">
-          {a.candidates.map((cnd, i) => {
-            const isFirst = i === 0;
-            return (
-              <div
-                key={cnd.name}
-                ref={isFirst ? setTarget("candidate") : undefined}
-                className={`flex items-center gap-2.5 rounded-lg border bg-white px-3 py-2 shadow-sm ${isFirst ? "border-petrol/40" : "border-border"}`}
-                style={pop(i)}
-              >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy-50 text-[10px] font-semibold text-navy">
-                  {cnd.name.split(" ").map((w) => w[0]).join("")}
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate text-[11px] font-medium text-ink">{cnd.name}</p>
-                  <p className="text-[9px] text-ink-tertiary">{cnd.role}</p>
-                </div>
-                <span className="ml-auto text-[10px] font-semibold text-petrol">{cnd.match}% {t("match")}</span>
+          {a.candidates.map((cnd, i) => (
+            <div
+              key={cnd.name}
+              className="flex items-center gap-2.5 rounded-lg border border-border bg-white px-3 py-2 shadow-sm"
+              style={pop(i)}
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy-50 text-[10px] font-semibold text-navy">
+                {cnd.name.split(" ").map((w) => w[0]).join("")}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-[11px] font-medium text-ink">{cnd.name}</p>
+                <p className="text-[9px] text-ink-tertiary">{cnd.role}</p>
               </div>
-            );
-          })}
+              <span className="ml-auto text-[9px] text-petrol">{t("openCard")}</span>
+            </div>
+          ))}
         </div>
       </div>
     );
   }
 
-  // ——— DETTAGLIO CANDIDATO: card + risposte + valutazione AI ———
-  if (block === "detail") {
-    const d = a.detail;
-    const invited = phase === "invite";
-    const chips = [...studentData.availability.slice(0, 2), ...studentData.academicSkills.slice(0, 2)];
+  // ——— COLLOQUI: chi del board c'è, orario per orario ———
+  if (block === "slots") {
+    const r = a.round;
     return (
-      <div className="grid h-full grid-cols-[1fr_1.15fr] gap-3">
-        {/* MIRA Card mini */}
-        <div className="flex flex-col rounded-lg border border-border bg-white px-3 py-2.5 shadow-sm" style={{ animation: "mira-slidein .4s var(--ease-out) both" }}>
-          <div className="flex items-baseline justify-between">
-            <p className="font-display text-[13px] text-navy">{d.name}</p>
-            <span className="text-[7px] tracking-[0.16em] text-navy/40 uppercase">MIRA Card</span>
+      <div className="mx-auto max-w-[420px]">
+        <GuideBar text={t("guide.slots")} />
+        <div className="rounded-lg border border-border bg-white px-3 py-2.5 shadow-sm">
+          <div className="flex items-baseline gap-2">
+            <span className="text-[9px] uppercase tracking-[0.14em] text-navy/50">{t("roundLabel")}</span>
+            <p className="text-[12px] font-medium text-navy">{r.title}</p>
+            <span className="ml-auto text-[9px] text-ink-tertiary">{r.mode} · {r.days}</span>
           </div>
-          <p className="mt-0.5 text-[9px] text-ink-secondary">{d.course}</p>
-          <div className="mt-2 flex flex-wrap gap-1">
-            {chips.map((s) => (
-              <span key={s} className="rounded-full bg-petrol-50 px-1.5 py-0.5 text-[8px] text-petrol-700">{s}</span>
+
+          <div className="mt-2 space-y-1">
+            {r.slots.map((slot, i) => (
+              <div key={slot.time} className="flex items-center gap-2" style={pop(i)}>
+                <span className="w-11 rounded bg-navy-50 py-0.5 text-center text-[10px] font-medium tabular-nums text-navy">
+                  {slot.time}
+                </span>
+                <span className="flex gap-1">
+                  {slot.people.map((initials) => (
+                    <span
+                      key={initials}
+                      className="flex h-4 w-4 items-center justify-center rounded-full bg-petrol text-[7px] font-semibold text-white"
+                    >
+                      {initials}
+                    </span>
+                  ))}
+                </span>
+                <span className={`ml-auto text-[9px] ${slot.people.length ? "text-success" : "text-ink-tertiary"}`}>
+                  {slot.people.length ? t("bookable") : t("nobodyThere")}
+                </span>
+              </div>
             ))}
           </div>
-          <div className="mt-2 border-t border-border pt-2">
-            <SectionLabel>{t("motivation")}</SectionLabel>
-            <p className="text-[9px] leading-snug text-ink">“{d.motivationA}”</p>
-          </div>
-        </div>
 
-        {/* Valutazione AI + azione */}
-        <div className="flex flex-col gap-2">
-          <GuideBar text={t("guide.detail")} />
-          <div className="flex-1 rounded-lg border border-border bg-white px-3 py-2.5 shadow-sm" style={{ animation: "mira-slidein .4s var(--ease-out) both", animationDelay: "80ms" }}>
-            <div className="flex items-center justify-between">
-              <SectionLabel>{t("aiEvaluation")}</SectionLabel>
-              <span className="rounded-full bg-petrol-50 px-2 py-0.5 text-[10px] font-semibold text-petrol-700">{d.evalScore}/10 · {t("strongFit")}</span>
-            </div>
-            <ul className="mt-1.5 space-y-1">
-              {d.evalBullets.map((b) => (
-                <li key={b} className="flex items-start gap-1 text-[9px] leading-snug text-ink-secondary">
-                  <span className="mt-[1px] text-petrol">•</span> {b}
-                </li>
-              ))}
-            </ul>
-          </div>
-          {invited ? (
-            <div className="flex items-center justify-center gap-1.5 rounded-md border border-success/40 bg-success-bg py-2 text-[11px] font-medium text-success" style={{ animation: "mira-pop .35s var(--ease-out) both" }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-              {t("interviewSent")}
-            </div>
-          ) : (
-            <button ref={setTarget("invite")} type="button" className="rounded-md bg-navy py-2 text-[11px] font-medium text-white">
-              {t("inviteInterview")}
-            </button>
-          )}
+          <button
+            ref={setTarget("invite")}
+            type="button"
+            className="mt-2.5 w-full rounded-md bg-navy py-1.5 text-[11px] font-medium text-white"
+          >
+            {t("inviteCandidates")}
+          </button>
         </div>
       </div>
     );
   }
 
-  // ——— PIPELINE (reveal) ———
-  return <Pipeline t={t} />;
+  // ——— PRENOTAZIONE: la sceglie il candidato, il resto parte da solo ———
+  if (block === "booking") {
+    const b = a.booking;
+    return (
+      <div className="mx-auto max-w-[400px]">
+        <GuideBar text={t("guide.booking")} />
+        <div
+          className="rounded-lg border border-petrol/40 bg-white px-3 py-2.5 shadow-sm"
+          style={{ animation: "mira-pop .4s var(--ease-out) both" }}
+        >
+          <p className="text-[11px] font-medium text-navy">{b.candidate}</p>
+          <p className="mt-0.5 text-[12px] font-medium tabular-nums text-ink">{b.when}</p>
+          <p className="text-[9px] text-ink-tertiary">{t("runBy", { name: b.interviewer })}</p>
+          <p className="mt-1 truncate text-[9px] text-petrol">{b.link}</p>
+        </div>
+        <div className="mt-2 space-y-1">
+          {["autoLink", "autoEmail", "autoCalendar"].map((key, i) => (
+            <div
+              key={key}
+              className="flex items-center gap-1.5 rounded-md border border-success/30 bg-success-bg px-2 py-1 text-[9px] text-success"
+              style={pop(i)}
+            >
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+              {t(key)}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ——— MEMBRI: chi entra sta nell'associazione, diviso in sezioni ———
+  return <Members t={t} />;
 }
 
-function Pipeline({ t }: { t: T }) {
-  const p = associationData.pipeline;
-  const columns: { key: string; title: string; names: string[]; tone: string }[] = [
-    { key: "review", title: t("colReview"), names: p.review, tone: "text-ink-secondary" },
-    { key: "interview", title: t("colInterview"), names: p.interview, tone: "text-petrol-700" },
-    { key: "accepted", title: t("colAccepted"), names: p.accepted, tone: "text-success" },
-  ];
+function Members({ t }: { t: T }) {
+  const sections = associationData.members;
   return (
     <div className="flex h-full flex-col">
-      <p className="mb-2 text-[11px] font-medium text-navy">{t("pipelineTitle")}</p>
-      <div className="grid flex-1 grid-cols-3 gap-2">
-        {columns.map((col, ci) => (
-          <div key={col.key} className="flex flex-col rounded-lg bg-navy-50/60 p-2" style={pop(ci)}>
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className={`text-[9px] font-semibold uppercase tracking-[0.1em] ${col.tone}`}>{col.title}</span>
-              <span className="text-[9px] text-ink-tertiary">{col.names.length}</span>
-            </div>
+      <GuideBar text={t("guide.members")} />
+      <div className="grid flex-1 grid-cols-2 gap-2">
+        {sections.map((section, si) => (
+          <div key={section.section} className="flex flex-col rounded-lg bg-navy-50/60 p-2" style={pop(si)}>
+            <span className="mb-1.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-navy/70">
+              {section.section}
+            </span>
             <div className="space-y-1.5">
-              {col.names.map((name, i) => (
-                <div key={name} className="flex items-center gap-1.5 rounded-md border border-border bg-white px-2 py-1.5 shadow-sm" style={pop(ci + i + 1)}>
+              {section.people.map((name, i) => (
+                <div
+                  key={name}
+                  className="flex items-center gap-1.5 rounded-md border border-border bg-white px-2 py-1.5 shadow-sm"
+                  style={pop(si + i + 1)}
+                >
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-navy-50 text-[8px] font-semibold text-navy">
                     {name.split(" ").map((w) => w[0]).join("")}
                   </span>

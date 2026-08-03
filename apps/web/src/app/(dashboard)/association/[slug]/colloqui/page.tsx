@@ -122,7 +122,11 @@ export default async function AssociationInterviewsPage({ params }: Props) {
       if (startsMs < nowMs) entry.done++;
       else entry.upcoming++;
 
-      if (startsMs >= startOfToday.getTime() && startsMs < endOfToday.getTime()) {
+      // Solo i colloqui di oggi non ancora finiti: uno che si è chiuso mezz'ora
+      // fa non è più una cosa da fare, e lasciarlo nell'avviso rosso lo rende
+      // rumore che poi non si guarda più.
+      const endsMs = new Date(slot.ends_at).getTime();
+      if (startsMs >= startOfToday.getTime() && startsMs < endOfToday.getTime() && endsMs > nowMs) {
         const interviewer = slot.interviewer_user_id ? interviewerById.get(slot.interviewer_user_id) : null;
         const sessionRow = ((sessions ?? []) as any[]).find((x) => x.id === slot.session_id);
         todayBySession.set(slot.session_id, [

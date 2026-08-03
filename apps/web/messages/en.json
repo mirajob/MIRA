@@ -83,8 +83,8 @@
     "ctaMicrocopy": "Free for students, always. The same profile applies to your campus associations.",
     "orgEyebrow": "Are you a company or a university association?",
     "associationTitle": "Association",
-    "associationBody": "Apply for your association: manage applications, board members, and your MIRA page.",
-    "associationCta": "Apply for your association →",
+    "associationBody": "Your whole recruitment in one place, from the application to the new member. No forms to assemble, no Calendly, no emails written one by one.",
+    "associationCta": "Put your association forward",
     "companyTitle": "Company",
     "companyBody": "Don't wait for applications. Find the right candidates: describe who you're looking for, MIRA shows you who really fits.",
     "companyCta": "Register your company →",
@@ -123,7 +123,11 @@
         "q": "Is it really free?",
         "a": "For students yes, and it stays free. We don't sell your data and we don't give it to anyone outside the platform."
       }
-    ]
+    ],
+    "associationPointApply": "Open applications by saying which roles you want and what you want to ask. Applicants arrive with their MiraCard: studies, exams, experience and skills already there, not a CV to decipher.",
+    "associationPointInterviews": "The platform schedules the interviews. You pick the days, everyone on the board marks when they are free, candidates only book where someone actually is. We create the video call link, and confirmations and calendar invites go out on their own.",
+    "associationPointMembers": "Whoever you accept becomes a member of the association: you arrange them into sections by area or role, decide who administers, and the team stays current without spreadsheets.",
+    "associationPointCompanies": "Your members join the pool partner companies search on MIRA. What they build with you stops staying inside the association and starts counting outside."
   },
   "LandingDemo": {
     "progressTitle": "Your MIRA Card",
@@ -134,7 +138,6 @@
     "reading": "Reading transcript…",
     "expPlaceholder": "Tell me about it…",
     "planLabel": "Plan & direction",
-    "academicLabel": "Academic",
     "hardLabel": "Practical",
     "pause": "Pause",
     "play": "Play",
@@ -154,10 +157,11 @@
       "expImprove": "Write it however it comes, I'll shape it.",
       "expImproved": "Here it is, CV-ready. Confirm?",
       "availability": "What are you looking for, and what's next?",
-      "skills": "From your exams, here are your skills.",
+      "skills": "Your exams come from the transcript. The practical skills you add yourself.",
       "languages": "And the languages you speak.",
       "profile": "Last thing: who you are beyond the CV."
-    }
+    },
+    "examsLabel": "Exams"
   },
   "AssociationDemo": {
     "pause": "Pause",
@@ -170,22 +174,23 @@
     "publish": "Publish",
     "applications": "Applications",
     "newCount": "{n} new",
-    "match": "match",
-    "motivation": "Motivation",
-    "aiEvaluation": "AI evaluation",
-    "strongFit": "Strong fit",
-    "inviteInterview": "Invite to interview",
-    "interviewSent": "Interview invite sent",
-    "pipelineTitle": "Selection pipeline",
-    "colReview": "Review",
-    "colInterview": "Interview",
-    "colAccepted": "Accepted",
     "guide": {
-      "compose": "Tell me who you're recruiting.",
-      "building": "Here's your cycle: positions, requirements, questions.",
-      "candidates": "Applications are coming in.",
-      "detail": "AI reads every profile, you decide."
-    }
+      "compose": "Tell me who you are looking for.",
+      "building": "Here is the selection: roles, requirements, questions.",
+      "candidates": "Applications land here, each with their card.",
+      "slots": "Pick the days, everyone on the board marks when they are free.",
+      "booking": "The candidate picks their time. We do the rest.",
+      "members": "Whoever you accept joins the members, in their section."
+    },
+    "openCard": "Open the card",
+    "roundLabel": "Round 1",
+    "bookable": "bookable",
+    "nobodyThere": "nobody free",
+    "inviteCandidates": "Invite the candidates",
+    "runBy": "run by {name}",
+    "autoLink": "Video call link created by MIRA",
+    "autoEmail": "Confirmation sent to the candidate and the interviewer",
+    "autoCalendar": "Appointment added to both calendars"
   },
   "CompanyDemo": {
     "pause": "Pause",
@@ -530,7 +535,8 @@
       "cicloAttuale": "Current degree",
       "cicloPrecedente": "Previous degree",
       "emptyView": "No exams yet: upload your transcript."
-    }
+    },
+    "editMissing": "To complete"
   },
   "JoinByCode": {
     "prompt": "Are you a member of an association? Enter your invite code",

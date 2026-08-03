@@ -296,10 +296,13 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
 
   return (
     <div>
-      {/* Contenitore misurato: il foglio viene scalato per starci in larghezza. */}
+      {/* Contenitore misurato: il foglio viene scalato per starci in larghezza.
+          Non si allarga oltre la misura del foglio, così in una colonna più
+          larga resta al centro invece di appoggiarsi al bordo sinistro. */}
       <div
         ref={containerRef}
-        className={zoomed ? "overflow-x-auto" : ""}
+        style={{ maxWidth: SHEET_W }}
+        className={`mx-auto ${zoomed ? "overflow-x-auto" : ""}`}
         onClick={canZoom && !zoomed ? () => setZoomed(true) : undefined}
         role={canZoom && !zoomed ? "button" : undefined}
         aria-label={canZoom && !zoomed ? d("zoomIn") : undefined}

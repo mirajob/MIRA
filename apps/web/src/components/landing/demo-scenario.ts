@@ -55,7 +55,8 @@ export interface StudentData {
   availability: string[];
   availabilityNote: string;
   plan: string;
-  academicSkills: string[];
+  /** Gli esami letti dal libretto: sono la parte teorica della card. */
+  exams: string[];
   hardSkills: string[];
   languages: string[];
   personalProfile: string;
@@ -79,7 +80,7 @@ export const studentData: StudentData = {
   availability: ["Internship", "Strategy consulting", "Boutique firm", "Milan", "6 months", "From June"],
   availabilityNote: "Open to relocation for the right team.",
   plan: "On exchange next spring, then a master's in Finance. Leaning toward consulting, still exploring.",
-  academicSkills: ["Corporate Finance", "Financial Statement Analysis", "Statistics", "Microeconomics"],
+  exams: ["Corporate Finance 30", "Financial Statement Analysis 29", "Statistics 28", "Microeconomics 30L"],
   hardSkills: ["Excel", "Python", "PowerPoint", "Bloomberg"],
   languages: ["Italian · Native", "English · C1", "Spanish · B2"],
   personalProfile:

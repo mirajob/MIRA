@@ -100,7 +100,7 @@ export default async function StudentHomePage() {
   // Cosa manca si decide sul CONTENUTO, non sullo stato del blocco: un blocco confermato ma
   // vuoto (Conferma premuto senza scrivere niente) è a tutti gli effetti un buco nella card,
   // e con il controllo sullo stato non veniva segnalato da nessuna parte.
-  const missingSections = missingCardSections({
+  const missingKeys = missingCardSections({
     disponibilita: disponibilita?.prose_content as DisponibilitaProseContent | undefined,
     esperienze: esperienzeItems,
     esami: formazioneItems,
@@ -108,7 +108,12 @@ export default async function StudentHomePage() {
     lingue: lingueItems,
     profiloPersonale: autodescrizioneTesto,
     pianoCarriera: pianoData?.testo ?? null,
-  }).map((key) => cardT(`titles.${key === "esami" ? "esami" : key === "disponibilita" ? "disponibilitaEPiano" : key}`));
+  });
+
+  const missing = new Set(missingKeys);
+  const missingSections = missingKeys.map((key) =>
+    cardT(`titles.${key === "esami" ? "esami" : key === "disponibilita" ? "disponibilitaEPiano" : key}`)
+  );
 
   const t = await getTranslations("StudentHome");
 
@@ -157,6 +162,7 @@ export default async function StudentHomePage() {
             )}
             {disponibilita && (
               <EditableSection
+                missing={missing.has("disponibilita")}
                 view={
                   <DisponibilitaEPianoView
                     disponibilita={disponibilita.prose_content as DisponibilitaProseContent}
@@ -186,6 +192,7 @@ export default async function StudentHomePage() {
           <>
             {autodescrizione && (
               <EditableSection
+                missing={missing.has("profiloPersonale")}
                 view={<ProseView title={cardT("titles.profiloPersonale")} testo={autodescrizioneTesto} serif />}
                 edit={
                   <ProseBlock
@@ -202,6 +209,7 @@ export default async function StudentHomePage() {
             )}
             {esperienze && (
               <EditableSection
+                missing={missing.has("esperienze")}
                 view={<EsperienzeView items={esperienzeItems} />}
                 edit={<EsperienzeBlock items={esperienzeItems} status={esperienze.status} />}
               />
@@ -214,6 +222,7 @@ export default async function StudentHomePage() {
                 competenze (cosa sai usare), poi lingue e piano. */}
             {formazione && (
               <EditableSection
+                missing={missing.has("esami")}
                 view={<EsamiView formazioneItems={formazioneItems} />}
                 edit={
                   <EsamiBlock
@@ -228,12 +237,14 @@ export default async function StudentHomePage() {
             )}
             {competenze && (
               <EditableSection
+                missing={missing.has("competenze")}
                 view={<CompetenzeView data={competenzeData} />}
                 edit={<CompetenzeBlock data={competenzeData} status={competenze.status} />}
               />
             )}
             {lingue && (
               <EditableSection
+                missing={missing.has("lingue")}
                 view={
                   <div className="p-4">
                     <p className="text-eyebrow text-navy/60 uppercase mb-2">{cardT("titles.lingue")}</p>
@@ -255,6 +266,7 @@ export default async function StudentHomePage() {
             )}
             {pianoCarriera && (
               <EditableSection
+                missing={missing.has("pianoCarriera")}
                 view={<ProseView title={cardT("titles.pianoCarriera")} testo={pianoData?.testo ?? null} />}
                 edit={
                   <ProseBlock

@@ -83,8 +83,8 @@
     "ctaMicrocopy": "Gratis per gli studenti, sempre. Con lo stesso profilo ti candidi anche alle associazioni del tuo campus.",
     "orgEyebrow": "Sei un'azienda o un'associazione?",
     "associationTitle": "Associazione",
-    "associationBody": "Candida la tua associazione: gestisci candidature, board e la tua pagina su MIRA.",
-    "associationCta": "Candida la tua associazione →",
+    "associationBody": "Tutto il reclutamento della tua associazione in un posto solo, dalla candidatura al nuovo membro. Niente moduli da montare, niente Calendly, niente mail scritte a mano una per una.",
+    "associationCta": "Candida la tua associazione",
     "companyTitle": "Azienda",
     "companyBody": "Non aspettare candidature. Trova i candidati giusti: descrivi chi cerchi, MIRA ti mostra chi si adatta davvero.",
     "companyCta": "Registra la tua azienda →",
@@ -123,7 +123,11 @@
         "q": "È davvero gratis?",
         "a": "Per gli studenti sì, e resta gratis. Non vendiamo i tuoi dati e non li diamo a nessuno al di fuori della piattaforma."
       }
-    ]
+    ],
+    "associationPointApply": "Apri le candidature dicendo che posizioni cerchi e cosa vuoi chiedere. Chi si candida arriva con la sua MiraCard: studi, esami, esperienze e competenze già verificate, non un CV da decifrare.",
+    "associationPointInterviews": "I colloqui li fissa la piattaforma. Scegli i giorni, ognuno del board segna quando c'è, i candidati prenotano solo dove qualcuno è libero. Il link della videochiamata lo creiamo noi, le conferme e gli appuntamenti in calendario partono da soli.",
+    "associationPointMembers": "Chi accetti diventa membro dell'associazione: lo organizzi in sezioni per area o ruolo, decidi chi amministra, e il team resta aggiornato senza fogli di calcolo.",
+    "associationPointCompanies": "I tuoi membri entrano nel bacino che le aziende partner cercano su MIRA. Quello che costruiscono da voi smette di restare dentro l'associazione e inizia a contare fuori."
   },
   "LandingDemo": {
     "progressTitle": "La tua MIRA Card",
@@ -134,7 +138,6 @@
     "reading": "Leggo il libretto…",
     "expPlaceholder": "Raccontami…",
     "planLabel": "Piano e direzione",
-    "academicLabel": "Accademiche",
     "hardLabel": "Pratiche",
     "pause": "Pausa",
     "play": "Riprendi",
@@ -154,10 +157,11 @@
       "expImprove": "Scrivi come ti viene, ci penso io a metterla in forma.",
       "expImproved": "Eccola, pronta da CV. Confermi?",
       "availability": "Cosa cerchi, e i prossimi passi?",
-      "skills": "Dai tuoi esami, ecco le tue competenze.",
+      "skills": "Dal libretto arrivano i tuoi esami. Le competenze pratiche le aggiungi tu.",
       "languages": "E le lingue che parli.",
       "profile": "Ultima cosa: chi sei oltre al CV."
-    }
+    },
+    "examsLabel": "Esami"
   },
   "AssociationDemo": {
     "pause": "Pausa",
@@ -170,22 +174,23 @@
     "publish": "Pubblica",
     "applications": "Candidature",
     "newCount": "{n} nuove",
-    "match": "match",
-    "motivation": "Motivazione",
-    "aiEvaluation": "Valutazione AI",
-    "strongFit": "Ottimo match",
-    "inviteInterview": "Invita al colloquio",
-    "interviewSent": "Invito al colloquio inviato",
-    "pipelineTitle": "Pipeline di selezione",
-    "colReview": "Da valutare",
-    "colInterview": "Colloquio",
-    "colAccepted": "Accettati",
     "guide": {
       "compose": "Dimmi chi stai cercando.",
-      "building": "Ecco il tuo ciclo: posizioni, requisiti, domande.",
-      "candidates": "Stanno arrivando le candidature.",
-      "detail": "L'AI legge ogni profilo, decidi tu."
-    }
+      "building": "Ecco la selezione: posizioni, requisiti, domande.",
+      "candidates": "Le candidature arrivano qui, con la card di ognuno.",
+      "slots": "Scegli i giorni, ognuno del board segna quando c'è.",
+      "booking": "Il candidato sceglie il suo orario. Il resto lo facciamo noi.",
+      "members": "Chi accetti entra fra i membri, nella sua sezione."
+    },
+    "openCard": "Apri la card",
+    "roundLabel": "Round 1",
+    "bookable": "prenotabile",
+    "nobodyThere": "nessuno del board",
+    "inviteCandidates": "Invita i candidati",
+    "runBy": "conduce {name}",
+    "autoLink": "Link della videochiamata creato da MIRA",
+    "autoEmail": "Conferma mandata al candidato e a chi conduce",
+    "autoCalendar": "Appuntamento aggiunto ai calendari"
   },
   "CompanyDemo": {
     "pause": "Pausa",
@@ -530,7 +535,8 @@
       "cicloAttuale": "Corso attuale",
       "cicloPrecedente": "Corso precedente",
       "emptyView": "Nessun esame ancora: carica il libretto."
-    }
+    },
+    "editMissing": "Da completare"
   },
   "JoinByCode": {
     "prompt": "Sei membro di un'associazione? Inserisci il codice invito",

@@ -265,17 +265,17 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
       <div className="space-y-2">
         <Guide text={t("guide.skills")} />
         <Panel>
-          <SectionLabel>{t("academicLabel")}</SectionLabel>
+          <SectionLabel>{t("examsLabel")}</SectionLabel>
           <div className="flex flex-wrap gap-1.5">
-            {studentData.academicSkills.map((s, i) => (
-              <Chip key={s} i={i}>{s}</Chip>
+            {studentData.exams.map((s, i) => (
+              <Chip key={s} i={i} tone="muted">{s}</Chip>
             ))}
           </div>
           <div className="mt-2">
             <SectionLabel>{t("hardLabel")}</SectionLabel>
             <div className="flex flex-wrap gap-1.5">
               {studentData.hardSkills.map((s, i) => (
-                <Chip key={s} i={i + studentData.academicSkills.length} tone="muted">{s}</Chip>
+                <Chip key={s} i={i + studentData.exams.length}>{s}</Chip>
               ))}
             </div>
           </div>
@@ -355,7 +355,7 @@ function DemoCard() {
         <div className="mt-2" style={rise()}>
           <SectionLabel>Skills</SectionLabel>
           <div className="flex flex-wrap gap-1">
-            {[...d.academicSkills.slice(0, 2), ...d.hardSkills.slice(0, 2)].map((s) => (
+            {d.hardSkills.map((s) => (
               <span key={s} className="rounded-full bg-petrol-50 px-1.5 py-0.5 text-[9px] text-petrol-700">{s}</span>
             ))}
           </div>
