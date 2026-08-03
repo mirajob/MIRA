@@ -91,35 +91,49 @@ export function TeamPanel({
     run(() => assignMemberToSection(associationId, membershipId, sectionId));
   }
 
-  function MemberCard({ p }: { p: Person }) {
+  /**
+   * Una persona è una riga, non una scheda.
+   *
+   * Con le card ogni persona occupava un rettangolo alto quanto il suo contenuto
+   * più lungo, e l'elenco veniva fuori sbilenco. In riga le colonne si
+   * incolonnano davvero: nome e studi a sinistra, sezione e comandi a destra,
+   * sempre nello stesso punto. Il nome è il link alla MiraCard: un "apri la
+   * scheda" in fondo diceva la stessa cosa una seconda volta.
+   */
+  function MemberRow({ p }: { p: Person }) {
     const isAdmin = p.role === "association_admin" || p.role === "association_president";
     const studies = [p.degreeLevel, p.degreeProgram].filter(Boolean).join(" · ");
 
     return (
-      <div className="flex flex-col rounded-lg border border-border bg-white p-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy text-body-sm font-semibold text-white">
+      <div className="flex items-center gap-3 px-3 py-2.5">
+        {p.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={p.avatarUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+        ) : (
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy-50 text-body-sm font-medium text-navy">
             {(p.fullName ?? p.email).charAt(0).toUpperCase()}
           </div>
-          <div className="min-w-0 flex-1">
+        )}
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2">
             <Link
               href={`/association/${slug}/board/${p.profileId}/card`}
-              className="block truncate text-body font-medium text-navy underline-offset-2 hover:underline"
+              className="truncate text-body-sm font-medium text-navy underline-offset-2 hover:underline"
               title={t("viewCard")}
             >
               {p.fullName ?? p.email}
             </Link>
-            {studies && <p className="truncate text-body-sm text-ink-secondary">{studies}</p>}
-            <p className="truncate text-eyebrow text-ink-tertiary">{p.email}</p>
+            {isAdmin && (
+              <span className="shrink-0 text-body-sm text-petrol">{t("adminBadge")}</span>
+            )}
+            {p.isSelf && (
+              <span className="shrink-0 text-body-sm text-ink-tertiary">{t("selfBadge")}</span>
+            )}
           </div>
-        </div>
-
-        <div className="mt-2 flex flex-wrap items-center gap-1.5">
-          {isAdmin && (
-            <span className="rounded-full bg-petrol-50 px-2 py-0.5 text-eyebrow text-petrol">{t("adminBadge")}</span>
-          )}
-          {p.isSelf && <span className="text-eyebrow text-ink-tertiary">{t("selfBadge")}</span>}
-          {p.title && <span className="text-eyebrow text-ink-tertiary">{p.title}</span>}
+          <p className="truncate text-body-sm text-ink-tertiary">
+            {[studies, p.title, p.email].filter(Boolean).join(" · ")}
+          </p>
         </div>
 
         {sections.length > 0 && (
@@ -128,7 +142,7 @@ export function TeamPanel({
             onChange={(e) => handleAssign(p.membershipId, e.target.value)}
             disabled={pending}
             aria-label={t("assignSection")}
-            className="mt-2 w-full rounded border border-border bg-paper px-2 py-1 text-eyebrow text-ink-secondary focus:border-petrol focus:outline-none"
+            className="hidden w-36 shrink-0 rounded border border-border bg-paper px-2 py-1 text-body-sm text-ink-secondary focus:border-petrol focus:outline-none sm:block"
           >
             <option value="">{t("noSection")}</option>
             {sections.map((s) => (
@@ -139,13 +153,7 @@ export function TeamPanel({
           </select>
         )}
 
-        <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
-          <Link
-            href={`/association/${slug}/board/${p.profileId}/card`}
-            className="text-body-sm text-petrol hover:text-petrol-700 transition-colors"
-          >
-            {t("openCard")}
-          </Link>
+        <div className="w-20 shrink-0 text-right">
           {!p.isSelf && (
             <MemberActions
               membershipId={p.membershipId}
@@ -156,6 +164,17 @@ export function TeamPanel({
             />
           )}
         </div>
+      </div>
+    );
+  }
+
+  /** Il contenitore delle righe: un bordo solo, righe separate da una linea. */
+  function MemberRows({ list }: { list: Person[] }) {
+    return (
+      <div className="divide-y divide-border rounded-lg border border-border bg-white">
+        {list.map((p) => (
+          <MemberRow key={p.membershipId} p={p} />
+        ))}
       </div>
     );
   }
@@ -269,9 +288,7 @@ export function TeamPanel({
                   {inSection.length === 0 ? (
                     <p className="text-eyebrow text-ink-tertiary">{t("emptySection")}</p>
                   ) : (
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                      {inSection.map((p) => <MemberCard key={p.membershipId} p={p} />)}
-                    </div>
+                    <MemberRows list={inSection} />
                   )}
                 </div>
               );
@@ -284,9 +301,7 @@ export function TeamPanel({
                     {t("noSectionGroup")} <span className="font-normal text-ink-tertiary">({unassigned.length})</span>
                   </p>
                 )}
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {unassigned.map((p) => <MemberCard key={p.membershipId} p={p} />)}
-                </div>
+                <MemberRows list={unassigned} />
               </div>
             )}
           </>

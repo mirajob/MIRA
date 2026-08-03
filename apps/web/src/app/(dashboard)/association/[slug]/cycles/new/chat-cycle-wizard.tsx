@@ -89,7 +89,7 @@ export function ChatCycleWizard() {
 
   return (
     <div className="mx-auto max-w-reading">
-      <h2 className="font-display text-h2 text-navy mb-4">{t("heading")}</h2>
+      <h2 className="text-body-lg font-semibold text-navy mb-4">{t("heading")}</h2>
       <p className="text-body-sm text-ink-secondary mb-6">
         {t("subhead")}
       </p>

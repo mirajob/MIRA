@@ -112,7 +112,7 @@ export function CompanyContactsClient({ slug, initialContacts }: Props) {
       {/* Contact list */}
       <div className="w-80 border-r border-border bg-white flex flex-col shrink-0 overflow-hidden">
         <div className="px-4 py-3 border-b border-border shrink-0">
-          <h2 className="font-display text-h3 text-navy">{t("heading")}</h2>
+          <h2 className="font-semibold text-h3 text-navy">{t("heading")}</h2>
           <p className="text-body-sm text-ink-secondary">{t("requestsSentCount", { count: contacts.length })}</p>
         </div>
         <div className="flex-1 overflow-y-auto min-h-0">
@@ -253,7 +253,7 @@ export function CompanyContactsClient({ slug, initialContacts }: Props) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-lg border border-border w-full max-w-md p-6 shadow-xl">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-display text-h2 text-navy">{t("inviteToInterview")}</h2>
+              <h2 className="text-body-lg font-semibold text-navy">{t("inviteToInterview")}</h2>
               <button onClick={() => setShowInterviewForm(false)} className="text-ink-tertiary hover:text-ink">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

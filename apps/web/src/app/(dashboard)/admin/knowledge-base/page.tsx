@@ -26,7 +26,7 @@ export default async function KnowledgeBasePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-h1 text-navy">{t("heading")}</h1>
+        <h1 className="font-semibold text-h1 text-navy">{t("heading")}</h1>
         <p className="mt-1 text-body text-ink-secondary">
           {t("subhead")}
         </p>
@@ -35,7 +35,7 @@ export default async function KnowledgeBasePage() {
       <KnowledgeUploadForm />
 
       <div>
-        <h2 className="font-display text-h2 text-navy mb-4">{t("uploadedDocsHeading")}</h2>
+        <h2 className="text-body-lg font-semibold text-navy mb-4">{t("uploadedDocsHeading")}</h2>
         {!documents?.length ? (
           <div className="rounded-lg border border-border bg-white p-8 text-center">
             <p className="text-body text-ink-secondary">{t("noDocuments")}</p>

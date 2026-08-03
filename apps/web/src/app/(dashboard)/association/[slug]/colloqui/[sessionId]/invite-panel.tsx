@@ -98,6 +98,7 @@ export function InvitePanel({
     });
     if (result.error) window.alert(result.error);
     else {
+      if ("warning" in result && result.warning) window.alert(result.warning);
       setSelected(new Set());
       setConfirming(false);
     }

@@ -65,7 +65,7 @@ function Timing({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-border bg-white p-6">
-      <h2 className="font-sans text-h3 text-navy mb-4">{title}</h2>
+      <h2 className="text-body font-medium text-navy mb-4">{title}</h2>
       {children}
     </div>
   );
@@ -76,7 +76,7 @@ export function AiTestClient() {
     <div className="mx-auto max-w-3xl px-2 py-2 space-y-6">
       <div>
         <p className="text-label uppercase tracking-wide text-ink-tertiary">Dev · AI Test</p>
-        <h1 className="font-display text-h2 text-navy">Test parsing con Gemini</h1>
+        <h1 className="text-body-lg font-semibold text-navy">Test parsing con Gemini</h1>
         <p className="mt-1 text-body-sm text-ink-secondary">
           Banco di prova isolato: carica un libretto o un CV, guarda l&apos;output e il tempo impiegato.
           Non scrive nulla su nessun profilo — serve solo per confrontare Gemini con il parser attuale.

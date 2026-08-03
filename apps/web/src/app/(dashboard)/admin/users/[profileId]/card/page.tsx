@@ -19,7 +19,7 @@ export default async function AdminStudentCardPage({ params }: Props) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, email, student_profiles(id)")
+    .select("full_name, email, avatar_url, student_profiles(id)")
     .eq("id", profileId)
     .maybeSingle();
 
@@ -44,6 +44,7 @@ export default async function AdminStudentCardPage({ params }: Props) {
     pianoCarriera: blockMap.has("piano_carriera") ? { data: blockMap.get("piano_carriera").prose_content } : undefined,
     viewer: "self" as const,
     displayName: (profile as any).full_name ?? undefined,
+    avatarUrl: (profile as any).avatar_url ?? undefined,
   };
 
   return (
@@ -52,7 +53,7 @@ export default async function AdminStudentCardPage({ params }: Props) {
         <Link href="/admin/users" className="text-body-sm text-petrol hover:text-petrol-700 transition-colors">
           {t("backToUsers")}
         </Link>
-        <h1 className="font-display text-h1 text-navy mt-2">{(profile as any).full_name ?? (profile as any).email}</h1>
+        <h1 className="font-semibold text-h1 text-navy mt-2">{(profile as any).full_name ?? (profile as any).email}</h1>
         <p className="text-body text-ink-secondary">{(profile as any).email}</p>
       </div>
 

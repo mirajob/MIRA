@@ -7,6 +7,7 @@ import { getTranslations } from "next-intl/server";
 import { hasWorkspaceAccess } from "@/lib/association-roles";
 import { parseWindows } from "@/lib/interview-slots";
 import { EditSessionForm } from "./edit-session-form";
+import { DetailHeader } from "@/components/page-bar";
 
 interface Props {
   params: Promise<{ slug: string; sessionId: string }>;
@@ -49,12 +50,10 @@ export default async function EditSessionPage({ params }: Props) {
 
   return (
     <div className="space-y-4">
-      <Link
-        href={`/association/${slug}/colloqui/${sessionId}`}
-        className="text-body-sm text-ink-tertiary transition-colors hover:text-petrol"
-      >
-        &larr; {t("backToSession")}
-      </Link>
+      <DetailHeader
+        back={{ href: `/association/${slug}/colloqui/${sessionId}`, label: t("backToSession") }}
+        title={t("editSession")}
+      />
 
       <EditSessionForm
         associationId={session.association_id}

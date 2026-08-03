@@ -11,7 +11,7 @@ export default function AdminWhatsappPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <p className="text-eyebrow uppercase text-navy/50">Strumento interno</p>
-      <h1 className="font-display text-h1 text-navy">Agente WhatsApp</h1>
+      <h1 className="font-semibold text-h1 text-navy">Agente WhatsApp</h1>
       <p className="mt-2 max-w-2xl text-body-sm text-ink-secondary">
         Prova della conversazione, senza Meta e senza database. Quello che vedi qui è
         esattamente quello che riceverebbe uno studente. La specifica è in{" "}

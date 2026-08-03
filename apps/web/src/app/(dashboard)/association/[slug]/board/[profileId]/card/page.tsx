@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { MiraCardDocument } from "@/components/card-view/mira-card-document";
 import { canManageMembers } from "@/lib/association-access";
+import { DetailHeader } from "@/components/page-bar";
 
 interface Props {
   params: Promise<{ slug: string; profileId: string }>;
@@ -50,7 +51,7 @@ export default async function MemberCardPage({ params }: Props) {
   const t = await getTranslations("Board");
 
   const { data: profile } = await (supabase.from("profiles") as any)
-    .select("full_name, email, student_profiles(id, degree_level, degree_program, university)")
+    .select("full_name, email, avatar_url, student_profiles(id, degree_level, degree_program, university)")
     .eq("id", profileId)
     .maybeSingle();
 
@@ -85,6 +86,7 @@ export default async function MemberCardPage({ params }: Props) {
     pianoCarriera: block("piano_carriera"),
     viewer: "associazioni" as const,
     displayName: (profile as any).full_name ?? undefined,
+    avatarUrl: (profile as any).avatar_url ?? undefined,
   };
 
   const subtitle = [studentProfile?.degree_program, studentProfile?.university]
@@ -93,21 +95,11 @@ export default async function MemberCardPage({ params }: Props) {
 
   return (
     <div className="space-y-4">
-      <div>
-        <Link
-          href={`/association/${slug}/board`}
-          className="text-body-sm text-petrol hover:text-petrol-700 transition-colors"
-        >
-          ← {t("heading")}
-        </Link>
-        <h1 className="font-display text-h2 text-navy mt-1.5">
-          {(profile as any).full_name ?? (profile as any).email}
-        </h1>
-        <p className="text-body-sm text-ink-secondary">
-          {(profile as any).email}
-          {subtitle && ` · ${subtitle}`}
-        </p>
-      </div>
+      <DetailHeader
+        back={{ href: `/association/${slug}/board`, label: t("heading") }}
+        title={(profile as any).full_name ?? (profile as any).email}
+        meta={[(profile as any).email, subtitle].filter(Boolean).join(" · ")}
+      />
 
       {studentProfile ? (
         <MiraCardDocument {...cardProps} />

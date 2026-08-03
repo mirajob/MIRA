@@ -10,6 +10,7 @@ import { MarkAssociationNotificationsRead } from "./mark-read";
 import { MyMemberships } from "./my-memberships";
 import { AssociationDirectory, type DirectoryAssociation } from "@/components/association-directory";
 import { APP_TIME_ZONE } from "@/lib/format-date";
+import { PageBar } from "@/components/page-bar";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-navy-50 text-ink-tertiary",
@@ -155,15 +156,9 @@ export default async function StudentAssociazioniPage({
   return (
     // Piu' largo del solito max-w-2xl: l'indice va su due colonne e con oltre cento
     // associazioni una colonna sola diventa un rotolo infinito.
-    <div className="mx-auto max-w-4xl px-6 py-6 space-y-6">
+    <div className="space-y-4">
       <MarkAssociationNotificationsRead />
-
-      <div>
-        <h1 className="font-display text-h2 text-navy">{t("pageTitle")}</h1>
-        <p className="mt-1 text-body text-ink-secondary">
-          {t("pageSubtitle")}
-        </p>
-      </div>
+      <PageBar title={t("pageTitle")} />
 
       <JoinByCode />
 
@@ -213,7 +208,7 @@ export default async function StudentAssociazioniPage({
             {/* Da fare: azioni concrete (costruire la pagina pubblica, completare il profilo). */}
             {showTodo && (
               <div className="rounded-lg border border-petrol/30 bg-petrol-50 p-5 space-y-3">
-                <h2 className="font-sans text-h3 text-navy">{t("todoHeading")}</h2>
+                <h2 className="text-body font-medium text-navy">{t("todoHeading")}</h2>
 
                 {pendingPages.map((m: any) => (
                   <div key={m.association_id} className="flex items-center justify-between gap-3 rounded-md bg-white px-4 py-3">
@@ -249,7 +244,7 @@ export default async function StudentAssociazioniPage({
       {/* Richieste di gestione di una pagina associazione */}
       {(myClaimRequests ?? []).length > 0 && (
         <div>
-          <h2 className="font-sans text-h3 text-navy mb-3">{t("claimRequestsHeading")}</h2>
+          <h2 className="text-body font-medium text-navy mb-3">{t("claimRequestsHeading")}</h2>
           <div className="rounded-lg border border-border bg-white divide-y divide-border">
             {(myClaimRequests as any[]).map((req) => (
               <div key={req.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5">
@@ -280,15 +275,12 @@ export default async function StudentAssociazioniPage({
         </div>
       )}
 
-      {/* Le tue candidature */}
-      <div>
-        <h2 className="font-sans text-h3 text-navy mb-3">{t("myApplicationsHeading")}</h2>
-
-        {!myApplications?.length ? (
-          <div className="rounded-lg border border-border bg-white p-6 text-center">
-            <p className="text-body-sm text-ink-secondary">{t("noApplications")}</p>
-          </div>
-        ) : (
+      {/* Le tue candidature: il blocco esiste solo se ce n'è almeno una. Un
+          riquadro che dice "non hai candidature" occupa spazio per non dire
+          niente, e l'elenco delle associazioni sotto è già l'invito a farne una. */}
+      {Boolean(myApplications?.length) && (
+        <div>
+          <h2 className="text-body font-medium text-navy mb-2">{t("myApplicationsHeading")}</h2>
           <div className="space-y-2">
             {(myApplications as any[]).map((app) => {
               const assoc = app.association_profiles as { name: string; slug: string } | null;
@@ -356,12 +348,11 @@ export default async function StudentAssociazioniPage({
               );
             })}
           </div>
-        )}
-      </div>
-
+        </div>
+      )}
 
       <div>
-        <h2 className="font-sans text-h3 text-navy mb-3">{t("allAssociationsHeading")}</h2>
+        <h2 className="text-body font-medium text-navy mb-2">{t("allAssociationsHeading")}</h2>
 
         {isAdminPreview && (
           <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">

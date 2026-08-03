@@ -51,6 +51,12 @@ export interface MiraCardDocumentProps {
   viewer?: "self" | "associazioni" | "aziende";
   /** Nome reale, o codice anonimizzato tipo "C001" per la vista azienda. */
   displayName?: string | null;
+  /**
+   * Foto dello studente. Non si passa nella vista azienda: lì il profilo è
+   * anonimo finché non è lo studente a condividere i recapiti, e una faccia
+   * renderebbe l'anonimato una finzione.
+   */
+  avatarUrl?: string | null;
 }
 
 interface OverlayState {
@@ -306,11 +312,21 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
           >
             {/* ——— Masthead ——— */}
             <div className="px-10 pt-9 pb-5">
-              <div className="flex items-baseline justify-between gap-4">
-                {props.displayName && (
-                  <h1 className="font-display text-[28px] leading-tight text-navy">{props.displayName}</h1>
-                )}
-                <span className="text-[10px] tracking-[0.22em] text-navy/40 uppercase shrink-0">MIRA Card</span>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex min-w-0 items-center gap-3.5">
+                  {props.avatarUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={props.avatarUrl}
+                      alt=""
+                      className="h-14 w-14 shrink-0 rounded-full object-cover"
+                    />
+                  )}
+                  {props.displayName && (
+                    <h1 className="font-display text-[28px] leading-tight text-navy">{props.displayName}</h1>
+                  )}
+                </div>
+                <span className="shrink-0 text-[10px] uppercase tracking-[0.22em] text-navy/40">MIRA Card</span>
               </div>
 
               {/* Studi a sinistra, Disponibilità etichettata a destra — stessa striscia,

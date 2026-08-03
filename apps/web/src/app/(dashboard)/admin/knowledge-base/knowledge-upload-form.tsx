@@ -28,7 +28,7 @@ export function KnowledgeUploadForm() {
 
   return (
     <div className="rounded-lg border border-border bg-white p-6">
-      <h2 className="font-sans text-h3 text-navy mb-4">{t("uploadHeading")}</h2>
+      <h2 className="text-body font-medium text-navy mb-4">{t("uploadHeading")}</h2>
 
       {result?.error && (
         <div className="mb-4 rounded-md bg-error-bg p-3 text-body-sm text-error">{result.error}</div>

@@ -2,6 +2,7 @@ import { getUserContext } from "@/lib/auth";
 import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { PageBar } from "@/components/page-bar";
 
 // Il libretto si può ricaricare anche da qui (HeaderBlock): il parsing usa un modello ad
 // alto reasoning effort per la massima accuratezza su voti/esami, che può superare il
@@ -112,11 +113,9 @@ export default async function StudentHomePage() {
   const t = await getTranslations("StudentHome");
 
   return (
-    <div className="mx-auto max-w-4xl px-0 py-0 sm:px-6 sm:py-6 space-y-5">
-      <div>
-        <h1 className="font-display text-h2 text-navy">{t("greeting")}{name ? `, ${name}` : ""}</h1>
-        <p className="mt-1 text-body-sm text-ink-secondary">{t("cardPurpose")}</p>
-      </div>
+    <div className="space-y-4">
+      <PageBar title={t("greeting") + (name ? `, ${name}` : "")} />
+      <p className="text-body-sm text-ink-secondary">{t("cardPurpose")}</p>
 
       <ProfileViewSwitcher
         missingSections={missingSections}
@@ -124,6 +123,7 @@ export default async function StudentHomePage() {
           <MiraCardDocument
             viewer="self"
             displayName={ctx.profile.full_name}
+            avatarUrl={(ctx.profile as { avatar_url?: string | null }).avatar_url ?? null}
             header={header ? { data: header.prose_content as HeaderProseContent, visibility: header.visibility as HeaderVisibility } : undefined}
             disponibilita={disponibilita ? { data: disponibilita.prose_content as DisponibilitaProseContent } : undefined}
             esperienze={esperienze ? { data: { items: esperienzeItems } } : undefined}

@@ -107,7 +107,7 @@ export function SessionForm({
       ? await updateInterviewSession({ ...payload, sessionId })
       : await createInterviewSession({ ...payload, associationId, cycleId });
 
-    if (result.error) {
+    if ("error" in result && result.error) {
       setError(result.error);
       setLoading(false);
       return;

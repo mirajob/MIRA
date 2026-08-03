@@ -44,7 +44,9 @@
       "association_reviewer": "Admin",
       "association_interviewer": "Admin",
       "association_member": "Member"
-    }
+    },
+    "signOutConfirm": "Sign out of MIRA? You will have to log in again.",
+    "loading": "Loading..."
   },
   "Validation": {
     "password": {
@@ -337,7 +339,7 @@
     "noResults": "No university found."
   },
   "SidebarNav": {
-    "profile": "Profile",
+    "profile": "My MiraCard",
     "associations": "Associations",
     "companies": "Companies",
     "workspacesHeader": "Associations",
@@ -526,14 +528,12 @@
   },
   "Associazioni": {
     "pageTitle": "Associations",
-    "pageSubtitle": "Your applications and all associations on MIRA",
     "todoHeading": "To do",
     "pageNotPublic": "<strong>{name}</strong>'s page isn't public yet",
     "completePageCta": "Complete it →",
     "associationPending": "<strong>{name}</strong> is awaiting approval",
     "completeProfileCta": "Complete your MiraCard profile (~5 minutes) →",
     "myApplicationsHeading": "Your applications",
-    "noApplications": "You don't have any applications yet. Find an association below.",
     "allAssociationsHeading": "Associations at your university",
     "interviewScheduled": "Interview scheduled",
     "congratsAccepted": "Congratulations! You've been accepted.",
@@ -618,7 +618,8 @@
     "howItWorksTitle": "How it works",
     "howItWorks1": "A company describes the profile it is looking for. MIRA reads student cards and suggests the closest candidates.",
     "howItWorks2": "If they pick you, the request lands here. Meanwhile the company sees your card without your name or contacts.",
-    "howItWorks3": "The chat opens only if you accept. Name, email and phone are shared whenever you want, even later on."
+    "howItWorks3": "The chat opens only if you accept. Name, email and phone are shared whenever you want, even later on.",
+    "pageTitle": "Companies"
   },
   "PublicHeader": {
     "associationsLink": "Associations",
@@ -805,7 +806,6 @@
     "viewCard": "View MiraCard",
     "noCard": "This person doesn't have a MiraCard yet.",
     "guideMembers": "Now invite your members and manage them from here. Share the link below: whoever joins appears among the association's people, each with their MiraCard. You can appoint other admins or give each one a role.",
-    "openCard": "Open card →",
     "guideTeam": "Here you manage your team. Share the invite link below: whoever joins becomes a member of the association, with their MiraCard. Anyone you make an admin gets access to your same dashboard and can do everything you can; the others you organize into sections by role, area or team.",
     "generating": "Generating..."
   },
@@ -856,7 +856,6 @@
     "demote": "Dismiss as admin"
   },
   "Cycles": {
-    "heading": "Recruiting rounds",
     "subhead": "Manage your selection cycles",
     "newCycle": "Open a round",
     "noCycles": "No recruiting round yet. Open one to start receiving applications.",
@@ -1030,7 +1029,6 @@
     "addQuestionToggle": "+ Add question"
   },
   "CandidatesList": {
-    "heading": "Candidates",
     "countLabel": "{count} applications",
     "allFilter": "All",
     "noApplications": "No applications received yet",
@@ -1119,7 +1117,6 @@
     "tableHeaderScheduledOn": "Scheduled on"
   },
   "PublicPageEditor": {
-    "heading": "Public page",
     "subhead": "Edit the information visible on the association's public page",
     "saved": "Saved",
     "published": "Page published!",
@@ -1430,7 +1427,8 @@
     "duplicateWarning": "Possible duplicate of",
     "duplicateMergeCta": "Merge",
     "duplicateDismissCta": "Not a duplicate",
-    "duplicateMergeConfirm": "Merge “{duplicate}” into “{target}”? The “{duplicate}” page is deleted and whoever created it becomes an admin of “{target}”."
+    "duplicateMergeConfirm": "Merge “{duplicate}” into “{target}”? The “{duplicate}” page is deleted and whoever created it becomes an admin of “{target}”.",
+    "rejectReasonPrompt": "Why are you rejecting it? The reason goes to whoever made the request."
   },
   "AdminUsers": {
     "heading": "Users",
@@ -1625,8 +1623,6 @@
     "contact": "Write to us"
   },
   "Interviews": {
-    "eyebrow": "Recruiting",
-    "heading": "Interviews",
     "subhead": "One round for each stage of your selection. Pick the days and hours when the association runs interviews, then everyone on the board marks when they are available, and invited candidates book a time where somebody is there.",
     "newSessionCta": "Create an interview round",
     "newSessionHeading": "New interview round",
@@ -1723,7 +1719,7 @@
   },
   "StudentInterviews": {
     "pageTitle": "Interviews",
-    "pageSubtitle": "Invitations to schedule and interviews coming up.",
+    "pageSubtitle": "This is where interviews from the associations you applied to show up. When one invites you, you pick the time among the free ones: as soon as you book we send the confirmation with the place or the link, and the calendar invite.",
     "empty": "No interviews yet.",
     "toBookHeading": "To schedule",
     "upcomingHeading": "Coming up",
@@ -1749,5 +1745,59 @@
     "save": "Save",
     "saving": "Saving...",
     "empty": "No notes yet."
+  },
+  "Profile": {
+    "intro": "Your account: how other people see you and what you choose to show. What you tell about yourself lives in your MiraCard instead.",
+    "working": "One moment...",
+    "saving": "Saving...",
+    "photoHeading": "Profile photo",
+    "photoIntro": "A photo turns your application into a person rather than a name. It is not required and you can remove it whenever you want.",
+    "photoAdd": "Add a photo",
+    "photoReplace": "Change photo",
+    "photoRemove": "Remove photo",
+    "photoFormats": "JPG, PNG or WebP, up to 4 MB",
+    "photoSeenAssociations": {
+      "who": "Associations",
+      "what": "They see it on your MiraCard when you apply, next to your name."
+    },
+    "photoSeenCompanies": {
+      "who": "Companies",
+      "what": "They do not. To them you are a profile without a name until you share your contact details."
+    },
+    "photoSeenPublic": {
+      "who": "Anyone else",
+      "what": "Nobody: your MiraCard is not a public page and never reaches search engines."
+    },
+    "accountHeading": "Account details",
+    "fieldName": "Name",
+    "fieldEmail": "Email",
+    "fieldUniversity": "University",
+    "accountHint": "To change your name, email or university write to privacy@mirajob.cloud: these are how associations recognise you, so they are not editable on your own.",
+    "gradesHeading": "Grades and average",
+    "gradesIntro": "Your weighted average and individual grades are hidden by default. The exams you have taken are visible either way: what you decide here is whether the grades show too.",
+    "gradesAssociations": "University associations",
+    "gradesAssociationsHint": "Average and grades visible to the associations you apply to",
+    "gradesCompanies": "Companies",
+    "gradesCompaniesHint": "Average and grades visible to companies (not live yet)",
+    "dataHeading": "Your data",
+    "dataWho": {
+      "q": "Who holds your data",
+      "a": "MIRA, on Supabase servers in Europe. We do not sell it and we do not pass it to anyone you have not chosen."
+    },
+    "dataAssociations": {
+      "q": "What an association sees",
+      "a": "Only if you apply to them: your MiraCard with name, photo, studies, experience and skills. Associations you do not apply to cannot see you."
+    },
+    "dataCompanies": {
+      "q": "What a company sees",
+      "a": "A profile with no name, photo or contact details. They get your name and contacts only when you say yes."
+    },
+    "dataRights": {
+      "q": "What you can ask for",
+      "a": "A copy of everything we hold about you, a correction of anything wrong, or the deletion of your account. Write to us and we answer within thirty days."
+    },
+    "linkPrivacy": "Privacy policy",
+    "linkTerms": "Terms of service",
+    "linkContact": "Write to us: privacy@mirajob.cloud"
   }
 }

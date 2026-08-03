@@ -97,7 +97,7 @@ export function QuestionBuilder({ cycleId, questions }: { cycleId: string; quest
 
       {showForm ? (
         <form action={handleAdd} className="rounded-lg border border-petrol bg-white p-6 space-y-4">
-          <h4 className="font-sans text-h3 text-navy">{t("newQuestionHeading")}</h4>
+          <h4 className="text-body font-medium text-navy">{t("newQuestionHeading")}</h4>
 
           {error && (
             <div className="rounded-md bg-error-bg p-3 text-body-sm text-error">{error}</div>

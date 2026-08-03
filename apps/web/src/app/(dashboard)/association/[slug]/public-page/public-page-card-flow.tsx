@@ -180,7 +180,7 @@ function Header({
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <h2 className="font-display text-h2 text-navy truncate">{t("heading")}</h2>
+          <h2 className="text-body-lg font-semibold text-navy truncate">{t("heading")}</h2>
           <span
             className={`inline-flex shrink-0 items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${
               state.published ? "bg-success-bg text-success" : "bg-warning-bg text-warning"
@@ -322,7 +322,7 @@ function PagePreview({ state, t }: { state: PageCardState; t: ReturnType<typeof 
       <div className="flex items-start gap-4 mb-6">
         <Logo url={d.logoUrl} name={d.nome} size="lg" />
         <div>
-          <h3 className="font-display text-display-md text-navy">{d.nome || t("yourAssociation")}</h3>
+          <h3 className="font-semibold text-display-md text-navy">{d.nome || t("yourAssociation")}</h3>
           {d.categoria && <p className="text-body text-ink-secondary mt-1">{categoryLabel(d.categoria)}</p>}
         </div>
       </div>

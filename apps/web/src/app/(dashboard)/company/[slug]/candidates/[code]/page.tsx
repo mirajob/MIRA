@@ -70,7 +70,7 @@ export default async function CompanyCandidateCardPage({ params, searchParams }:
           >
             {t("backToSearch")}
           </Link>
-          <h1 className="font-display text-h1 text-navy mt-2">{t("candidateHeading", { code })}</h1>
+          <h1 className="font-semibold text-h1 text-navy mt-2">{t("candidateHeading", { code })}</h1>
           <p className="text-body-sm text-ink-tertiary">
             {student.degree_program ?? "—"} {student.degree_level ? `· ${student.degree_level}` : ""}
           </p>

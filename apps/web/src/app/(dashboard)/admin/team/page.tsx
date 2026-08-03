@@ -5,7 +5,7 @@ export default async function AdminTeamPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-h1 text-navy">{t("heading")}</h1>
+        <h1 className="font-semibold text-h1 text-navy">{t("heading")}</h1>
         <p className="mt-1 text-body text-ink-secondary">
           {t("subhead")}
         </p>

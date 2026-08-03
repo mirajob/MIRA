@@ -95,11 +95,10 @@
     background-color: #ffffff;
   }
 
-  h1, h2 {
-    font-family: var(--font-display);
-  }
-
-  h3, h4, h5, h6 {
+  /* Un titolo senza classi resta nella famiglia dell'interfaccia: il serif è una
+     scelta esplicita (pagine pubbliche, MiraCard come documento), non il default,
+     altrimenti due famiglie si alternano da una schermata all'altra senza motivo. */
+  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-sans);
     font-weight: 600;
   }

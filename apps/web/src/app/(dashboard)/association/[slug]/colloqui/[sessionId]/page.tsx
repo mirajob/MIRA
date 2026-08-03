@@ -11,6 +11,7 @@ import { AvailabilityGrid, type AvailabilityBlock } from "./availability-grid";
 import { SessionActions } from "./session-actions";
 import { InvitePanel, type InvitableCandidate } from "./invite-panel";
 import { BookedInterviews, type BookedInterview } from "./booked-interviews";
+import { DetailHeader } from "@/components/page-bar";
 
 interface Props {
   params: Promise<{ slug: string; sessionId: string }>;
@@ -154,37 +155,26 @@ export default async function InterviewSessionPage({ params }: Props) {
 
   return (
     <div className="space-y-4">
-      <div>
-        <Link
-          href={`/association/${slug}/colloqui`}
-          className="text-body-sm text-ink-tertiary transition-colors hover:text-petrol"
-        >
-          &larr; {t("backToSessions")}
-        </Link>
-
-        <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="text-eyebrow uppercase text-navy/50">
-            {t("roundLabel", { index: session.round_index })}
-          </span>
-          <h1 className="font-display text-h2 text-navy">{session.title}</h1>
-          <span className="text-body-sm text-ink-tertiary">
-            {session.mode === "online" ? t("modeOnline") : t("modeInPerson")}
-          </span>
-        </div>
-
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3">
-        {canManage && !archived && (
-          <Link
-            href={`/association/${slug}/colloqui/${sessionId}/modifica`}
-            className="text-body-sm font-medium text-navy hover:underline"
-          >
-            {t("editSession")}
-          </Link>
-        )}
-        <SessionActions sessionId={sessionId} slug={slug} canManage={canManage && !archived} />
-      </div>
+      <DetailHeader
+        back={{ href: `/association/${slug}/colloqui`, label: t("backToSessions") }}
+        title={session.title}
+        meta={`${t("roundLabel", { index: session.round_index })} · ${
+          session.mode === "online" ? t("modeOnline") : t("modeInPerson")
+        }`}
+        actions={
+          <>
+            {canManage && !archived && (
+              <Link
+                href={`/association/${slug}/colloqui/${sessionId}/modifica`}
+                className="text-body-sm font-medium text-navy hover:underline"
+              >
+                {t("editSession")}
+              </Link>
+            )}
+            <SessionActions sessionId={sessionId} slug={slug} canManage={canManage && !archived} />
+          </>
+        }
+      />
 
       <BookedInterviews
         slug={slug}

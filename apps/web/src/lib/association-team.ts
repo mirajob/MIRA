@@ -38,7 +38,7 @@ export async function loadTeamData(
 
   const [{ data: profilesData }, { data: studentProfiles }, { data: sectionsData }] = await Promise.all([
     userIds.length
-      ? (supabase.from("profiles") as any).select("id, full_name, email").in("id", userIds)
+      ? (supabase.from("profiles") as any).select("id, full_name, email, avatar_url").in("id", userIds)
       : Promise.resolve({ data: [] }),
     userIds.length
       ? (supabase.from("student_profiles") as any).select("id, user_id, degree_level, degree_program").in("user_id", userIds)
@@ -79,6 +79,7 @@ export async function loadTeamData(
         isSelf: m.user_id === currentUserId,
         fullName: (p?.full_name as string | null) ?? null,
         email: (p?.email as string) ?? "—",
+        avatarUrl: (p?.avatar_url as string | null) ?? null,
         degreeLevel: degreeLevelLabel((header?.livello as string | null) || ((s?.degree_level as string | null) ?? null)),
         degreeProgram: ((header?.corso as string | null)?.trim() || (s?.degree_program as string | null)) ?? null,
       };

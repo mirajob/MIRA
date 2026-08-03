@@ -44,7 +44,9 @@
       "association_reviewer": "Amministratore",
       "association_interviewer": "Amministratore",
       "association_member": "Membro"
-    }
+    },
+    "signOutConfirm": "Vuoi uscire da MIRA? Dovrai rifare l'accesso.",
+    "loading": "Caricamento..."
   },
   "Validation": {
     "password": {
@@ -337,7 +339,7 @@
     "noResults": "Nessuna università trovata."
   },
   "SidebarNav": {
-    "profile": "Profilo",
+    "profile": "La mia MiraCard",
     "associations": "Associazioni",
     "companies": "Aziende",
     "workspacesHeader": "Associazioni",
@@ -526,14 +528,12 @@
   },
   "Associazioni": {
     "pageTitle": "Associazioni",
-    "pageSubtitle": "Le tue candidature e tutte le associazioni su MIRA",
     "todoHeading": "Da fare",
     "pageNotPublic": "La pagina di <strong>{name}</strong> non è ancora pubblica",
     "completePageCta": "Completala →",
     "associationPending": "<strong>{name}</strong> è in attesa di approvazione",
     "completeProfileCta": "Completa il tuo profilo MiraCard (~5 minuti) →",
     "myApplicationsHeading": "Le tue candidature",
-    "noApplications": "Non hai ancora candidature. Trova un'associazione qui sotto.",
     "allAssociationsHeading": "Associazioni della tua università",
     "interviewScheduled": "Colloquio programmato",
     "congratsAccepted": "Congratulazioni! Sei stato accettato.",
@@ -618,7 +618,8 @@
     "howItWorksTitle": "Come funziona",
     "howItWorks1": "Un'azienda descrive il profilo che cerca. MIRA legge le card degli studenti e le propone i candidati più adatti.",
     "howItWorks2": "Se scelgono te, la richiesta arriva qui. L'azienda intanto vede la tua card senza nome e senza contatti.",
-    "howItWorks3": "La chat si apre solo se accetti. Nome, email e telefono li condividi quando vuoi, anche più avanti."
+    "howItWorks3": "La chat si apre solo se accetti. Nome, email e telefono li condividi quando vuoi, anche più avanti.",
+    "pageTitle": "Aziende"
   },
   "PublicHeader": {
     "associationsLink": "Associazioni",
@@ -805,7 +806,6 @@
     "viewCard": "Vedi MiraCard",
     "noCard": "Questa persona non ha ancora una MiraCard.",
     "guideMembers": "Ora invita i tuoi membri e gestiscili da qui. Condividi il link qui sotto: chi entra compare tra le persone dell'associazione, ognuno con la sua MiraCard. Puoi nominare altri amministratori o assegnare un ruolo a ciascuno.",
-    "openCard": "Apri la scheda →",
     "guideTeam": "Qui gestisci il tuo team. Condividi il link d'invito qui sotto: chi entra diventa un membro dell'associazione, con la sua MiraCard. Chi rendi amministratore ha accesso alla tua stessa dashboard e può svolgere le tue stesse funzioni; gli altri li organizzi in sezioni per ruolo, area o team.",
     "generating": "Generazione..."
   },
@@ -856,7 +856,6 @@
     "demote": "Rimuovi da amministratore"
   },
   "Cycles": {
-    "heading": "Selezioni",
     "subhead": "Gestisci i cicli di selezione",
     "newCycle": "Apri una selezione",
     "noCycles": "Nessuna selezione. Aprine una per iniziare a ricevere candidature.",
@@ -1030,7 +1029,6 @@
     "addQuestionToggle": "+ Aggiungi domanda"
   },
   "CandidatesList": {
-    "heading": "Candidati",
     "countLabel": "{count} candidature",
     "allFilter": "Tutti",
     "noApplications": "Nessuna candidatura ancora ricevuta",
@@ -1119,7 +1117,6 @@
     "tableHeaderScheduledOn": "Convocato il"
   },
   "PublicPageEditor": {
-    "heading": "Pagina pubblica",
     "subhead": "Modifica le informazioni visibili sulla pagina pubblica dell'associazione",
     "saved": "Salvato",
     "published": "Pagina pubblicata!",
@@ -1430,7 +1427,8 @@
     "duplicateWarning": "Possibile doppione di",
     "duplicateMergeCta": "Unisci",
     "duplicateDismissCta": "Non è un doppione",
-    "duplicateMergeConfirm": "Unire «{duplicate}» a «{target}»? La pagina «{duplicate}» viene cancellata e chi l'ha creata diventa amministratore di «{target}»."
+    "duplicateMergeConfirm": "Unire «{duplicate}» a «{target}»? La pagina «{duplicate}» viene cancellata e chi l'ha creata diventa amministratore di «{target}».",
+    "rejectReasonPrompt": "Perché la rifiuti? Il motivo arriva a chi ha fatto la richiesta."
   },
   "AdminUsers": {
     "heading": "Utenti",
@@ -1625,8 +1623,6 @@
     "contact": "Scrivici"
   },
   "Interviews": {
-    "eyebrow": "Selezioni",
-    "heading": "Colloqui",
     "subhead": "Un round per ogni fase della selezione. Scegli i giorni e gli orari in cui l'associazione fa i colloqui, poi ognuno del board segna quando c'è, e i candidati invitati prenotano negli orari in cui c'è qualcuno.",
     "newSessionCta": "Crea un round di colloqui",
     "newSessionHeading": "Nuovo round di colloqui",
@@ -1723,7 +1719,7 @@
   },
   "StudentInterviews": {
     "pageTitle": "Colloqui",
-    "pageSubtitle": "Gli inviti da fissare e i colloqui in programma.",
+    "pageSubtitle": "Qui arrivano i colloqui delle associazioni a cui ti sei candidato. Quando una ti invita, scegli tu l'orario fra quelli liberi: appena prenoti ti mandiamo la conferma con il posto o il link, e l'appuntamento per il calendario.",
     "empty": "Nessun colloquio per ora.",
     "toBookHeading": "Da fissare",
     "upcomingHeading": "In programma",
@@ -1749,5 +1745,59 @@
     "save": "Salva",
     "saving": "Salvo...",
     "empty": "Nessuna nota ancora."
+  },
+  "Profile": {
+    "intro": "Il tuo account: come ti vedono gli altri e cosa scegli di mostrare. Quello che racconti di te sta invece nella MiraCard.",
+    "working": "Un attimo...",
+    "saving": "Salvataggio...",
+    "photoHeading": "Foto profilo",
+    "photoIntro": "Una foto rende la candidatura una persona invece di un nome. Non è obbligatoria e la puoi togliere quando vuoi.",
+    "photoAdd": "Aggiungi una foto",
+    "photoReplace": "Cambia foto",
+    "photoRemove": "Togli la foto",
+    "photoFormats": "JPG, PNG o WebP, fino a 4 MB",
+    "photoSeenAssociations": {
+      "who": "Le associazioni",
+      "what": "La vedono sulla tua MiraCard quando ti candidi, insieme al tuo nome."
+    },
+    "photoSeenCompanies": {
+      "who": "Le aziende",
+      "what": "Non la vedono. Per loro sei un profilo senza nome finché non sei tu a condividere i recapiti."
+    },
+    "photoSeenPublic": {
+      "who": "Chiunque altro",
+      "what": "Nessuno: la tua MiraCard non è una pagina pubblica e non finisce sui motori di ricerca."
+    },
+    "accountHeading": "Dati di accesso",
+    "fieldName": "Nome",
+    "fieldEmail": "Email",
+    "fieldUniversity": "Università",
+    "accountHint": "Per cambiare nome, email o università scrivi a privacy@mirajob.cloud: sono i dati con cui le associazioni ti riconoscono, quindi non si modificano da soli.",
+    "gradesHeading": "Voti e media",
+    "gradesIntro": "Media ponderata e voti dei singoli esami sono nascosti di default. Gli esami che hai dato si vedono comunque: quello che decidi qui è se si vedono anche i voti.",
+    "gradesAssociations": "Associazioni universitarie",
+    "gradesAssociationsHint": "Media e voti visibili alle associazioni a cui ti candidi",
+    "gradesCompanies": "Aziende",
+    "gradesCompaniesHint": "Media e voti visibili alle aziende (parte non ancora attiva)",
+    "dataHeading": "I tuoi dati",
+    "dataWho": {
+      "q": "Chi tiene i tuoi dati",
+      "a": "MIRA, sui server europei di Supabase. Non li vendiamo e non li passiamo a chi non hai scelto tu."
+    },
+    "dataAssociations": {
+      "q": "Cosa vede un'associazione",
+      "a": "Solo se ti candidi da loro: la tua MiraCard con nome, foto, studi, esperienze e competenze. Le associazioni a cui non ti candidi non ti vedono."
+    },
+    "dataCompanies": {
+      "q": "Cosa vede un'azienda",
+      "a": "Un profilo senza nome, foto e recapiti. Nome e contatti li ricevono solo quando sei tu a dire di sì."
+    },
+    "dataRights": {
+      "q": "Cosa puoi chiedere",
+      "a": "Una copia di tutto quello che abbiamo su di te, la correzione di quello che è sbagliato, o la cancellazione dell'account. Basta scriverci e rispondiamo entro trenta giorni."
+    },
+    "linkPrivacy": "Informativa sulla privacy",
+    "linkTerms": "Termini di servizio",
+    "linkContact": "Scrivici: privacy@mirajob.cloud"
   }
 }

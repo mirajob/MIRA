@@ -7,6 +7,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { rangeCoversBlock } from "@/lib/interview-slots";
 import { APP_TIME_ZONE } from "@/lib/format-date";
 import { SlotPicker, type BookableSlot } from "./slot-picker";
+import { DetailHeader } from "@/components/page-bar";
 
 interface Props {
   params: Promise<{ inviteId: string }>;
@@ -73,18 +74,13 @@ export default async function StudentBookingPage({ params }: Props) {
     session.mode === "in_person" ? session.location : invite.location_or_link ?? session.meeting_link;
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-6 space-y-5">
+    <div className="space-y-4">
+      <DetailHeader
+        back={{ href: "/student/colloqui", label: t("backToInterviews") }}
+        title={session.title}
+        meta={session.association_profiles?.name}
+      />
       <div>
-        <Link
-          href="/student/colloqui"
-          className="text-body-sm text-ink-tertiary transition-colors hover:text-petrol"
-        >
-          &larr; {t("backToInterviews")}
-        </Link>
-        <p className="mt-2 text-eyebrow uppercase text-navy/60">
-          {session.association_profiles?.name}
-        </p>
-        <h1 className="font-display text-h2 text-navy">{session.title}</h1>
         {session.description && (
           <p className="mt-1 text-body text-ink-secondary whitespace-pre-wrap">{session.description}</p>
         )}
@@ -97,7 +93,7 @@ export default async function StudentBookingPage({ params }: Props) {
       {chosen ? (
         <div className="rounded-lg border border-petrol/30 bg-petrol-50 px-4 py-3">
           <p className="text-body-sm text-ink">{t("bookedTitle")}</p>
-          <p className="mt-0.5 font-sans text-h3 text-navy">
+          <p className="mt-0.5 text-body font-medium text-navy">
             {new Date(chosen.starts_at).toLocaleString(dateLocale, {
               timeZone: APP_TIME_ZONE,
               weekday: "long",

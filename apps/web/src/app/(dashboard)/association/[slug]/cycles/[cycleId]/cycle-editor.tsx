@@ -79,7 +79,7 @@ export function CycleEditor({
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-h2 text-navy">{data.title || t("fallbackTitle")}</h2>
+        <h2 className="text-body-lg font-semibold text-navy">{data.title || t("fallbackTitle")}</h2>
         {isOpen && (
           <span className="px-2 py-0.5 rounded-full text-[10px] font-medium uppercase bg-success-bg text-success">
             {t("openBadge")}

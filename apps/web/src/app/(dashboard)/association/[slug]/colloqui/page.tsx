@@ -150,7 +150,7 @@ export default async function AssociationInterviewsPage({ params }: Props) {
           <span className="text-eyebrow uppercase text-navy/50">
             {t("roundLabel", { index: session.round_index })}
           </span>
-          <span className="font-sans text-h3 text-navy">{session.title}</span>
+          <span className="text-body font-medium text-navy">{session.title}</span>
           <span className="ml-auto text-body-sm text-ink-tertiary">
             {session.application_cycles?.title}
           </span>
@@ -179,11 +179,7 @@ export default async function AssociationInterviewsPage({ params }: Props) {
 
   return (
     <div className="space-y-4">
-      <div>
-        <p className="text-eyebrow uppercase text-navy/60">{t("eyebrow")}</p>
-        <h1 className="font-display text-h2 text-navy">{t("heading")}</h1>
-        <p className="mt-0.5 text-body-sm text-ink-secondary">{t("subhead")}</p>
-      </div>
+      <p className="max-w-3xl text-body-sm text-ink-secondary">{t("subhead")}</p>
 
       <NewSessionPanel associationId={association.id} slug={slug} cycles={cycleOptions} />
 

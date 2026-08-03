@@ -236,7 +236,7 @@ function Header({
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <h2 className="font-display text-h2 text-navy truncate">{state.data.nome}</h2>
+          <h2 className="text-body-lg font-semibold text-navy truncate">{state.data.nome}</h2>
           <span
             className={`inline-flex shrink-0 items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${badgeClass}`}
           >
@@ -431,7 +431,7 @@ function CandidatePreview({
   return (
     <div className="rounded-lg border border-border bg-white px-6 py-8">
       <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("preview.eyebrow")}</p>
-      <h3 className="font-display text-h1 text-navy">{state.associationName}</h3>
+      <h3 className="font-semibold text-h1 text-navy">{state.associationName}</h3>
       {d.nome && <p className="mt-1 text-body text-ink-secondary">{d.nome}</p>}
 
       {d.descrizione && (

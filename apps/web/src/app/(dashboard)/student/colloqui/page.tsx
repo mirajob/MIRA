@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { APP_TIME_ZONE } from "@/lib/format-date";
+import { PageBar } from "@/components/page-bar";
 
 /**
  * I colloqui dello studente: quelli da fissare, quelli in programma e quelli
@@ -88,11 +89,9 @@ export default async function StudentInterviewsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-6 space-y-6">
-      <div>
-        <h1 className="font-display text-h2 text-navy">{t("pageTitle")}</h1>
-        <p className="mt-1 text-body text-ink-secondary">{t("pageSubtitle")}</p>
-      </div>
+    <div className="space-y-4">
+      <PageBar title={t("pageTitle")} />
+      <p className="max-w-2xl text-body-sm text-ink-secondary">{t("pageSubtitle")}</p>
 
       {!rows.length && (
         <div className="rounded-lg border border-border bg-white p-8 text-center">
@@ -102,7 +101,7 @@ export default async function StudentInterviewsPage() {
 
       {toBook.length > 0 && (
         <div>
-          <h2 className="font-sans text-h3 text-navy mb-3">{t("toBookHeading")}</h2>
+          <h2 className="text-body font-medium text-navy mb-3">{t("toBookHeading")}</h2>
           <div className="space-y-2">
             {toBook.map((i) => (
               <InterviewRow key={i.id} invite={i} />
@@ -113,7 +112,7 @@ export default async function StudentInterviewsPage() {
 
       {upcoming.length > 0 && (
         <div>
-          <h2 className="font-sans text-h3 text-navy mb-3">{t("upcomingHeading")}</h2>
+          <h2 className="text-body font-medium text-navy mb-3">{t("upcomingHeading")}</h2>
           <div className="space-y-2">
             {upcoming.map((i) => (
               <InterviewRow key={i.id} invite={i} />

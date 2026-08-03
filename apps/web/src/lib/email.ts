@@ -92,6 +92,11 @@ export async function sendInterviewBookingInvite({
   sessionDescription,
   bookingUrl,
   deadlineNote,
+  formatLabel,
+  placeLabel,
+  placeIsLink,
+  durationLabel,
+  daysLabel,
 }: {
   email: string;
   studentName: string | null;
@@ -100,7 +105,35 @@ export async function sendInterviewBookingInvite({
   sessionDescription?: string | null;
   bookingUrl: string;
   deadlineNote?: string | null;
+  /** "Online" oppure "In person". */
+  formatLabel?: string | null;
+  /** Indirizzo o link, quando è già noto adesso. */
+  placeLabel?: string | null;
+  placeIsLink?: boolean;
+  /** "30 minutes". */
+  durationLabel?: string | null;
+  /** L'arco di giorni in cui cadono i colloqui, per capire subito se si è liberi. */
+  daysLabel?: string | null;
 }) {
+  const row = (label: string, value: string) =>
+    `<tr><td style="padding: 6px 0; color: #718096; width: 110px;">${label}</td><td style="padding: 6px 0;">${value}</td></tr>`;
+
+  const details = [
+    formatLabel ? row("Format", formatLabel) : "",
+    daysLabel ? row("Days", daysLabel) : "",
+    durationLabel ? row("Length", durationLabel) : "",
+    placeLabel
+      ? row(
+          placeIsLink ? "Link" : "Where",
+          placeIsLink
+            ? `<a href="${placeLabel}" style="color: #2b6cb0;">${placeLabel}</a>`
+            : placeLabel
+        )
+      : "",
+  ]
+    .filter(Boolean)
+    .join("");
+
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: email,
@@ -112,14 +145,20 @@ export async function sendInterviewBookingInvite({
           ${studentName ? `Hi ${studentName},` : "Hi,"}
         </p>
         <p style="color: #1a202c; font-size: 14px; line-height: 1.6;">
-          <strong>${associationName}</strong> has invited you to <strong>${sessionTitle}</strong>.
-          Pick the time that works best for you.
+          <strong>${associationName}</strong> would like to meet you for <strong>${sessionTitle}</strong>.
+          There is no fixed time yet: you choose the one that suits you among the slots the board has kept free.
         </p>
         ${sessionDescription ? `<p style="color: #4a5568; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${sessionDescription}</p>` : ""}
+        ${details ? `<table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #1a202c; margin: 16px 0;">${details}</table>` : ""}
         <a href="${bookingUrl}" style="display: inline-block; background: #0a1628; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; margin: 8px 0 16px;">
           Choose your time
         </a>
-        ${deadlineNote ? `<p style="color: #718096; font-size: 13px;">${deadlineNote}</p>` : ""}
+        <p style="color: #718096; font-size: 13px; line-height: 1.6;">
+          ${deadlineNote ? `${deadlineNote}<br/>` : ""}
+          Once you pick a slot we send you a confirmation with the calendar invite${
+            placeLabel || placeIsLink === false ? "" : " and everything you need to join"
+          }.
+        </p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
         <p style="color: #a0aec0; font-size: 12px;">
           MIRA · University Talent Platform<br/>

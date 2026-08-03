@@ -95,7 +95,7 @@ export default async function AdminSeededAssociationsPage({ searchParams }: Prop
     <div className="space-y-4">
       <div>
         <p className="text-eyebrow uppercase text-navy/60">{t("eyebrow")}</p>
-        <h1 className="font-display text-h2 text-navy">{t("heading")}</h1>
+        <h1 className="text-body-lg font-semibold text-navy">{t("heading")}</h1>
         <p className="mt-0.5 text-body-sm text-ink-secondary">{t("subhead")}</p>
       </div>
 

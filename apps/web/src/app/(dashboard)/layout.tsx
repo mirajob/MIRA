@@ -29,6 +29,7 @@ export default async function DashboardLayout({
       association_profiles: m.association_profiles as {
         name: string;
         slug: string;
+        logo_url?: string | null;
       } | null,
     }));
 
@@ -45,7 +46,12 @@ export default async function DashboardLayout({
   );
   const userContent = (
     <div className="space-y-3">
-      <UserNav fullName={ctx.profile.full_name} email={ctx.profile.email} />
+      <UserNav
+        fullName={ctx.profile.full_name}
+        email={ctx.profile.email}
+        avatarUrl={(ctx.profile as { avatar_url?: string | null }).avatar_url ?? null}
+        profileHref={ctx.isStudent ? "/student/profile" : null}
+      />
       <LocaleSwitcher />
     </div>
   );

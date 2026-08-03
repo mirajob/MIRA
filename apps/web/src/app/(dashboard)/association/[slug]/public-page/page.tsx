@@ -38,12 +38,7 @@ export default async function PublicPageEditorPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
-        <p className="mt-1 text-body text-ink-secondary">
-          {t("subhead")}
-        </p>
-      </div>
+      <p className="max-w-3xl text-body-sm text-ink-secondary">{t("subhead")}</p>
 
       <PageEditorForm association={association} />
     </div>

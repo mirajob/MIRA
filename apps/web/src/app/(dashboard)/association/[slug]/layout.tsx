@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { hasWorkspaceAccess } from "@/lib/association-roles";
 import { readOnboardingState } from "@/lib/association-guide";
+import { PageBar } from "@/components/page-bar";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -55,30 +56,20 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
   // L'admin MIRA vede sempre la dashboard (deve poter revisionare/approvare).
   const isPending = !ctx.isMiraAdmin && association.verification_status !== "verified";
 
-  const associationHeader = (
-    <div className="mb-6 flex items-center gap-3">
-      {association.logo_url ? (
-        <img src={association.logo_url} alt="" className="h-10 w-10 rounded-md object-cover" />
-      ) : (
-        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-navy text-white text-label font-semibold">
-          {association.name.charAt(0)}
-        </div>
-      )}
-      <div>
-        <h1 className="font-sans text-h3 text-navy">{association.name}</h1>
-        <p className="text-body-sm text-ink-tertiary">
-          {c.has(`boardRoles.${membership?.role}`) ? c(`boardRoles.${membership?.role}`) : c("boardRoles.association_admin")}
-        </p>
-      </div>
-    </div>
-  );
+  const roleLabel = c.has(`boardRoles.${membership?.role}`)
+    ? c(`boardRoles.${membership?.role}`)
+    : c("boardRoles.association_admin");
+
+  // Nelle due schermate senza sezioni (in attesa di approvazione, percorso
+  // guidato) la barra fissa non ha tab da mostrare: resta solo il nome.
+  const associationHeader = <PageBar title={association.name} meta={roleLabel} />;
 
   // Finché MIRA non approva l'associazione, il board NON vede la dashboard: al suo
   // posto, inline (stessa pagina, sidebar mantenuta), lo stato "in attesa di
   // approvazione". Nessun redirect: cliccando la voce in sidebar resta qui.
   if (isPending) {
     return (
-      <div>
+      <div className="space-y-4">
         {associationHeader}
         <div className="rounded-lg border border-petrol/30 bg-petrol-50 p-6">
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/70 border border-petrol/20">
@@ -87,7 +78,7 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
               <polyline points="12 6 12 12 16 14" />
             </svg>
           </div>
-          <h2 className="font-display text-h2 text-navy mb-2">{t("pendingHeading", { name: association.name })}</h2>
+          <h2 className="text-body-lg font-semibold text-navy mb-2">{t("pendingHeading", { name: association.name })}</h2>
           <p className="text-body text-ink-secondary max-w-xl">{t("pendingBody")}</p>
         </div>
       </div>
@@ -104,7 +95,7 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
 
   if (onboardingActive) {
     return (
-      <div>
+      <div className="space-y-4">
         {associationHeader}
         {children}
       </div>
@@ -125,18 +116,24 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
   const showPublicPageBanner = association.public_page_status !== "published";
 
   return (
-    <div>
+    <div className="space-y-4">
+      <PageBar
+        title={association.name}
+        meta={roleLabel}
+        tabs={nav.map((item) => ({ label: item.label, href: item.href }))}
+      />
+
       {showOnboardingBanner && (
         <Link
           href="/student/onboarding"
-          className="mb-6 block rounded-lg border border-petrol/30 bg-petrol-50 px-4 py-3 text-body-sm text-petrol-700 hover:bg-petrol-100 transition-colors"
+          className="block rounded-lg border border-petrol/30 bg-petrol-50 px-4 py-3 text-body-sm text-petrol-700 hover:bg-petrol-100 transition-colors"
         >
           {t("onboardingBanner")}
         </Link>
       )}
 
       {showPublicPageBanner && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning/30 bg-warning-bg px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning/30 bg-warning-bg px-4 py-3">
           <p className="flex items-center gap-2 text-body-sm text-warning">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
               <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
@@ -153,20 +150,6 @@ export default async function AssociationWorkspaceLayout({ params, children }: P
           </Link>
         </div>
       )}
-
-      {associationHeader}
-
-      <nav className="mb-6 flex gap-1 border-b border-border pb-4 overflow-x-auto">
-        {nav.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="whitespace-nowrap rounded-md px-3 py-2 text-body-sm font-medium text-ink-secondary hover:text-navy hover:bg-navy-50/50 transition-colors duration-100"
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
 
       {children}
     </div>

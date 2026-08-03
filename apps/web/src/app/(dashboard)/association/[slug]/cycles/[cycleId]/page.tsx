@@ -61,7 +61,7 @@ export default async function CycleDetailPage({ params }: Props) {
       <div className="space-y-8">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h2 className="font-display text-h2 text-navy">{cycle.title}</h2>
+            <h2 className="text-body-lg font-semibold text-navy">{cycle.title}</h2>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-medium uppercase bg-navy-50 text-ink-tertiary">{t("closedBadge")}</span>
           </div>
           {cycle.description && <p className="text-body text-ink-secondary">{cycle.description}</p>}
@@ -73,7 +73,7 @@ export default async function CycleDetailPage({ params }: Props) {
 
         {positions.length > 0 && (
           <div>
-            <h3 className="font-sans text-h3 text-navy mb-3">{t("positionsHeading")}</h3>
+            <h3 className="text-body font-medium text-navy mb-3">{t("positionsHeading")}</h3>
             <div className="space-y-2">
               {positions.map((pos, i) => (
                 <div key={i} className="rounded-md border border-border bg-white p-4">
@@ -88,7 +88,7 @@ export default async function CycleDetailPage({ params }: Props) {
 
         {(questions ?? []).length > 0 && (
           <div>
-            <h3 className="font-sans text-h3 text-navy mb-3">{t("questionsHeading")}</h3>
+            <h3 className="text-body font-medium text-navy mb-3">{t("questionsHeading")}</h3>
             <div className="space-y-2">
               {(questions ?? []).map((q: any, i: number) => (
                 <div key={i} className="rounded-md border border-border bg-white px-4 py-3">
@@ -120,7 +120,7 @@ export default async function CycleDetailPage({ params }: Props) {
       />
 
       <div>
-        <h3 className="font-sans text-h3 text-navy mb-4">{t("customQuestionsHeading")}</h3>
+        <h3 className="text-body font-medium text-navy mb-4">{t("customQuestionsHeading")}</h3>
         <p className="text-body-sm text-ink-secondary mb-4">
           {t("customQuestionsSubhead")}
         </p>

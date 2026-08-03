@@ -128,12 +128,7 @@ export default async function CandidatesPage({ params, searchParams }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
-          <p className="mt-0.5 text-body-sm text-ink-secondary">
-            {t("countLabel", { count: rows.length })}
-          </p>
-        </div>
+        <p className="text-body-sm text-ink-secondary">{t("countLabel", { count: rows.length })}</p>
 
         {(cycles?.length ?? 0) > 1 && (
           <div className="flex flex-wrap gap-1.5">

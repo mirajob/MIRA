@@ -59,7 +59,7 @@ export default async function AdminAiUsagePage() {
     <div className="space-y-5">
       <div>
         <p className="text-eyebrow uppercase text-navy/60">Admin · Consumi AI</p>
-        <h1 className="font-display text-h2 text-navy">Quanto stiamo spendendo</h1>
+        <h1 className="text-body-lg font-semibold text-navy">Quanto stiamo spendendo</h1>
         <p className="mt-0.5 text-body-sm text-ink-secondary">
           Costo stimato al momento della chiamata: token effettivi per il listino del modello. È una nostra
           stima, non la fattura di Google, ma basta per accorgersi se qualcosa raddoppia il conto.

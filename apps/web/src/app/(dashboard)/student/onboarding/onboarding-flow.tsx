@@ -459,7 +459,7 @@ export function OnboardingFlow({ userName }: { userName: string }) {
           {phase === "gate" && !complete && (
             <div className="rounded-lg border border-border bg-white overflow-hidden">
               <div className="p-5">
-                <h2 className="font-display text-h3 text-navy">{t("gateTitle")}</h2>
+                <h2 className="font-semibold text-h3 text-navy">{t("gateTitle")}</h2>
                 <p className="mt-1 text-body text-ink-secondary">{t("gateBody", { pct: gatePct ?? progressPct })}</p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
@@ -528,7 +528,7 @@ export function OnboardingFlow({ userName }: { userName: string }) {
               cosa servisse quello che aveva appena costruito. */}
           {(phase === "chiusura" || complete) && (
             <div className="rounded-lg border border-border bg-white p-5">
-              <h2 className="font-display text-h3 text-navy">{t("finalTitle")}</h2>
+              <h2 className="font-semibold text-h3 text-navy">{t("finalTitle")}</h2>
               <p className="mt-1 text-body text-ink-secondary">{t("finalBody")}</p>
 
               <div className="mt-4 border-t border-border pt-4 space-y-3">

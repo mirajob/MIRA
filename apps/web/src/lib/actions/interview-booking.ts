@@ -2,7 +2,7 @@
 
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
-import { rangeCoversBlock } from "@/lib/interview-slots";
+import { parseWindows, rangeCoversBlock } from "@/lib/interview-slots";
 import { buildInterviewIcs } from "@/lib/ics";
 import { generateMeetingRoomUrl } from "@/lib/meeting-room";
 import { APP_TIME_ZONE } from "@/lib/format-date";
@@ -88,7 +88,37 @@ export async function inviteCandidatesToSession(input: {
     .in("id", input.applicationIds)
     .eq("association_id", session.association_id);
 
+  // I dettagli che finiscono nell'invito. Il posto si scrive solo quando è già
+  // deciso adesso: con un posto per colloquio arriva dopo la prenotazione, e
+  // annunciarlo qui sarebbe una promessa che la mail non mantiene.
+  const placeIsLink = session.mode === "online";
+  const sharedPlace =
+    session.link_mode === "shared"
+      ? placeIsLink
+        ? session.meeting_link
+        : session.location
+      : null;
+
+  const windows = parseWindows(session.windows);
+  const dayLabels = [...new Set(windows.map((w) => w.date))].sort();
+  const dayFormat = (iso: string) =>
+    new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-GB", {
+      timeZone: APP_TIME_ZONE,
+      day: "numeric",
+      month: "long",
+    });
+  const firstDay = dayLabels[0];
+  const lastDay = dayLabels[dayLabels.length - 1];
+  const daysLabel = !firstDay
+    ? null
+    : firstDay === lastDay || !lastDay
+      ? dayFormat(firstDay)
+      : `${dayFormat(firstDay)} to ${dayFormat(lastDay)}`;
+
   let invited = 0;
+  // Le mail non partite non si perdono in silenzio: chi invita deve sapere che
+  // quel candidato non ha ricevuto niente, altrimenti lo aspetta per giorni.
+  const emailFailures: string[] = [];
 
   for (const application of ((applications ?? []) as any[])) {
     // Un secondo invito allo stesso round non crea una seconda riga: l'unicità
@@ -130,19 +160,41 @@ export async function inviteCandidatesToSession(input: {
       data: { invite_id: inviteId },
     });
 
-    await sendInterviewBookingInvite({
-      email: application.profiles?.email,
-      studentName: application.profiles?.full_name ?? null,
-      associationName: session.association_profiles?.name ?? "",
-      sessionTitle: session.title,
-      sessionDescription: session.description,
-      bookingUrl: `https://mirajob.cloud/student/colloqui/${inviteId}`,
-    }).catch(() => {});
+    const name = application.profiles?.full_name ?? application.profiles?.email ?? "—";
+    if (!application.profiles?.email) {
+      emailFailures.push(name);
+    } else {
+      const sent = await sendInterviewBookingInvite({
+        email: application.profiles.email,
+        studentName: application.profiles.full_name ?? null,
+        associationName: session.association_profiles?.name ?? "",
+        sessionTitle: session.title,
+        sessionDescription: session.description,
+        bookingUrl: `https://mirajob.cloud/student/colloqui/${inviteId}`,
+        formatLabel: session.mode === "online" ? "Online" : "In person",
+        placeLabel: sharedPlace ?? null,
+        placeIsLink,
+        durationLabel: session.slot_duration_minutes
+          ? `${session.slot_duration_minutes} minutes`
+          : null,
+        daysLabel,
+      }).catch((e) => ({ error: e instanceof Error ? e.message : "invio fallito" }));
+
+      if ("error" in sent && sent.error) emailFailures.push(name);
+    }
 
     invited++;
   }
 
   revalidatePath(`/association/${input.slug}/colloqui/${input.sessionId}`);
+
+  if (emailFailures.length) {
+    return {
+      success: true,
+      invited,
+      warning: `Invito registrato, ma la mail non è partita a: ${emailFailures.join(", ")}.`,
+    };
+  }
   return { success: true, invited };
 }
 

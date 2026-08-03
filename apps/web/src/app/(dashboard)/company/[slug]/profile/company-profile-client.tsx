@@ -46,7 +46,7 @@ export function CompanyProfileClient({ slug, company }: { slug: string; company:
   return (
     <div className="max-w-2xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-h1 text-navy">{t("heading")}</h1>
+        <h1 className="font-semibold text-h1 text-navy">{t("heading")}</h1>
         {!editing ? (
           <button
             onClick={() => setEditing(true)}

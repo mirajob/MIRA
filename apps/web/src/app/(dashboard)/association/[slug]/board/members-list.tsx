@@ -26,6 +26,7 @@ export interface Person {
   isSelf: boolean;
   fullName: string | null;
   email: string;
+  avatarUrl?: string | null;
   degreeLevel: string | null;
   degreeProgram: string | null;
 }

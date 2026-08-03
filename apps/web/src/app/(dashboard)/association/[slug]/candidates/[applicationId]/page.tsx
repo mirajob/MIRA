@@ -7,6 +7,7 @@ import { CandidateActions, type RoundOption } from "./candidate-actions";
 import { CandidateNotes, type CandidateNote } from "./candidate-notes";
 import { MiraCardDocument } from "@/components/card-view/mira-card-document";
 import { APP_TIME_ZONE } from "@/lib/format-date";
+import { DetailHeader } from "@/components/page-bar";
 
 interface Props {
   params: Promise<{ slug: string; applicationId: string }>;
@@ -25,7 +26,7 @@ export default async function CandidateDetailPage({ params }: Props) {
     (supabase.from("applications") as any)
       .select(`
         *,
-        profiles(full_name, email),
+        profiles(full_name, email, avatar_url),
         student_profiles(id, degree_program, degree_level, current_year, transcript_summary),
         application_cycles(title),
         application_answers(id, answer_text, answer_json, application_questions(question_text, question_type)),
@@ -73,7 +74,7 @@ export default async function CandidateDetailPage({ params }: Props) {
   transcriptUrl = signedTranscript.data?.signedUrl ?? null;
   cvUrl = signedCv.data?.signedUrl ?? null;
 
-  const profile = application.profiles as { full_name: string | null; email: string };
+  const profile = application.profiles as { full_name: string | null; email: string; avatar_url: string | null };
   const student = application.student_profiles as Record<string, unknown>;
   const cycle = application.application_cycles as { title: string };
   const assocName = (association?.name as string) ?? "";
@@ -103,6 +104,7 @@ export default async function CandidateDetailPage({ params }: Props) {
     pianoCarriera: blockMap.has("piano_carriera") ? { data: blockMap.get("piano_carriera").prose_content } : undefined,
     viewer: "associazioni" as const,
     displayName: profile?.full_name ?? undefined,
+    avatarUrl: (profile as any)?.avatar_url ?? undefined,
   };
 
   // I round del ciclo di questa candidatura: sono le opzioni di "convoca a colloquio".
@@ -162,20 +164,14 @@ export default async function CandidateDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-5">
-      <Link
-        href={`/association/${slug}/candidates`}
-        className="text-body-sm text-ink-tertiary transition-colors hover:text-petrol"
-      >
-        &larr; {t("backToCandidates")}
-      </Link>
+      <DetailHeader
+        back={{ href: `/association/${slug}/candidates`, label: t("backToCandidates") }}
+        title={profile?.full_name ?? t("fallbackName")}
+        meta={cycle?.title}
+      />
 
-      {/* Intestazione */}
       <div>
-        <p className="text-eyebrow uppercase text-navy/60">{cycle?.title}</p>
-        <h2 className="font-display text-display-md text-navy">
-          {profile?.full_name ?? t("fallbackName")}
-        </h2>
-        <p className="text-body text-ink-secondary">{profile?.email}</p>
+        <p className="text-body-sm text-ink-secondary">{profile?.email}</p>
         {(application as any).selected_role_preferences?.[0] && (
           <p className="mt-1 text-body-sm font-medium text-petrol">
             {t("applyingFor", { role: (application as any).selected_role_preferences[0] })}
@@ -221,7 +217,7 @@ export default async function CandidateDetailPage({ params }: Props) {
       {/* Risposte alla candidatura, quando ci sono domande */}
       {answers.length > 0 && (
         <div>
-          <h3 className="font-sans text-h3 text-navy mb-3">{t("answersHeading")}</h3>
+          <h3 className="text-body font-medium text-navy mb-3">{t("answersHeading")}</h3>
           <div className="space-y-3">
             {answers.map((a) => (
               <div key={a.id} className="rounded-lg border border-border bg-white p-5">

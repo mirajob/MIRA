@@ -76,7 +76,7 @@ export default async function CyclesPage({ params }: Props) {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-sans text-h3 text-navy">{cycle.title || t("untitledDraft")}</h3>
+              <h3 className="text-body font-medium text-navy">{cycle.title || t("untitledDraft")}</h3>
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase ${badgeClass[state] ?? ""}`}
               >
@@ -125,10 +125,7 @@ export default async function CyclesPage({ params }: Props) {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="max-w-3xl">
-          <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
-          <p className="mt-1 text-body-sm text-ink-secondary">{t("explainer")}</p>
-        </div>
+        <p className="max-w-3xl text-body-sm text-ink-secondary">{t("explainer")}</p>
 
         {/* Una selezione per volta: due aperte insieme confondono i candidati. */}
         {current.length === 0 ? (

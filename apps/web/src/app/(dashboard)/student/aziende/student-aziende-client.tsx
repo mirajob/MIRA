@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { createBrowserClient } from "@mira/supabase/client";
 import { APP_TIME_ZONE } from "@/lib/format-date";
+import { PageBar } from "@/components/page-bar";
 import {
   respondToContactRequest,
   loadStudentChatMessages,
@@ -384,7 +385,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
       {acceptDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-lg border border-border w-full max-w-sm p-6 shadow-xl">
-            <h2 className="font-display text-h2 text-navy mb-2">{t("acceptDialogTitle")}</h2>
+            <h2 className="text-body-lg font-semibold text-navy mb-2">{t("acceptDialogTitle")}</h2>
             <p className="text-body-sm text-ink-secondary mb-5">
               {t("acceptDialogBody", { name: acceptDialog.companyName })}
             </p>
@@ -426,7 +427,7 @@ export function StudentAziendeClient({ initialRequests, initialChats }: Props) {
       {shareDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-lg border border-border w-full max-w-sm p-6 shadow-xl">
-            <h2 className="font-display text-h2 text-navy mb-2">{t("shareDialogTitle")}</h2>
+            <h2 className="text-body-lg font-semibold text-navy mb-2">{t("shareDialogTitle")}</h2>
             <p className="text-body-sm text-ink-secondary mb-5">
               {t("shareDialogBody")}
             </p>

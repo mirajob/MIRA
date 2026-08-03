@@ -90,7 +90,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
           </div>
         )}
         <div className="flex-1">
-          <h1 className="font-display text-h2 text-navy">{assoc?.name ?? c("associationFallback")}</h1>
+          <h1 className="text-body-lg font-semibold text-navy">{assoc?.name ?? c("associationFallback")}</h1>
           <p className="text-body-sm text-ink-tertiary mt-0.5">
             {cycle?.title}
             {selectedRole && selectedRole !== "generica" && t("roleLabel", { role: selectedRole })}
@@ -115,7 +115,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
       {/* Interview info */}
       {activeInterview && (
         <div className="rounded-lg border border-petrol-200 bg-petrol-50 p-5 space-y-2">
-          <p className="font-sans text-h3 text-navy">{t("interviewHeading")}</p>
+          <p className="text-body font-medium text-navy">{t("interviewHeading")}</p>
           {activeInterview.selected_time && (
             <p className="text-body-sm text-ink">
               {new Date(activeInterview.selected_time).toLocaleDateString(dateLocale, { timeZone: APP_TIME_ZONE,
@@ -136,7 +136,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
       {/* Timeline */}
       {events.length > 0 && (
         <div className="rounded-lg border border-border bg-white p-5">
-          <h2 className="font-sans text-h3 text-navy mb-4">{t("updatesHeading")}</h2>
+          <h2 className="text-body font-medium text-navy mb-4">{t("updatesHeading")}</h2>
           <div className="relative">
             <div className="absolute left-2 top-0 bottom-0 w-px bg-border" />
             <div className="space-y-5 pl-8">
@@ -166,7 +166,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
       {/* Application answers */}
       {answers.length > 0 && (
         <div className="rounded-lg border border-border bg-white p-5">
-          <h2 className="font-sans text-h3 text-navy mb-4">{t("answersHeading")}</h2>
+          <h2 className="text-body font-medium text-navy mb-4">{t("answersHeading")}</h2>
           <div className="space-y-4">
             {answers.map((a) => (
               <div key={a.id}>
@@ -183,7 +183,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
       {/* Association description */}
       {assoc?.short_description && (
         <div className="rounded-lg border border-border bg-white p-5">
-          <h2 className="font-sans text-h3 text-navy mb-2">{t("whoIsHeading", { name: assoc.name })}</h2>
+          <h2 className="text-body font-medium text-navy mb-2">{t("whoIsHeading", { name: assoc.name })}</h2>
           <p className="text-body-sm text-ink-secondary">{assoc.short_description}</p>
           <Link
             href={`/associations/${assoc.slug}`}

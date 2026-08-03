@@ -25,7 +25,7 @@ export function InviteMemberForm({ associationId, slug }: { associationId: strin
 
   return (
     <div className="rounded-lg border border-border bg-white p-6">
-      <h3 className="font-sans text-h3 text-navy mb-4">Invita membro</h3>
+      <h3 className="text-body font-medium text-navy mb-4">Invita membro</h3>
 
       {result?.error && (
         <div className="mb-4 rounded-md bg-error-bg p-3 text-body-sm text-error">{result.error}</div>

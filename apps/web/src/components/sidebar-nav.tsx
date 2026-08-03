@@ -12,6 +12,7 @@ interface SidebarNavProps {
     association_profiles: {
       name: string;
       slug: string;
+      logo_url?: string | null;
     } | null;
   }>;
   unreadNotifications?: number;
@@ -31,12 +32,14 @@ export function SidebarNav({ isStudent, isMiraAdmin, memberships, unreadNotifica
   const inAdminMode = pathname.startsWith("/admin");
 
   function isActive(href: string) {
-    if (href === "/student") return pathname === "/student" || pathname === "/student/profile";
+    // La card e l'account sono due pagine diverse: /student/profile non deve
+    // accendere la voce della card.
+    if (href === "/student") return pathname === "/student";
     return pathname.startsWith(href);
   }
 
   const linkClass = (active: boolean) =>
-    `flex items-center justify-between rounded-md px-3 py-2 text-xs font-medium transition-colors duration-100 ${
+    `flex items-center justify-between gap-2 rounded-md px-3 py-2 text-xs font-medium transition-colors duration-100 ${
       active ? "bg-navy-50 text-navy" : "text-ink-secondary hover:text-navy hover:bg-navy-50/50"
     }`;
 
@@ -72,15 +75,24 @@ export function SidebarNav({ isStudent, isMiraAdmin, memberships, unreadNotifica
             if (!m.association_profiles) return null;
             const href = `/association/${m.association_profiles.slug}`;
             const active = pathname.startsWith(href);
+            const logo = m.association_profiles.logo_url;
             return (
+              // Il nome va a capo invece di essere tagliato: le associazioni si
+              // chiamano "Bocconi Students for Innovation", e "Bocconi Stude…"
+              // non distingue una voce dall'altra. Il quadratino con l'iniziale
+              // c'è solo se esiste un logo vero: un riquadro con una lettera non
+              // aggiunge niente che il nome non dica già.
               <Link key={href} href={href} className={linkClass(active)}>
-                <span className="flex items-center gap-2">
-                  <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded text-[9px] font-semibold ${
-                    active ? "bg-navy text-white" : "bg-navy-50 text-navy-500"
-                  }`}>
-                    {m.association_profiles.name.charAt(0)}
-                  </span>
-                  <span className="truncate">{m.association_profiles.name}</span>
+                <span className="flex min-w-0 items-start gap-2">
+                  {logo && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={logo}
+                      alt=""
+                      className="mt-0.5 h-4 w-4 shrink-0 rounded-sm object-contain"
+                    />
+                  )}
+                  <span className="min-w-0 leading-snug">{m.association_profiles.name}</span>
                 </span>
               </Link>
             );
