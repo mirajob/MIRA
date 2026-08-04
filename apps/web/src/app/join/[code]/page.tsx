@@ -33,7 +33,7 @@ export default async function JoinPage({ params }: Props) {
       <div className="w-full max-w-md space-y-6 px-4">
         <div className="text-center">
           <CornerLocale />
-          <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
+          <img src="/brand/mira-lockup.svg" alt="MIRA" width={132} height={72} className="mx-auto w-[132px]" />
         </div>
 
         {!association ? (

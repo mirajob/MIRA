@@ -20,7 +20,9 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-6 py-10 lg:px-12">
         <div className="flex flex-col gap-8 sm:flex-row sm:justify-between">
           <div className="max-w-xs">
-            <img src="/brand/mira-lockup.svg" alt="MIRA" width={70} height={24} className="h-6 w-auto" />
+            {/* Qui c'è spazio: va il logo completo, con le frecce. Nelle barre strette
+                resta il solo wordmark, sotto i 120px gli archi non si leggono. */}
+            <img src="/brand/mira-lockup.svg" alt="MIRA" width={132} height={72} className="w-[132px]" />
             <p className="mt-3 text-body-sm text-ink-secondary">{t("tagline")}</p>
           </div>
 

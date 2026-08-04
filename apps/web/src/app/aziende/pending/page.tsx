@@ -15,7 +15,7 @@ export default async function PendingPage({ searchParams }: Props) {
     <div className="min-h-screen bg-paper flex flex-col">
       <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
         <Link href="/">
-          <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
+          <img src="/brand/mira-wordmark.svg" alt="MIRA" className="h-5" />
         </Link>
         <LocaleSwitcher />
       </header>

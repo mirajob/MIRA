@@ -96,3 +96,45 @@ export async function changePassword(currentPassword: string, newPassword: strin
 
   return setNewPassword(newPassword);
 }
+
+/**
+ * Cosa sappiamo già di chi ha appena aperto una sessione (tipicamente con Google).
+ *
+ * Serve al form "candida la tua associazione": dopo l'accesso con Google dobbiamo
+ * sapere se all'account manca l'università, perché le pagine delle associazioni sono
+ * scopate per ateneo e senza quel dato la pagina nascerebbe senza università. Se c'è
+ * già, i campi non si chiedono di nuovo.
+ */
+export async function getCurrentStudentBasics(): Promise<{
+  signedIn: boolean;
+  fullName: string | null;
+  university: string | null;
+  degreeLevel: string | null;
+}> {
+  const empty = { signedIn: false, fullName: null, university: null, degreeLevel: null };
+
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return empty;
+
+  const service = await createServiceClient();
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const { data: profile } = await (service.from("profiles") as any)
+    .select("id, full_name")
+    .eq("auth_user_id", user.id)
+    .maybeSingle();
+  if (!profile) return { ...empty, signedIn: true };
+
+  const { data: student } = await (service.from("student_profiles") as any)
+    .select("university, degree_level")
+    .eq("user_id", profile.id)
+    .maybeSingle();
+
+  return {
+    signedIn: true,
+    fullName: (profile.full_name as string) ?? null,
+    university: (student?.university as string) ?? null,
+    degreeLevel: (student?.degree_level as string) ?? null,
+  };
+}

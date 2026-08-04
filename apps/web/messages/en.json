@@ -46,7 +46,8 @@
       "association_member": "Member"
     },
     "signOutConfirm": "Sign out of MIRA? You will have to log in again.",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "back": "Back"
   },
   "Validation": {
     "password": {
@@ -811,7 +812,13 @@
     "duplicateClaimNote": "The request comes to us: we check it and hand you the page.",
     "duplicateJoinNote": "The request goes to whoever manages the page, who lets you in.",
     "duplicateConfirmCta": "Yes, it is ours: send the request",
-    "duplicateRejectCta": "No, mine is a different association"
+    "duplicateRejectCta": "No, mine is a different association",
+    "signedInLabel": "Signed in",
+    "signedInAs": "You're in as {name}.",
+    "signedInGeneric": "You're in with Google.",
+    "googleUniversityIntro": "Only your university is missing: on MIRA associations are split by university, and your page belongs to yours.",
+    "googleMissingUniversity": "Pick a university and level to carry on.",
+    "googleProfileFailed": "I couldn't save the university and level. Try again."
   },
   "InAttesaPage": {
     "heading": "Application pending",

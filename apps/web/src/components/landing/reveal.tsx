@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Blocco che compare quando entra in vista, una volta sola.
+ * Blocco che compare quando entra in vista e si ritira quando esce, ogni volta:
+ * scorrendo su e giù l'effetto si ripete, come nei siti dove il contenuto "respira"
+ * lungo la pagina. Fermarlo dopo la prima comparsa lo faceva sembrare rotto al
+ * secondo passaggio.
  *
  * Stessa filosofia dei reel: l'animazione è un di più, non un requisito. Senza JS
  * il contenuto si vede comunque (regola `noscript` in `globals.css`), e con
@@ -30,12 +33,12 @@ export function Reveal({
     }
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setShown(true);
-          io.disconnect();
-        }
+        const entry = entries[0];
+        if (entry) setShown(entry.isIntersecting);
       },
-      { threshold: 0.1, rootMargin: "0px 0px -6% 0px" },
+      // La fascia si chiude un po' sopra e un po' sotto la finestra: il blocco si
+      // ritira solo quando è davvero uscito, non appena tocca il bordo.
+      { threshold: 0, rootMargin: "-4% 0px -8% 0px" },
     );
     io.observe(el);
     return () => io.disconnect();

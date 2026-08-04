@@ -1,26 +1,43 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { BackLink } from "@/components/page-bar";
 
-export default function AuthLayout({
+/**
+ * Cornice delle schermate di accesso (login, registrazione, password, completa profilo).
+ *
+ * Fondo cream come tutte le pagine pubbliche: prima era paper e si vedeva il salto
+ * passando dalla home al login.
+ *
+ * Il blocco è centrato con `m-auto` e non con `items-center`: con la centratura flex,
+ * un form più alto della finestra deborda in cima e la parte superiore diventa
+ * irraggiungibile — era il motivo per cui il logo sembrava tagliato contro il bordo.
+ */
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const c = await getTranslations("Common");
+
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-paper">
-      <div className="absolute right-4 top-4">
-        <LocaleSwitcher />
-      </div>
-      <div className="w-full max-w-md space-y-8 px-4">
-        <div className="text-center">
-          <Link href="/">
-            <img
-              src="/brand/mira-lockup.svg"
-              alt="MIRA"
-              className="mx-auto h-7"
-            />
-          </Link>
+    <div className="flex min-h-screen bg-cream">
+      <div className="m-auto w-full max-w-md px-6 py-10">
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <BackLink href="/" label={c("back")} />
+          <LocaleSwitcher />
         </div>
+
+        <Link href="/" aria-label="MIRA" className="block">
+          <img
+            src="/brand/mira-lockup.svg"
+            alt="MIRA"
+            width={132}
+            height={72}
+            className="mx-auto w-[132px]"
+          />
+        </Link>
+
         {children}
       </div>
     </div>

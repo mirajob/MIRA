@@ -14,6 +14,10 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { PasswordInput } from "@/components/password-input";
 import { UniversityCombobox } from "@/components/university-combobox";
+import { BackLink } from "@/components/page-bar";
+import { GoogleSignInButton } from "@/components/google-signin-button";
+import { getCurrentStudentBasics } from "@/lib/actions/auth";
+import { completeStudentProfile } from "@/lib/actions/complete-profile";
 
 const DEGREE_LEVEL_VALUES = ["triennale", "magistrale", "ciclo_unico"] as const;
 
@@ -43,7 +47,20 @@ export default function CandidatiAssociazionePage() {
   const [matches, setMatches] = useState<AssociationMatch[] | null>(null);
   const [linkTarget, setLinkTarget] = useState<AssociationMatch | null>(null);
   const [roleInAssociation, setRoleInAssociation] = useState("");
+  // Accesso con Google fatto QUI dentro: la sessione è aperta, si resta sul modulo.
+  // `needsUniversity` decide se chiedere ateneo e livello, che Google non ci dà e senza
+  // i quali la pagina dell'associazione nascerebbe senza università.
+  const [google, setGoogle] = useState<{ name: string | null; needsUniversity: boolean } | null>(null);
   const router = useRouter();
+
+  async function handleGoogleSignedIn() {
+    const basics = await getCurrentStudentBasics();
+    if (!basics.signedIn) return;
+    setError(null);
+    setGoogle({ name: basics.fullName, needsUniversity: !basics.university });
+    if (basics.university) setUniversity(basics.university);
+    if (basics.degreeLevel) setDegreeLevel(basics.degreeLevel);
+  }
 
   /** L'invio vero: crea la pagina, oppure aggancia quella che esiste già. */
   async function submitRegistration(options: {
@@ -60,6 +77,45 @@ export default function CandidatiAssociazionePage() {
       roleInAssociation: roleInAssociation || null,
       possibleDuplicateOf: options.possibleDuplicateOf ?? null,
     };
+
+    // Sessione già aperta con Google: niente password da verificare. Se all'account
+    // manca l'ateneo lo salviamo qui, senza passare dalla schermata "completa il profilo":
+    // chi sta candidando la sua associazione deve restare dentro questo modulo.
+    if (google) {
+      setLoading(true);
+
+      if (google.needsUniversity) {
+        if (!university || !degreeLevel) {
+          setError(t("googleMissingUniversity"));
+          setLoading(false);
+          return;
+        }
+        const profileResult = await completeStudentProfile({ university, degreeLevel });
+        if (profileResult.error) {
+          setError(t("googleProfileFailed"));
+          setLoading(false);
+          return;
+        }
+        setGoogle({ ...google, needsUniversity: false });
+      }
+
+      const result = (await attachAssociationToCurrentUser({
+        associationName,
+        category,
+        websiteUrl: normalizedUrl,
+        description,
+        ...linkPayload,
+      })) as SubmitResult;
+
+      if (result.error) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+
+      router.push(pendingHref(result));
+      return;
+    }
 
     if (hasAccount) {
       setLoading(true);
@@ -144,10 +200,13 @@ export default function CandidatiAssociazionePage() {
     // controllo è sul nome, dentro lo stesso ateneo, e solo un match praticamente certo
     // interrompe il flusso — un doppione da unire costa meno di un presidente mandato
     // sulla pagina sbagliata.
+    // Il confronto con le pagine esistenti si fa dentro l'ateneo, quando lo sappiamo:
+    // con Google lo sappiamo dopo l'accesso (dal profilo o dal campo qui sopra), quindi
+    // l'eventuale doppione salta fuori solo a università nota, non prima.
     setLoading(true);
     const { matches: found } = await lookupAssociationMatches({
       name: associationName,
-      university: hasAccount ? undefined : university,
+      university: hasAccount && !google ? undefined : university || undefined,
     });
     setLoading(false);
 
@@ -168,6 +227,9 @@ export default function CandidatiAssociazionePage() {
 
       <div className="flex-1 flex items-start justify-center px-6 py-12">
         <div className="w-full max-w-md">
+          <div className="mb-4">
+            <BackLink href="/" label={c("back")} />
+          </div>
           <h1 className="font-display text-h1 text-navy mb-2">{t("heading")}</h1>
           <p className="text-body text-ink-secondary mb-8">
             {t("intro")}
@@ -304,6 +366,46 @@ export default function CandidatiAssociazionePage() {
             </label>
 
             <div className="border-t border-border pt-5">
+              {google ? (
+                /* Accesso già fatto con Google: restano al massimo ateneo e livello. */
+                <div className="space-y-4">
+                  <p className="text-label text-ink-secondary">{t("signedInLabel")}</p>
+                  <p className="text-body-sm text-ink-tertiary">
+                    {google.name ? t("signedInAs", { name: google.name }) : t("signedInGeneric")}
+                  </p>
+
+                  {google.needsUniversity && (
+                    <>
+                      <p className="text-body-sm text-ink-secondary">{t("googleUniversityIntro")}</p>
+
+                      <label className="block">
+                        <span className="text-label text-navy mb-2 block">{s("universityLabel")}</span>
+                        <UniversityCombobox
+                          value={university}
+                          onChange={setUniversity}
+                          inputClassName="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink placeholder:text-ink-tertiary hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
+                        />
+                      </label>
+
+                      <label className="block">
+                        <span className="text-label text-navy mb-2 block">{s("degreeLevelLabel")}</span>
+                        <select
+                          required
+                          value={degreeLevel}
+                          onChange={(e) => setDegreeLevel(e.target.value)}
+                          className="w-full px-4 py-3 rounded-md bg-white border border-border text-body text-ink hover:border-border-strong focus:outline-none focus:border-petrol focus:ring-2 focus:ring-petrol/20 transition-colors duration-200"
+                        >
+                          <option value="">{s("degreeLevelPlaceholder")}</option>
+                          {DEGREE_LEVEL_VALUES.map((value) => (
+                            <option key={value} value={value}>{s(`degreeLevels.${value}`)}</option>
+                          ))}
+                        </select>
+                      </label>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <>
               <div className="flex items-center justify-between gap-3 mb-1">
                 <p className="text-label text-ink-secondary">
                   {hasAccount ? t("loginSectionLabel") : t("credentialsSectionLabel")}
@@ -319,6 +421,12 @@ export default function CandidatiAssociazionePage() {
               <p className="text-body-sm text-ink-tertiary mb-4">
                 {hasAccount ? t("loginSectionIntro") : t("credentialsSectionIntro")}
               </p>
+
+              {/* Google vale sia per entrare sia per iscriversi: sta sopra i due modi,
+                  e la sessione si apre senza lasciare il modulo. */}
+              <div className="mb-4">
+                <GoogleSignInButton redirect="/associations/candidati" onSignedIn={handleGoogleSignedIn} />
+              </div>
 
               {hasAccount ? (
                 <div className="space-y-4">
@@ -395,9 +503,11 @@ export default function CandidatiAssociazionePage() {
                   </label>
                 </div>
               )}
+                </>
+              )}
             </div>
 
-            {!hasAccount && (
+            {!hasAccount && !google && (
               <label className="flex items-start gap-3">
                 <input
                   type="checkbox"
@@ -425,7 +535,7 @@ export default function CandidatiAssociazionePage() {
 
             <button
               type="submit"
-              disabled={loading || (!hasAccount && !acceptedTerms)}
+              disabled={loading || (!hasAccount && !google && !acceptedTerms)}
               className="w-full bg-navy text-white px-6 py-3 rounded-md text-label hover:bg-navy-700 active:scale-[0.98] transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? t("submitLoading") : t("submit")}

@@ -21,18 +21,36 @@ export interface PageTab {
 }
 
 /** Il passo indietro: solo l'icona, l'etichetta la leggono gli screen reader. */
+const BACK_CLASS =
+  "-ml-1.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-tertiary transition-colors duration-100 hover:bg-navy-50 hover:text-navy";
+
+function BackIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
+  );
+}
+
 export function BackLink({ href, label }: { href: string; label: string }) {
   return (
-    <Link
-      href={href}
-      aria-label={label}
-      title={label}
-      className="-ml-1.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-tertiary transition-colors duration-100 hover:bg-navy-50 hover:text-navy"
-    >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M15 18l-6-6 6-6" />
-      </svg>
+    <Link href={href} aria-label={label} title={label} className={BACK_CLASS}>
+      <BackIcon />
     </Link>
+  );
+}
+
+/**
+ * Stesso passo indietro, ma per i ritorni che non sono una navigazione: un form a
+ * più passaggi che torna al passaggio precedente. L'aspetto deve restare identico,
+ * altrimenti in giro per il sito il "torna indietro" cambia faccia da schermata a
+ * schermata.
+ */
+export function BackButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button type="button" onClick={onClick} aria-label={label} title={label} className={BACK_CLASS}>
+      <BackIcon />
+    </button>
   );
 }
 

@@ -40,6 +40,8 @@ async function loadFont(family: string, weight: number, text: string): Promise<A
 }
 
 function lockupDataUri(): string {
+  // Lockup v1.1: le proporzioni sono cambiate (le frecce sopra e sotto il wordmark),
+  // quindi le misure qui sotto seguono il nuovo rapporto 590:320.
   const svg = readFileSync(join(process.cwd(), "public/brand/mira-lockup-knockout.svg"), "utf8");
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 }
@@ -74,7 +76,7 @@ export default async function OpengraphImage() {
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={lockupDataUri()} alt="MIRA" width={408} height={140} />
+          <img src={lockupDataUri()} alt="MIRA" width={408} height={221} />
         </div>
       ),
       size,
@@ -95,7 +97,7 @@ export default async function OpengraphImage() {
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={lockupDataUri()} alt="MIRA" width={204} height={70} />
+        <img src={lockupDataUri()} alt="MIRA" width={204} height={111} />
 
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div

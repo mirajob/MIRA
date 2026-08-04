@@ -79,7 +79,20 @@ function loadGsiScript(): Promise<void> {
   });
 }
 
-export function GoogleSignInButton({ redirect }: { redirect: string }) {
+/**
+ * `onSignedIn` serve a chi usa l'accesso con Google DENTRO un altro form (candida la
+ * tua associazione): lì l'accesso è un passaggio del modulo, non la fine del percorso,
+ * quindi dopo la sessione si resta sulla pagina invece di essere spediti altrove.
+ */
+export function GoogleSignInButton({
+  redirect,
+  onSignedIn,
+  separator = true,
+}: {
+  redirect: string;
+  onSignedIn?: () => void | Promise<void>;
+  separator?: boolean;
+}) {
   const t = useTranslations("Common");
   const router = useRouter();
 
@@ -114,10 +127,16 @@ export function GoogleSignInButton({ redirect }: { redirect: string }) {
         return;
       }
 
+      if (onSignedIn) {
+        await onSignedIn();
+        setLoading(false);
+        return;
+      }
+
       router.push(safeRedirect);
       router.refresh();
     },
-    [router, safeRedirect, t]
+    [router, safeRedirect, t, onSignedIn]
   );
 
   useEffect(() => {
@@ -211,11 +230,13 @@ export function GoogleSignInButton({ redirect }: { redirect: string }) {
       {loading && !fallback && <p className="text-center text-body-sm text-ink-tertiary">{t("googleSignInLoading")}</p>}
       {error && <p className="text-body-sm text-error">{error}</p>}
 
-      <div className="flex items-center gap-3">
-        <span className="h-px flex-1 bg-border" />
-        <span className="text-body-sm text-ink-tertiary">{t("orSeparator")}</span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
+      {separator && (
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-body-sm text-ink-tertiary">{t("orSeparator")}</span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+      )}
     </div>
   );
 }

@@ -69,7 +69,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="max-w-md text-center space-y-4 px-4">
           <CornerLocale />
-          <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
+          <img src="/brand/mira-lockup.svg" alt="MIRA" width={132} height={72} className="mx-auto w-[132px]" />
           <h1 className="font-display text-h1 text-navy mt-8">{t("wrongUniversityHeading")}</h1>
           <p className="text-body text-ink-secondary">
             {t("wrongUniversityBody", { university: (association as any).university })}
@@ -115,7 +115,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="max-w-md text-center space-y-4 px-4">
           <CornerLocale />
-          <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
+          <img src="/brand/mira-lockup.svg" alt="MIRA" width={132} height={72} className="mx-auto w-[132px]" />
           <h1 className="font-display text-h1 text-navy mt-8">
             {notYetOpen ? t("notYetOpenHeading") : t("closedHeading")}
           </h1>
@@ -152,7 +152,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="max-w-md text-center space-y-4 px-4">
           <CornerLocale />
-          <img src="/brand/mira-lockup.svg" alt="MIRA" className="mx-auto h-7" />
+          <img src="/brand/mira-lockup.svg" alt="MIRA" width={132} height={72} className="mx-auto w-[132px]" />
           <h1 className="font-display text-h1 text-navy mt-8">{t("alreadyAppliedHeading")}</h1>
           <p className="text-body text-ink-secondary">
             {t("alreadyAppliedBody")}
@@ -169,7 +169,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     <div className="min-h-screen bg-paper">
       <header className="h-20 px-6 lg:px-12 flex items-center justify-between border-b border-border bg-white">
         <Link href={`/associations/${slug}`}>
-          <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-7" />
+          <img src="/brand/mira-lockup.svg" alt="MIRA" width={132} height={72} className="w-[132px]" />
         </Link>
         <LocaleSwitcher />
       </header>

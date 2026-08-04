@@ -46,7 +46,8 @@
       "association_member": "Membro"
     },
     "signOutConfirm": "Vuoi uscire da MIRA? Dovrai rifare l'accesso.",
-    "loading": "Caricamento..."
+    "loading": "Caricamento...",
+    "back": "Torna indietro"
   },
   "Validation": {
     "password": {
@@ -811,7 +812,13 @@
     "duplicateClaimNote": "La richiesta arriva a noi: controlliamo e ti diamo la pagina.",
     "duplicateJoinNote": "La richiesta arriva a chi gestisce già la pagina, che ti fa entrare.",
     "duplicateConfirmCta": "Sì, è la nostra: invia la richiesta",
-    "duplicateRejectCta": "No, la mia è un'altra associazione"
+    "duplicateRejectCta": "No, la mia è un'altra associazione",
+    "signedInLabel": "Accesso fatto",
+    "signedInAs": "Sei entrato come {name}.",
+    "signedInGeneric": "Sei entrato con Google.",
+    "googleUniversityIntro": "Manca solo il tuo ateneo: su MIRA le associazioni sono divise per università, e la pagina nasce nella tua.",
+    "googleMissingUniversity": "Scegli università e livello per continuare.",
+    "googleProfileFailed": "Non sono riuscito a salvare università e livello. Riprova."
   },
   "InAttesaPage": {
     "heading": "Candidatura in attesa",

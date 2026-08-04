@@ -24,7 +24,7 @@ export function MobileHeader({ nav, user }: { nav: React.ReactNode; user: React.
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-white px-4 lg:hidden">
       <Link href="/student">
-        <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
+        <img src="/brand/mira-wordmark.svg" alt="MIRA" className="h-5" />
       </Link>
       <button
         type="button"
@@ -48,7 +48,7 @@ export function MobileHeader({ nav, user }: { nav: React.ReactNode; user: React.
           />
           <div className="absolute right-0 top-0 flex h-full w-72 max-w-[85vw] flex-col bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-5" />
+              <img src="/brand/mira-wordmark.svg" alt="MIRA" className="h-5" />
               <button
                 type="button"
                 onClick={() => setOpen(false)}

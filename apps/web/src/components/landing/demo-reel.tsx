@@ -196,7 +196,7 @@ export function DemoReel<F extends BaseFrame>({
               <div className="flex items-center justify-between px-4 pt-4 pb-1">
                 {/* Logo vero, non la parola scritta col font display: nel mockup si nota. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/brand/mira-lockup.svg" alt="MIRA" width={58} height={20} className="h-[15px] w-auto" />
+                <img src="/brand/mira-wordmark.svg" alt="MIRA" width={58} height={20} className="h-[15px] w-auto" />
                 {pauseButton}
               </div>
               <div className="min-h-0 flex-1">{screen}</div>

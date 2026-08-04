@@ -8,6 +8,7 @@ import Link from "next/link";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { BackButton } from "@/components/page-bar";
 
 const SECTORS = [
   "Consulting",
@@ -67,12 +68,9 @@ export default function AziendePage() {
 
         <div className="flex-1 flex items-start justify-center px-6 py-12">
           <div className="w-full max-w-md">
-            <button
-              onClick={() => setStep("landing")}
-              className="text-body-sm text-ink-tertiary hover:text-ink mb-6 flex items-center gap-1"
-            >
-              {t("backLink")}
-            </button>
+            <div className="mb-4">
+              <BackButton onClick={() => setStep("landing")} label={c("back")} />
+            </div>
 
             <h1 className="font-display text-h1 text-navy mb-2">{t("formHeading")}</h1>
             <p className="text-body text-ink-secondary mb-8">
