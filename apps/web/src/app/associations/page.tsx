@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import { createServerClient } from "@mira/supabase/server";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { PublicHeader } from "@/components/public-header";
 import { associationCategoryLabel } from "@mira/domain";
+
+export const metadata: Metadata = {
+  title: "Associazioni",
+  description:
+    "Le associazioni universitarie su MIRA: guarda chi sono, cosa fanno e candidati direttamente dalla loro pagina, con la tua MiraCard al posto del CV.",
+};
 
 export default async function AssociationsPage() {
   const supabase = await createServerClient();

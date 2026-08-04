@@ -27,20 +27,26 @@ const playfair = Playfair_Display({
 /**
  * Anteprima dei link condivisi (WhatsApp, Instagram, Telegram, Google).
  *
- * Il testo è in italiano di proposito, anche se il locale di default del sito è
- * l'inglese: chi legge l'anteprima è uno studente italiano, e i crawler non mandano
- * né cookie né accept-language, quindi seguirebbero il default sbagliato.
+ * Titolo e descrizione ripetono quello che c'è davvero scritto nella prima
+ * schermata: quando non combaciano, Google scarta la descrizione e si costruisce
+ * lui il riassunto pescando frasi a caso dalla pagina. Se cambia il testo
+ * dell'hero, va cambiato anche qui.
+ *
+ * Sono in italiano, come la lingua che i crawler ricevono per default (vedi
+ * `i18n/request.ts`): con la pagina in una lingua e la descrizione in un'altra,
+ * Google usa la sua.
  *
  * L'immagine larga la genera `opengraph-image.tsx`, Next la collega da sé.
  */
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://mirajob.cloud";
+const SITE_TITLE = "MIRA · Non mandi CV, sono le aziende a scrivere a te";
 const SITE_DESCRIPTION =
-  "Rispondi a MIRA in chat e nasce la tua MiraCard: il profilo con cui le associazioni del tuo campus e le aziende ti trovano. Gratis per gli studenti.";
+  "Rispondi a MIRA in chat, bastano cinque minuti, e nasce la tua MiraCard: il profilo con cui le associazioni del tuo campus e le aziende ti trovano.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "MIRA",
+    default: SITE_TITLE,
     template: "%s · MIRA",
   },
   description: SITE_DESCRIPTION,
@@ -48,13 +54,13 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "MIRA",
     url: SITE_URL,
-    title: "MIRA",
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     locale: "it_IT",
   },
   twitter: {
     card: "summary_large_image",
-    title: "MIRA",
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
   icons: {

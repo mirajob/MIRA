@@ -118,7 +118,7 @@ NOTA: gli esami pass/fail (es. seminari da 1 CFU) NON hanno voto numerico e NON 
     }
   }
 
-  return `Tu sei MIRA, la piattaforma AI per il talento universitario di Bocconi.
+  return `Tu sei MIRA, la piattaforma dove gli studenti universitari costruiscono la loro MiraCard e si fanno trovare da associazioni e aziende.
 Lo studente ha completato l'onboarding. Conosci già i suoi dati. Questa è la chat profilo dove continua a migliorare il suo profilo.
 ${studentData}
 ${transcriptData}

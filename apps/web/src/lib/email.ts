@@ -161,7 +161,7 @@ export async function sendInterviewBookingInvite({
         </p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
         <p style="color: #a0aec0; font-size: 12px;">
-          MIRA · University Talent Platform<br/>
+          MIRA · mirajob.cloud<br/>
           <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
         </p>
       </div>
@@ -271,7 +271,7 @@ export async function sendInterviewConfirmation({
         ${todoBlock}
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
         <p style="color: #a0aec0; font-size: 12px;">
-          MIRA · University Talent Platform<br/>
+          MIRA · mirajob.cloud<br/>
           <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
         </p>
       </div>
@@ -317,7 +317,7 @@ export async function sendReminderEmail({
         </a>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
         <p style="color: #a0aec0; font-size: 12px;">
-          MIRA · University Talent Platform<br/>
+          MIRA · mirajob.cloud<br/>
           <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
         </p>
       </div>
@@ -366,7 +366,7 @@ ${message}
         </p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
         <p style="color: #a0aec0; font-size: 12px;">
-          MIRA · University Talent Platform<br/>
+          MIRA · mirajob.cloud<br/>
           <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
         </p>
       </div>
@@ -410,7 +410,7 @@ function invitationEmailHtml({
       </p>
       <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
       <p style="color: #a0aec0; font-size: 12px;">
-        MIRA · University Talent Platform<br/>
+        MIRA · mirajob.cloud<br/>
         <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
       </p>
     </div>
@@ -504,7 +504,7 @@ export async function sendCompanyRejectionEmail({
         ${reason ? `<div style="background: #f7f8fa; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; color: #1a202c; font-size: 14px;">${reason}</div>` : ""}
         <p style="color: #718096; font-size: 13px;">Per domande, rispondi a questa email.</p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
-        <p style="color: #a0aec0; font-size: 12px;">MIRA · University Talent Platform</p>
+        <p style="color: #a0aec0; font-size: 12px;">MIRA · mirajob.cloud</p>
       </div>
     `,
   });
@@ -552,7 +552,7 @@ export async function sendAssociationDecisionEmail({
           </a>
           <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
           <p style="color: #a0aec0; font-size: 12px;">
-            MIRA · University Talent Platform<br/>
+            MIRA · mirajob.cloud<br/>
             <a href="https://mirajob.cloud" style="color: #2b6cb0;">mirajob.cloud</a>
           </p>
         </div>
@@ -567,7 +567,7 @@ export async function sendAssociationDecisionEmail({
           ${reason ? `<div style="background: #f7f8fa; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; color: #1a202c; font-size: 14px;">${reason}</div>` : ""}
           <p style="color: #718096; font-size: 13px;">For any questions, just reply to this email.</p>
           <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px;" />
-          <p style="color: #a0aec0; font-size: 12px;">MIRA · University Talent Platform</p>
+          <p style="color: #a0aec0; font-size: 12px;">MIRA · mirajob.cloud</p>
         </div>
       `,
   });

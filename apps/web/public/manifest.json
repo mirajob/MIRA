@@ -1,7 +1,7 @@
 {
-  "name": "MIRA — University Talent Platform",
+  "name": "MIRA",
   "short_name": "MIRA",
-  "description": "Profili reali, matching AI, contatti aziende.",
+  "description": "La tua MiraCard: il profilo con cui le associazioni del tuo campus e le aziende ti trovano.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
