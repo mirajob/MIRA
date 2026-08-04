@@ -8,7 +8,7 @@ import Link from "next/link";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { BackButton } from "@/components/page-bar";
+import { BackButton, BackLink } from "@/components/page-bar";
 
 const SECTORS = [
   "Consulting",
@@ -197,6 +197,9 @@ export default function AziendePage() {
       <main className="max-w-4xl mx-auto px-6 py-16">
         {/* Hero */}
         <div className="mb-16">
+          <div className="mb-4">
+            <BackLink href="/" label={c("back")} />
+          </div>
           <h1 className="font-display text-display-lg text-navy mb-6 max-w-2xl">
             {t("landing.heading")}
           </h1>
