@@ -21,7 +21,7 @@ export function SiteHeader({ children, nav }: { children?: React.ReactNode; nav?
     <header className="sticky top-0 z-40 border-b border-border bg-cream/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-6 lg:px-12">
         <Link href="/" aria-label="MIRA" className="shrink-0">
-          <img src="/brand/mira-lockup.svg" alt="MIRA" width={81} height={44} className="h-11 w-auto" />
+          <img src="/brand/mira-lockup.svg?v=11" alt="MIRA" width={81} height={44} className="h-11 w-auto" />
         </Link>
         {children ? <div className="flex shrink-0 items-center gap-3">{children}</div> : null}
       </div>

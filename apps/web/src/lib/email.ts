@@ -140,7 +140,7 @@ export async function sendInterviewBookingInvite({
     subject: `${associationName}: choose your interview time`,
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
-        <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
+        <img src="https://mirajob.cloud/brand/mira-lockup.svg?v=11" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
         <p style="color: #1a202c; font-size: 14px; line-height: 1.6;">
           ${studentName ? `Hi ${studentName},` : "Hi,"}
         </p>
@@ -241,7 +241,7 @@ export async function sendInterviewConfirmation({
           : `Interview confirmed: ${associationName}, ${whenLabel}`,
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
-        <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
+        <img src="https://mirajob.cloud/brand/mira-lockup.svg?v=11" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
         <p style="color: #1a202c; font-size: 14px; line-height: 1.6;">
           ${recipientName ? `Hi ${recipientName},` : "Hi,"} ${
             variant === "interviewer"
@@ -310,7 +310,7 @@ export async function sendReminderEmail({
     subject,
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
-        <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
+        <img src="https://mirajob.cloud/brand/mira-lockup.svg?v=11" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
         <div style="color: #1a202c; font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 24px;">${message}</div>
         <a href="${ctaUrl}" style="display: inline-block; background: #0a1628; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;">
           ${ctaLabel}
@@ -352,7 +352,7 @@ export async function sendInterviewInvite({
     subject: subject ?? `${associationName} · Invito a colloquio`,
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
-        <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
+        <img src="https://mirajob.cloud/brand/mira-lockup.svg?v=11" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
         <h2 style="color: #0a1628; font-size: 20px; margin-bottom: 8px;">Invito a colloquio</h2>
         <p style="color: #4a5568; font-size: 14px; margin-bottom: 24px;">
           Ciao ${candidateName || "candidato/a"},<br/>
@@ -396,7 +396,7 @@ function invitationEmailHtml({
 }) {
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
-      <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
+      <img src="https://mirajob.cloud/brand/mira-lockup.svg?v=11" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
       <p style="color: #718096; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">${eyebrow}</p>
       <h2 style="color: #0a1628; font-size: 20px; margin-bottom: 8px;">${heading}</h2>
       <p style="color: #4a5568; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">${body}</p>
@@ -496,7 +496,7 @@ export async function sendCompanyRejectionEmail({
     subject: `Aggiornamento sulla richiesta di ${companyName}`,
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
-        <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
+        <img src="https://mirajob.cloud/brand/mira-lockup.svg?v=11" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
         <h2 style="color: #0a1628; font-size: 20px; margin-bottom: 8px;">Richiesta non approvata</h2>
         <p style="color: #4a5568; font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
           La richiesta di accesso per <strong>${companyName}</strong> non è stata approvata in questo momento.
@@ -541,7 +541,7 @@ export async function sendAssociationDecisionEmail({
     html: approved
       ? `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
-          <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
+          <img src="https://mirajob.cloud/brand/mira-lockup.svg?v=11" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
           <p style="color: #718096; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Request approved</p>
           <h2 style="color: #0a1628; font-size: 20px; margin-bottom: 8px;">${associationName} is now active</h2>
           <p style="color: #4a5568; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
@@ -559,7 +559,7 @@ export async function sendAssociationDecisionEmail({
       `
       : `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 0;">
-          <img src="https://mirajob.cloud/brand/mira-lockup.svg" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
+          <img src="https://mirajob.cloud/brand/mira-lockup.svg?v=11" alt="MIRA" style="height: 44px; margin-bottom: 32px;" />
           <h2 style="color: #0a1628; font-size: 20px; margin-bottom: 8px;">Request not approved</h2>
           <p style="color: #4a5568; font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
             The request for <strong>${associationName}</strong> was not approved at this time.

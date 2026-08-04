@@ -24,7 +24,7 @@ export default async function InvitePage({ params }: Props) {
       <div className="flex min-h-screen items-center justify-center bg-paper">
         <div className="max-w-md text-center space-y-4 px-4">
           <CornerLocale />
-          <img src="/brand/mira-lockup.svg" alt="MIRA" width={132} height={72} className="mx-auto w-[132px]" />
+          <img src="/brand/mira-lockup.svg?v=11" alt="MIRA" width={132} height={72} className="mx-auto w-[132px]" />
           <h1 className="font-display text-h1 text-navy mt-8">Invito non trovato</h1>
           <p className="text-body text-ink-secondary">
             Questo link di invito non è valido o è stato rimosso.
@@ -48,7 +48,7 @@ export default async function InvitePage({ params }: Props) {
       <div className="flex min-h-screen items-center justify-center bg-paper">
         <div className="max-w-md text-center space-y-4 px-4">
           <CornerLocale />
-          <img src="/brand/mira-lockup.svg" alt="MIRA" width={132} height={72} className="mx-auto w-[132px]" />
+          <img src="/brand/mira-lockup.svg?v=11" alt="MIRA" width={132} height={72} className="mx-auto w-[132px]" />
           <h1 className="font-display text-h1 text-navy mt-8">Invito non disponibile</h1>
           <p className="text-body text-ink-secondary">{message}</p>
           <Link href="/login" className="text-petrol underline underline-offset-2 decoration-1 hover:text-petrol-700">
@@ -65,7 +65,7 @@ export default async function InvitePage({ params }: Props) {
       <div className="flex min-h-screen items-center justify-center bg-paper">
         <div className="max-w-md text-center space-y-4 px-4">
           <CornerLocale />
-          <img src="/brand/mira-lockup.svg" alt="MIRA" width={132} height={72} className="mx-auto w-[132px]" />
+          <img src="/brand/mira-lockup.svg?v=11" alt="MIRA" width={132} height={72} className="mx-auto w-[132px]" />
           <h1 className="font-display text-h1 text-navy mt-8">Invito scaduto</h1>
           <p className="text-body text-ink-secondary">
             Questo invito è scaduto. Contatta l&apos;amministratore MIRA per riceverne uno nuovo.
@@ -103,7 +103,7 @@ export default async function InvitePage({ params }: Props) {
       <div className="w-full max-w-md space-y-6 px-4">
         <div className="text-center">
           <CornerLocale />
-          <img src="/brand/mira-lockup.svg" alt="MIRA" width={132} height={72} className="mx-auto w-[132px]" />
+          <img src="/brand/mira-lockup.svg?v=11" alt="MIRA" width={132} height={72} className="mx-auto w-[132px]" />
         </div>
 
         <div className="rounded-lg border border-border bg-white p-6 space-y-4">

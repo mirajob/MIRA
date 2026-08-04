@@ -30,7 +30,7 @@ export default async function AuthLayout({
 
         <Link href="/" aria-label="MIRA" className="block">
           <img
-            src="/brand/mira-lockup.svg"
+            src="/brand/mira-lockup.svg?v=11"
             alt="MIRA"
             width={132}
             height={72}

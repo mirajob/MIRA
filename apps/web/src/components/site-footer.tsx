@@ -23,7 +23,7 @@ export function SiteFooter() {
             {/* Logo completo con le frecce, come in tutto il resto del prodotto. Le
                 misure sono più generose di prima perché nel lockup v1.1 le lettere
                 occupano solo la fascia centrale: il resto sono le frecce. */}
-            <img src="/brand/mira-lockup.svg" alt="MIRA" width={132} height={72} className="w-[132px]" />
+            <img src="/brand/mira-lockup.svg?v=11" alt="MIRA" width={132} height={72} className="w-[132px]" />
             <p className="mt-3 text-body-sm text-ink-secondary">{t("tagline")}</p>
           </div>
 

@@ -13,7 +13,7 @@ export async function PublicHeader() {
   return (
     <header className="h-20 px-6 lg:px-12 flex items-center justify-between border-b border-border bg-white">
       <Link href="/">
-        <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-11" />
+        <img src="/brand/mira-lockup.svg?v=11" alt="MIRA" className="h-11" />
       </Link>
       <div className="flex items-center gap-4">
         <LocaleSwitcher />
