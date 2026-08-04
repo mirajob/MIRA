@@ -31,7 +31,7 @@ export default async function CompanyLayout({ children, params }: Props) {
       <header className="border-b border-border bg-white shrink-0 sticky top-0 z-50">
         <div className="px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/brand/mira-wordmark.svg" alt="MIRA" className="h-5" />
+            <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-9" />
             <span className="text-body-sm text-ink-tertiary">·</span>
             <span className="text-body-sm font-medium text-ink">{(company as any).display_name ?? (company as any).legal_name}</span>
           </div>

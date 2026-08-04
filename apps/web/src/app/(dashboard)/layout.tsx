@@ -61,7 +61,7 @@ export default async function DashboardLayout({
       <aside className="sticky top-0 hidden h-screen w-48 shrink-0 flex-col border-r border-border bg-white lg:flex">
         <div className="border-b border-border px-4 py-4">
           <Link href="/student">
-            <img src="/brand/mira-wordmark.svg" alt="MIRA" className="h-5" />
+            <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-9" />
           </Link>
         </div>
 

@@ -27,7 +27,7 @@ export default async function AssociazioneInAttesaPage({ searchParams }: Props) 
   return (
     <div className="min-h-screen bg-paper flex flex-col">
       <header className="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
-        <img src="/brand/mira-wordmark.svg" alt="MIRA" className="h-5" />
+        <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-9" />
         <div className="flex items-center gap-4">
           <LocaleSwitcher />
           <form action={signOut}>

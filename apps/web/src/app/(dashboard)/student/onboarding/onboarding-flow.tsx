@@ -396,7 +396,7 @@ export function OnboardingFlow({ userName }: { userName: string }) {
     <div className="flex flex-col h-full min-h-0">
       {/* Topbar */}
       <div className="px-6 py-3 flex items-center justify-between shrink-0 border-b border-border bg-white">
-        <img src="/brand/mira-wordmark.svg" alt="MIRA" className="h-5" />
+        <img src="/brand/mira-lockup.svg" alt="MIRA" className="h-9" />
         <div className="flex items-center gap-4">
           <LocaleSwitcher />
           <span className="text-body-sm text-ink-secondary hidden sm:inline">{userName}</span>
