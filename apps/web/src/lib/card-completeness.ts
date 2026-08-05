@@ -55,7 +55,16 @@ export function isSectionFilled(key: CardSectionKey, content: CardContentInput):
       if (!d) return false;
       // "Non in cerca" è una risposta completa, non un buco.
       if (d.attiva === false) return true;
-      return hasText(d.cosa_cerca) || hasText(d.ambito) || hasText(d.periodo);
+      // Rework 2026-08: conta la struttura (periodi, ambiti, luoghi, durata, tipi).
+      // I campi liberi restano validi finché la card non viene convertita.
+      const strutturata =
+        (d.finestre?.length ?? 0) > 0 ||
+        (d.ambiti?.length ?? 0) > 0 ||
+        (d.luoghi?.length ?? 0) > 0 ||
+        (d.tipi_azienda?.length ?? 0) > 0 ||
+        d.durata_min_mesi != null ||
+        d.durata_max_mesi != null;
+      return strutturata || hasText(d.cosa_cerca) || hasText(d.ambito) || hasText(d.periodo);
     }
     case "esperienze":
       return (content.esperienze ?? []).length > 0;

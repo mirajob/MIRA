@@ -47,8 +47,8 @@ export interface Frame {
 
 export interface StudentData {
   name: string;
-  /** I quattro campi della disponibilità, gli stessi del blocco vero. */
-  availability: { cosaCerca: string; ambito: string; periodo: string; dove: string };
+  /** I campi della disponibilità, gli stessi del blocco vero dopo il rework. */
+  availability: { quando: string; durata: string; ambiti: string; dove: string };
   /** Le pill che finiscono sulla card. */
   availabilityPills: string[];
   plan: string;
@@ -69,12 +69,12 @@ export interface StudentData {
 export const studentData: StudentData = {
   name: "Giulia Ferrari",
   availability: {
-    cosaCerca: "Internship",
-    ambito: "Strategy consulting",
-    periodo: "From June, 6 months",
-    dove: "Milan",
+    quando: "12 Jun – 19 Sep 2027",
+    durata: "3–6 months",
+    ambiti: "Strategy consulting, Equity research",
+    dove: "Milan · hybrid",
   },
-  availabilityPills: ["Internship", "Strategy consulting", "From June", "Milan"],
+  availabilityPills: ["12 Jun – 19 Sep 2027", "Strategy consulting", "Milan · hybrid"],
   plan: "On exchange next spring, then a master's in Finance. Leaning toward consulting, still exploring.",
   experiences: [
     {

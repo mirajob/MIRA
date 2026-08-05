@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { isLegacyAcademic, getCicloEsame } from "@mira/types";
-import { disponibilitaPills } from "@/components/card/disponibilita-block";
+import { useDisponibilitaRighe } from "@/components/card/disponibilita-block";
+import { hasLegacyDisponibilita, legacyPills } from "@/lib/disponibilita";
 import type {
   HeaderProseContent,
   HeaderVisibility,
@@ -91,6 +92,8 @@ function MissingSection({ title, hint }: { title: string; hint: string }) {
 export function MiraCardDocument(props: MiraCardDocumentProps) {
   const t = useTranslations("CardBlocks");
   const d = useTranslations("CardDocument");
+  // Prima di ogni return condizionale: è un hook.
+  const dispRighe = useDisponibilitaRighe(props.disponibilita?.data ?? {});
   const [overlay, setOverlay] = useState<OverlayState | null>(null);
   const [fitScale, setFitScale] = useState(1);
   const [sheetH, setSheetH] = useState(SHEET_MIN_H);
@@ -146,11 +149,20 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
   const header = props.header?.data;
   const fp = header?.formazione_precedente;
   const formazioneItems = props.formazione?.data.items ?? [];
-  // Disponibilità (rework): stato strutturato attiva/non attiva, pill deduplicate —
-  // mai tag duplicati tipo "not looking / not looking".
+  // Disponibilità (rework 2026-08): struttura vera — periodi a date piene, durata in
+  // mesi, ambiti, luoghi con modalità, tipi di azienda. Sulla card ne sta un riassunto
+  // di poche righe; il resto vive nell'overlay, come per esami e competenze.
   const dispNotActive = props.disponibilita?.data.attiva === false;
-  const dispPills = props.disponibilita && !dispNotActive ? disponibilitaPills(props.disponibilita.data) : [];
   const dispMotivo = dispNotActive ? props.disponibilita?.data.periodo ?? null : null;
+  const dispLegacy = props.disponibilita ? hasLegacyDisponibilita(props.disponibilita.data) : false;
+  const hasDisponibilita =
+    !dispNotActive &&
+    (dispLegacy ||
+      dispRighe.periodi.length > 0 ||
+      dispRighe.ambiti.length > 0 ||
+      dispRighe.luoghi.length > 0 ||
+      dispRighe.tipi.length > 0 ||
+      Boolean(dispRighe.durata));
   const esperienze = props.esperienze?.data.items ?? [];
   const competenze = props.competenze?.data;
   // Solo hard skill (rework 2026-07-31): le academic sono state cancellate dalle card e la
@@ -239,6 +251,37 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                 {it.periodo && ` · ${it.periodo}`}
               </p>
               {it.descrizione && <p className="mt-1 text-body-sm text-ink-secondary whitespace-pre-wrap">{it.descrizione}</p>}
+            </div>
+          ))}
+        </div>
+      ),
+    });
+  }
+
+  /** Tutta la disponibilità, gruppo per gruppo: sulla card ne sta solo il riassunto. */
+  function openDisponibilita() {
+    const gruppi: { label: string; valori: string[] }[] = [
+      { label: t("disponibilita.quandoLabel"), valori: dispRighe.periodi },
+      { label: t("disponibilita.durataLabel"), valori: dispRighe.durata ? [dispRighe.durata] : [] },
+      { label: t("disponibilita.ambitiLabel"), valori: dispRighe.ambiti },
+      { label: t("disponibilita.luoghiLabel"), valori: dispRighe.luoghi },
+      { label: t("disponibilita.tipiLabel"), valori: dispRighe.tipi },
+    ].filter((g) => g.valori.length > 0);
+
+    setOverlay({
+      title: t("titles.disponibilita"),
+      content: (
+        <div className="space-y-4">
+          {gruppi.map((g) => (
+            <div key={g.label}>
+              <SectionTitle>{g.label}</SectionTitle>
+              <div className="flex flex-wrap gap-1.5">
+                {g.valori.map((v, i) => (
+                  <span key={i} className="rounded-full bg-petrol-50 px-2 py-0.5 text-body-sm text-petrol-700">
+                    {v}
+                  </span>
+                ))}
+              </div>
             </div>
           ))}
         </div>
@@ -367,35 +410,72 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                   )}
                 </div>
 
-                {dispPills.length === 0 && !dispNotActive && showTodo && (
+                {!hasDisponibilita && !dispNotActive && showTodo && (
                   <div className="min-w-0 border-l border-border pl-6">
                     <MissingSection title={t("titles.disponibilita")} hint={d("missing.disponibilita")} />
                   </div>
                 )}
 
-                {(dispPills.length > 0 || dispNotActive) && (
+                {(hasDisponibilita || dispNotActive) && (
                   <div className="min-w-0 border-l border-border pl-6">
                     <SectionTitle>{t("titles.disponibilita")}</SectionTitle>
-                    <div className="flex flex-wrap gap-1.5">
-                      {dispNotActive ? (
-                        <>
-                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-border/60 text-ink-secondary">
-                            {t("disponibilita.notActive")}
+                    {dispNotActive ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-border/60 text-ink-secondary">
+                          {t("disponibilita.notActive")}
+                        </span>
+                        {dispMotivo && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
+                            {dispMotivo}
                           </span>
-                          {dispMotivo && (
-                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
-                              {dispMotivo}
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        dispPills.map((p, i) => (
+                        )}
+                      </div>
+                    ) : dispLegacy ? (
+                      /* Card non ancora convertita alla disponibilità strutturata. */
+                      <div className="flex flex-wrap gap-1.5">
+                        {legacyPills(props.disponibilita!.data).map((p, i) => (
                           <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
                             {p}
                           </span>
-                        ))
-                      )}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      /* Riassunto corto: le date per prime, poi ambiti e luoghi. Tutto il
+                         resto (altri periodi, altri luoghi, tipi di azienda) sta nel
+                         pannello, così il foglio non si allunga mai. */
+                      <div className="space-y-1">
+                        {dispRighe.periodi.slice(0, 2).map((p, i) => (
+                          <p key={i} className="text-[11px] font-medium text-ink">{p}</p>
+                        ))}
+                        {dispRighe.periodi.length > 2 && (
+                          <p className="text-[10px] text-ink-tertiary">
+                            {d("moreItems", { count: dispRighe.periodi.length - 2 })}
+                          </p>
+                        )}
+                        {dispRighe.durata && <p className="text-[11px] text-ink-secondary">{dispRighe.durata}</p>}
+                        {dispRighe.ambiti.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {dispRighe.ambiti.map((a) => (
+                              <span key={a} className="text-[11px] px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
+                                {a}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {dispRighe.luoghi.slice(0, 2).map((l) => (
+                          <p key={l} className="text-[11px] text-ink-secondary">{l}</p>
+                        ))}
+                        {(dispRighe.luoghi.length > 2 || dispRighe.tipi.length > 0) && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); openDisponibilita(); }}
+                            className="text-[11px] text-petrol transition-colors hover:text-petrol-700"
+                          >
+                            {d("seeAll")} ▸
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

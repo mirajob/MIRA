@@ -46,20 +46,86 @@ export interface HeaderVisibility {
   };
 }
 
+/** Come si lavora in un certo posto. Tre modi, non di più: il resto sono sfumature di questi. */
+export type ModalitaLavoro = "in_presenza" | "ibrido" | "remoto";
+
+/**
+ * Il tipo di realtà in cui lo studente vorrebbe entrare. Le etichette leggibili stanno
+ * nei messaggi i18n e sono scritte per chi non conosce il gergo: "startup" da sola non
+ * dice niente a chi non è di area economica.
+ */
+export type TipoAzienda =
+  | "startup"
+  | "pmi"
+  | "grande"
+  | "multinazionale"
+  | "boutique"
+  | "pubblico_no_profit";
+
+export const TIPI_AZIENDA: readonly TipoAzienda[] = [
+  "startup",
+  "pmi",
+  "grande",
+  "multinazionale",
+  "boutique",
+  "pubblico_no_profit",
+] as const;
+
+/**
+ * Una finestra di disponibilità, a giorni pieni.
+ *
+ * Il giorno preciso conta davvero: chi finisce gli esami il 19 giugno è libero da quel
+ * giorno, e prima del rework non aveva modo di dirlo. Le card convertite dal vecchio
+ * testo, dove c'era solo il mese, partono dal primo e finiscono all'ultimo giorno.
+ */
+export interface FinestraDisponibilita {
+  id: string;
+  /** Data di inizio, formato yyyy-mm-dd. */
+  da: string;
+  /** Data di fine, yyyy-mm-dd. `null` = da quel giorno in poi, senza fine. */
+  a: string | null;
+}
+
+export interface LuogoDisponibilita {
+  id: string;
+  /** Città, regione o stato, scritto a mano: nessun elenco può contenerli tutti. */
+  posto: string;
+  /** La modalità è per singolo posto: "Milano ibrido" e "Londra in presenza" convivono. */
+  modalita: ModalitaLavoro;
+}
+
 export interface DisponibilitaProseContent {
   /** Toggle strutturato "in cerca sì/no" (card rework 2026-07): mai dedotto da tag testuali
    * tipo "not looking". null = non ancora chiesto (righe legacy pre-rework). */
   attiva?: boolean | null;
-  /** Tipo di opportunità: stage curriculare/extracurriculare, part-time, progetto — o "non in cerca"/"già occupato". */
-  cosa_cerca: string | null;
-  /** Settore o ruolo cercato, es. "venture capital", "marketing". */
-  ambito: string | null;
-  /** Il "quando": una data di inizio aperta ("da settembre 2026"), un intervallo ("da giugno ad agosto 2026"),
-   * o uno stato speciale ("già occupato fino a dicembre", "non in cerca al momento"). */
-  periodo: string | null;
-  /** Per quanto tempo (es. "3 months", "the whole summer"). */
+
+  // ——— Struttura (rework disponibilità 2026-08) ———
+  /** Quando è libero: una o più finestre a date vere. */
+  finestre?: FinestraDisponibilita[];
+  /** Per quanto tempo, in mesi. Estremi inclusi; solo uno dei due = "almeno"/"al massimo". */
+  durata_min_mesi?: number | null;
+  durata_max_mesi?: number | null;
+  /** "Non cerco solo uno stage: se funziona resto." Vale insieme alla durata, non al posto suo. */
+  disponibile_a_restare?: boolean;
+  /** Al massimo 3, scritti a mano: il matching legge le parole, non un elenco chiuso. */
+  ambiti?: string[];
+  tipi_azienda?: TipoAzienda[];
+  luoghi?: LuogoDisponibilita[];
+
+  // ——— Campi liberi pre-rework ———
+  // Restano leggibili finché la card non viene convertita: nessuna card deve
+  // svuotarsi da sola, e quello che non riusciamo a interpretare non si inventa.
+  /** @deprecated sostituito da durata_min_mesi/durata_max_mesi e tipi_azienda. */
+  cosa_cerca?: string | null;
+  /** @deprecated sostituito da `ambiti`. */
+  ambito?: string | null;
+  /** Testo libero del "quando" (@deprecated per la ricerca: usare `finestre`).
+   * Quando `attiva` è false resta in uso come motivo: "in Erasmus fino a marzo". */
+  periodo?: string | null;
+  /** @deprecated sostituito da durata_min_mesi/durata_max_mesi. */
   durata?: string | null;
-  dove: string | null;
+  /** @deprecated sostituito da `luoghi`. */
+  dove?: string | null;
 }
 
 export interface EsperienzaItem {

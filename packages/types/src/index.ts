@@ -22,6 +22,10 @@ export type {
   HeaderVisibility,
   FormazionePrecedente,
   DisponibilitaProseContent,
+  ModalitaLavoro,
+  TipoAzienda,
+  FinestraDisponibilita,
+  LuogoDisponibilita,
   EsperienzaItem,
   EsperienzeProseContent,
   FormazioneItem,
@@ -39,4 +43,4 @@ export type {
   ProseContentByBlockType,
   CardBlock,
 } from "./card-blocks";
-export { isLegacyAcademic, getCicloEsame } from "./card-blocks";
+export { isLegacyAcademic, getCicloEsame, TIPI_AZIENDA } from "./card-blocks";

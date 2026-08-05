@@ -313,6 +313,13 @@ function clean(value: string | undefined): string | null {
   return trimmed ? trimmed : null;
 }
 
+/**
+ * Il modulo WhatsApp raccoglie ancora testo libero: i Flow non hanno il calendario che
+ * usa il sito, e l'agente non è in produzione. Quello che arriva finisce quindi nei
+ * campi liberi, che la card mostra come "disponibilità scritta prima": lo studente la
+ * rimette in forma sul sito, con date e luoghi veri. Quando il Flow verrà rifatto con
+ * i selettori di data, questa funzione va riscritta sulla struttura nuova.
+ */
 export function toDisponibilita(answers: FlowAnswers): DisponibilitaProseContent {
   return {
     // Il modulo manda una scelta secca: tutto ciò che non è "sto cercando" vale come

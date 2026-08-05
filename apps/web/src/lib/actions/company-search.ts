@@ -3,6 +3,7 @@
 import { chatCompletion } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
 import { getCompanyContext } from "@/lib/auth";
+import { disponibilitaPerPrompt } from "@/lib/disponibilita";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -59,9 +60,9 @@ function buildCandidateContext(
 
     // Card rework 2026-07: `attiva` è il toggle strutturato della disponibilità;
     // la riga "autodescrizione" ospita il Profilo personale (interessi inclusi).
-    const disponibilitaLine = disp.attiva === false
-      ? `NON in cerca al momento${disp.periodo ? ` (${disp.periodo})` : ""}`
-      : `${disp.cosa_cerca ?? "n/d"}, ambito: ${disp.ambito ?? "n/d"}, periodo: ${disp.periodo ?? "n/d"}${disp.durata ? `, durata: ${disp.durata}` : ""}${disp.dove ? `, dove: ${disp.dove}` : ""}`;
+    // Rework 2026-08: la disponibilità arriva strutturata (date vere, mesi, luoghi con
+    // modalità, tipi di azienda). Le card non ancora convertite mantengono il testo libero.
+    const disponibilitaLine = disponibilitaPerPrompt(disp);
 
     // Gli esami sono la prova di cosa lo studente ha studiato davvero: dal rework di luglio
     // sostituiscono le "competenze accademiche" generate dall'AI, quindi il matching DEVE

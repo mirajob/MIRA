@@ -21,7 +21,7 @@ export const EMPTY_ONBOARDING_BLOCKS: OnboardingBlocksState = {
   },
   formazione: { status: "empty", data: { items: [] } },
   esperienze: { status: "empty", data: { items: [] } },
-  disponibilita: { status: "empty", data: { attiva: null, cosa_cerca: null, ambito: null, periodo: null, durata: null, dove: null } },
+  disponibilita: { status: "empty", data: { attiva: null, finestre: [], durata_min_mesi: null, durata_max_mesi: null, disponibile_a_restare: false, ambiti: [], tipi_azienda: [], luoghi: [] } },
   competenze: { status: "empty", data: { items: [], soft_skills: [] } },
   lingue: { status: "empty", data: { items: [] } },
   interessi: { status: "empty", data: { testo: null } },

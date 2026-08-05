@@ -2,6 +2,7 @@
 
 import { chatCompletion } from "@mira/ai";
 import { createServiceClient } from "@mira/supabase/server";
+import { disponibilitaPerPrompt } from "@/lib/disponibilita";
 import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -209,9 +210,7 @@ export async function evaluateCandidate(applicationId: string) {
   const interessiLegacy = blocks.get("interessi")?.testo ?? "";
   const pianoCarriera = blocks.get("piano_carriera") ?? {};
 
-  const disponibilitaText = disponibilita.attiva === false
-    ? `non in cerca al momento${disponibilita.periodo ? ` (${disponibilita.periodo})` : ""}`
-    : [disponibilita.cosa_cerca, disponibilita.ambito, disponibilita.periodo, disponibilita.durata, disponibilita.dove].filter(Boolean).join(", ") || "non specificata";
+  const disponibilitaText = disponibilitaPerPrompt(disponibilita);
 
   const cardContext = `CARD DELLO STUDENTE (solo blocchi approvati dallo studente):
 Corso: ${header.corso || "?"} (${header.livello || "?"}, anno ${header.anno || "?"})

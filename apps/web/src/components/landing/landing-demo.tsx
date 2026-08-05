@@ -181,9 +181,9 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
           <SectionLabel>{t("titles.availability")}</SectionLabel>
           <Toggle label={t("seekingToggle")} on />
           <div className="mt-1.5 border-t border-border pt-1.5">
-            <FieldRow label={t("fields.cosaCerca")} value={filled ? d.availability.cosaCerca : undefined} i={0} />
-            <FieldRow label={t("fields.ambito")} value={filled ? d.availability.ambito : undefined} i={1} />
-            <FieldRow label={t("fields.periodo")} value={filled ? d.availability.periodo : undefined} i={2} />
+            <FieldRow label={t("fields.quando")} value={filled ? d.availability.quando : undefined} i={0} />
+            <FieldRow label={t("fields.durata")} value={filled ? d.availability.durata : undefined} i={1} />
+            <FieldRow label={t("fields.ambiti")} value={filled ? d.availability.ambiti : undefined} i={2} />
             <FieldRow label={t("fields.dove")} value={filled ? d.availability.dove : undefined} i={3} />
           </div>
           {filled && (
