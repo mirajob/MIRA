@@ -54,9 +54,11 @@ export function CardBlockHeader({
   }
 
   return (
-    <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-      <h2 className="font-sans text-h3 text-navy">{title}</h2>
-      <div className="flex items-center gap-3">
+    // Wrap e non overflow: nel masthead del Profilo questo blocco vive in una colonna
+    // stretta, e con il titolo lungo il bottone Conferma finiva fuori dalla card.
+    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-5 py-3 border-b border-border">
+      <h2 className="min-w-0 font-sans text-h3 text-navy">{title}</h2>
+      <div className="flex shrink-0 items-center gap-3">
         {localStatus === "approved" && (
           <span className="text-xs px-2 py-0.5 rounded bg-success-bg text-success font-medium">{t("approved")}</span>
         )}

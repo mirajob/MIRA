@@ -143,6 +143,12 @@ async function saveAnswersFlags(supabase: any, profileId: string, patch: Record<
 /** Percentuale sui 7 blocchi visibili. Disponibilità e piano di carriera erano contati
  * come uno solo perché si confermavano insieme: dal 2026-08 sono due tappe distinte,
  * il piano chiude la Fase B. "formazione" vive dentro Header e "interessi" è legacy. */
+/** Approvato conta solo se c'e' davvero del testo: il vecchio flusso approvava il piano
+ * insieme alla disponibilita', lasciandolo vuoto, e la tappa finale non sarebbe mai apparsa. */
+function pianoFatto(blocks: OnboardingBlocksState): boolean {
+  return blocks.piano_carriera.status === "approved" && Boolean(blocks.piano_carriera.data.testo?.trim());
+}
+
 const BLOCCHI_PCT: Array<keyof OnboardingBlocksState> = [
   "disponibilita",
   "esperienze",
@@ -154,7 +160,9 @@ const BLOCCHI_PCT: Array<keyof OnboardingBlocksState> = [
 ];
 
 function computePctFromBlocks(blocks: OnboardingBlocksState): number {
-  const approved = BLOCCHI_PCT.filter((bt) => blocks[bt].status === "approved").length;
+  const approved = BLOCCHI_PCT.filter((bt) =>
+    bt === "piano_carriera" ? pianoFatto(blocks) : blocks[bt].status === "approved"
+  ).length;
   return Math.round((approved / BLOCCHI_PCT.length) * 100);
 }
 
@@ -184,7 +192,7 @@ function derivePhase(
     blocks.competenze.status === "approved" &&
     blocks.lingue.status === "approved" &&
     blocks.autodescrizione.status === "approved" &&
-    blocks.piano_carriera.status === "approved";
+    pianoFatto(blocks);
   if (faseBDone) return "chiusura";
   if (!faseBStarted) return "gate";
   // Gli esami sono facoltativi: si esce da questa tappa confermando o saltando.

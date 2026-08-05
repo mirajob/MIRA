@@ -73,12 +73,15 @@ export function HeaderBlock({
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="text-ink-tertiary text-body-sm">{t("header.universitaLabel")}</label>
-            <input
-              type="text"
-              value={form.universita ?? ""}
-              onChange={(e) => update("universita", e.target.value)}
-              className="mt-1 w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
-            />
+            {/* Elenco, non testo libero: l'ateneo scritto a mano arrivava in dieci grafie
+                diverse, e le associazioni sono scopate proprio per universita'. */}
+            <div className="mt-1">
+              <UniversityCombobox
+                value={form.universita ?? ""}
+                onChange={(name) => update("universita", name)}
+                inputClassName="w-full px-3 py-2 rounded-md border border-border text-body-sm text-ink focus:outline-none focus:ring-1 focus:ring-petrol/30"
+              />
+            </div>
           </div>
           <div>
             <label className="text-ink-tertiary text-body-sm">{t("header.corsoLabel")}</label>

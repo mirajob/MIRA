@@ -52,13 +52,19 @@ function durataValue(d: DisponibilitaProseContent): string {
   return String(d.durata_min_mesi);
 }
 
-/** Riga del blocco: etichetta a sinistra, comandi a destra, righello sottile in mezzo. */
+/**
+ * Riga del blocco: etichetta a sinistra, comandi a destra, righello sottile in mezzo.
+ *
+ * Le due colonne compaiono solo se il BLOCCO e' largo abbastanza (container query, non
+ * viewport): nel masthead del Profilo questo blocco vive in una colonna da ~300px, e
+ * con le due colonne fisse i comandi finivano incolonnati uno sull'altro.
+ */
 function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-2 border-t border-border py-4 first:border-t-0 first:pt-0 sm:grid-cols-[128px_1fr] sm:gap-5">
+    <div className="grid gap-2 border-t border-border py-4 first:border-t-0 first:pt-0 @[430px]:grid-cols-[128px_1fr] @[430px]:gap-5">
       <div>
         <p className="text-xs uppercase tracking-[0.1em] text-navy/55">{label}</p>
-        {hint && <p className="mt-1 text-body-sm leading-snug text-ink-tertiary">{hint}</p>}
+        {hint && <p className="mt-1 hidden text-body-sm leading-snug text-ink-tertiary @[430px]:block">{hint}</p>}
       </div>
       <div className="min-w-0">{children}</div>
     </div>
@@ -187,7 +193,7 @@ export function DisponibilitaBlock({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-white">
+    <div className="@container overflow-hidden rounded-lg border border-border bg-white">
       <CardBlockHeader
         title={t("titles.disponibilita")}
         status={status}
@@ -236,7 +242,7 @@ export function DisponibilitaBlock({
               <div className="space-y-2">
                 {finestre.map((f) => (
                   <div key={f.id} className="flex flex-wrap items-center gap-2">
-                    <div className="w-[150px]">
+                    <div className="min-w-[130px] flex-1 @[430px]:max-w-[160px]">
                       <DateField
                         value={f.da || null}
                         onChange={(iso) => patchFinestra(f.id, { da: iso, a: f.a && f.a < iso ? null : f.a })}
@@ -245,7 +251,7 @@ export function DisponibilitaBlock({
                       />
                     </div>
                     <span className="text-body-sm text-ink-tertiary">{t("disponibilita.toLabel")}</span>
-                    <div className="w-[150px]">
+                    <div className="min-w-[130px] flex-1 @[430px]:max-w-[160px]">
                       {f.a === null ? (
                         <button
                           type="button"
@@ -387,7 +393,7 @@ export function DisponibilitaBlock({
                       value={l.posto}
                       placeholder={t("disponibilita.luogoPlaceholder")}
                       onChange={(e) => patchLuogo(l.id, { posto: e.target.value })}
-                      className={`max-w-[240px] ${INPUT_CLASS}`}
+                      className={`min-w-0 flex-1 @[430px]:max-w-[240px] ${INPUT_CLASS}`}
                     />
                     <select
                       value={l.modalita}
@@ -466,7 +472,7 @@ export function DisponibilitaView({ disponibilita }: { disponibilita: Disponibil
 
   return (
     <div className="p-4">
-      <p className="text-eyebrow text-navy/60 uppercase mb-2">{t("titles.disponibilita")}</p>
+      <p className="mb-2 pr-24 text-eyebrow uppercase text-navy/60">{t("titles.disponibilita")}</p>
       {notActive ? (
         <div className="flex flex-wrap gap-1.5">
           <span className="rounded-full bg-border/60 px-2 py-0.5 text-xs text-ink-secondary">

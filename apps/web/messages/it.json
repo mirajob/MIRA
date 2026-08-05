@@ -553,7 +553,7 @@
       "previousTranscriptNote": "Se hai appena iniziato la magistrale quasi tutti i tuoi esami sono lì. Restano separati da quelli del corso attuale e non cambiano la tua media."
     },
     "disponibilita": {
-      "attivaLabel": "In cerca / aperto a opportunità",
+      "attivaLabel": "In cerca",
       "notActive": "Non in cerca al momento",
       "notSpecified": "Non ancora indicata.",
       "motivoLabel": "Nota (opzionale)",
@@ -577,7 +577,7 @@
       "mesi": "{n} mesi",
       "mesiRange": "{a}–{b} mesi",
       "mesiMax": "fino a {n} mesi",
-      "restareLabel": "Sono disponibile a restare oltre",
+      "restareLabel": "Sono disponibile a restare oltre il periodo, anche stabilmente",
       "restareShort": "disponibile a restare",
       "ambitiLabel": "In che ambito",
       "ambitiHint": "Fino a 3. Scrivili il più precisi possibile: se sai già di cosa vuoi occuparti nel dettaglio, mettilo.",
@@ -1659,7 +1659,7 @@
     "guideEsperienze": "Ora le esperienze. Per inserirle hai tre strade veloci: carica il tuo CV, scarica il profilo LinkedIn in PDF (ti spiego io come), oppure aggiungile a mano qui sotto. Ricorda che valgono anche progetti personali, sport, volontariato o attività associative: qualsiasi cosa parli di te!",
     "guideEsperienzeManual": "Va bene, le costruiamo a mano: aggiungi le tue esperienze qui sotto. Valgono anche progetti personali, sport, volontariato o attività associative: qualsiasi cosa parli di te. Scrivi le descrizioni come ti viene, ✦ Migliora con MIRA le riscrive in inglese stile CV. Poi premi Conferma.",
     "guideEsperienzeAfterCV": "Ho trovato {count, plural, =0 {le tue esperienze} one {1 esperienza} other {# esperienze}} nel CV e le ho già preparate qui sotto in inglese. Controllale, correggile o aggiungine altre, anche quelle che non metteresti mai in un CV (progetti, sport, volontariato, attività associative). Poi premi Conferma.",
-    "guideDisponibilitaIntro": "Ciao {name}! Io sono MIRA: costruiamo insieme la tua MIRA Card. Ti serve per candidarti alle associazioni ed è il profilo con cui le aziende potranno trovarti e contattarti (sarà in inglese, ci penso io a tradurre).\n\nPartiamo da cosa cerchi: usa l'interruttore per dirmi se sei in cerca o aperto a opportunità, poi segna sul calendario i giorni in cui saresti libero (puoi mettere più periodi, e uno può restare aperto), per quanti mesi, in che ambito, in che tipo di azienda e in quali città. In basso raccontami il tuo piano di carriera: quali sono i tuoi prossimi passi di studio o formazione, in che ruolo vorresti inserirti subito dopo e dove punti ad arrivare nel lungo periodo. Se stai ancora esplorando va benissimo lo stesso. Scrivi come parli!\n\n✦ Migliora con MIRA lo sistema in inglese. Poi premi Conferma.",
+    "guideDisponibilitaIntro": "Ciao {name}! Io sono MIRA: costruiamo insieme la tua MIRA Card. Ti serve per candidarti alle associazioni ed è il profilo con cui le aziende potranno trovarti e contattarti (sarà in inglese, ci penso io a tradurre).\n\nPartiamo da cosa cerchi: usa l'interruttore per dirmi se sei in cerca, poi segna sul calendario i giorni in cui saresti libero (puoi mettere più periodi, e uno può restare aperto), per quanti mesi, in che ambito, in che tipo di azienda e in quali città.\n\nPoi premi Conferma.",
     "guideLingue": "Che lingue conosci? Aggiungile qui sotto con livello ed eventuale certificazione (es. English, C1, IELTS 7.5). Poi premi Conferma.",
     "guideLingueWithCV": "Le lingue trovate nel CV le ho già inserite qui sotto: controlla livelli e certificazioni, aggiungi quelle che mancano, poi premi Conferma.",
     "guideProfilo": "Ora la parte che sul CV di solito manca: come ti presenti oltre a esami ed esperienze. Niente elenco di hobby né frasi da colloquio, racconta qualcosa di autentico:\n• Cosa segui per conto tuo, fuori dai programmi d'esame?\n• Fuori dallo studio, cosa fai con costanza?\n• Come ti descriverebbero le persone che ti conoscono bene?\n• Cosa non sopporti nel lavoro o nello studio, oppure a cosa non rinunci?\n• Qual è la cosa più \"te\" che hai fatto nell'ultimo anno?\nScrivi come parli, anche in italiano: ✦ Migliora con MIRA lo trasforma in un testo in prima persona, in inglese. Poi premi Conferma.",

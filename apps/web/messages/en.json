@@ -553,7 +553,7 @@
       "previousTranscriptNote": "If you have just started a Master's, most of your exams are there. They stay separate from your current degree and do not change your GPA."
     },
     "disponibilita": {
-      "attivaLabel": "Looking / open to opportunities",
+      "attivaLabel": "Looking",
       "notActive": "Not looking right now",
       "notSpecified": "Not stated yet.",
       "motivoLabel": "Note (optional)",
@@ -577,7 +577,7 @@
       "mesi": "{n} months",
       "mesiRange": "{a}–{b} months",
       "mesiMax": "up to {n} months",
-      "restareLabel": "I'm open to staying longer",
+      "restareLabel": "I'm open to staying beyond that period, long term too",
       "restareShort": "open to staying",
       "ambitiLabel": "In which field",
       "ambitiHint": "Up to 3. Write them as precisely as you can: if you already know exactly what you want to work on, put that.",
@@ -1659,7 +1659,7 @@
     "guideEsperienze": "Now your experiences. Three quick ways to add them: upload your CV, download your LinkedIn profile as a PDF (I will show you how), or add them by hand below. Remember that personal projects, sport, volunteering and student associations all count: anything that says something about you.",
     "guideEsperienzeManual": "Fine, let's build them by hand: add your experiences below. Personal projects, sport, volunteering and student associations all count. Write the descriptions however they come out, ✦ Improve with MIRA rewrites them in English, CV style. Then press Confirm.",
     "guideEsperienzeAfterCV": "I found {count, plural, =0 {your experiences} one {1 experience} other {# experiences}} in your CV and prepared them below in English. Review them, fix them or add more, including the ones you'd never put on a CV (projects, sports, volunteering, association activities). Then press Confirm.",
-    "guideDisponibilitaIntro": "Hi {name}! I am MIRA: let's build your MIRA Card together. You need it to apply to associations, and it is the profile companies will use to find and contact you (it will be in English, I take care of the translation).\n\nLet's start from what you are looking for: use the toggle to tell me whether you are searching or open to opportunities, then mark on the calendar the days you would be free (you can add more than one period, and one can stay open), for how many months, in which field, in what kind of company and in which cities. Below, tell me your career plan: what your next steps in study or training are, which role you would like to step into right after, and where you aim to get in the long run. If you are still exploring, that is perfectly fine. Write the way you speak!\n\n✦ Improve with MIRA turns it into English. Then press Confirm.",
+    "guideDisponibilitaIntro": "Hi {name}! I'm MIRA: let's build your MIRA Card together. You need it to apply to associations, and it's the profile companies will use to find and contact you (it will be in English, I take care of the translation).\n\nLet's start from what you're after: use the toggle to tell me whether you're looking, then mark on the calendar the days you'd be free (you can add more than one period, and one can stay open), for how many months, in which field, in what kind of company and in which cities.\n\nThen press Confirm.",
     "guideLingue": "Which languages do you know? Add them below with level and any certification (e.g. English, C1, IELTS 7.5). Then press Confirm.",
     "guideLingueWithCV": "I've already added the languages found in your CV below: check levels and certifications, add any missing ones, then press Confirm.",
     "guideProfilo": "Now the part that's usually missing from CVs: how you present yourself beyond exams and experiences. No hobby lists, no interview-style lines, tell me something authentic:\n• What do you follow on your own, outside your course syllabi?\n• Outside your studies, what do you do consistently?\n• How would people who know you well describe you?\n• What can't you stand at work or in your studies, or what would you never give up?\n• What's the most \"you\" thing you've done in the last year?\nWrite the way you speak, Italian is fine too: ✦ Improve with MIRA turns it into a first-person text in English. Then press Confirm.",

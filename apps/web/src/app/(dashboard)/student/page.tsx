@@ -112,7 +112,7 @@ export default async function StudentHomePage() {
 
   const missing = new Set(missingKeys);
   const missingSections = missingKeys.map((key) =>
-    cardT(`titles.${key === "esami" ? "esami" : key === "disponibilita" ? "disponibilitaEPiano" : key}`)
+    cardT(`titles.${key}`)
   );
 
   const t = await getTranslations("StudentHome");
