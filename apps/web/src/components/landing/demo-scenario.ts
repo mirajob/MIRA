@@ -29,6 +29,7 @@ export type StudentBlock =
   | "competenze"
   | "lingue"
   | "profilo"
+  | "piano"
   | "reveal";
 
 export interface Frame {
@@ -142,7 +143,10 @@ export const studentFrames: Frame[] = [
   { block: "profilo", phase: "improve", approved: 5, cursor: "improve", tap: true, duration: 1700 },
   { block: "profilo", phase: "improved", approved: 5, cursor: "confirm", tap: true, duration: 2600 },
 
-  { block: "reveal", phase: "card", approved: 6, cursor: null, duration: 4500 },
+  { block: "piano", phase: "filled", approved: 6, cursor: "confirm", tap: true, duration: 2600 },
+
+  { block: "reveal", phase: "card", approved: 7, cursor: null, duration: 4500 },
 ];
 
-export const TOTAL_BLOCKS = 6;
+/** Sette blocchi: il piano di carriera e' una tappa a se', l'ultima. */
+export const TOTAL_BLOCKS = 7;

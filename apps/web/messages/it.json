@@ -197,7 +197,6 @@
     "readingCV": "Leggo il CV…",
     "readingTranscript": "Leggo il libretto…",
     "seekingToggle": "In cerca / aperto a opportunità",
-    "planLabel": "Piano e direzione",
     "showAverage": "Mostra la media",
     "gateTitle": "Candidatura sbloccata.",
     "gateBody": "Sei al {pct}%: puoi già candidarti alle associazioni della tua università.",
@@ -212,7 +211,8 @@
       "exams": "Esami",
       "skills": "Competenze",
       "languages": "Lingue",
-      "profile": "Profilo personale"
+      "profile": "Profilo personale",
+      "plan": "Piano e direzione"
     },
     "fields": {
       "quando": "Quando",
@@ -226,7 +226,6 @@
     },
     "guide": {
       "availabilityIntro": "Ciao {name}, sono MIRA. Partiamo da cosa cerchi.",
-      "availabilityPlan": "E dove vuoi arrivare nei prossimi mesi.",
       "experienceAsk": "Ora le esperienze. Dal CV faccio prima io.",
       "experienceReading": "Le sto tirando fuori e le traduco in inglese.",
       "experienceFilled": "{count} esperienze pronte. Controlla e conferma.",
@@ -238,7 +237,9 @@
       "languages": "Le lingue che parli, con livello e certificazioni.",
       "profileAsk": "Chi sei oltre a esami ed esperienze? Scrivi come parli.",
       "profileImprove": "Ci penso io a metterlo in ordine.",
-      "profileImproved": "Ecco come suona in inglese, in prima persona."
+      "profileImproved": "Ecco come suona in inglese, in prima persona.",
+      "plan": "Ultima cosa: dove vuoi arrivare nei prossimi anni.",
+      "availabilityFilled": "Perfetto. Controlla e conferma."
     }
   },
   "AssociationDemo": {
@@ -573,13 +574,10 @@
       "prevMonth": "Mese precedente",
       "nextMonth": "Mese successivo",
       "durataLabel": "Per quanto tempo",
-      "durataMinPlaceholder": "Da",
-      "durataMaxPlaceholder": "A",
       "mesi": "{n} mesi",
       "mesiRange": "{a}–{b} mesi",
-      "mesiMin": "almeno {n} mesi",
       "mesiMax": "fino a {n} mesi",
-      "restareLabel": "Sono disponibile a restare oltre il periodo, anche stabilmente",
+      "restareLabel": "Sono disponibile a restare oltre",
       "restareShort": "disponibile a restare",
       "ambitiLabel": "In che ambito",
       "ambitiHint": "Fino a 3. Scrivili il più precisi possibile: se sai già di cosa vuoi occuparti nel dettaglio, mettilo.",
@@ -610,7 +608,9 @@
       },
       "legacyNotice": "Questa è la disponibilità che avevi scritto prima. Rimettila qui sotto con date e luoghi precisi: sparisce da sola quando salvi.",
       "pianoLabel": "Piano e direzione (prossimi mesi/anni)",
-      "pianoPlaceholder": "es. exchange, magistrale, lavoro, certificazioni... e la direzione che hai in mente"
+      "pianoPlaceholder": "es. exchange, magistrale, lavoro, certificazioni... e la direzione che hai in mente",
+      "durataPlaceholder": "Quanto vuoi restare",
+      "mesiOltre": "più di {n} mesi"
     },
     "esperienze": {
       "titoloLabel": "Titolo / ruolo",
@@ -1680,7 +1680,8 @@
     "guideEsamiTriennale": "Vuoi far vedere cosa hai studiato? Carica il tuo transcript (il libretto con l'elenco dei tuoi esami e voti): è la prova pratica delle materie che hai toccato e delle basi teoriche che conosci. Il sistema calcolerà in automatico la tua media.\n\nUsando gli interruttori qui sotto, sarai tu a scegliere se mostrare o nascondere sia la media sia i singoli voti degli esami.",
     "guideEsamiMagistrale": "Vuoi far vedere cosa hai studiato? Il transcript (il libretto con l'elenco dei tuoi esami e voti) mostra alle aziende le materie che hai toccato con mano e le tue basi teoriche. Il sistema calcolerà in automatico la tua media.\n\nSe li hai a disposizione, puoi caricare i tuoi documenti in due sezioni: il transcript attuale, per gli esami che stai sostenendo ora nella magistrale, e quello della triennale, per mostrare anche il tuo percorso precedente.\n\nUsando gli interruttori qui sotto, sarai tu a scegliere se mostrare o nascondere sia la media sia i singoli voti degli esami.",
     "skipEsami": "Non ce l'ho ora",
-    "skipEsamiNote": "Puoi caricarlo quando vuoi dal tuo Profilo, la card si aggiorna da sola."
+    "skipEsamiNote": "Puoi caricarlo quando vuoi dal tuo Profilo, la card si aggiorna da sola.",
+    "guidePiano": "Ultima cosa: dove vuoi arrivare. Raccontami i tuoi prossimi passi di studio o formazione, in che ruolo vorresti inserirti subito dopo e dove punti nel lungo periodo. Se stai ancora esplorando va benissimo dirlo. Scrivi come parli: ✦ Migliora con MIRA lo sistema in inglese. Poi premi Conferma."
   },
   "AdminSeededAssociations": {
     "eyebrow": "Pagine seminate",

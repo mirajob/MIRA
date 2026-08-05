@@ -59,6 +59,7 @@ export type OnboardingFlowPhase =
   | "competenze"
   | "lingue"
   | "profilo"
+  | "piano"
   | "chiusura";
 
 export interface OnboardingFlowState {
@@ -139,14 +140,22 @@ async function saveAnswersFlags(supabase: any, profileId: string, patch: Record<
     .eq("user_id", profileId);
 }
 
-/** Percentuale sui 6 blocchi visibili: header, esperienze, disponibilita+piano (contano
- * come UNO, completi solo insieme), competenze, lingue, profilo personale (riga
- * autodescrizione). "formazione" vive dentro Header e "interessi" è legacy. */
+/** Percentuale sui 7 blocchi visibili. Disponibilità e piano di carriera erano contati
+ * come uno solo perché si confermavano insieme: dal 2026-08 sono due tappe distinte,
+ * il piano chiude la Fase B. "formazione" vive dentro Header e "interessi" è legacy. */
+const BLOCCHI_PCT: Array<keyof OnboardingBlocksState> = [
+  "disponibilita",
+  "esperienze",
+  "header",
+  "competenze",
+  "lingue",
+  "autodescrizione",
+  "piano_carriera",
+];
+
 function computePctFromBlocks(blocks: OnboardingBlocksState): number {
-  const singles: Array<keyof OnboardingBlocksState> = ["header", "esperienze", "competenze", "lingue", "autodescrizione"];
-  let approved = singles.filter((bt) => blocks[bt].status === "approved").length;
-  if (blocks.disponibilita.status === "approved" && blocks.piano_carriera.status === "approved") approved += 1;
-  return Math.round((approved / 6) * 100);
+  const approved = BLOCCHI_PCT.filter((bt) => blocks[bt].status === "approved").length;
+  return Math.round((approved / BLOCCHI_PCT.length) * 100);
 }
 
 // Il libretto non si chiede più dentro l'Header (2026-08-01): è una tappa a sé, subito
@@ -158,26 +167,32 @@ function computePctFromBlocks(blocks: OnboardingBlocksState): number {
 // li abbiamo già dalla registrazione, quindi sono pochi campi. Il libretto NON è più uno step
 // del percorso obbligatorio. Motivo: chiedere il transcript come primissima schermata faceva
 // abbandonare la maggior parte dei registrati.
+//
+// Il piano di carriera è uscito dalla disponibilità (2026-08) ed è l'ULTIMA tappa,
+// dopo il profilo personale: "quando sei libero" e "dove vuoi arrivare" sono due
+// domande diverse, e insieme facevano un blocco lunghissimo alla prima schermata.
 function derivePhase(
   blocks: OnboardingBlocksState,
   faseBStarted: boolean,
   esamiSkipped: boolean
 ): OnboardingFlowPhase {
-  if (!(blocks.disponibilita.status === "approved" && blocks.piano_carriera.status === "approved")) return "disponibilita";
+  if (blocks.disponibilita.status !== "approved") return "disponibilita";
   if (blocks.esperienze.status !== "approved") return "esperienze";
   if (blocks.header.status !== "approved") return "header";
 
   const faseBDone =
     blocks.competenze.status === "approved" &&
     blocks.lingue.status === "approved" &&
-    blocks.autodescrizione.status === "approved";
+    blocks.autodescrizione.status === "approved" &&
+    blocks.piano_carriera.status === "approved";
   if (faseBDone) return "chiusura";
   if (!faseBStarted) return "gate";
   // Gli esami sono facoltativi: si esce da questa tappa confermando o saltando.
   if (blocks.formazione.status !== "approved" && !esamiSkipped) return "esami";
   if (blocks.competenze.status !== "approved") return "competenze";
   if (blocks.lingue.status !== "approved") return "lingue";
-  return "profilo";
+  if (blocks.autodescrizione.status !== "approved") return "profilo";
+  return "piano";
 }
 
 export async function loadOnboardingFlow(): Promise<OnboardingFlowState> {

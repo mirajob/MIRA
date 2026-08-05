@@ -15,7 +15,7 @@ import { MiraCardLayout } from "@/components/card/mira-card-layout";
 import { MiraCardDocument } from "@/components/card-view/mira-card-document";
 import { ProfileViewSwitcher } from "@/components/card-view/profile-view-switcher";
 import { HeaderBlock, HeaderView } from "@/components/card/header-block";
-import { DisponibilitaEPianoBlock, DisponibilitaEPianoView } from "@/components/card/disponibilita-block";
+import { DisponibilitaBlock, DisponibilitaView } from "@/components/card/disponibilita-block";
 import { EsperienzeBlock, EsperienzeView } from "@/components/card/esperienze-block";
 import { CompetenzeBlock, CompetenzeView } from "@/components/card/competenze-block";
 import { LingueBlock } from "@/components/card/lingue-block";
@@ -164,24 +164,14 @@ export default async function StudentHomePage() {
               <EditableSection
                 missing={missing.has("disponibilita")}
                 view={
-                  <DisponibilitaEPianoView
+                  <DisponibilitaView
                     disponibilita={disponibilita.prose_content as DisponibilitaProseContent}
-                    piano={pianoData ?? null}
-                    showPiano={false}
                   />
                 }
                 edit={
-                  <DisponibilitaEPianoBlock
+                  <DisponibilitaBlock
                     disponibilita={disponibilita.prose_content as DisponibilitaProseContent}
-                    piano={pianoData ?? { stato: "esplorazione", testo: null }}
-                    status={
-                      disponibilita.status === "approved" && pianoCarriera?.status === "approved"
-                        ? "approved"
-                        : disponibilita.status === "empty" && (pianoCarriera?.status ?? "empty") === "empty"
-                          ? "empty"
-                          : "draft"
-                    }
-                    showPiano={false}
+                    status={disponibilita.status}
                   />
                 }
               />

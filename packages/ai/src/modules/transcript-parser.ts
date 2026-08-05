@@ -22,9 +22,9 @@ export interface ParsedTranscript {
 
 export const EXTRACTION_PROMPT = `Sei un parser di libretti universitari italiani, specializzato in Bocconi.
 
-REGOLA FONDAMENTALE: estrai TUTTI gli esami GIÀ COMPLETATI — quelli che hanno SIA una data di superamento SIA un voto o esito (es. "TWENTY-SEVEN", "PASS", "THIRTY.="). Ignora completamente le righe senza data e senza voto: sono esami futuri pianificati, NON ancora sostenuti.
+REGOLA FONDAMENTALE: estrai TUTTI gli esami GIÀ COMPLETATI · quelli che hanno SIA una data di superamento SIA un voto o esito (es. "TWENTY-SEVEN", "PASS", "THIRTY.="). Ignora completamente le righe senza data e senza voto: sono esami futuri pianificati, NON ancora sostenuti.
 
-ATTENZIONE: Non saltare nessun esame completato. Controlla OGNI riga del documento. Se un esame ha una data e un voto/esito, DEVE essere incluso. Tipicamente un libretto Bocconi di secondo anno ha 10-15 esami completati — se ne trovi meno di 8, probabilmente ne stai saltando alcuni. Ricontrolla.
+ATTENZIONE: Non saltare nessun esame completato. Controlla OGNI riga del documento. Se un esame ha una data e un voto/esito, DEVE essere incluso. Tipicamente un libretto Bocconi di secondo anno ha 10-15 esami completati · se ne trovi meno di 8, probabilmente ne stai saltando alcuni. Ricontrolla.
 
 Per ogni esame COMPLETATO determina:
 - course_name: nome esatto del corso
@@ -32,7 +32,7 @@ Per ogni esame COMPLETATO determina:
 - credits: numero di crediti (CFU/ECTS)
 - grade: voto come stringa ("27", "30", "30L", "pass", "idoneo"). Converti da inglese: TWENTY-SEVEN→"27", THIRTY→"30", THIRTY.=→"30", PASS→"pass". ATTENZIONE: THIRTY.= significa 30, NON 30 e lode. Il 30 e lode (30L) ha una notazione diversa (es. "THIRTY CUM LAUDE" o simile). Se non sei sicuro, metti 30.
 - grade_numeric: voto numerico (27, 30, 31 SOLO per 30L esplicito) oppure null se pass/fail. THIRTY.= = 30, non 31.
-- is_pass_fail: true se il voto è "PASS"/"idoneo"/"approvato" oppure se è un seminario/laboratorio da 1 CFU. Esami con 1 CFU sono quasi sempre seminari pass/fail — NON assegnare voto numerico 30
+- is_pass_fail: true se il voto è "PASS"/"idoneo"/"approvato" oppure se è un seminario/laboratorio da 1 CFU. Esami con 1 CFU sono quasi sempre seminari pass/fail · NON assegnare voto numerico 30
 - academic_year: anno accademico
 - semester: semestre se visibile
 
@@ -44,10 +44,10 @@ Calcola (SOLO sugli esami completati):
 
 Estrai anche dal documento (campi OBBLIGATORI, non lasciarli mai vuoti se il documento è un libretto Bocconi):
 - university_name: nome dell'ateneo, es. "Università Bocconi" (di solito nel logo/intestazione). Se non è Bocconi, scrivi il nome che vedi.
-- degree_program: nome completo del corso di laurea. Nei libretti Bocconi è quasi sempre scritto per esteso vicino all'intestazione, in una riga tipo "Corso di Laurea in NOME DEL CORSO (SIGLA)" — leggi ATTENTAMENTE la parte alta del documento, anche se il resto della pagina è una tabella di esami: il nome del corso NON è nella tabella, è nel blocco anagrafico sopra. Se in quella riga trovi il nome per esteso (es. "INTERNATIONAL ECONOMICS AND MANAGEMENT"), usa quello direttamente, capitalizzato normalmente ("International Economics and Management") — NON serve la lista sigle in quel caso. Usa la lista sigle qui sotto SOLO se nel documento vedi esclusivamente la sigla tra parentesi e non il nome per esteso:
+- degree_program: nome completo del corso di laurea. Nei libretti Bocconi è quasi sempre scritto per esteso vicino all'intestazione, in una riga tipo "Corso di Laurea in NOME DEL CORSO (SIGLA)" · leggi ATTENTAMENTE la parte alta del documento, anche se il resto della pagina è una tabella di esami: il nome del corso NON è nella tabella, è nel blocco anagrafico sopra. Se in quella riga trovi il nome per esteso (es. "INTERNATIONAL ECONOMICS AND MANAGEMENT"), usa quello direttamente, capitalizzato normalmente ("International Economics and Management") · NON serve la lista sigle in quel caso. Usa la lista sigle qui sotto SOLO se nel documento vedi esclusivamente la sigla tra parentesi e non il nome per esteso:
   Triennali: CLEAM = "Economics and Management", BIEM = "International Economics and Management", BIEMF = "International Economics and Finance", BAI = "Business Analytics and Informatics", BESS = "Economics and Social Sciences", BIEF = "Economics, Finance and International Business", BICN = "International Politics and Government", BIR = "International Relations and Organizations", BIG = "Government and Public Policy", BEL = "Economics and Law", BIEM-FR = "International Economics and Management (French track)"
   Magistrali: CLMG = "Management", MAFINRISK = "Finance and Risk Management", ACME = "Accounting, Financial Management and Control", MIF = "Marketing Management", EMIT = "Economics and Management of Innovation and Technology", CLAPI = "Public Administration and International Institutions", EPMC = "Economics and Policy in a Global Environment", LM82 = "Law and Business Management"
-  Solo se il nome del corso non è visibile da nessuna parte (né per esteso né come sigla riconosciuta), lascia stringa vuota — è l'eccezione, non la norma.
+  Solo se il nome del corso non è visibile da nessuna parte (né per esteso né come sigla riconosciuta), lascia stringa vuota · è l'eccezione, non la norma.
 - degree_level: triennale se "Bachelor", magistrale se "Master", ciclo_unico, phd
 
 Rispondi SOLO in JSON valido con questa struttura:

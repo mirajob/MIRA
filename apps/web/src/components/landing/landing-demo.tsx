@@ -39,6 +39,7 @@ const ORDER: Exclude<StudentBlock, "reveal" | "gate" | "esami">[] = [
   "competenze",
   "lingue",
   "profilo",
+  "piano",
 ];
 
 const TITLE_KEY: Record<(typeof ORDER)[number], string> = {
@@ -48,6 +49,7 @@ const TITLE_KEY: Record<(typeof ORDER)[number], string> = {
   competenze: "skills",
   lingue: "languages",
   profilo: "profile",
+  piano: "plan",
 };
 
 type T = ReturnType<typeof useTranslations>;
@@ -173,7 +175,7 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
     return (
       <div className="space-y-2">
         <Guide
-          text={filled ? t("guide.availabilityPlan") : t("guide.availabilityIntro", { name: d.name.split(" ")[0] ?? d.name })}
+          text={filled ? t("guide.availabilityFilled") : t("guide.availabilityIntro", { name: d.name.split(" ")[0] ?? d.name })}
           typing={!filled}
           duration={1100}
         />
@@ -186,12 +188,6 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
             <FieldRow label={t("fields.ambiti")} value={filled ? d.availability.ambiti : undefined} i={2} />
             <FieldRow label={t("fields.dove")} value={filled ? d.availability.dove : undefined} i={3} />
           </div>
-          {filled && (
-            <div className="mt-2 border-t border-border pt-2" style={{ animation: "mira-pop .4s var(--ease-out) both", animationDelay: "320ms" }}>
-              <SectionLabel>{t("planLabel")}</SectionLabel>
-              <p className="text-[11px] leading-snug text-ink-secondary">{d.plan}</p>
-            </div>
-          )}
           {filled && <ConfirmButton setTarget={setTarget} label={t("confirm")} />}
         </Panel>
       </div>
@@ -280,7 +276,7 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
             </svg>
             {t("gateTitle")}
           </p>
-          <p className="mt-1 text-[11px] leading-snug text-ink">{t("gateBody", { pct: 50 })}</p>
+          <p className="mt-1 text-[11px] leading-snug text-ink">{t("gateBody", { pct: 43 })}</p>
         </div>
         <Panel>
           <button ref={setTarget("confirm")} type="button" className="w-full rounded-md bg-navy py-2 text-[12px] font-medium text-white">
@@ -387,6 +383,20 @@ function ActiveScene({ frame, t, setTarget }: { frame: Frame; t: T; setTarget: S
               <Chip key={l} i={i}>{l}</Chip>
             ))}
           </div>
+          <ConfirmButton setTarget={setTarget} label={t("confirm")} />
+        </Panel>
+      </div>
+    );
+  }
+
+  // ——— PIANO E DIREZIONE · l'ultima tappa, staccata dalla disponibilita' ———
+  if (block === "piano") {
+    return (
+      <div className="space-y-2">
+        <Guide text={t("guide.plan")} />
+        <Panel>
+          <SectionLabel>{t("titles.plan")}</SectionLabel>
+          <p className="text-[11px] leading-snug text-ink">{d.plan}</p>
           <ConfirmButton setTarget={setTarget} label={t("confirm")} />
         </Panel>
       </div>

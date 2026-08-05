@@ -50,8 +50,9 @@ export default function CompleteProfilePage() {
     <form onSubmit={handleSubmit} className="mt-8 space-y-6">
       <div className="space-y-4 rounded-lg border border-border bg-white p-6">
         <div className="space-y-1">
+          {/* Solo il titolo: i due campi si spiegano da soli, e la riga di sotto
+              raccontava il funzionamento interno a chi vuole solo entrare. */}
           <h2 className="font-display text-h2 text-navy">{t("heading")}</h2>
-          <p className="text-body text-ink-secondary">{t("subheading")}</p>
         </div>
 
         {error && <div className="rounded-md bg-error-bg p-3 text-body-sm text-error">{error}</div>}

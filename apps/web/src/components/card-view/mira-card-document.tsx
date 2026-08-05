@@ -440,40 +440,20 @@ export function MiraCardDocument(props: MiraCardDocumentProps) {
                         ))}
                       </div>
                     ) : (
-                      /* Riassunto corto: le date per prime, poi ambiti e luoghi. Tutto il
-                         resto (altri periodi, altri luoghi, tipi di azienda) sta nel
-                         pannello, così il foglio non si allunga mai. */
-                      <div className="space-y-1">
-                        {dispRighe.periodi.slice(0, 2).map((p, i) => (
-                          <p key={i} className="text-[11px] font-medium text-ink">{p}</p>
-                        ))}
-                        {dispRighe.periodi.length > 2 && (
-                          <p className="text-[10px] text-ink-tertiary">
-                            {d("moreItems", { count: dispRighe.periodi.length - 2 })}
-                          </p>
+                      /* Una riga sola: quando è libero. Periodi, durata, ambiti, luoghi e
+                         tipi di azienda sono cinque gruppi: elencati qui allungherebbero il
+                         foglio di mezza pagina, quindi si aprono nel pannello. */
+                      <div className="space-y-0.5">
+                        {dispRighe.periodi[0] && (
+                          <p className="text-[12px] font-medium text-ink">{dispRighe.periodi[0]}</p>
                         )}
-                        {dispRighe.durata && <p className="text-[11px] text-ink-secondary">{dispRighe.durata}</p>}
-                        {dispRighe.ambiti.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {dispRighe.ambiti.map((a) => (
-                              <span key={a} className="text-[11px] px-2 py-0.5 rounded-full bg-petrol-50 text-petrol-700">
-                                {a}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        {dispRighe.luoghi.slice(0, 2).map((l) => (
-                          <p key={l} className="text-[11px] text-ink-secondary">{l}</p>
-                        ))}
-                        {(dispRighe.luoghi.length > 2 || dispRighe.tipi.length > 0) && (
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); openDisponibilita(); }}
-                            className="text-[11px] text-petrol transition-colors hover:text-petrol-700"
-                          >
-                            {d("seeAll")} ▸
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); openDisponibilita(); }}
+                          className="text-[11px] text-petrol transition-colors hover:text-petrol-700"
+                        >
+                          {d("seeAll")} ▸
+                        </button>
                       </div>
                     )}
                   </div>

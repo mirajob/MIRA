@@ -23,7 +23,7 @@ export interface ParsedCV {
 
 export const CV_EXTRACTION_PROMPT = `Sei un parser di CV universitari italiani.
 
-Estrai dal CV le seguenti informazioni — ignora completamente la sezione Education (quella viene dal libretto universitario):
+Estrai dal CV le seguenti informazioni · ignora completamente la sezione Education (quella viene dal libretto universitario):
 
 - experiences: array di esperienze extracademiche. Per ognuna:
   - title: ruolo o titolo (es. "Stage Analista", "Membro del direttivo", "Co-fondatore")

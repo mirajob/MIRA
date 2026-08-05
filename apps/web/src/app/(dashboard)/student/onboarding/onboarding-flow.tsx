@@ -17,51 +17,63 @@ import { signOut } from "@/lib/actions/auth";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { HeaderBlock } from "@/components/card/header-block";
 import { EsperienzeBlock } from "@/components/card/esperienze-block";
-import { DisponibilitaEPianoBlock } from "@/components/card/disponibilita-block";
+import { DisponibilitaBlock } from "@/components/card/disponibilita-block";
 import { CompetenzeBlock } from "@/components/card/competenze-block";
 import { LingueBlock } from "@/components/card/lingue-block";
 import { ProseBlock } from "@/components/card/prose-block";
 import { EsamiBlock } from "@/components/card/esami-block";
 import type { CardBlockStatus } from "@mira/types";
 
-// I 6 blocchi visibili della card, nell'ordine del flusso. Due sono "virtuali" rispetto
-// al DB: disponibilita_piano = righe disponibilita + piano_carriera (confermate insieme);
-// profilo_personale = riga autodescrizione. Si vede SOLO il blocco attivo più quelli già
-// confermati (riga chiusa): i blocchi futuri compaiono quando arriva il loro turno.
-type FlowBlock = "header" | "esperienze" | "disponibilita_piano" | "competenze" | "lingue" | "profilo_personale";
+// I 7 blocchi visibili della card, nell'ordine del flusso. Uno e' "virtuale" rispetto al
+// DB: profilo_personale = riga autodescrizione. Si vede SOLO il blocco attivo piu' quelli
+// gia' confermati (riga chiusa): i blocchi futuri compaiono quando arriva il loro turno.
+type FlowBlock =
+  | "header"
+  | "esperienze"
+  | "disponibilita"
+  | "competenze"
+  | "lingue"
+  | "profilo_personale"
+  | "piano";
 
 // Fase A: disponibilità → esperienze → header (gate). Si apre con la domanda per cui lo
 // studente è qui — cosa cerca — e non con il libretto, che è la richiesta che faceva
-// abbandonare. L'ordine server-side vive in derivePhase(): i due devono restare allineati.
-const BLOCK_ORDER: FlowBlock[] = ["disponibilita_piano", "esperienze", "header", "competenze", "lingue", "profilo_personale"];
+// abbandonare. Il piano di carriera chiude la Fase B, dopo il profilo personale: prima
+// stava attaccato alla disponibilità e allungava la primissima schermata.
+// L'ordine server-side vive in derivePhase(): i due devono restare allineati.
+const BLOCK_ORDER: FlowBlock[] = [
+  "disponibilita",
+  "esperienze",
+  "header",
+  "competenze",
+  "lingue",
+  "profilo_personale",
+  "piano",
+];
 
 const PHASE_TO_BLOCK: Partial<Record<OnboardingFlowPhase, FlowBlock>> = {
   header: "header",
   esperienze: "esperienze",
-  disponibilita: "disponibilita_piano",
+  disponibilita: "disponibilita",
   competenze: "competenze",
   lingue: "lingue",
   profilo: "profilo_personale",
+  piano: "piano",
 };
 
 const BLOCK_TITLE_KEYS: Record<FlowBlock, string> = {
   header: "header",
   esperienze: "esperienze",
-  disponibilita_piano: "disponibilitaEPiano",
+  disponibilita: "disponibilita",
   competenze: "competenze",
   lingue: "lingue",
   profilo_personale: "profiloPersonale",
+  piano: "pianoCarriera",
 };
 
-function mergedStatus(a: CardBlockStatus, b: CardBlockStatus): CardBlockStatus {
-  if (a === "approved" && b === "approved") return "approved";
-  if (a === "draft" || b === "draft" || a === "approved" || b === "approved") return "draft";
-  return "empty";
-}
-
 function blockStatus(blocks: OnboardingBlocksState, block: FlowBlock): CardBlockStatus {
-  if (block === "disponibilita_piano") return mergedStatus(blocks.disponibilita.status, blocks.piano_carriera.status);
   if (block === "profilo_personale") return blocks.autodescrizione.status;
+  if (block === "piano") return blocks.piano_carriera.status;
   return blocks[block].status;
 }
 
@@ -270,6 +282,8 @@ export function OnboardingFlow({ userName }: { userName: string }) {
         return blocks.lingue.data.items.length > 0 ? t("guideLingueWithCV") : t("guideLingue");
       case "profilo":
         return t("guideProfilo");
+      case "piano":
+        return t("guidePiano");
       default:
         return "";
     }
@@ -350,13 +364,12 @@ export function OnboardingFlow({ userName }: { userName: string }) {
             onApproved={() => handleBlockApproved("esperienze")}
           />
         );
-      case "disponibilita_piano":
+      case "disponibilita":
         return (
-          <DisponibilitaEPianoBlock
+          <DisponibilitaBlock
             disponibilita={blocks.disponibilita.data}
-            piano={blocks.piano_carriera.data}
-            status={blockStatus(blocks, "disponibilita_piano")}
-            onApproved={() => handleBlockApproved("disponibilita_piano")}
+            status={blocks.disponibilita.status}
+            onApproved={() => handleBlockApproved("disponibilita")}
           />
         );
       case "competenze":
@@ -387,6 +400,18 @@ export function OnboardingFlow({ userName }: { userName: string }) {
             serif
             placeholder={cardT("profiloPersonalePlaceholder")}
             onApproved={() => handleBlockApproved("profilo_personale")}
+          />
+        );
+      case "piano":
+        return (
+          <ProseBlock
+            blockType="piano_carriera"
+            title={cardT("titles.pianoCarriera")}
+            testo={blocks.piano_carriera.data.testo}
+            stato={blocks.piano_carriera.data.stato}
+            status={blocks.piano_carriera.status}
+            placeholder={cardT("disponibilita.pianoPlaceholder")}
+            onApproved={() => handleBlockApproved("piano")}
           />
         );
     }

@@ -197,7 +197,6 @@
     "readingCV": "Reading your CV…",
     "readingTranscript": "Reading your transcript…",
     "seekingToggle": "Looking / open to opportunities",
-    "planLabel": "Plan and direction",
     "showAverage": "Show my average",
     "gateTitle": "Applications unlocked.",
     "gateBody": "You're at {pct}%: you can already apply to the associations at your university.",
@@ -212,7 +211,8 @@
       "exams": "Exams",
       "skills": "Skills",
       "languages": "Languages",
-      "profile": "Personal profile"
+      "profile": "Personal profile",
+      "plan": "Plan and direction"
     },
     "fields": {
       "quando": "When",
@@ -226,7 +226,6 @@
     },
     "guide": {
       "availabilityIntro": "Hi {name}, I'm MIRA. Let's start from what you're after.",
-      "availabilityPlan": "And where you want to get in the next months.",
       "experienceAsk": "Now your experience. From your CV I'm quicker.",
       "experienceReading": "Pulling it out and translating it into English.",
       "experienceFilled": "{count} experiences ready. Check them and confirm.",
@@ -238,7 +237,9 @@
       "languages": "The languages you speak, with level and certifications.",
       "profileAsk": "Who are you beyond exams and experience? Write how you talk.",
       "profileImprove": "I'll take care of tidying it up.",
-      "profileImproved": "Here's how it sounds in English, in first person."
+      "profileImproved": "Here's how it sounds in English, in first person.",
+      "plan": "Last thing: where you want to get in the next years.",
+      "availabilityFilled": "Good. Check it and confirm."
     }
   },
   "AssociationDemo": {
@@ -573,13 +574,10 @@
       "prevMonth": "Previous month",
       "nextMonth": "Next month",
       "durataLabel": "For how long",
-      "durataMinPlaceholder": "From",
-      "durataMaxPlaceholder": "To",
       "mesi": "{n} months",
       "mesiRange": "{a}–{b} months",
-      "mesiMin": "at least {n} months",
       "mesiMax": "up to {n} months",
-      "restareLabel": "I'm open to staying beyond that period, long term too",
+      "restareLabel": "I'm open to staying longer",
       "restareShort": "open to staying",
       "ambitiLabel": "In which field",
       "ambitiHint": "Up to 3. Write them as precisely as you can: if you already know exactly what you want to work on, put that.",
@@ -610,7 +608,9 @@
       },
       "legacyNotice": "This is the availability you wrote before. Put it back in below with real dates and places: it disappears on its own once you save.",
       "pianoLabel": "Plan and direction (next months/years)",
-      "pianoPlaceholder": "e.g. exchange, master's, work, certifications... and the direction you have in mind"
+      "pianoPlaceholder": "e.g. exchange, master's, work, certifications... and the direction you have in mind",
+      "durataPlaceholder": "How long you'd stay",
+      "mesiOltre": "more than {n} months"
     },
     "esperienze": {
       "titoloLabel": "Title / role",
@@ -1680,7 +1680,8 @@
     "guideEsamiTriennale": "Want to show what you studied? Upload your transcript (the record listing your exams and grades): it is the concrete proof of the subjects you covered and the theoretical grounding you have. The system works out your GPA automatically.\n\nWith the toggles below, you decide whether to show or hide both your GPA and the individual exam grades.",
     "guideEsamiMagistrale": "Want to show what you studied? Your transcript (the record listing your exams and grades) shows companies the subjects you covered hands-on and your theoretical grounding. The system works out your GPA automatically.\n\nIf you have them at hand, you can upload two documents: your current transcript, for the exams you are taking now in your Master's, and your Bachelor's one, to show your previous path too.\n\nWith the toggles below, you decide whether to show or hide both your GPA and the individual exam grades.",
     "skipEsami": "I don't have it now",
-    "skipEsamiNote": "You can upload it whenever you want from your Profile, the card updates on its own."
+    "skipEsamiNote": "You can upload it whenever you want from your Profile, the card updates on its own.",
+    "guidePiano": "Last thing: where you want to get. Tell me your next steps in study or training, the role you'd want to step into right after, and where you're aiming in the long run. If you're still exploring, saying so is perfectly fine. Write the way you speak: ✦ Improve with MIRA turns it into English. Then press Confirm."
   },
   "AdminSeededAssociations": {
     "eyebrow": "Seeded pages",
