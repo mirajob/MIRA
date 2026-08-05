@@ -87,9 +87,21 @@ function iso(anno, mese, giorno) {
  * Da "giugno 2027 - agosto 2027", "da settembre 2026", "June 2027 - August 2027"
  * a finestre con date piene. Un solo mese trovato = periodo aperto da quel mese.
  */
+const ESTATE_RE = /\b(summer|estate|estiv\w*)\b/i;
+
 function leggiFinestre(periodo) {
   if (!periodo) return { finestre: [], capito: false };
   const testo = periodo.toLowerCase();
+
+  // "Summer 2027", "estate 2027": nessun mese scritto, ma l'intenzione e' chiara.
+  // Per scelta del founder diventa 1 giugno - 31 agosto di quell'anno.
+  if (ESTATE_RE.test(testo)) {
+    const anno = /(20\d{2})/.exec(testo);
+    if (anno) {
+      const y = Number(anno[1]);
+      return { finestre: [{ id: nuovoId(), da: iso(y, 6, 1), a: iso(y, 8, 31) }], capito: true };
+    }
+  }
 
   const trovati = [];
   let match;
@@ -129,6 +141,8 @@ function leggiDurata(durata) {
   if (/indefinit|indetermin|permanent|lungo termine|long term/.test(testo)) {
     return { min: null, max: null, restare: true, capito: true };
   }
+  // "the whole summer", "stage estivo": giugno-agosto, quindi tre mesi.
+  if (ESTATE_RE.test(testo)) return { min: 3, max: 3, restare: false, capito: true };
   if (/anno|year/.test(testo)) return { min: 12, max: 12, restare: false, capito: true };
   if (/settiman|week/.test(testo)) return { min: 1, max: 1, restare: false, capito: true };
 
