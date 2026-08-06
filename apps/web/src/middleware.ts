@@ -4,7 +4,11 @@ import { updateSession } from "@mira/supabase/middleware";
 // `/opengraph-image` e `/manifest.json` non sono pagine ma vengono comunque dal matcher:
 // senza metterli qui il middleware li rimandava al login, e chi condivideva il link su
 // WhatsApp non vedeva nessuna anteprima.
-const PUBLIC_ROUTES = ["/", "/login", "/signup", "/verify-email", "/auth/callback", "/auth/confirm", "/associations", "/join", "/aziende", "/privacy", "/termini", "/opengraph-image", "/manifest.json"];
+//
+// Stesso motivo per `/sw.js` e `/offline.html` (MIRA installata sulla schermata Home):
+// il service worker lo scarica anche chi non ha ancora fatto il login, e un redirect al
+// login al posto del file lo renderebbe semplicemente non registrabile.
+const PUBLIC_ROUTES = ["/", "/login", "/signup", "/verify-email", "/auth/callback", "/auth/confirm", "/associations", "/join", "/aziende", "/privacy", "/termini", "/opengraph-image", "/manifest.json", "/sw.js", "/offline.html"];
 const ADMIN_ROUTES = ["/admin"];
 
 function isPublicRoute(pathname: string): boolean {

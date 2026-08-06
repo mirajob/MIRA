@@ -1,4 +1,11 @@
 {
+  "Pwa": {
+    "title": "Keep MIRA on your phone",
+    "subtitle": "It opens like an app, with no browser bar.",
+    "cta": "Add",
+    "iosHint": "Tap Share below, then \"Add to Home Screen\".",
+    "dismiss": "Dismiss"
+  },
   "LocaleSwitcher": {
     "label": "Language",
     "it": "Italiano",

@@ -1,4 +1,11 @@
 {
+  "Pwa": {
+    "title": "Tieni MIRA sul telefono",
+    "subtitle": "Si apre come un'app, senza la barra del browser.",
+    "cta": "Aggiungi",
+    "iosHint": "Tocca Condividi qui sotto, poi \"Aggiungi alla schermata Home\".",
+    "dismiss": "Chiudi"
+  },
   "LocaleSwitcher": {
     "label": "Lingua",
     "it": "Italiano",

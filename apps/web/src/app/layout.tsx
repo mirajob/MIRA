@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import { PwaServiceWorker } from "@/components/pwa";
 import "./globals.css";
 
 /**
@@ -71,10 +72,31 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.json",
-  other: {
-    "theme-color": "#0A1F33",
-    "apple-mobile-web-app-title": "MIRA",
+  // "Aggiungi alla schermata Home": su iPhone questi sono i meta che tolgono la barra di
+  // Safari e danno il nome sotto l'icona. Senza `capable`, l'icona apre una scheda del
+  // browser e sembra un segnalibro qualsiasi invece di un'app.
+  appleWebApp: {
+    capable: true,
+    title: "MIRA",
+    statusBarStyle: "default",
   },
+  other: {
+    // Next 15 emette solo `mobile-web-app-capable`, che gli iPhone capiscono da iOS 16.4
+    // (prima leggevano solo questo meta col prefisso apple). Chi ha un telefono più
+    // vecchio senza questa riga si ritrova l'icona che apre una scheda di Safari.
+    "apple-mobile-web-app-capable": "yes",
+  },
+};
+
+/**
+ * `themeColor` sta qui e non in `metadata`: Next 15 lo vuole nell'export viewport.
+ * È il colore della barra di sistema quando MIRA è aperta installata.
+ * `viewportFit: "cover"` serve ai telefoni con la tacca, insieme ai padding
+ * `env(safe-area-inset-*)` usati nei componenti che toccano i bordi.
+ */
+export const viewport: Viewport = {
+  themeColor: "#0A1F33",
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({
@@ -90,6 +112,7 @@ export default async function RootLayout({
       <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
           {children}
+          <PwaServiceWorker />
         </NextIntlClientProvider>
       </body>
     </html>
