@@ -6,6 +6,7 @@ import { getUserContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { ensureCardBlocksExist } from "./card-blocks";
 import { EMPTY_ONBOARDING_BLOCKS } from "@/lib/onboarding-defaults";
+import { isPianoDone } from "@/lib/card-completeness";
 import type {
   CardBlockStatus,
   HeaderProseContent,
@@ -31,8 +32,8 @@ import type {
 // attivo; lo studente compila DIRETTAMENTE i campi del blocco e preme Conferma. L'AI resta
 // dove è affidabile: parsing libretto/CV (prefill dei campi) e il bottone "✦ Migliora con
 // MIRA" che riscrive i testi liberi in inglese.
-// Il modello dati non cambia: 9 righe card_blocks, 6 blocchi visibili, gate su
-// disponibilita + piano_carriera approvati insieme.
+// Il modello dati non cambia: 9 righe card_blocks, 7 blocchi visibili. Il gate scatta
+// su disponibilita + esperienze + header; il piano di carriera chiude la Fase B.
 //
 // Rework 2026-07-31: niente più "competenze accademiche" proposte dall'AI a partire dai voti.
 // La parte teorica la certifica l'elenco esami del libretto (verificato, uguale per tutti);
@@ -140,15 +141,14 @@ async function saveAnswersFlags(supabase: any, profileId: string, patch: Record<
     .eq("user_id", profileId);
 }
 
+/** Stessa regola della guardia della pagina di onboarding: vedi isPianoDone. */
+function pianoFatto(blocks: OnboardingBlocksState): boolean {
+  return isPianoDone(blocks.piano_carriera.status, blocks.piano_carriera.data.testo);
+}
+
 /** Percentuale sui 7 blocchi visibili. Disponibilità e piano di carriera erano contati
  * come uno solo perché si confermavano insieme: dal 2026-08 sono due tappe distinte,
  * il piano chiude la Fase B. "formazione" vive dentro Header e "interessi" è legacy. */
-/** Approvato conta solo se c'e' davvero del testo: il vecchio flusso approvava il piano
- * insieme alla disponibilita', lasciandolo vuoto, e la tappa finale non sarebbe mai apparsa. */
-function pianoFatto(blocks: OnboardingBlocksState): boolean {
-  return blocks.piano_carriera.status === "approved" && Boolean(blocks.piano_carriera.data.testo?.trim());
-}
-
 const BLOCCHI_PCT: Array<keyof OnboardingBlocksState> = [
   "disponibilita",
   "esperienze",

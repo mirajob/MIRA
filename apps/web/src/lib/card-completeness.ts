@@ -84,3 +84,15 @@ export function isSectionFilled(key: CardSectionKey, content: CardContentInput):
 export function missingCardSections(content: CardContentInput): CardSectionKey[] {
   return CARD_SECTION_ORDER.filter((key) => !isSectionFilled(key, content));
 }
+
+/**
+ * Il piano di carriera è "fatto" solo se è approvato E contiene del testo.
+ *
+ * Il vecchio flusso lo approvava insieme alla disponibilità, lasciandolo vuoto: senza
+ * questo controllo l'ultima tappa dell'onboarding risulterebbe già superata e non
+ * verrebbe mai mostrata. Lo usano sia derivePhase sia la guardia della pagina di
+ * onboarding, che devono dare la stessa risposta.
+ */
+export function isPianoDone(status: string | null | undefined, testo: string | null | undefined): boolean {
+  return status === "approved" && hasText(testo);
+}

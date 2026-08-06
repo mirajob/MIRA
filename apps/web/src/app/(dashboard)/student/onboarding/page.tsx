@@ -2,6 +2,7 @@ import { getUserContext } from "@/lib/auth";
 import { createServerClient } from "@mira/supabase/server";
 import { redirect } from "next/navigation";
 import { OnboardingFlow } from "./onboarding-flow";
+import { isPianoDone } from "@/lib/card-completeness";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -23,13 +24,22 @@ export default async function OnboardingPage() {
 
   if ((student as any)?.onboarding_completed) {
     // Fase A completa non basta più: reindirizza solo se anche la Fase B lo è.
-    // Fase B del rework = competenze, lingue, profilo personale (riga autodescrizione).
+    // Fase B = competenze, lingue, profilo personale (riga autodescrizione) e piano di
+    // carriera, che dal 2026-08 è la tappa finale. Senza il piano in questo elenco, alla
+    // conferma del profilo personale la guardia dava la Fase B per chiusa e sbatteva
+    // fuori lo studente proprio mentre compariva l'ultima domanda.
+    const FASE_B = ["competenze", "lingue", "autodescrizione", "piano_carriera"] as const;
     const { data: blocks } = await (supabase.from("card_blocks") as any)
-      .select("status")
+      .select("block_type, status, prose_content")
       .eq("student_profile_id", (student as any).id)
-      .in("block_type", ["competenze", "lingue", "autodescrizione"]);
+      .in("block_type", FASE_B);
 
-    const faseBComplete = (blocks ?? []).length === 3 && (blocks ?? []).every((b: any) => b.status === "approved");
+    const byType = new Map((blocks ?? []).map((b: any) => [b.block_type as string, b]));
+    const piano = byType.get("piano_carriera") as any;
+    const faseBComplete =
+      ["competenze", "lingue", "autodescrizione"].every((t) => (byType.get(t) as any)?.status === "approved") &&
+      isPianoDone(piano?.status, piano?.prose_content?.testo);
+
     if (faseBComplete) redirect("/student");
   }
 
