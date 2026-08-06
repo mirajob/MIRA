@@ -17,10 +17,25 @@ interface ProseBlockProps {
   stato?: PianoCarrieraStato;
   intro?: string;
   placeholder?: string;
+  /** Tappa dell'onboarding: senza testo non si va avanti, quindi il Conferma resta spento
+   * con una riga che spiega perché, invece di sembrare rotto. */
+  requireText?: boolean;
   onApproved?: () => void;
 }
 
-export function ProseBlock({ blockType, title, testo, status, serif, stato, intro, placeholder, onApproved }: ProseBlockProps) {
+export function ProseBlock({
+  blockType,
+  title,
+  testo,
+  status,
+  serif,
+  stato,
+  intro,
+  placeholder,
+  requireText,
+  onApproved,
+}: ProseBlockProps) {
+  const t = useTranslations("CardBlocks");
   const [text, setText] = useState(testo ?? "");
   const [statoValue, setStatoValue] = useState<PianoCarrieraStato | undefined>(stato ?? "esplorazione");
   const [dirty, setDirty] = useState(false);
@@ -40,9 +55,18 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
     setDirty(false);
   }
 
+  const vuoto = text.trim().length === 0;
+
   return (
     <div className="rounded-lg border border-border bg-white overflow-hidden">
-      <CardBlockHeader title={title} status={status} blockType={blockType} onBeforeApprove={handleSave} onApproved={onApproved} />
+      <CardBlockHeader
+        title={title}
+        status={status}
+        blockType={blockType}
+        approveDisabled={requireText && vuoto}
+        onBeforeApprove={handleSave}
+        onApproved={onApproved}
+      />
       <div className="p-5 space-y-3">
         {intro && <p className="text-body-sm text-ink-secondary italic">{intro}</p>}
         <textarea
@@ -57,6 +81,7 @@ export function ProseBlock({ blockType, title, testo, status, serif, stato, intr
             serif ? "font-display" : ""
           }`}
         />
+        {requireText && vuoto && <p className="text-body-sm text-ink-tertiary">{t("prose.requiredHint")}</p>}
         {/* Il Profilo personale (riga autodescrizione) ha la riscrittura AI: lo studente
             scrive come parla, anche in italiano, e MIRA lo trasforma in inglese in prima persona. */}
         {blockType === "autodescrizione" && (

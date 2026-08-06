@@ -654,7 +654,8 @@
       "emptyView": "Nessuna lingua ancora."
     },
     "prose": {
-      "notSpecified": "Non ancora indicato."
+      "notSpecified": "Non ancora indicato.",
+      "requiredHint": "Scrivi almeno una riga per confermare. Va bene anche \"non lo so ancora, sto guardando in giro\"."
     },
     "profiloPersonalePlaceholder": "Come ti presenti oltre a esami ed esperienze: interessi veri, abitudini, priorità...",
     "saveChanges": "Salva modifiche",

@@ -654,7 +654,8 @@
       "emptyView": "No languages yet."
     },
     "prose": {
-      "notSpecified": "Not specified yet."
+      "notSpecified": "Not specified yet.",
+      "requiredHint": "Write at least one line to confirm. \"I don't know yet, I'm still looking around\" works too."
     },
     "profiloPersonalePlaceholder": "How you present yourself beyond exams and experiences: real interests, habits, priorities...",
     "saveChanges": "Save changes",

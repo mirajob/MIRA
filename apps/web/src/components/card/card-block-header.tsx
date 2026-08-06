@@ -11,6 +11,7 @@ export function CardBlockHeader({
   status,
   blockType,
   alsoApprove,
+  approveDisabled,
   onBeforeApprove,
   onApproved,
 }: {
@@ -19,6 +20,9 @@ export function CardBlockHeader({
   blockType: CardBlockType;
   /** Blocchi approvati insieme a questo con un solo Conferma (es. Formazione dentro Header). */
   alsoApprove?: CardBlockType[];
+  /** Blocca il Conferma quando il blocco non ha ancora niente da confermare: senza questo,
+   * premerlo a vuoto sembrava non fare nulla e la tappa non avanzava mai. */
+  approveDisabled?: boolean;
   /** Eseguito PRIMA dell'approvazione: gli editor lo usano per salvare le modifiche in corso,
    * così Conferma = salva + approva in un colpo solo (mai perdere campi non ancora salvati). */
   onBeforeApprove?: () => Promise<void>;
@@ -73,7 +77,7 @@ export function CardBlockHeader({
         {onBeforeApprove && (
           <button
             onClick={handleApprove}
-            disabled={pending}
+            disabled={pending || approveDisabled}
             className="text-xs font-medium text-white bg-petrol rounded-md px-3 py-1.5 hover:bg-petrol-700 transition-colors disabled:opacity-50"
           >
             {localStatus === "approved" ? t("saveChanges") : t("confirm")}

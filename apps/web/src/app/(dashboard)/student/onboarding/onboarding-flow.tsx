@@ -22,6 +22,7 @@ import { CompetenzeBlock } from "@/components/card/competenze-block";
 import { LingueBlock } from "@/components/card/lingue-block";
 import { ProseBlock } from "@/components/card/prose-block";
 import { EsamiBlock } from "@/components/card/esami-block";
+import { isPianoDone } from "@/lib/card-completeness";
 import type { CardBlockStatus } from "@mira/types";
 
 // I 7 blocchi visibili della card, nell'ordine del flusso. Uno e' "virtuale" rispetto al
@@ -71,9 +72,23 @@ const BLOCK_TITLE_KEYS: Record<FlowBlock, string> = {
   piano: "pianoCarriera",
 };
 
+/**
+ * Il piano approvato-ma-vuoto non è una tappa fatta.
+ *
+ * Fino al 2026-08 il piano veniva approvato insieme alla disponibilità, spesso senza una
+ * riga dentro: quelle card arrivano qui con status "approved" e testo vuoto. Il server lo
+ * sa già (isPianoDone) e tiene la fase su "piano", ma il pannello leggeva lo status grezzo
+ * e mostrava badge "Approvato" più "Salva modifiche": sembrava una tappa già chiusa che
+ * però non andava avanti. Qui vale la stessa regola del server.
+ */
+function pianoStatus(blocks: OnboardingBlocksState): CardBlockStatus {
+  if (isPianoDone(blocks.piano_carriera.status, blocks.piano_carriera.data.testo)) return "approved";
+  return blocks.piano_carriera.data.testo?.trim() ? "draft" : "empty";
+}
+
 function blockStatus(blocks: OnboardingBlocksState, block: FlowBlock): CardBlockStatus {
   if (block === "profilo_personale") return blocks.autodescrizione.status;
-  if (block === "piano") return blocks.piano_carriera.status;
+  if (block === "piano") return pianoStatus(blocks);
   return blocks[block].status;
 }
 
@@ -409,8 +424,9 @@ export function OnboardingFlow({ userName }: { userName: string }) {
             title={cardT("titles.pianoCarriera")}
             testo={blocks.piano_carriera.data.testo}
             stato={blocks.piano_carriera.data.stato}
-            status={blocks.piano_carriera.status}
+            status={pianoStatus(blocks)}
             placeholder={cardT("disponibilita.pianoPlaceholder")}
+            requireText
             onApproved={() => handleBlockApproved("piano")}
           />
         );
