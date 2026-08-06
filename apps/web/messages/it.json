@@ -4,7 +4,10 @@
     "subtitle": "Si apre come un'app, senza la barra del browser.",
     "cta": "Aggiungi",
     "iosHint": "Tocca Condividi qui sotto, poi \"Aggiungi alla schermata Home\".",
-    "dismiss": "Chiudi"
+    "dismiss": "Chiudi",
+    "pushTitle": "Ti avvisiamo quando succede",
+    "pushSubtitle": "Un'associazione ti risponde, un'azienda ti cerca. Solo questo.",
+    "pushCta": "Attiva"
   },
   "LocaleSwitcher": {
     "label": "Lingua",
@@ -1932,6 +1935,13 @@
   },
   "Profile": {
     "intro": "Il tuo account: come ti vedono gli altri e cosa scegli di mostrare. Quello che racconti di te sta invece nella MiraCard.",
+    "pushHeading": "Notifiche",
+    "pushToggle": "Notifiche su questo dispositivo",
+    "pushHint": "Ti scriviamo quando un'associazione risponde alla tua candidatura o un'azienda ti cerca. Niente altro.",
+    "pushDenied": "Le notifiche sono bloccate per MIRA in questo browser. Si riattivano dalle impostazioni del telefono, alla voce Notifiche o Siti web.",
+    "pushNeedsInstall": "Su iPhone le notifiche arrivano solo se aggiungi MIRA alla schermata Home: tocca Condividi e poi \"Aggiungi alla schermata Home\".",
+    "pushUnsupported": "Questo browser non gestisce le notifiche. Provalo da Chrome su Android o da MIRA installata sull'iPhone.",
+    "pushNotReady": "Le notifiche non sono ancora disponibili su MIRA. Torna qui tra qualche giorno.",
     "working": "Un attimo...",
     "saving": "Salvataggio...",
     "photoHeading": "Foto profilo",

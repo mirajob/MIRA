@@ -4,6 +4,7 @@ import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
 import { ROLE_PERMISSION_TEMPLATES } from "@mira/domain";
 import { sendReminderEmail } from "@/lib/email";
+import { createNotification } from "@/lib/notify";
 import { revalidatePath } from "next/cache";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -110,11 +111,12 @@ export async function decideCandidate(input: {
     }).catch(() => {});
   }
 
-  await (supabase.from("notifications") as any).insert({
-    user_id: application.student_user_id,
+  await createNotification(supabase, {
+    userId: application.student_user_id,
     type: "application_decision",
     title: input.decision === "accepted" ? "Sei stato accettato" : "Aggiornamento sulla candidatura",
     body: associationName,
+    link: `/student/applications/${input.applicationId}`,
     data: { application_id: input.applicationId },
   });
 

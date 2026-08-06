@@ -19,6 +19,8 @@ export default async function AdminLayout({
     { label: t("associationsLink"), href: "/admin/associations" },
     { label: t("companiesLink"), href: "/admin/companies" },
     { label: t("usersLink"), href: "/admin/users" },
+    // Chi usa MIRA installata sul telefono e chi riceve le notifiche.
+    { label: "App", href: "/admin/app" },
     { label: t("teamLink"), href: "/admin/team" },
     // Strumento dev interno (solo admin MIRA): banco di prova per il parsing AI.
     { label: "AI Test", href: "/admin/ai-test" },

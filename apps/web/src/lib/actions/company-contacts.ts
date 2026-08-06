@@ -2,6 +2,7 @@
 
 import { createServiceClient } from "@mira/supabase/server";
 import { getCompanyContext, getUserContext } from "@/lib/auth";
+import { createNotification, createNotifications } from "@/lib/notify";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -16,17 +17,18 @@ async function notifyCompanyMembers(
     .eq("company_id", companyId)
     .eq("status", "active");
 
-  const rows = (members ?? []).map((m: any) => ({
-    user_id: m.user_id,
+  const items = (members ?? []).map((m: any) => ({
+    userId: m.user_id as string,
     type: notif.type,
     title: notif.title,
     body: notif.body,
+    link: notif.data?.link as string | undefined,
     data: notif.data ?? {},
   }));
 
-  if (rows.length === 0) return;
-  const { error } = await supabase.from("notifications").insert(rows);
-  if (error) console.error("notifyCompanyMembers failed:", error.message);
+  // Da createNotifications passa anche la push: la stessa notifica arriva sul telefono
+  // di chi ha MIRA installata, senza dover aggiungere niente qui.
+  await createNotifications(supabase, items);
 }
 
 async function notifyStudent(
@@ -42,14 +44,14 @@ async function notifyStudent(
 
   if (!studentProfile?.user_id) return;
 
-  const { error } = await supabase.from("notifications").insert({
-    user_id: studentProfile.user_id,
+  await createNotification(supabase, {
+    userId: studentProfile.user_id,
     type: notif.type,
     title: notif.title,
     body: notif.body,
+    link: notif.data?.link as string | undefined,
     data: notif.data ?? {},
   });
-  if (error) console.error("notifyStudent failed:", error.message);
 }
 
 // ---- COMPANY SIDE ----

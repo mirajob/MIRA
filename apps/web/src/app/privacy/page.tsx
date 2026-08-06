@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <LegalPageLayout title="Informativa sulla Privacy" updated="Ultimo aggiornamento: 15 luglio 2026">
+    <LegalPageLayout title="Informativa sulla Privacy" updated="Ultimo aggiornamento: 6 agosto 2026">
       <p className="text-body text-ink-secondary">
         Questa informativa descrive come MIRA raccoglie, utilizza e protegge i dati personali degli utenti della
         piattaforma, ai sensi del Regolamento (UE) 2016/679 (&quot;GDPR&quot;). È scritta per essere letta: se
@@ -38,6 +38,14 @@ export default function PrivacyPage() {
           <strong className="text-ink">Dati di utilizzo del servizio:</strong> candidature inviate alle
           associazioni e relative risposte; messaggi scambiati con associazioni e aziende sulla piattaforma; dati
           tecnici (log di accesso, cookie tecnici essenziali).
+        </p>
+        <p>
+          <strong className="text-ink">Notifiche e app installata:</strong> se attivi le notifiche, conserviamo
+          l&apos;indirizzo tecnico che il tuo browser assegna a quel dispositivo e le chiavi che servono a
+          cifrarle: sono l&apos;unico modo per recapitarle e non permettono di risalire ad altro. Se aggiungi MIRA
+          alla schermata Home, registriamo che la usi come app e quando l&apos;hai aperta l&apos;ultima volta, per
+          capire se vale la pena svilupparla in quella direzione. Le notifiche si disattivano quando vuoi dal tuo
+          Profilo, e in quel momento l&apos;indirizzo del dispositivo viene cancellato.
         </p>
         <p>
           Il conferimento dei dati della card è volontario: decidi tu cosa raccontare a MIRA e cosa approvare.

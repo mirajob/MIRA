@@ -1,29 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { enablePush, permissionState, pushSupported } from "@/lib/push-client";
+import { pushReady, recordAppOpen } from "@/lib/actions/push";
 
 /**
- * MIRA sulla schermata Home del telefono.
- *
- * Due componenti separati perché vanno in due posti diversi:
+ * MIRA sul telefono: installazione e notifiche.
  *
  * `PwaServiceWorker` sta nel layout radice, per tutti: senza un service worker registrato
- * Chrome su Android non offre nemmeno "Installa app", e in più dà la pagina di cortesia
- * quando il telefono resta senza rete.
+ * Chrome su Android non offre nemmeno "Installa app", non arrivano le push e non c'è la
+ * pagina di cortesia quando manca la rete.
  *
- * `PwaInstallPrompt` è la riga che propone l'installazione, e sta nella dashboard: la
- * mostriamo a chi ha già un account, perché un'icona che apre la pagina di presentazione
- * a chi non si è ancora registrato non serve a niente. Serve perché quasi nessuno sa che
- * un sito si può installare e nessuno va a cercarlo nel menu del browser.
+ * `AppPrompt` è la riga in fondo allo schermo, e sta nella dashboard: la mostriamo a chi ha
+ * già un account, perché un'icona che apre la pagina di presentazione a chi non si è ancora
+ * registrato non serve a niente.
  *
- * I due sistemi si comportano in modo diverso e non c'è modo di uniformarli:
- * Android manda l'evento `beforeinstallprompt` e l'installazione la fa il browser quando
- * gliela chiediamo noi; iPhone non ha nessuna API, l'unica strada è Condividi e poi
- * "Aggiungi alla schermata Home", quindi lì possiamo solo spiegare dove toccare.
+ * Una riga sola alla volta, mai due impilate. Ha la precedenza la richiesta di notifiche
+ * dove è possibile darla, perché è quella che riporta lo studente su MIRA; l'invito a
+ * installare compare quando le notifiche non sono ancora possibili, che su iPhone è sempre
+ * il caso finché non installa (Apple non le concede a Safari normale).
+ *
+ * Nota sui permessi, che vale più di qualsiasi scelta grafica: la finestra del browser si
+ * può aprire una volta sola. Un "no" lì è definitivo e irreversibile da codice. Per questo
+ * chiediamo prima noi, con parole nostre: un "no" a MIRA lo si può cambiare idea domani.
  */
 
-const DISMISS_KEY = "mira.pwa.dismissed";
+const DISMISS_INSTALL = "mira.pwa.dismissed";
+const DISMISS_PUSH = "mira.push.dismissed";
+const OPEN_LOGGED = "mira.app.open.logged";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -39,6 +44,11 @@ function isStandalone(): boolean {
   );
 }
 
+function isIOS(): boolean {
+  if (typeof window === "undefined") return false;
+  return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+}
+
 /**
  * iPhone dove "Condividi, poi Aggiungi alla schermata Home" è davvero l'istruzione giusta:
  * quindi Safari, non Chrome o Firefox su iOS (hanno un menu diverso) e non i browser dentro
@@ -46,20 +56,33 @@ function isStandalone(): boolean {
  * corrispondono a quello che l'utente vede è peggio che non dire niente.
  */
 function isIosSafari(): boolean {
-  if (typeof window === "undefined") return false;
+  if (!isIOS()) return false;
   const ua = window.navigator.userAgent;
-  if (!/iphone|ipad|ipod/i.test(ua)) return false;
   if (/CriOS|FxiOS|EdgiOS|OPiOS|YaBrowser/i.test(ua)) return false;
   if (/Instagram|FBAN|FBAV|FB_IAB|Line\/|Twitter|LinkedInApp/i.test(ua)) return false;
   return /Safari/i.test(ua);
 }
 
-function dismissed(): boolean {
+function flagged(key: string): boolean {
   try {
-    return localStorage.getItem(DISMISS_KEY) !== null;
+    return localStorage.getItem(key) !== null;
   } catch {
     return false; // navigazione privata: meglio riproporlo che sparire per sempre
   }
+}
+
+function flag(key: string) {
+  try {
+    localStorage.setItem(key, "1");
+  } catch {
+    // niente da fare, pazienza
+  }
+}
+
+function platformName(): string {
+  if (isIOS()) return "ios";
+  if (/android/i.test(navigator.userAgent)) return "android";
+  return "desktop";
 }
 
 /** Solo registrazione, nessuna interfaccia. Il service worker vive solo in produzione: in
@@ -77,83 +100,133 @@ export function PwaServiceWorker() {
   return null;
 }
 
-export function PwaInstallPrompt() {
+type Mode = "push" | "install" | "ios-install" | null;
+
+export function AppPrompt() {
   const t = useTranslations("Pwa");
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showIosHint, setShowIosHint] = useState(false);
-  const [hidden, setHidden] = useState(true);
+  const [mode, setMode] = useState<Mode>(null);
+  const [busy, setBusy] = useState(false);
+  // Finché non sappiamo che il server è pronto a registrare le iscrizioni, le notifiche
+  // non si propongono nemmeno: vedi pushReady().
+  const [serverPronto, setServerPronto] = useState(false);
 
   useEffect(() => {
-    if (isStandalone()) return; // già installata: non c'è niente da proporre
-    if (dismissed()) return;
+    pushReady()
+      .then(setServerPronto)
+      .catch(() => setServerPronto(false));
+  }, []);
 
+  /** Chi apre MIRA dall'icona lo registriamo una volta per sessione: è il dato che dice
+   * quante persone la usano davvero come app. Non serve a mostrare niente. */
+  useEffect(() => {
+    if (!isStandalone()) return;
+    if (sessionStorage.getItem(OPEN_LOGGED)) return;
+    sessionStorage.setItem(OPEN_LOGGED, "1");
+    recordAppOpen({ platform: platformName() }).catch(() => {});
+  }, []);
+
+  const decide = useCallback((install: BeforeInstallPromptEvent | null, pronto: boolean) => {
+    const standalone = isStandalone();
+    // Le notifiche si possono chiedere solo se il permesso non è ancora stato deciso: se ha
+    // già detto sì è fatta, se ha detto no la finestra non si riapre più e insistere con una
+    // riga che non porta a niente è solo fastidio.
+    const canAskPush = pronto && pushSupported() && permissionState() === "default" && (!isIOS() || standalone);
+
+    if (canAskPush && !flagged(DISMISS_PUSH)) return setMode("push");
+    if (standalone) return setMode(null); // già installata: niente da proporre
+    if (flagged(DISMISS_INSTALL)) return setMode(null);
+    if (install) return setMode("install");
+    if (isIosSafari()) return setMode("ios-install");
+    return setMode(null);
+  }, []);
+
+  useEffect(() => {
     const onPrompt = (e: Event) => {
       // Senza preventDefault Chrome mostra la sua barra e non ci ridà l'evento.
       e.preventDefault();
-      setInstallEvent(e as BeforeInstallPromptEvent);
-      setHidden(false);
+      const ev = e as BeforeInstallPromptEvent;
+      setInstallEvent(ev);
+      decide(ev, serverPronto);
     };
     window.addEventListener("beforeinstallprompt", onPrompt);
 
-    // iPhone: nessun evento, decidiamo noi. Con un attimo di ritardo, così la riga non
-    // compare addosso alla pagina che si sta ancora aprendo.
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    if (isIosSafari()) {
-      timer = setTimeout(() => {
-        setShowIosHint(true);
-        setHidden(false);
-      }, 4000);
-    }
-
-    const onInstalled = () => dismiss();
+    // Appena installata: registriamo l'installazione e ripassiamo dalla decisione, perché su
+    // iPhone da questo momento le notifiche diventano possibili e prima non lo erano.
+    const onInstalled = () => {
+      recordAppOpen({ platform: platformName(), installed: true }).catch(() => {});
+      decide(null, serverPronto);
+    };
     window.addEventListener("appinstalled", onInstalled);
+
+    // Un attimo di attesa prima di comparire: la riga non deve saltare addosso a una pagina
+    // che si sta ancora aprendo. Vale anche per Chrome, che manda l'evento quasi subito.
+    const timer = setTimeout(() => decide(installEvent, serverPronto), 2500);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", onPrompt);
       window.removeEventListener("appinstalled", onInstalled);
-      if (timer) clearTimeout(timer);
+      clearTimeout(timer);
     };
-  }, []);
+  }, [decide, serverPronto, installEvent]);
 
   function dismiss() {
-    setHidden(true);
-    try {
-      localStorage.setItem(DISMISS_KEY, "1");
-    } catch {
-      // navigazione privata: pazienza, ricomparirà alla visita dopo
-    }
+    flag(mode === "push" ? DISMISS_PUSH : DISMISS_INSTALL);
+    // Chiudendo la richiesta di notifiche resta comunque l'invito a installare, se ha senso.
+    if (mode === "push") decide(installEvent, serverPronto);
+    else setMode(null);
+  }
+
+  async function handlePush() {
+    setBusy(true);
+    const result = await enablePush();
+    setBusy(false);
+    // Sì o no che sia, la finestra del browser è già passata: la riga ha finito il suo
+    // lavoro e non deve tornare. Le notifiche restano governabili dal Profilo.
+    flag(DISMISS_PUSH);
+    if (result === "ok") setMode(null);
+    else decide(installEvent, serverPronto);
   }
 
   async function handleInstall() {
     if (!installEvent) return;
+    setBusy(true);
     await installEvent.prompt();
     await installEvent.userChoice;
-    // L'evento si consuma: che abbia accettato o no, la riga ha finito il suo lavoro.
-    dismiss();
+    setBusy(false);
+    flag(DISMISS_INSTALL);
+    setMode(null);
   }
 
-  if (hidden) return null;
+  if (!mode) return null;
+
+  const isPush = mode === "push";
+  const title = isPush ? t("pushTitle") : t("title");
+  const detail = isPush ? t("pushSubtitle") : mode === "ios-install" ? t("iosHint") : t("subtitle");
+  const action = isPush ? handlePush : handleInstall;
+  const actionLabel = isPush ? t("pushCta") : t("cta");
 
   return (
     // Solo su schermo piccolo: sul computer "aggiungi alla schermata Home" non vuol dire niente.
     <div
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden"
       role="region"
-      aria-label={t("title")}
+      aria-label={title}
     >
       <div className="mx-auto flex max-w-app items-center gap-3">
         <img src="/icon-192.png" alt="" className="h-9 w-9 shrink-0 rounded-lg" />
         <div className="min-w-0 flex-1">
-          <p className="text-body-sm font-medium text-navy">{t("title")}</p>
-          <p className="text-xs text-ink-secondary">{showIosHint ? t("iosHint") : t("subtitle")}</p>
+          <p className="text-body-sm font-medium text-navy">{title}</p>
+          <p className="text-xs text-ink-secondary">{detail}</p>
         </div>
-        {!showIosHint && (
+        {mode !== "ios-install" && (
           <button
             type="button"
-            onClick={handleInstall}
-            className="shrink-0 rounded-md bg-navy px-3 py-1.5 text-xs font-medium text-white transition-colors duration-100 hover:bg-navy-700"
+            onClick={action}
+            disabled={busy}
+            className="shrink-0 rounded-md bg-navy px-3 py-1.5 text-xs font-medium text-white transition-colors duration-100 hover:bg-navy-700 disabled:opacity-40"
           >
-            {t("cta")}
+            {actionLabel}
           </button>
         )}
         <button

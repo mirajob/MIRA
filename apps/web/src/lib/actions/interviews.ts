@@ -2,6 +2,7 @@
 
 import { createServiceClient } from "@mira/supabase/server";
 import { getUserContext } from "@/lib/auth";
+import { createNotification } from "@/lib/notify";
 import { revalidatePath } from "next/cache";
 
 export async function sendInterviewInvite(applicationId: string, formData: FormData) {
@@ -69,11 +70,14 @@ export async function sendInterviewInvite(applicationId: string, formData: FormD
     visible_to_candidate: true,
   });
 
-  await service.from("notifications").insert({
-    user_id: application.student_user_id,
+  // Notifica dentro MIRA più push sul telefono, in una chiamata sola. Il link porta alla
+  // candidatura: senza, la notifica sul telefono apriva la home e l'invito andava cercato.
+  await createNotification(service, {
+    userId: application.student_user_id,
     type: "interview_invite",
     title: "Invito a colloquio",
     body: message || "Sei stato invitato a un colloquio. Controlla i dettagli.",
+    link: `/student/applications/${applicationId}`,
     data: { application_id: applicationId },
   });
 

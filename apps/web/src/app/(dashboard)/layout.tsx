@@ -5,7 +5,7 @@ import { MobileHeader } from "@/components/mobile-header";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { getUnreadCounts } from "@/lib/actions/notifications";
 import { hasWorkspaceAccess } from "@/lib/association-roles";
-import { PwaInstallPrompt } from "@/components/pwa";
+import { AppPrompt } from "@/components/pwa";
 import Link from "next/link";
 
 export default async function DashboardLayout({
@@ -79,10 +79,10 @@ export default async function DashboardLayout({
         </div>
       </main>
 
-      {/* Riga fissa in basso, solo su telefono e solo finché non la si chiude. Sta sotto
-          l'onboarding (che è a schermo intero, z-50): chi sta costruendo la card non deve
-          trovarsi un invito tra i piedi. */}
-      <PwaInstallPrompt />
+      {/* Riga fissa in basso, solo su telefono e solo finché non la si chiude: notifiche o
+          installazione, mai le due insieme. Sta sotto l'onboarding (che è a schermo intero,
+          z-50): chi sta costruendo la card non deve trovarsi un invito tra i piedi. */}
+      <AppPrompt />
     </div>
   );
 }

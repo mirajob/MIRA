@@ -4,7 +4,10 @@
     "subtitle": "It opens like an app, with no browser bar.",
     "cta": "Add",
     "iosHint": "Tap Share below, then \"Add to Home Screen\".",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "pushTitle": "We'll let you know when something happens",
+    "pushSubtitle": "An association replies, a company is looking for you. Nothing else.",
+    "pushCta": "Turn on"
   },
   "LocaleSwitcher": {
     "label": "Language",
@@ -1932,6 +1935,13 @@
   },
   "Profile": {
     "intro": "Your account: how other people see you and what you choose to show. What you tell about yourself lives in your MiraCard instead.",
+    "pushHeading": "Notifications",
+    "pushToggle": "Notifications on this device",
+    "pushHint": "We write to you when an association replies to your application or a company is looking for you. Nothing else.",
+    "pushDenied": "Notifications are blocked for MIRA in this browser. You can turn them back on from your phone settings, under Notifications or Websites.",
+    "pushNeedsInstall": "On iPhone, notifications only work if you add MIRA to your Home Screen: tap Share, then \"Add to Home Screen\".",
+    "pushUnsupported": "This browser does not handle notifications. Try Chrome on Android, or MIRA installed on your iPhone.",
+    "pushNotReady": "Notifications are not available on MIRA yet. Check back in a few days.",
     "working": "One moment...",
     "saving": "Saving...",
     "photoHeading": "Profile photo",

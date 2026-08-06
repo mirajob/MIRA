@@ -5,6 +5,7 @@ import { getUserContext } from "@/lib/auth";
 import { parseWindows, rangeCoversBlock } from "@/lib/interview-slots";
 import { buildInterviewIcs } from "@/lib/ics";
 import { generateMeetingRoomUrl } from "@/lib/meeting-room";
+import { createNotification } from "@/lib/notify";
 import { APP_TIME_ZONE } from "@/lib/format-date";
 import { sendInterviewBookingInvite, sendInterviewConfirmation } from "@/lib/email";
 import { revalidatePath } from "next/cache";
@@ -152,11 +153,12 @@ export async function inviteCandidatesToSession(input: {
       .update({ status: "interview", last_status_change_at: new Date().toISOString() })
       .eq("id", application.id);
 
-    await (supabase.from("notifications") as any).insert({
-      user_id: application.student_user_id,
+    await createNotification(supabase, {
+      userId: application.student_user_id,
       type: "interview_invite",
       title: "Scegli quando fare il colloquio",
       body: `${session.association_profiles?.name}: ${session.title}`,
+      link: inviteId ? `/student/colloqui/${inviteId}` : "/student/colloqui",
       data: { invite_id: inviteId },
     });
 
@@ -455,11 +457,12 @@ export async function setSlotMeetingLink(input: {
 
     const studentUserId = slot.applications?.student_user_id;
     if (studentUserId) {
-      await (supabase.from("notifications") as any).insert({
-        user_id: studentUserId,
+      await createNotification(supabase, {
+        userId: studentUserId,
         type: "interview_link",
         title: "Link del colloquio",
         body: `${associationName}: il link per il tuo colloquio è disponibile.`,
+        link: "/student/colloqui",
         data: { slot_id: input.slotId },
       });
     }

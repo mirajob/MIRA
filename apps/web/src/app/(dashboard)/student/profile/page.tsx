@@ -8,6 +8,7 @@ import { ProfilePhoto } from "./profile-photo";
 import { PrivacySettings } from "./privacy-settings";
 import { AccountDetails } from "./account-details";
 import { ChangePassword } from "./change-password";
+import { NotificationSettings } from "./notification-settings";
 
 /**
  * L'account dello studente: foto, dati di accesso, cosa vede chi, i documenti.
@@ -52,6 +53,8 @@ export default async function StudentProfilePage() {
       />
 
       <ChangePassword />
+
+      <NotificationSettings />
 
       <PrivacySettings
         initialSettings={{
