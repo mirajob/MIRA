@@ -74,6 +74,8 @@ export interface OnboardingFlowState {
   cvLanguageCount: number;
   faseBStarted: boolean;
   esamiSkipped: boolean;
+  /** Lo studente ha premuto Conferma sul piano di carriera, anche lasciandolo vuoto. */
+  pianoConfermato: boolean;
 }
 
 const ALL_BLOCK_TYPES = [
@@ -141,9 +143,18 @@ async function saveAnswersFlags(supabase: any, profileId: string, patch: Record<
     .eq("user_id", profileId);
 }
 
-/** Stessa regola della guardia della pagina di onboarding: vedi isPianoDone. */
-function pianoFatto(blocks: OnboardingBlocksState): boolean {
-  return isPianoDone(blocks.piano_carriera.status, blocks.piano_carriera.data.testo);
+/**
+ * La tappa del piano è superata: o c'è del testo approvato, o lo studente ha premuto
+ * Conferma lasciandolo vuoto, e allora si va avanti lo stesso.
+ *
+ * Il flag serve a distinguere le due cose che altrimenti sembrano identiche nel DB:
+ * il piano approvato-e-vuoto delle card vecchie (approvato in automatico insieme alla
+ * disponibilità, mai chiesto a nessuno) e il piano che lo studente ha visto e deciso
+ * di saltare. Senza flag, o si riproponeva la tappa all'infinito o non si mostrava mai.
+ * Stessa regola nella guardia della pagina di onboarding.
+ */
+function pianoFatto(blocks: OnboardingBlocksState, pianoConfermato: boolean): boolean {
+  return pianoConfermato || isPianoDone(blocks.piano_carriera.status, blocks.piano_carriera.data.testo);
 }
 
 /** Percentuale sui 7 blocchi visibili. Disponibilità e piano di carriera erano contati
@@ -159,9 +170,9 @@ const BLOCCHI_PCT: Array<keyof OnboardingBlocksState> = [
   "piano_carriera",
 ];
 
-function computePctFromBlocks(blocks: OnboardingBlocksState): number {
+function computePctFromBlocks(blocks: OnboardingBlocksState, pianoConfermato = false): number {
   const approved = BLOCCHI_PCT.filter((bt) =>
-    bt === "piano_carriera" ? pianoFatto(blocks) : blocks[bt].status === "approved"
+    bt === "piano_carriera" ? pianoFatto(blocks, pianoConfermato) : blocks[bt].status === "approved"
   ).length;
   return Math.round((approved / BLOCCHI_PCT.length) * 100);
 }
@@ -182,7 +193,8 @@ function computePctFromBlocks(blocks: OnboardingBlocksState): number {
 function derivePhase(
   blocks: OnboardingBlocksState,
   faseBStarted: boolean,
-  esamiSkipped: boolean
+  esamiSkipped: boolean,
+  pianoConfermato: boolean
 ): OnboardingFlowPhase {
   if (blocks.disponibilita.status !== "approved") return "disponibilita";
   if (blocks.esperienze.status !== "approved") return "esperienze";
@@ -192,7 +204,7 @@ function derivePhase(
     blocks.competenze.status === "approved" &&
     blocks.lingue.status === "approved" &&
     blocks.autodescrizione.status === "approved" &&
-    pianoFatto(blocks);
+    pianoFatto(blocks, pianoConfermato);
   if (faseBDone) return "chiusura";
   if (!faseBStarted) return "gate";
   // Gli esami sono facoltativi: si esce da questa tappa confermando o saltando.
@@ -208,10 +220,11 @@ export async function loadOnboardingFlow(): Promise<OnboardingFlowState> {
   const answers = (student.onboarding_answers as Record<string, unknown>) ?? {};
   const faseBStarted = !!answers.fase_b_started;
   const esamiSkipped = !!answers.esami_skipped;
+  const pianoConfermato = !!answers.piano_confermato;
   const cv = student.cv_summary as { experiences?: unknown[]; languages?: unknown[] } | null;
 
   return {
-    phase: derivePhase(blocks, faseBStarted, esamiSkipped),
+    phase: derivePhase(blocks, faseBStarted, esamiSkipped, pianoConfermato),
     blocks,
     isBocconi: isBocconiStudent(student, blocks),
     transcriptUploaded: !!student.transcript_uploaded,
@@ -220,7 +233,18 @@ export async function loadOnboardingFlow(): Promise<OnboardingFlowState> {
     cvLanguageCount: cv?.languages?.length ?? 0,
     faseBStarted,
     esamiSkipped,
+    pianoConfermato,
   };
+}
+
+/** Conferma sul piano di carriera: chiude la tappa anche se lo studente non ha scritto
+ * niente. Il piano resta un buco segnalato sul Profilo, ma l'onboarding non si blocca. */
+export async function confirmPianoStep(): Promise<{ success: true }> {
+  const { supabase, profileId } = await getOnboardingContext();
+  await saveAnswersFlags(supabase, profileId, { piano_confermato: true });
+  revalidatePath("/student/onboarding");
+  revalidatePath("/student");
+  return { success: true };
 }
 
 /** "Non ce l'ho ora": si va avanti, il libretto resta caricabile dal Profilo. */

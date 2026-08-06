@@ -10,6 +10,7 @@ import {
   startFaseBFlow,
   completeGateFlow,
   skipEsamiStep,
+  confirmPianoStep,
 } from "@/lib/actions/onboarding-flow";
 import type { OnboardingFlowState, OnboardingFlowPhase, OnboardingBlocksState } from "@/lib/actions/onboarding-flow";
 import { uploadCV } from "@/lib/actions/cv-upload";
@@ -73,27 +74,26 @@ const BLOCK_TITLE_KEYS: Record<FlowBlock, string> = {
 };
 
 /**
- * Il piano approvato-ma-vuoto non è una tappa fatta.
+ * Il piano approvato-ma-vuoto non è una tappa fatta, finché lo studente non l'ha confermata.
  *
  * Fino al 2026-08 il piano veniva approvato insieme alla disponibilità, spesso senza una
- * riga dentro: quelle card arrivano qui con status "approved" e testo vuoto. Il server lo
- * sa già (isPianoDone) e tiene la fase su "piano", ma il pannello leggeva lo status grezzo
- * e mostrava badge "Approvato" più "Salva modifiche": sembrava una tappa già chiusa che
- * però non andava avanti. Qui vale la stessa regola del server.
+ * riga dentro: quelle card arrivano qui con status "approved" e testo vuoto. Mostrarle come
+ * confermate faceva sembrare l'onboarding finito mentre invece era fermo. Dopo il Conferma
+ * (flag pianoConfermato) la tappa è chiusa comunque, anche a casella vuota.
  */
-function pianoStatus(blocks: OnboardingBlocksState): CardBlockStatus {
-  if (isPianoDone(blocks.piano_carriera.status, blocks.piano_carriera.data.testo)) return "approved";
+function pianoStatus(blocks: OnboardingBlocksState, pianoConfermato: boolean): CardBlockStatus {
+  if (pianoConfermato || isPianoDone(blocks.piano_carriera.status, blocks.piano_carriera.data.testo)) return "approved";
   return blocks.piano_carriera.data.testo?.trim() ? "draft" : "empty";
 }
 
-function blockStatus(blocks: OnboardingBlocksState, block: FlowBlock): CardBlockStatus {
+function blockStatus(blocks: OnboardingBlocksState, block: FlowBlock, pianoConfermato: boolean): CardBlockStatus {
   if (block === "profilo_personale") return blocks.autodescrizione.status;
-  if (block === "piano") return pianoStatus(blocks);
+  if (block === "piano") return pianoStatus(blocks, pianoConfermato);
   return blocks[block].status;
 }
 
-function computePct(blocks: OnboardingBlocksState): number {
-  const approved = BLOCK_ORDER.filter((b) => blockStatus(blocks, b) === "approved").length;
+function computePct(blocks: OnboardingBlocksState, pianoConfermato: boolean): number {
+  const approved = BLOCK_ORDER.filter((b) => blockStatus(blocks, b, pianoConfermato) === "approved").length;
   return Math.round((approved / BLOCK_ORDER.length) * 100);
 }
 
@@ -182,6 +182,18 @@ export function OnboardingFlow({ userName }: { userName: string }) {
 
   /** Dopo il Conferma di un blocco (il salvataggio+approvazione è già avvenuto lì). */
   async function handleBlockApproved(block: FlowBlock) {
+    // Il piano è l'ultima tappa: il Conferma la chiude anche se la casella è vuota. Senza
+    // questo flag lo stato del blocco da solo non basta a distinguere "confermato vuoto"
+    // dal piano approvato in automatico dalle card vecchie, e la tappa tornerebbe a ripetersi.
+    if (block === "piano") {
+      try {
+        await confirmPianoStep();
+      } catch (err) {
+        console.error("[MIRA] confirmPianoStep failed:", err);
+      }
+      await refresh();
+      return;
+    }
     // L'Header è l'ultimo blocco della Fase A: qui scatta il gate.
     if (block === "header") {
       try {
@@ -275,7 +287,8 @@ export function OnboardingFlow({ userName }: { userName: string }) {
   const blocks = flow?.blocks ?? null;
   const phase = flow?.phase ?? null;
   const activeBlock = phase ? PHASE_TO_BLOCK[phase] : undefined;
-  const progressPct = blocks ? computePct(blocks) : 0;
+  const pianoConfermato = flow?.pianoConfermato ?? false;
+  const progressPct = blocks ? computePct(blocks, pianoConfermato) : 0;
 
   /** Il testo guida di MIRA per il blocco attivo, sensibile al contesto. */
   function guideText(): string {
@@ -424,9 +437,8 @@ export function OnboardingFlow({ userName }: { userName: string }) {
             title={cardT("titles.pianoCarriera")}
             testo={blocks.piano_carriera.data.testo}
             stato={blocks.piano_carriera.data.stato}
-            status={pianoStatus(blocks)}
+            status={pianoStatus(blocks, pianoConfermato)}
             placeholder={cardT("disponibilita.pianoPlaceholder")}
-            requireText
             onApproved={() => handleBlockApproved("piano")}
           />
         );
@@ -473,7 +485,7 @@ export function OnboardingFlow({ userName }: { userName: string }) {
 
           {blocks &&
             BLOCK_ORDER.map((block) => {
-              const status = blockStatus(blocks, block);
+              const status = blockStatus(blocks, block, pianoConfermato);
               const isActive = block === activeBlock && !complete;
 
               // Solo il blocco attivo e quelli già confermati: i futuri restano invisibili

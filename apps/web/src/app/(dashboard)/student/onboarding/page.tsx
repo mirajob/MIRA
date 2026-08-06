@@ -18,7 +18,7 @@ export default async function OnboardingPage() {
   const supabase = await createServerClient();
   const { data: student } = await supabase
     .from("student_profiles")
-    .select("id, onboarding_completed")
+    .select("id, onboarding_completed, onboarding_answers")
     .eq("user_id", ctx.profile.id)
     .single();
 
@@ -36,9 +36,12 @@ export default async function OnboardingPage() {
 
     const byType = new Map((blocks ?? []).map((b: any) => [b.block_type as string, b]));
     const piano = byType.get("piano_carriera") as any;
+    // Il piano si può confermare vuoto: in quel caso vale il flag, non il testo. Stessa
+    // regola di derivePhase, altrimenti la guardia e il flusso si contraddicono.
+    const pianoConfermato = !!((student as any).onboarding_answers as any)?.piano_confermato;
     const faseBComplete =
       ["competenze", "lingue", "autodescrizione"].every((t) => (byType.get(t) as any)?.status === "approved") &&
-      isPianoDone(piano?.status, piano?.prose_content?.testo);
+      (pianoConfermato || isPianoDone(piano?.status, piano?.prose_content?.testo));
 
     if (faseBComplete) redirect("/student");
   }
